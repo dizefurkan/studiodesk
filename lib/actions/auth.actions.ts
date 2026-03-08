@@ -27,12 +27,14 @@ export async function signUp({ email, password, fullName }: SignUpParams) {
   if (!authData.user) {
     return { error: 'Failed to create user' }
   }
-
+  
   // Create user profile
-  const { error: profileError } = await supabase.from('profiles').insert({
-    id: authData.user.id,
-    full_name: fullName,
-  })
+  const { error: profileError } = await (supabase as any)
+    .from('profiles')
+    .insert({
+      id: authData.user.id,
+      full_name: fullName,
+    })
 
   if (profileError) {
     console.error('Profile creation error:', profileError)
@@ -67,7 +69,7 @@ export async function login({ email, password }: LoginParams) {
   }
 
   // Check if user has an organization
-  const { data: orgData } = await supabase
+  const { data: orgData } = await (supabase as any)
     .from('organization_users')
     .select('organization_id')
     .eq('user_id', data.user.id)
@@ -76,7 +78,7 @@ export async function login({ email, password }: LoginParams) {
 
   if (orgData) {
     // User already has organization, set cookie and redirect
-    setOrganizationCookie(orgData.organization_id)
+    setOrganizationCookie((orgData as any).organization_id)
     return {
       success: true,
       nextStep: 'dashboard',
@@ -118,7 +120,7 @@ export async function createOrganizationWithBranch({
 
   try {
     // Create organization
-    const { data: orgData, error: orgError } = await admin
+    const { data: orgData, error: orgError } = await (admin as any)
       .from('organizations')
       .insert({
         name: organizationName,
@@ -132,7 +134,7 @@ export async function createOrganizationWithBranch({
     }
 
     // Create organization_users record with owner role
-    const { error: orgUserError } = await admin
+    const { error: orgUserError } = await (admin as any)
       .from('organization_users')
       .insert({
         organization_id: orgData.id,
@@ -146,7 +148,7 @@ export async function createOrganizationWithBranch({
     }
 
     // Create first branch
-    const { data: branchData, error: branchError } = await admin
+    const { data: branchData, error: branchError } = await (admin as any)
       .from('branches')
       .insert({
         organization_id: orgData.id,

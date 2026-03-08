@@ -33,7 +33,10 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const result = await login(formData.email, formData.password)
+      const result = await login({
+        email: formData.email,
+        password: formData.password,
+      })
       
       if (result.error) {
         setError(result.error)
@@ -42,7 +45,7 @@ export default function LoginPage() {
       }
 
       // Redirect based on user state
-      if (result.needsOnboarding) {
+      if (result.nextStep === 'onboarding') {
         router.push('/onboarding')
       } else {
         router.push('/dashboard')
