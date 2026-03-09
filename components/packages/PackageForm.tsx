@@ -77,8 +77,9 @@ export function PackageForm({ package: pkgProp }: PackageFormProps) {
       if (result.error) {
         setGeneralError(result.error)
       } else if (result.success) {
+        console.log('Package form result:', result)
+        console.log('Redirecting to /dashboard/packages')
         router.push('/dashboard/packages')
-        router.refresh()
       }
     } catch (error) {
       console.error('Form error:', error)

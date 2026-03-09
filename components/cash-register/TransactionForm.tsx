@@ -56,8 +56,9 @@ export function TransactionForm() {
       if (result.error) {
         setGeneralError(result.error)
       } else if (result.success) {
+        console.log('Transaction form result:', result)
+        console.log('Redirecting to /dashboard/cash-register')
         router.push('/dashboard/cash-register')
-        router.refresh()
       }
     } catch (error) {
       console.error('Form error:', error)

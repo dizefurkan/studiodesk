@@ -105,8 +105,9 @@ export function CourseForm({ course }: CourseFormProps) {
       if (result.error) {
         setGeneralError(result.error)
       } else if (result.success) {
+        console.log('Course form result:', result)
+        console.log('Redirecting to /dashboard/courses')
         router.push('/dashboard/courses')
-        router.refresh()
       }
     } catch (error) {
       console.error('Form error:', error)

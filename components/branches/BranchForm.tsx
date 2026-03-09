@@ -60,8 +60,9 @@ export function BranchForm({ branch }: BranchFormProps) {
       if (result.error) {
         setGeneralError(result.error)
       } else if (result.success) {
+        console.log('Branch form result:', result)
+        console.log('Redirecting to /dashboard/branches')
         router.push('/dashboard/branches')
-        router.refresh()
       }
     } catch (error) {
       console.error('Form error:', error)

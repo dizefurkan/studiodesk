@@ -56,8 +56,9 @@ export function DanceTypeForm({ danceType }: DanceTypeFormProps) {
       if (result.error) {
         setGeneralError(result.error)
       } else if (result.success) {
+        console.log('Dance type form result:', result)
+        console.log('Redirecting to /dashboard/dance-types')
         router.push('/dashboard/dance-types')
-        router.refresh()
       }
     } catch (error) {
       console.error('Form error:', error)

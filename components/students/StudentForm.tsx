@@ -68,8 +68,9 @@ export function StudentForm({ student }: StudentFormProps) {
       if (result.error) {
         setGeneralError(result.error)
       } else if (result.success) {
+        console.log('Student form result:', result)
+        console.log('Redirecting to /dashboard/students')
         router.push('/dashboard/students')
-        router.refresh()
       }
     } catch (error) {
       console.error('Form error:', error)

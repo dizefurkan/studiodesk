@@ -52,20 +52,22 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email,
-            phone: data.phone || null,
+            phone: data.phone ? data.phone : null,
           })
         : await createInstructor({
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email,
-            phone: data.phone,
+            phone: data.phone ? data.phone : undefined,
           })
+
+      console.log('Instructor form result:', result)
 
       if (result.error) {
         setGeneralError(result.error)
       } else if (result.success) {
+        console.log('Redirecting to /dashboard/instructors')
         router.push('/dashboard/instructors')
-        router.refresh()
       }
     } catch (error) {
       console.error('Form error:', error)
