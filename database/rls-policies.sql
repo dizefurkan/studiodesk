@@ -316,6 +316,67 @@ USING (
   )
 );
 
+CREATE POLICY "Managers can insert course_sessions"
+ON course_sessions FOR INSERT
+WITH CHECK (
+  course_id IN (
+    SELECT id FROM courses
+    WHERE branch_id IN (
+      SELECT id FROM branches
+      WHERE organization_id IN (
+        SELECT organization_id FROM organization_users
+        WHERE user_id = auth.uid()
+        AND role IN ('owner', 'manager')
+      )
+    )
+  )
+);
+
+CREATE POLICY "Managers can update course_sessions"
+ON course_sessions FOR UPDATE
+USING (
+  course_id IN (
+    SELECT id FROM courses
+    WHERE branch_id IN (
+      SELECT id FROM branches
+      WHERE organization_id IN (
+        SELECT organization_id FROM organization_users
+        WHERE user_id = auth.uid()
+        AND role IN ('owner', 'manager')
+      )
+    )
+  )
+)
+WITH CHECK (
+  course_id IN (
+    SELECT id FROM courses
+    WHERE branch_id IN (
+      SELECT id FROM branches
+      WHERE organization_id IN (
+        SELECT organization_id FROM organization_users
+        WHERE user_id = auth.uid()
+        AND role IN ('owner', 'manager')
+      )
+    )
+  )
+);
+
+CREATE POLICY "Managers can delete course_sessions"
+ON course_sessions FOR DELETE
+USING (
+  course_id IN (
+    SELECT id FROM courses
+    WHERE branch_id IN (
+      SELECT id FROM branches
+      WHERE organization_id IN (
+        SELECT organization_id FROM organization_users
+        WHERE user_id = auth.uid()
+        AND role IN ('owner', 'manager')
+      )
+    )
+  )
+);
+
 -- ========================================
 -- PACKAGES POLICIES
 -- ========================================

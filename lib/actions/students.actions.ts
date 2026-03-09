@@ -219,3 +219,170 @@ export async function deleteStudent(id: string) {
     return { error: 'An unexpected error occurred' }
   }
 }
+
+// ===========================
+// STUDENT PACKAGES & CREDITS
+// ===========================
+
+export async function getStudentPackages(studentId: string) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data, error } = await (supabase
+      .from('student_packages') as any)
+      .select('*, packages(name, total_credits, price, dance_types(name))')
+      .eq('student_id', studentId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching student packages:', error)
+      return { error: 'Failed to fetch packages' }
+    }
+
+    return { data }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
+interface PurchasePackageInput {
+  studentId: string
+  packageId: string
+  price?: number // Allow override of package price
+  paymentMethod?: string
+}
+
+export async function purchasePackage(input: PurchasePackageInput) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
+  try {
+    const supabase = await createServerSupabaseClient()
+
+    // Get student to find their branch
+    const { data: student, error: studentError } = await supabase
+      .from('students')
+      .select('id, organization_id')
+      .eq('id', input.studentId)
+      .eq('organization_id', organization.id)
+      .single()
+
+    if (studentError || !student) {
+      return { error: 'Student not found' }
+    }
+
+    // Get package details
+    const { data: packageData, error: packageError } = await (supabase
+      .from('packages') as any)
+      .select('*')
+      .eq('id', input.packageId)
+      .eq('organization_id', organization.id)
+      .single()
+
+    if (packageError || !packageData) {
+      return { error: 'Package not found' }
+    }
+
+    const price = input.price || packageData.price
+
+    // Create student_packages record
+    const { data: studentPackage, error: spError } = await (supabase
+      .from('student_packages') as any)
+      .insert({
+        student_id: input.studentId,
+        package_id: input.packageId,
+        remaining_credits: packageData.total_credits,
+        purchase_date: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    if (spError || !studentPackage) {
+      console.error('Error creating student package:', spError)
+      return { error: 'Failed to create package record' }
+    }
+
+    // Get the first branch for this organization to record transaction
+    const { data: branchesData } = await supabase
+      .from('branches')
+      .select('id')
+      .eq('organization_id', organization.id)
+      .limit(1)
+
+    const branchId = branchesData && Array.isArray(branchesData) && branchesData.length > 0 ? (branchesData[0] as any).id : null
+
+    // Create cash transaction if we have a branch
+    if (branchId) {
+      const { error: transError } = await (supabase
+        .from('cash_transactions') as any)
+        .insert({
+          branch_id: branchId,
+          type: 'income',
+          amount: price,
+          description: `${packageData.name} - Student Purchase`,
+          student_package_id: studentPackage.id,
+        })
+
+      if (transError) {
+        console.error('Error creating transaction:', transError)
+        // Don't fail the whole operation if transaction fails
+      }
+    }
+
+    return {
+      success: true,
+      data: studentPackage,
+    }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
+export async function reduceStudentCredits(studentPackageId: string, amount: number = 1) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  try {
+    const supabase = await createServerSupabaseClient()
+
+    // Get current credits
+    const { data: studentPackage, error: fetchError } = await (supabase
+      .from('student_packages') as any)
+      .select('remaining_credits')
+      .eq('id', studentPackageId)
+      .single()
+
+    if (fetchError || !studentPackage) {
+      return { error: 'Package not found' }
+    }
+
+    const newCredits = Math.max(0, studentPackage.remaining_credits - amount)
+
+    // Update credits
+    const { data, error } = await (supabase
+      .from('student_packages') as any)
+      .update({
+        remaining_credits: newCredits,
+      })
+      .eq('id', studentPackageId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating credits:', error)
+      return { error: 'Failed to update credits' }
+    }
+
+    return { success: true, data }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}

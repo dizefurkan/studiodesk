@@ -1,4 +1,4 @@
-import { getCourses } from '@/lib/actions/courses.actions'
+import { getCourses, generateCourseSessions, getCourseSessions } from '@/lib/actions/courses.actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -18,6 +18,36 @@ export default async function CalendarPage({
 
   const coursesResult = await getCourses()
   const courses = coursesResult.data || []
+
+  // Auto-generate sessions for today and next 2 weeks if they don't exist
+  const today = new Date()
+  const twoWeeksFromNow = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000)
+
+  // Try to generate sessions for each course, but don't fail if generation errors
+  try {
+    for (const course of courses) {
+      try {
+        const sessionsResult = await getCourseSessions(
+          course.id,
+          today.toISOString().split('T')[0],
+          twoWeeksFromNow.toISOString().split('T')[0],
+        )
+        
+        const existingSessions = sessionsResult.data || []
+        
+        // If no sessions exist for this period, generate them
+        if (existingSessions.length === 0) {
+          await generateCourseSessions(course.id, today, twoWeeksFromNow)
+        }
+      } catch (courseError) {
+        // Log but don't crash - calendar should still load
+        console.error(`Error processing course ${course.id}:`, courseError)
+      }
+    }
+  } catch (error) {
+    console.error('Error in auto-generate sessions:', error)
+    // Continue - don't break calendar rendering
+  }
 
   const year = parseInt(yearStr)
   const month = parseInt(monthStr.split('-')[1] || String(new Date().getMonth() + 1))

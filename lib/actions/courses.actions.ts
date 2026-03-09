@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import type { Database } from '@/lib/types/database.types'
@@ -270,8 +271,34 @@ export async function generateCourseSessions(courseId: string, startDate: Date, 
       .single()
 
     if (courseError || !course) {
+      console.error('Course error:', courseError)
       return { error: 'Course not found' }
     }
+
+    // Validate day_of_week
+    if (course.day_of_week === null || course.day_of_week === undefined) {
+      return { error: 'Course day of week not set' }
+    }
+
+    // Get existing sessions for this period to avoid duplicates
+    const startDateStr = startDate.toISOString().split('T')[0]
+    const endDateStr = endDate.toISOString().split('T')[0]
+    
+    // Use admin client to fetch existing sessions (bypasses RLS)
+    const adminSupabase = createAdminClient()
+    const { data: existingSessions, error: existingError } = await (adminSupabase
+      .from('course_sessions') as any)
+      .select('session_date')
+      .eq('course_id', courseId)
+      .gte('session_date', startDateStr)
+      .lte('session_date', endDateStr)
+
+    if (existingError) {
+      console.error('Error fetching existing sessions:', existingError)
+      // Don't fail - just continue with generation
+    }
+
+    const existingDates = new Set((existingSessions || []).map((s: any) => s.session_date))
 
     // Generate sessions for all matching days between start and end date
     const sessions = []
@@ -279,10 +306,14 @@ export async function generateCourseSessions(courseId: string, startDate: Date, 
 
     while (current <= endDate) {
       if (current.getDay() === course.day_of_week) {
-        sessions.push({
-          course_id: courseId,
-          session_date: current.toISOString().split('T')[0],
-        })
+        const sessionDate = current.toISOString().split('T')[0]
+        // Only add if not already existing
+        if (!existingDates.has(sessionDate)) {
+          sessions.push({
+            course_id: courseId,
+            session_date: sessionDate,
+          })
+        }
       }
       current.setDate(current.getDate() + 1)
     }
@@ -291,17 +322,34 @@ export async function generateCourseSessions(courseId: string, startDate: Date, 
       return { success: true, data: [] }
     }
 
-    const { data, error } = await (supabase.from('course_sessions') as any).insert(sessions).select()
+    // Use admin client for insertion (bypasses RLS, which is fine for automatic generation)
+    const { data, error } = await (adminSupabase.from('course_sessions') as any)
+      .insert(sessions)
+      .select()
 
     if (error) {
-      console.error('Error generating sessions:', error)
-      return { error: 'Failed to generate sessions' }
+      console.error('Error inserting sessions:', {
+        error,
+        errorCode: (error as any)?.code,
+        message: (error as any)?.message || JSON.stringify(error),
+        details: (error as any)?.details,
+        hint: (error as any)?.hint,
+        courseId,
+        sessionCount: sessions.length,
+        sessions: sessions.slice(0, 3), // Sample of sessions
+      })
+      // Return error so we know what happened
+      return { error: 'Failed to insert sessions', details: (error as any)?.message }
     }
 
     return { success: true, data }
   } catch (error) {
-    console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    console.error('Unexpected error in generateCourseSessions:', {
+      error,
+      message: (error as any)?.message,
+      stack: (error as any)?.stack?.split('\n').slice(0, 3),
+    })
+    return { error: 'Unexpected error generating sessions', details: (error as any)?.message }
   }
 }
 
@@ -333,6 +381,90 @@ export async function getCourseSessions(courseId: string, fromDate?: string, toD
     }
 
     return { data: data as CourseSession[] }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
+// ===========================
+// COURSE ENROLLMENT
+// ===========================
+
+export async function getCourseEnrolledStudents(courseId: string) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  try {
+    const supabase = await createServerSupabaseClient()
+
+    // Get course to find dance type
+    const { data: course, error: courseError } = await (supabase
+      .from('courses') as any)
+      .select('dance_type_id')
+      .eq('id', courseId)
+      .single()
+
+    if (courseError || !course) {
+      return { error: 'Course not found' }
+    }
+
+    // Get students with active packages for this dance type
+    const { data, error } = await (supabase
+      .from('student_packages') as any)
+      .select(
+        'student_id, students(id, first_name, last_name), packages(dance_type_id)',
+      )
+      .eq('packages.dance_type_id', course.dance_type_id)
+
+    if (error) {
+      console.error('Error fetching enrolled students:', error)
+      return { error: 'Failed to fetch enrolled students' }
+    }
+
+    return { data }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
+export async function getAvailableStudentsForCourse(courseId: string) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
+  try {
+    const supabase = await createServerSupabaseClient()
+
+    // Get course to find dance type
+    const { data: course, error: courseError } = await (supabase
+      .from('courses') as any)
+      .select('dance_type_id')
+      .eq('id', courseId)
+      .single()
+
+    if (courseError || !course) {
+      return { error: 'Course not found' }
+    }
+
+    // Get all students with packages matching this dance type
+    const { data, error } = await (supabase
+      .from('student_packages') as any)
+      .select(
+        'student_id, students(id, first_name, last_name, email), packages(dance_type_id, remaining_credits)',
+      )
+      .eq('student_packages.packages.dance_type_id', course.dance_type_id)
+      .eq('student_packages.students.organization_id', organization.id)
+
+    if (error) {
+      console.error('Error fetching available students:', error)
+      return { error: 'Failed to fetch students' }
+    }
+
+    return { data }
   } catch (error) {
     console.error('Unexpected error:', error)
     return { error: 'An unexpected error occurred' }

@@ -1,6 +1,7 @@
 import { getInstructorEarnings } from '@/lib/actions/instructor-earnings.actions'
 import { getInstructors } from '@/lib/actions/instructors.actions'
 import { Card } from '@/components/ui/card'
+import { InstructorEarningsFilters } from '@/components/instructor-earnings/EarningsFilters'
 import { TrendingUp, DollarSign } from 'lucide-react'
 
 export default async function InstructorEarningsPage({
@@ -56,61 +57,7 @@ export default async function InstructorEarningsPage({
 
       {/* Filters */}
       <Card className="border-[#E5E7EB] p-6">
-        <div className="flex gap-4 flex-wrap items-end">
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-[#111827] block mb-2">Instructor</label>
-            <select
-              defaultValue={instructorId || ''}
-              onChange={(e) => {
-                const params = new URLSearchParams()
-                if (e.target.value) params.set('instructor', e.target.value)
-                if (fromDate) params.set('from', fromDate)
-                if (toDate) params.set('to', toDate)
-                window.location.href = `/dashboard/instructor-earnings?${params.toString()}`
-              }}
-              className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
-            >
-              <option value="">All Instructors</option>
-              {instructors.map((instructor) => (
-                <option key={instructor.id} value={instructor.id}>
-                  {instructor.first_name} {instructor.last_name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-[#111827] block mb-2">From Date</label>
-            <input
-              type="date"
-              defaultValue={fromDate || ''}
-              onChange={(e) => {
-                const params = new URLSearchParams()
-                if (instructorId) params.set('instructor', instructorId)
-                if (e.target.value) params.set('from', e.target.value)
-                if (toDate) params.set('to', toDate)
-                window.location.href = `/dashboard/instructor-earnings?${params.toString()}`
-              }}
-              className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
-            />
-          </div>
-
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-[#111827] block mb-2">To Date</label>
-            <input
-              type="date"
-              defaultValue={toDate || ''}
-              onChange={(e) => {
-                const params = new URLSearchParams()
-                if (instructorId) params.set('instructor', instructorId)
-                if (fromDate) params.set('from', fromDate)
-                if (e.target.value) params.set('to', e.target.value)
-                window.location.href = `/dashboard/instructor-earnings?${params.toString()}`
-              }}
-              className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
-            />
-          </div>
-        </div>
+        <InstructorEarningsFilters instructors={instructors} instructorId={instructorId} fromDate={fromDate} toDate={toDate} />
       </Card>
 
       {/* Earnings List */}

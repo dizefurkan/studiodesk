@@ -3,7 +3,10 @@ import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Edit2, ArrowLeft, Mail, Phone } from 'lucide-react'
-import { getStudent } from '@/lib/actions/students.actions'
+import { getStudent, getStudentPackages } from '@/lib/actions/students.actions'
+import { getPackages } from '@/lib/actions/packages.actions'
+import { StudentCredits } from '@/components/students/StudentCredits'
+import { StudentPurchaseDialog } from '@/components/students/StudentPurchaseDialog'
 
 interface StudentDetailPageProps {
   params: {
@@ -20,6 +23,15 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
   }
 
   const student = result.data
+
+  // Fetch student packages and available packages
+  const [packagesResult, availablePackagesResult] = await Promise.all([
+    getStudentPackages(id),
+    getPackages(),
+  ])
+
+  const studentPackages = packagesResult.data || []
+  const availablePackages = availablePackagesResult.data || []
 
   return (
     <div className="space-y-6">
@@ -39,13 +51,19 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
           </h1>
           <p className="text-gray-600 mt-1">Student Profile</p>
         </div>
-        <Link href={`/dashboard/students/${student.id}/edit`}>
-          <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
-            <Edit2 size={16} className="mr-2" />
-            Edit
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <StudentPurchaseDialog studentId={id} packages={availablePackages as any} />
+          <Link href={`/dashboard/students/${student.id}/edit`}>
+            <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
+              <Edit2 size={16} className="mr-2" />
+              Edit
+            </Button>
+          </Link>
+        </div>
       </div>
+
+      {/* Credits Section */}
+      <StudentCredits packages={studentPackages as any} />
 
       {/* Main Info Card */}
       <Card className="border-[#E5E7EB]">
