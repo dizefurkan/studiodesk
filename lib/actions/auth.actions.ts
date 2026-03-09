@@ -162,8 +162,8 @@ export async function createOrganizationWithBranch({
       return { error: 'Failed to create branch' }
     }
 
-    // Set organization cookie
-    setOrganizationCookie(orgData.id)
+    // Set organization cookie - must be awaited to ensure it's set before redirect
+    await setOrganizationCookie(orgData.id)
 
     return {
       success: true,

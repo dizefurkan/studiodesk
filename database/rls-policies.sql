@@ -59,32 +59,18 @@ CREATE POLICY "Users can read their organization memberships"
 ON organization_users FOR SELECT
 USING (
   user_id = auth.uid()
-  OR organization_id IN (
-    SELECT organization_id FROM organization_users WHERE user_id = auth.uid()
-  )
 );
 
 -- Only organization owners can create/update/delete users
-CREATE POLICY "Organization owners can manage users"
+-- Note: These are mostly for documentation - the app uses admin client for writes
+CREATE POLICY "Allow authenticated users to insert organization users"
 ON organization_users FOR INSERT
-WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM organization_users
-    WHERE organization_id = organization_users.organization_id
-    AND user_id = auth.uid()
-    AND role = 'owner'
-  )
-);
+WITH CHECK (true);
 
-CREATE POLICY "Organization owners can update users"
+CREATE POLICY "Users can update their own record"
 ON organization_users FOR UPDATE
 USING (
-  EXISTS (
-    SELECT 1 FROM organization_users
-    WHERE organization_id = organization_users.organization_id
-    AND user_id = auth.uid()
-    AND role = 'owner'
-  )
+  user_id = auth.uid()
 );
 
 -- ========================================

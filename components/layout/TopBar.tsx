@@ -13,7 +13,8 @@ export async function TopBar() {
   const userProfile = await getCurrentUserProfile()
   const organization = await getOrganization()
   const orgId = await getOrganizationIdFromCookie()
-  const userRole = orgId ? await getUserRoleInOrganization(orgId) : null
+  const userRoleData = orgId ? await getUserRoleInOrganization(orgId) : null
+  const userRole = userRoleData?.role || 'staff'
 
   const userName = (userProfile as any)?.full_name || user?.email || 'User'
   const userInitials = getInitials(userName)
@@ -55,7 +56,7 @@ export async function TopBar() {
         <UserMenu
           userName={userName}
           userEmail={user?.email || ''}
-          userRole={userRole || 'staff'}
+          userRole={userRole}
           initials={userInitials}
         />
       </div>

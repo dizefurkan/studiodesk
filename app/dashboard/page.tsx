@@ -14,17 +14,17 @@ export default function DashboardPage() {
   ]
 
   const quickActions = [
-    { label: 'Add Student', href: '/students/new', icon: Users },
-    { label: 'Create Course', href: '/courses/new', icon: BookOpen },
-    { label: 'View Calendar', href: '/calendar', icon: Calendar },
-    { label: 'Manage Branches', href: '/branches', icon: AlertCircle },
+    { label: 'Add Student', href: '/dashboard/students/new', icon: Users },
+    { label: 'Create Course', href: '/dashboard/courses/new', icon: BookOpen },
+    { label: 'View Calendar', href: '/dashboard/calendar', icon: Calendar },
+    { label: 'Manage Branches', href: '/dashboard/branches', icon: AlertCircle },
   ]
 
   const gettingStarted = [
-    { title: 'Set up instructors', completed: false, href: '/instructors' },
-    { title: 'Add dance types', completed: false, href: '/dance-types' },
-    { title: 'Create course packages', completed: false, href: '/packages' },
-    { title: 'Configure payment methods', completed: false, href: '/settings' },
+    { title: 'Set up instructors', completed: false, href: '/dashboard/instructors' },
+    { title: 'Add dance types', completed: false, href: '/dashboard/dance-types' },
+    { title: 'Create course packages', completed: false, href: '/dashboard/packages' },
+    { title: 'Configure payment methods', completed: false, href: '/dashboard/settings' },
   ]
 
   return (
