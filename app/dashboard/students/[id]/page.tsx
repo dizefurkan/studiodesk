@@ -12,7 +12,8 @@ interface StudentDetailPageProps {
 }
 
 export default async function StudentDetailPage({ params }: StudentDetailPageProps) {
-  const result = await getStudent(params.id)
+  const { id } = await params
+  const result = await getStudent(id)
 
   if (result.error || !result.data) {
     notFound()

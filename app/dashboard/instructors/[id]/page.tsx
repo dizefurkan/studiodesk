@@ -13,7 +13,8 @@ interface InstructorDetailPageProps {
 }
 
 export default async function InstructorDetailPage({ params }: InstructorDetailPageProps) {
-  const result = await getInstructor(params.id)
+  const { id } = await params
+  const result = await getInstructor(id)
 
   if (result.error) {
     notFound()

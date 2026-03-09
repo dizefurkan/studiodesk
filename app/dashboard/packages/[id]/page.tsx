@@ -12,7 +12,8 @@ interface PackageDetailPageProps {
 }
 
 export default async function PackageDetailPage({ params }: PackageDetailPageProps) {
-  const result = await getPackage(params.id)
+  const { id } = await params
+  const result = await getPackage(id)
 
   if (result.error) {
     notFound()

@@ -9,7 +9,8 @@ interface EditPackagePageProps {
 }
 
 export default async function EditPackagePage({ params }: EditPackagePageProps) {
-  const result = await getPackage(params.id)
+  const { id } = await params
+  const result = await getPackage(id)
 
   if (result.error) {
     notFound()

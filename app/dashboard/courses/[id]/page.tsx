@@ -14,7 +14,8 @@ interface CourseDetailPageProps {
 }
 
 export default async function CourseDetailPage({ params }: CourseDetailPageProps) {
-  const result = await getCourse(params.id)
+  const { id } = await params
+  const result = await getCourse(id)
 
   if (result.error) {
     notFound()

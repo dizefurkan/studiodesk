@@ -9,7 +9,8 @@ interface EditBranchPageProps {
 }
 
 export default async function EditBranchPage({ params }: EditBranchPageProps) {
-  const result = await getBranch(params.id)
+  const { id } = await params
+  const result = await getBranch(id)
 
   if (result.error) {
     notFound()

@@ -12,7 +12,8 @@ interface DanceTypeDetailPageProps {
 }
 
 export default async function DanceTypeDetailPage({ params }: DanceTypeDetailPageProps) {
-  const result = await getDanceType(params.id)
+  const { id } = await params
+  const result = await getDanceType(id)
 
   if (result.error) {
     notFound()

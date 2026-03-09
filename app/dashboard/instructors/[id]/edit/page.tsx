@@ -9,14 +9,15 @@ interface EditInstructorPageProps {
 }
 
 export default async function EditInstructorPage({ params }: EditInstructorPageProps) {
-  const result = await getInstructor(params.id)
+  const { id } = await params
+  const result = await getInstructor(id)
 
   if (result.error || !result.data) {
     notFound()
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-8">
       <InstructorForm instructor={result.data} />
     </div>
   )
