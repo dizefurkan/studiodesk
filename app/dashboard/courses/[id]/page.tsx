@@ -1,4 +1,5 @@
 import { getCourse, getCourseSessions } from '@/lib/actions/courses.actions'
+import { CourseStudentsSection } from '@/components/courses/CourseStudentsSection'
 import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -132,6 +133,12 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
               ))}
             </div>
           )}
+        </div>
+
+        {/* Students */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold text-[#111827] mb-4">Enrolled Students</h2>
+          <CourseStudentsSection courseId={course.id} danceTypeId={course.dance_type_id} />
         </div>
       </div>
     </div>

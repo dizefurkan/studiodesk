@@ -594,6 +594,55 @@ USING (
 );
 
 -- ========================================
+-- COURSE_STUDENTS POLICIES
+-- ========================================
+CREATE POLICY "Users can read course_students"
+ON course_students FOR SELECT
+USING (
+  course_id IN (
+    SELECT id FROM courses
+    WHERE branch_id IN (
+      SELECT id FROM branches
+      WHERE organization_id IN (
+        SELECT organization_id FROM organization_users WHERE user_id = auth.uid()
+      )
+    )
+  )
+);
+
+CREATE POLICY "Managers can insert course_students"
+ON course_students FOR INSERT
+WITH CHECK (
+  course_id IN (
+    SELECT id FROM courses
+    WHERE branch_id IN (
+      SELECT id FROM branches
+      WHERE organization_id IN (
+        SELECT organization_id FROM organization_users
+        WHERE user_id = auth.uid()
+        AND role IN ('owner', 'manager')
+      )
+    )
+  )
+);
+
+CREATE POLICY "Managers can delete course_students"
+ON course_students FOR DELETE
+USING (
+  course_id IN (
+    SELECT id FROM courses
+    WHERE branch_id IN (
+      SELECT id FROM branches
+      WHERE organization_id IN (
+        SELECT organization_id FROM organization_users
+        WHERE user_id = auth.uid()
+        AND role IN ('owner', 'manager')
+      )
+    )
+  )
+);
+
+-- ========================================
 -- SESSION_INSTRUCTORS POLICIES
 -- ========================================
 CREATE POLICY "Users can read session_instructors"

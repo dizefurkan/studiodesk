@@ -18,6 +18,7 @@ interface CreateCourseInput {
   endTime: string
   capacity: number
   instructorIds?: string[]
+  studentIds?: string[]
 }
 
 interface UpdateCourseInput {
@@ -27,6 +28,7 @@ interface UpdateCourseInput {
   endTime?: string
   capacity?: number
   instructorIds?: string[]
+  studentIds?: string[]
 }
 
 export async function getCourses(branchId?: string, searchQuery?: string) {
@@ -137,6 +139,16 @@ export async function createCourse(input: CreateCourseInput) {
       await (supabase.from('course_instructors') as any).insert(instructorAssignments)
     }
 
+    // Add students if provided
+    if (input.studentIds && input.studentIds.length > 0) {
+      const studentAssignments = input.studentIds.map((studentId) => ({
+        course_id: course.id,
+        student_id: studentId,
+      }))
+
+      await (supabase.from('course_students') as any).insert(studentAssignments)
+    }
+
     return { success: true, data: course }
   } catch (error) {
     console.error('Unexpected error:', error)
@@ -226,6 +238,20 @@ export async function updateCourse(id: string, input: UpdateCourseInput) {
 
       if (instructorAssignments.length > 0) {
         await (supabase.from('course_instructors') as any).insert(instructorAssignments)
+      }
+    }
+
+    // Update students if provided
+    if (input.studentIds) {
+      await (supabase.from('course_students') as any).delete().eq('course_id', id)
+
+      const studentAssignments = input.studentIds.map((studentId) => ({
+        course_id: id,
+        student_id: studentId,
+      }))
+
+      if (studentAssignments.length > 0) {
+        await (supabase.from('course_students') as any).insert(studentAssignments)
       }
     }
 

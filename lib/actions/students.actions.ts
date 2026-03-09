@@ -3,6 +3,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { autoEnrollStudentInCourses } from '@/lib/actions/course-students.actions'
 import type { Database } from '@/lib/types/database.types'
 
 type Student = Database['public']['Tables']['students']['Row']
@@ -333,6 +334,14 @@ export async function purchasePackage(input: PurchasePackageInput) {
         console.error('Error creating transaction:', transError)
         // Don't fail the whole operation if transaction fails
       }
+    }
+
+    // Auto-enroll student in matching courses for this dance type
+    try {
+      await autoEnrollStudentInCourses(input.studentId, packageData.dance_type_id, branchId || undefined)
+    } catch (enrollError) {
+      console.error('Error auto-enrolling student in courses:', enrollError)
+      // Don't fail the purchase if auto-enrollment fails
     }
 
     return {

@@ -185,6 +185,23 @@ CREATE INDEX idx_course_instructors_course_id ON course_instructors(course_id);
 CREATE INDEX idx_course_instructors_instructor_id ON course_instructors(instructor_id);
 
 -- ========================================
+-- COURSE_STUDENTS (Student enrollment in courses)
+-- ========================================
+CREATE TABLE IF NOT EXISTS course_students (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  joined_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(course_id, student_id)
+);
+
+CREATE INDEX idx_course_students_course_id ON course_students(course_id);
+CREATE INDEX idx_course_students_student_id ON course_students(student_id);
+CREATE INDEX idx_course_students_joined_at ON course_students(joined_at);
+
+-- ========================================
 -- COURSE_SESSIONS (Auto-generated from courses)
 -- ========================================
 CREATE TABLE IF NOT EXISTS course_sessions (

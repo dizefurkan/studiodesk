@@ -13,12 +13,19 @@ import { createCourse, updateCourse } from '@/lib/actions/courses.actions'
 import { getBranches } from '@/lib/actions/branches.actions'
 import { getDanceTypes } from '@/lib/actions/dance-types.actions'
 import { getInstructors } from '@/lib/actions/instructors.actions'
+import { getAvailableStudentsForCourse } from '@/lib/actions/course-students.actions'
 import type { Database } from '@/lib/types/database.types'
 
 type Course = Database['public']['Tables']['courses']['Row']
 type Branch = Database['public']['Tables']['branches']['Row']
 type DanceType = Database['public']['Tables']['dance_types']['Row']
 type Instructor = Database['public']['Tables']['instructors']['Row']
+
+interface Student {
+  id: string
+  first_name: string
+  last_name: string
+}
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -31,6 +38,7 @@ const courseSchema = z.object({
   endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:mm format'),
   capacity: z.coerce.number().min(1, 'Capacity must be at least 1'),
   instructorIds: z.array(z.string()).optional(),
+  studentIds: z.array(z.string()).optional(),
 })
 
 type CourseFormValues = z.infer<typeof courseSchema>
@@ -45,6 +53,7 @@ export function CourseForm({ course }: CourseFormProps) {
   const [branches, setBranches] = useState<Branch[]>([])
   const [danceTypes, setDanceTypes] = useState<DanceType[]>([])
   const [instructors, setInstructors] = useState<Instructor[]>([])
+  const [availableStudents, setAvailableStudents] = useState<Student[]>([])
   const [generalError, setGeneralError] = useState<string | null>(null)
 
   const form = useForm<CourseFormValues>({
@@ -58,6 +67,7 @@ export function CourseForm({ course }: CourseFormProps) {
       endTime: course?.end_time || '',
       capacity: course?.capacity || 20,
       instructorIds: course?.course_instructors?.map((ci) => ci.instructor_id) || [],
+      studentIds: [],
     },
   })
 
@@ -77,6 +87,25 @@ export function CourseForm({ course }: CourseFormProps) {
     loadData()
   }, [])
 
+  // Load available students when dance type changes
+  useEffect(() => {
+    const danceTypeId = form.getValues('danceTypeId')
+    if (!danceTypeId) {
+      setAvailableStudents([])
+      return
+    }
+
+    async function loadStudents() {
+      // If editing a course, pass the course ID to exclude already enrolled students
+      const result = await getAvailableStudentsForCourse(course?.id || '', danceTypeId)
+      if (result.data) {
+        setAvailableStudents(result.data)
+      }
+    }
+
+    loadStudents()
+  }, [form.watch('danceTypeId')])
+
   async function onSubmit(data: CourseFormValues) {
     setIsLoading(true)
     setGeneralError(null)
@@ -90,6 +119,7 @@ export function CourseForm({ course }: CourseFormProps) {
             endTime: data.endTime,
             capacity: data.capacity,
             instructorIds: data.instructorIds,
+            studentIds: data.studentIds,
           })
         : await createCourse({
             name: data.name,
@@ -100,6 +130,7 @@ export function CourseForm({ course }: CourseFormProps) {
             endTime: data.endTime,
             capacity: data.capacity,
             instructorIds: data.instructorIds,
+            studentIds: data.studentIds,
           })
 
       if (result.error) {
@@ -273,7 +304,7 @@ export function CourseForm({ course }: CourseFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Instructors</FormLabel>
-                  <div className="space-y-2 border border-[#E5E7EB] rounded-lg p-4 max-h-[200px] overflow-y-auto">
+                  <div className="space-y-2 border border-[#E5E7EB] rounded-lg p-4 max-h-50 overflow-y-auto">
                     {instructors.map((instructor) => (
                       <label key={instructor.id} className="flex items-center gap-3 cursor-pointer">
                         <input
@@ -296,6 +327,46 @@ export function CourseForm({ course }: CourseFormProps) {
                       </label>
                     ))}
                   </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="studentIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Students (Only students with active packages for this dance type are shown)</FormLabel>
+                  {availableStudents.length === 0 ? (
+                    <div className="p-4 border border-[#E5E7EB] rounded-lg bg-gray-50 text-gray-600 text-sm">
+                      No students with active packages available for this dance type
+                    </div>
+                  ) : (
+                    <div className="space-y-2 border border-[#E5E7EB] rounded-lg p-4 max-h-50 overflow-y-auto">
+                      {availableStudents.map((student) => (
+                        <label key={student.id} className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={field.value?.includes(student.id) || false}
+                            onChange={(e) => {
+                              const value = field.value || []
+                              if (e.target.checked) {
+                                field.onChange([...value, student.id])
+                              } else {
+                                field.onChange(value.filter((id) => id !== student.id))
+                              }
+                            }}
+                            disabled={isLoading}
+                            className="w-4 h-4 rounded border-[#E5E7EB]"
+                          />
+                          <span className="text-sm text-[#111827]">
+                            {student.first_name} {student.last_name}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
