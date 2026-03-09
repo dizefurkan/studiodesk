@@ -1,36 +1,171 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# StudioDesk
 
-## Getting Started
+A comprehensive SaaS platform for managing dance studios, including student management, instructor scheduling, course management, attendance tracking, and financial operations.
 
-First, run the development server:
+## 🎯 Project Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+StudioDesk is a multi-tenant dance studio management system built with modern web technologies. It provides studio owners with tools to manage:
+
+- **Students** - Track student profiles and enrollment
+- **Instructors** - Manage instructor schedules and earnings
+- **Courses** - Create and manage dance courses by type and schedule
+- **Branches** - Support multiple studio locations
+- **Attendance** - Track and record class attendance
+- **Packages** - Manage and sell course packages
+- **Cash Register** - Handle financial transactions
+- **Reporting** - View earnings and analytics
+
+## 🛠 Tech Stack
+
+- **Frontend**: Next.js 15+ (App Router), TypeScript, React
+- **Styling**: Tailwind CSS, PostCSS
+- **Backend**: Next.js Server Actions
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **UI Components**: Custom components with Lucide React icons
+- **Form Handling**: react-hook-form with Zod validation
+- **Security**: Row-Level Security (RLS) for multi-tenant isolation
+
+## 📋 Features
+
+### User Management
+- User signup and authentication
+- Role-based access control (owner, manager, instructor, staff)
+- User organization assignment
+
+### Organization & Branches
+- Multi-tenant architecture with organization isolation
+- Multiple branch support per organization
+- Branch-specific management
+
+### Students & Courses
+- Student registration and profile management
+- Dance type categorization
+- Course scheduling with instructor assignment
+- Course capacity management
+
+### Attendance & Packages
+- Session-based attendance tracking
+- Course package creation and sales
+- Credit-based package system
+- Package expiration management
+
+### Financial Operations
+- Cash register transactions
+- Instructor earnings tracking
+- Payment method configuration
+- Revenue reporting
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+ 
+- npm or yarn
+- Supabase account and project
+
+### Installation
+
+1. **Clone and install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Set up environment variables:**
+   Create a `.env.local` file with:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+   ```
+
+3. **Set up the database:**
+   - Run the schema and RLS policies from `database/` directory in your Supabase SQL editor
+   - See [database setup instructions](./SETUP_INSTRUCTIONS.md)
+
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser:**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 📁 Project Structure
+
+```
+app/
+  ├── (auth)/          # Authentication pages (login, register)
+  ├── dashboard/       # Main application dashboard
+  │   ├── students/    # Student management
+  │   ├── instructors/ # Instructor management
+  │   ├── courses/     # Course management
+  │   ├── branches/    # Branch management
+  │   └── ...          # Other modules
+  ├── onboarding/      # Initial setup flow
+  └── layout.tsx       # Root layout
+
+components/
+  ├── layout/          # Navigation and layout components
+  └── ui/              # Reusable UI components
+
+lib/
+  ├── actions/         # Server actions
+  ├── auth/            # Authentication utilities
+  ├── supabase/        # Supabase client configurations
+  ├── types/           # TypeScript type definitions
+  └── utils/           # Helper utilities
+
+database/
+  ├── schema.sql       # Database schema
+  └── rls-policies.sql # Row-level security policies
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔐 Authentication Flow
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. User registers/logs in via auth pages
+2. Session managed by Supabase Auth
+3. Onboarding flow for new organizations
+4. Dashboard redirect after authentication
+5. Automatic logout on auth session expiry
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🗄 Database Architecture
 
-## Learn More
+The database uses a multi-tenant model with Row-Level Security (RLS) to isolate data:
 
-To learn more about Next.js, take a look at the following resources:
+- Users connect to organizations via `organization_users` table
+- All data tables reference `organizations` for tenant isolation
+- RLS policies enforce user access to only their organization's data
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🧪 Development
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Build
+```bash
+npm run build
+```
 
-## Deploy on Vercel
+### Type Checking
+```bash
+npx tsc --noEmit
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📚 Documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Setup Instructions](./SETUP_INSTRUCTIONS.md)
+- [Developer Guide](./DEVELOPER_GUIDE.md)
+- [API Routes Documentation](./NEXT_STEPS.md)
+
+## 🚢 Deployment
+
+Deploy to Vercel:
+
+```bash
+vercel deploy
+```
+
+Or deploy to any Node.js hosting platform that supports Next.js.
+
+## 📝 License
+
+This project is proprietary software.
+
