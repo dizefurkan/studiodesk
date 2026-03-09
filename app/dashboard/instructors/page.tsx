@@ -1,76 +1,27 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Card, CardContent } from '@/components/ui/card'
+import { getInstructors } from '@/lib/actions/instructors.actions'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Plus, Edit2, Trash2, Search, UserCheck } from 'lucide-react'
-import { getInstructors, deleteInstructor } from '@/lib/actions/instructors.actions'
+import Link from 'next/link'
+import { Plus, Edit2, Trash2, UserCheck } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
 
 type Instructor = Database['public']['Tables']['instructors']['Row']
 
-export default function InstructorsPage() {
-  const router = useRouter()
-  const [instructors, setInstructors] = useState<Instructor[]>([])
-  const [filteredInstructors, setFilteredInstructors] = useState<Instructor[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+export default async function InstructorsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const params = await searchParams
+  const searchQuery = typeof params.q === 'string' ? params.q : undefined
 
-  useEffect(() => {
-    loadInstructors()
-  }, [])
-
-  async function loadInstructors() {
-    setIsLoading(true)
-    setError(null)
-    const result = await getInstructors()
-
-    if (result.error) {
-      setError(result.error)
-    } else if (result.data) {
-      setInstructors(result.data)
-      setFilteredInstructors(result.data)
-    }
-
-    setIsLoading(false)
-  }
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    if (!query.trim()) {
-      setFilteredInstructors(instructors)
-    } else {
-      const query_lower = query.toLowerCase()
-      const filtered = instructors.filter(
-        (instructor) =>
-          instructor.first_name?.toLowerCase().includes(query_lower) ||
-          instructor.last_name?.toLowerCase().includes(query_lower) ||
-          instructor.email?.toLowerCase().includes(query_lower)
-      )
-      setFilteredInstructors(filtered)
-    }
-  }
-
-  async function handleDelete(id: string) {
-    if (!confirm('Are you sure you want to delete this instructor?')) return
-
-    setDeletingId(id)
-    const result = await deleteInstructor(id)
-
-    if (result.error) {
-      setError(result.error)
-    } else {
-      setInstructors(instructors.filter((i) => i.id !== id))
-      setFilteredInstructors(filteredInstructors.filter((i) => i.id !== id))
-    }
-
-    setDeletingId(null)
-  }
+  const result = await getInstructors(searchQuery)
+  console.log('[InstructorsPage] Result from getInstructors:', result)
+  console.log('[InstructorsPage] Result.error:', result.error)
+  console.log('[InstructorsPage] Result.data:', result.data)
+  const instructors = result.data || []
+  console.log('[InstructorsPage] Instructors to render:', instructors)
+  console.log('[InstructorsPage] Instructors length:', instructors.length)
 
   return (
     <div className="space-y-6">
@@ -88,41 +39,10 @@ export default function InstructorsPage() {
         </Link>
       </div>
 
-      {/* Search */}
-      <Card className="border-[#E5E7EB]">
-        <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 text-[#9CA3AF]" size={18} />
-            <Input
-              type="search"
-              placeholder="Search by name or email..."
-              className="pl-10 bg-[#F9FAFB] border-[#E5E7EB]"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Error */}
-      {error && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="pt-6">
-            <p className="text-red-600">{error}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* List */}
-      {isLoading ? (
+      {/* Content */}
+      {instructors.length === 0 ? (
         <Card className="border-[#E5E7EB]">
-          <CardContent className="pt-6">
-            <p className="text-gray-500">Loading...</p>
-          </CardContent>
-        </Card>
-      ) : filteredInstructors.length === 0 ? (
-        <Card className="border-[#E5E7EB]">
-          <CardContent className="pt-12 text-center">
+          <div className="p-12 text-center">
             <UserCheck className="mx-auto text-[#9CA3AF] mb-4" size={48} />
             <h3 className="text-lg font-semibold text-[#111827] mb-1">No instructors yet</h3>
             <p className="text-gray-600 mb-6">Get started by adding your first instructor</p>
@@ -132,7 +52,7 @@ export default function InstructorsPage() {
                 Add Instructor
               </Button>
             </Link>
-          </CardContent>
+          </div>
         </Card>
       ) : (
         <Card className="border-[#E5E7EB] overflow-hidden">
@@ -148,7 +68,7 @@ export default function InstructorsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E7EB]">
-                {filteredInstructors.map((instructor) => (
+                {instructors.map((instructor) => (
                   <tr key={instructor.id} className="hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-6 py-4">
                       <Link
@@ -177,8 +97,7 @@ export default function InstructorsPage() {
                         variant="ghost"
                         size="sm"
                         className="text-red-600 hover:bg-red-50"
-                        onClick={() => handleDelete(instructor.id)}
-                        disabled={deletingId === instructor.id}
+                        title="Delete"
                       >
                         <Trash2 size={16} />
                       </Button>
@@ -188,9 +107,9 @@ export default function InstructorsPage() {
               </tbody>
             </table>
           </div>
-          <CardContent className="pt-4 text-sm text-gray-600">
-            Showing {filteredInstructors.length} of {instructors.length} instructors
-          </CardContent>
+          <div className="p-4 text-sm text-gray-600 border-t border-[#E5E7EB]">
+            Showing {instructors.length} instructors
+          </div>
         </Card>
       )}
     </div>

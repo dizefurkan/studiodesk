@@ -20,10 +20,10 @@ export default async function InstructorDetailPage({ params }: InstructorDetailP
     notFound()
   }
 
-  const instructor = result.data
+  const instructor = result.data!
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-8">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-8">
       <div className="max-w-2xl">
         <Link href="/dashboard/instructors" className="text-[#4F46E5] hover:underline mb-6 inline-block">
           ← Back to Instructors

@@ -38,8 +38,8 @@ export async function getSessionStudents(sessionId: string) {
     const supabase = await createServerSupabaseClient()
 
     // Get course from session
-    const { data: session, error: sessionError } = await supabase
-      .from('course_sessions')
+    const { data: session, error: sessionError } = await (supabase
+      .from('course_sessions') as any)
       .select('course_id')
       .eq('id', sessionId)
       .single()
@@ -49,8 +49,8 @@ export async function getSessionStudents(sessionId: string) {
     }
 
     // Get all students with active packages for this dance type
-    const { data: courseData, error: courseError } = await supabase
-      .from('courses')
+    const { data: courseData, error: courseError } = await (supabase
+      .from('courses') as any)
       .select('dance_type_id')
       .eq('id', session.course_id)
       .single()
@@ -90,8 +90,8 @@ export async function recordAttendance(sessionId: string, studentId: string, stu
     const supabase = await createServerSupabaseClient()
 
     // Record attendance
-    const { data, error } = await supabase
-      .from('attendances')
+    const { data, error } = await (supabase
+      .from('attendances') as any)
       .insert({
         session_id: sessionId,
         student_id: studentId,
@@ -106,15 +106,15 @@ export async function recordAttendance(sessionId: string, studentId: string, stu
     }
 
     // Deduct credit from student_package
-    const { data: pkg } = await supabase
-      .from('student_packages')
+    const { data: pkg } = await (supabase
+      .from('student_packages') as any)
       .select('remaining_credits')
       .eq('id', studentPackageId)
       .single()
 
     if (pkg && pkg.remaining_credits > 0) {
-      await supabase
-        .from('student_packages')
+      await (supabase
+        .from('student_packages') as any)
         .update({ remaining_credits: pkg.remaining_credits - 1 })
         .eq('id', studentPackageId)
     }
@@ -134,16 +134,16 @@ export async function removeAttendance(attendanceId: string, studentPackageId: s
     const supabase = await createServerSupabaseClient()
 
     // Get the current credit count
-    const { data: pkg } = await supabase
-      .from('student_packages')
+    const { data: pkg } = await (supabase
+      .from('student_packages') as any)
       .select('remaining_credits')
       .eq('id', studentPackageId)
       .single()
 
     // Restore credit
     if (pkg) {
-      await supabase
-        .from('student_packages')
+      await (supabase
+        .from('student_packages') as any)
         .update({ remaining_credits: pkg.remaining_credits + 1 })
         .eq('id', studentPackageId)
     }

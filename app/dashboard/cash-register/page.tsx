@@ -9,11 +9,12 @@ import { Plus, DollarSign, TrendingUp, TrendingDown } from 'lucide-react'
 export default async function CashRegisterPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const branchId = typeof searchParams.branch === 'string' ? searchParams.branch : undefined
-  const type = (typeof searchParams.type === 'string' ? searchParams.type : undefined) as 'income' | 'expense' | undefined
-  const dateStr = typeof searchParams.date === 'string' ? searchParams.date : new Date().toISOString().split('T')[0]
+  const params = await searchParams
+  const branchId = typeof params.branch === 'string' ? params.branch : undefined
+  const type = (typeof params.type === 'string' ? params.type : undefined) as 'income' | 'expense' | undefined
+  const dateStr = typeof params.date === 'string' ? params.date : new Date().toISOString().split('T')[0]
 
   const [transactionsResult, branchesResult, dailyReportResult] = await Promise.all([
     getTransactions(branchId, type),

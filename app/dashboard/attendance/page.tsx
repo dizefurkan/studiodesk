@@ -11,9 +11,10 @@ const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
 export default async function AttendancePage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const sessionId = typeof searchParams.session === 'string' ? searchParams.session : undefined
+  const params = await searchParams
+  const sessionId = typeof params.session === 'string' ? params.session : undefined
 
   let selectedSession = null
   let attendances = []

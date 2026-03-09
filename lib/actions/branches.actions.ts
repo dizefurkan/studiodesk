@@ -16,6 +16,17 @@ export async function getBranches(searchQuery?: string) {
 
   try {
     const supabase = await createServerSupabaseClient()
+    
+    // Test: Get ALL branches without organization filter
+    const { data: allData, error: allError } = await supabase
+      .from('branches')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    console.log('[getBranches] ALL branches (no filter):', allData?.length, allData)
+    console.log('[getBranches] ALL branches error:', allError)
+    
+    // Now get with organization filter
     let query = supabase
       .from('branches')
       .select('*')
@@ -28,11 +39,24 @@ export async function getBranches(searchQuery?: string) {
 
     const { data, error } = await query
 
+    console.log('[getBranches] User:', user.id)
+    console.log('[getBranches] Organization:', organization.id)
+    console.log('[getBranches] Search Query:', searchQuery)
+    console.log('[getBranches] Error:', error)
+    console.log('[getBranches] Data received:', data)
+    console.log('[getBranches] typeof data:', typeof data)
+    console.log('[getBranches] Array.isArray(data):', Array.isArray(data))
+    console.log('[getBranches] Object.keys(data):', Object.keys(data || {}))
+    console.log('[getBranches] Data JSON:', JSON.stringify(data))
+    console.log('[getBranches] Data length:', data?.length)
+    console.log('[getBranches] data[0]:', data?.[0])
+
     if (error) {
       console.error('Error fetching branches:', error)
       return { error: 'Failed to fetch branches' }
     }
 
+    console.log('[getBranches] Returning data:', data)
     return { data: data as Branch[] }
   } catch (error) {
     console.error('Unexpected error:', error)
@@ -90,7 +114,7 @@ export async function createBranch(input: CreateBranchInput) {
         name: input.name,
         address: input.address || null,
         phone: input.phone || null,
-      })
+      } as any)
       .select()
       .single()
 
@@ -138,9 +162,8 @@ export async function updateBranch(id: string, input: UpdateBranchInput) {
     if (input.address !== undefined) updateData.address = input.address
     if (input.phone !== undefined) updateData.phone = input.phone
 
-    const { data, error } = await supabase
-      .from('branches')
-      .update(updateData)
+    const { data, error } = await (supabase.from('branches') as any)
+      .update({ ...updateData })
       .eq('id', id)
       .eq('organization_id', organization.id)
       .select()

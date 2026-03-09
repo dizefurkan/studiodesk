@@ -82,8 +82,8 @@ export async function createDanceType(input: CreateDanceTypeInput) {
 
   try {
     const supabase = await createServerSupabaseClient()
-    const { data, error } = await supabase
-      .from('dance_types')
+    const { data, error } = await (supabase
+      .from('dance_types') as any)
       .insert({
         organization_id: organization.id,
         name: input.name,
@@ -134,13 +134,18 @@ export async function updateDanceType(id: string, input: UpdateDanceTypeInput) {
     if (input.name !== undefined) updateData.name = input.name
     if (input.description !== undefined) updateData.description = input.description
 
-    const { data, error } = await supabase
-      .from('dance_types')
+    console.log('[updateDanceType] Dance Type ID:', id)
+    console.log('[updateDanceType] Update data:', updateData)
+
+    const { data, error } = await (supabase.from('dance_types') as any)
       .update(updateData)
       .eq('id', id)
       .eq('organization_id', organization.id)
       .select()
       .single()
+
+    console.log('[updateDanceType] Error:', error)
+    console.log('[updateDanceType] Data:', data)
 
     if (error) {
       console.error('Error updating dance type:', error)

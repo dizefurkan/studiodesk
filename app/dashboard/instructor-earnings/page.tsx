@@ -6,11 +6,12 @@ import { TrendingUp, DollarSign } from 'lucide-react'
 export default async function InstructorEarningsPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const instructorId = typeof searchParams.instructor === 'string' ? searchParams.instructor : undefined
-  const fromDate = typeof searchParams.from === 'string' ? searchParams.from : undefined
-  const toDate = typeof searchParams.to === 'string' ? searchParams.to : undefined
+  const params = await searchParams
+  const instructorId = typeof params.instructor === 'string' ? params.instructor : undefined
+  const fromDate = typeof params.from === 'string' ? params.from : undefined
+  const toDate = typeof params.to === 'string' ? params.to : undefined
 
   const [earningsResult, instructorsResult] = await Promise.all([
     getInstructorEarnings(instructorId, fromDate, toDate),

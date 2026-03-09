@@ -7,7 +7,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 export default async function SettingsPage() {
   const organization = await getOrganization()
 
-  let teamMembers = []
+  let teamMembers: any[] = []
   if (organization) {
     const supabase = await createServerSupabaseClient()
     const { data } = await supabase

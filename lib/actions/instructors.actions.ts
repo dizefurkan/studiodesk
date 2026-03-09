@@ -16,6 +16,17 @@ export async function getInstructors(searchQuery?: string) {
 
   try {
     const supabase = await createServerSupabaseClient()
+    
+    // Test: Get ALL instructors without organization filter
+    const { data: allData, error: allError } = await supabase
+      .from('instructors')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    console.log('[getInstructors] ALL instructors (no filter):', allData?.length, allData)
+    console.log('[getInstructors] ALL instructors error:', allError)
+    
+    // Now get with organization filter
     let query = supabase
       .from('instructors')
       .select('*')
@@ -28,11 +39,24 @@ export async function getInstructors(searchQuery?: string) {
 
     const { data, error } = await query
 
+    console.log('[getInstructors] User:', user.id)
+    console.log('[getInstructors] Organization:', organization.id)
+    console.log('[getInstructors] Search Query:', searchQuery)
+    console.log('[getInstructors] Error:', error)
+    console.log('[getInstructors] Data received:', data)
+    console.log('[getInstructors] typeof data:', typeof data)
+    console.log('[getInstructors] Array.isArray(data):', Array.isArray(data))
+    console.log('[getInstructors] Object.keys(data):', Object.keys(data || {}))
+    console.log('[getInstructors] Data JSON:', JSON.stringify(data))
+    console.log('[getInstructors] Data length:', data?.length)
+    console.log('[getInstructors] data[0]:', data?.[0])
+
     if (error) {
       console.error('Error fetching instructors:', error)
       return { error: 'Failed to fetch instructors' }
     }
 
+    console.log('[getInstructors] Returning data:', data)
     return { data: data as Instructor[] }
   } catch (error) {
     console.error('Unexpected error:', error)
@@ -92,7 +116,7 @@ export async function createInstructor(input: CreateInstructorInput) {
         last_name: input.lastName,
         email: input.email,
         phone: input.phone || null,
-      })
+      } as any)
       .select()
       .single()
 
@@ -142,9 +166,8 @@ export async function updateInstructor(id: string, input: UpdateInstructorInput)
     if (input.email !== undefined) updateData.email = input.email
     if (input.phone !== undefined) updateData.phone = input.phone
 
-    const { data, error } = await supabase
-      .from('instructors')
-      .update(updateData)
+    const { data, error } = await (supabase.from('instructors') as any)
+      .update({ ...updateData })
       .eq('id', id)
       .eq('organization_id', organization.id)
       .select()

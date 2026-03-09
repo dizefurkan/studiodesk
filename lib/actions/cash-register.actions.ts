@@ -86,8 +86,8 @@ export async function createTransaction(input: CreateTransactionInput) {
       return { error: 'Invalid branch' }
     }
 
-    const { data, error } = await supabase
-      .from('cash_transactions')
+    const { data, error } = await (supabase
+      .from('cash_transactions') as any)
       .insert({
         branch_id: input.branchId,
         type: input.type,
@@ -140,8 +140,8 @@ export async function getDailyReport(branchId: string, date: string) {
     const startOfDay = `${date}T00:00:00`
     const endOfDay = `${date}T23:59:59`
 
-    const { data, error } = await supabase
-      .from('cash_transactions')
+    const { data, error } = await (supabase
+      .from('cash_transactions') as any)
       .select('*')
       .eq('branch_id', branchId)
       .gte('created_at', startOfDay)
@@ -152,13 +152,13 @@ export async function getDailyReport(branchId: string, date: string) {
       return { error: 'Failed to fetch report' }
     }
 
-    const transactions = data || []
+    const transactions = (data || []) as any[]
     const income = transactions
-      .filter((t) => t.type === 'income')
-      .reduce((sum, t) => sum + Number(t.amount), 0)
+      .filter((t: any) => t.type === 'income')
+      .reduce((sum: number, t: any) => sum + Number(t.amount), 0)
     const expenses = transactions
-      .filter((t) => t.type === 'expense')
-      .reduce((sum, t) => sum + Number(t.amount), 0)
+      .filter((t: any) => t.type === 'expense')
+      .reduce((sum: number, t: any) => sum + Number(t.amount), 0)
     const balance = income - expenses
 
     return {
@@ -189,8 +189,8 @@ export async function getMonthlyReport(branchId: string, year: number, month: nu
     const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0]
     const endDate = new Date(year, month, 0).toISOString().split('T')[0]
 
-    const { data, error } = await supabase
-      .from('cash_transactions')
+    const { data, error } = await (supabase
+      .from('cash_transactions') as any)
       .select('*')
       .eq('branch_id', branchId)
       .gte('created_at', startDate)
@@ -201,13 +201,13 @@ export async function getMonthlyReport(branchId: string, year: number, month: nu
       return { error: 'Failed to fetch report' }
     }
 
-    const transactions = data || []
+    const transactions = (data || []) as any[]
     const income = transactions
-      .filter((t) => t.type === 'income')
-      .reduce((sum, t) => sum + Number(t.amount), 0)
+      .filter((t: any) => t.type === 'income')
+      .reduce((sum: number, t: any) => sum + Number(t.amount), 0)
     const expenses = transactions
-      .filter((t) => t.type === 'expense')
-      .reduce((sum, t) => sum + Number(t.amount), 0)
+      .filter((t: any) => t.type === 'expense')
+      .reduce((sum: number, t: any) => sum + Number(t.amount), 0)
     const balance = income - expenses
 
     return {

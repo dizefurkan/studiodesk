@@ -276,6 +276,29 @@ WITH CHECK (
   )
 );
 
+CREATE POLICY "Managers can update courses"
+ON courses FOR UPDATE
+USING (
+  branch_id IN (
+    SELECT id FROM branches
+    WHERE organization_id IN (
+      SELECT organization_id FROM organization_users
+      WHERE user_id = auth.uid()
+      AND role IN ('owner', 'manager')
+    )
+  )
+)
+WITH CHECK (
+  branch_id IN (
+    SELECT id FROM branches
+    WHERE organization_id IN (
+      SELECT organization_id FROM organization_users
+      WHERE user_id = auth.uid()
+      AND role IN ('owner', 'manager')
+    )
+  )
+);
+
 -- ========================================
 -- COURSE_SESSIONS POLICIES
 -- ========================================
@@ -472,6 +495,38 @@ USING (
       SELECT id FROM branches
       WHERE organization_id IN (
         SELECT organization_id FROM organization_users WHERE user_id = auth.uid()
+      )
+    )
+  )
+);
+
+CREATE POLICY "Managers can insert course_instructors"
+ON course_instructors FOR INSERT
+WITH CHECK (
+  course_id IN (
+    SELECT id FROM courses
+    WHERE branch_id IN (
+      SELECT id FROM branches
+      WHERE organization_id IN (
+        SELECT organization_id FROM organization_users
+        WHERE user_id = auth.uid()
+        AND role IN ('owner', 'manager')
+      )
+    )
+  )
+);
+
+CREATE POLICY "Managers can delete course_instructors"
+ON course_instructors FOR DELETE
+USING (
+  course_id IN (
+    SELECT id FROM courses
+    WHERE branch_id IN (
+      SELECT id FROM branches
+      WHERE organization_id IN (
+        SELECT organization_id FROM organization_users
+        WHERE user_id = auth.uid()
+        AND role IN ('owner', 'manager')
       )
     )
   )

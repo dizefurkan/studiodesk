@@ -10,10 +10,11 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const monthStr = typeof searchParams.month === 'string' ? searchParams.month : new Date().toISOString().split('T')[0]
-  const yearStr = typeof searchParams.year === 'string' ? searchParams.year : String(new Date().getFullYear())
+  const params = await searchParams
+  const monthStr = typeof params.month === 'string' ? params.month : new Date().toISOString().split('T')[0]
+  const yearStr = typeof params.year === 'string' ? params.year : String(new Date().getFullYear())
 
   const coursesResult = await getCourses()
   const courses = coursesResult.data || []
@@ -107,7 +108,7 @@ export default async function CalendarPage({
                     .map((course: any) => (
                       <div
                         key={course.id}
-                        className="text-xs bg-[#4F46E5] bg-opacity-10 text-[#4F46E5] p-1 rounded mb-1 truncate"
+                        className="text-xs bg-[#4F46E5] bg-opacity-10 text-white p-1 rounded mb-1 truncate"
                         title={course.name}
                       >
                         {course.name}

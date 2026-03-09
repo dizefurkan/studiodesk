@@ -21,7 +21,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
     notFound()
   }
 
-  const course = result.data
+  const course = result.data!
 
   // Get next 12 weeks of sessions
   const today = new Date()
@@ -35,7 +35,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   const sessions = sessionsResult.data || []
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-8">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-8">
       <div className="max-w-4xl">
         <Link href="/dashboard/courses" className="text-[#4F46E5] hover:underline mb-6 inline-block">
           ← Back to Courses
@@ -80,7 +80,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
               <div className="mt-8 pt-8 border-t border-[#E5E7EB]">
                 <p className="text-sm text-gray-600 mb-4">Assigned Instructors</p>
                 <div className="flex gap-2 flex-wrap">
-                  {course.course_instructors.map((ci) => (
+                  {course.course_instructors.map((ci: any) => (
                     <div
                       key={ci.instructor_id}
                       className="bg-[#4F46E5] bg-opacity-10 text-[#4F46E5] px-3 py-1 rounded-full text-sm"

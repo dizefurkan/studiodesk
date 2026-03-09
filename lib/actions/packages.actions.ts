@@ -84,8 +84,8 @@ export async function createPackage(input: CreatePackageInput) {
 
   try {
     const supabase = await createServerSupabaseClient()
-    const { data, error } = await supabase
-      .from('packages')
+    const { data, error } = await (supabase
+      .from('packages') as any)
       .insert({
         organization_id: organization.id,
         name: input.name,
@@ -142,13 +142,18 @@ export async function updatePackage(id: string, input: UpdatePackageInput) {
     if (input.totalCredits !== undefined) updateData.total_credits = input.totalCredits
     if (input.price !== undefined) updateData.price = input.price
 
-    const { data, error } = await supabase
-      .from('packages')
+    console.log('[updatePackage] Package ID:', id)
+    console.log('[updatePackage] Update data:', updateData)
+
+    const { data, error } = await (supabase.from('packages') as any)
       .update(updateData)
       .eq('id', id)
       .eq('organization_id', organization.id)
       .select()
       .single()
+
+    console.log('[updatePackage] Error:', error)
+    console.log('[updatePackage] Data:', data)
 
     if (error) {
       console.error('Error updating package:', error)

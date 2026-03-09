@@ -34,8 +34,8 @@ export async function getCourses(branchId?: string, searchQuery?: string) {
 
   try {
     const supabase = await createServerSupabaseClient()
-    let query = supabase
-      .from('courses')
+    let query = (supabase
+      .from('courses') as any)
       .select('*, branches(name), dance_types(name)')
       .order('created_at', { ascending: false })
 
@@ -67,8 +67,8 @@ export async function getCourse(id: string) {
 
   try {
     const supabase = await createServerSupabaseClient()
-    const { data, error } = await supabase
-      .from('courses')
+    const { data, error } = await (supabase
+      .from('courses') as any)
       .select('*, branches(name), dance_types(name), course_instructors(instructor_id)')
       .eq('id', id)
       .single()
@@ -107,8 +107,8 @@ export async function createCourse(input: CreateCourseInput) {
       return { error: 'Invalid branch' }
     }
 
-    const { data: course, error: courseError } = await supabase
-      .from('courses')
+    const { data: course, error: courseError } = await (supabase
+      .from('courses') as any)
       .insert({
         branch_id: input.branchId,
         dance_type_id: input.danceTypeId,
@@ -133,7 +133,7 @@ export async function createCourse(input: CreateCourseInput) {
         instructor_id: instructorId,
       }))
 
-      await supabase.from('course_instructors').insert(instructorAssignments)
+      await (supabase.from('course_instructors') as any).insert(instructorAssignments)
     }
 
     return { success: true, data: course }
@@ -144,11 +144,48 @@ export async function createCourse(input: CreateCourseInput) {
 }
 
 export async function updateCourse(id: string, input: UpdateCourseInput) {
+  console.log('[updateCourse] STARTED - Course ID:', id)
+  
   const user = await getCurrentUser()
+  console.log('[updateCourse] User:', user?.id || 'NO USER')
   if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  console.log('[updateCourse] Organization:', organization?.id || 'NO ORG')
+  if (!organization) return { error: 'No organization found' }
 
   try {
     const supabase = await createServerSupabaseClient()
+    console.log('[updateCourse] Supabase client created')
+
+    // Verify course belongs to organization by checking its branch
+    const { data: course, error: courseError } = await (supabase.from('courses') as any)
+      .select('id, branch_id')
+      .eq('id', id)
+      .single()
+
+    console.log('[updateCourse] Course fetch - Error:', courseError, 'Data:', course?.id)
+    if (!course) {
+      return { error: 'Course not found' }
+    }
+
+    // Verify the branch belongs to the organization
+    const { data: branch, error: branchError } = await (supabase
+      .from('branches') as any)
+      .select('id')
+      .eq('id', course.branch_id)
+      .eq('organization_id', organization.id)
+      .single()
+
+    console.log('[updateCourse] Branch verification - Error:', branchError, 'Data:', branch?.id)
+    if (branchError) {
+      console.error('[updateCourse] Branch verification error:', branchError)
+      return { error: 'Course does not belong to your organization' }
+    }
+
+    if (!branch) {
+      return { error: 'Course does not belong to your organization' }
+    }
 
     const updateData: Record<string, any> = {}
     if (input.name !== undefined) updateData.name = input.name
@@ -157,16 +194,29 @@ export async function updateCourse(id: string, input: UpdateCourseInput) {
     if (input.endTime !== undefined) updateData.end_time = input.endTime
     if (input.capacity !== undefined) updateData.capacity = input.capacity
 
-    const { data, error } = await supabase.from('courses').update(updateData).eq('id', id).select().single()
+    console.log('[updateCourse] Update data:', updateData)
+    const { data, error } = await (supabase.from('courses') as any)
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .maybeSingle()
+
+    console.log('[updateCourse] Update result - Error:', error, 'Data:', data?.id)
 
     if (error) {
       console.error('Error updating course:', error)
       return { error: 'Failed to update course' }
     }
 
+    // If no data was returned, it means the update didn't affect any rows (likely RLS policy issue)
+    if (!data) {
+      console.error('[updateCourse] No rows updated - RLS policy may be blocking the update')
+      return { error: 'Failed to update course - permission denied' }
+    }
+
     // Update instructors if provided
     if (input.instructorIds) {
-      await supabase.from('course_instructors').delete().eq('course_id', id)
+      await (supabase.from('course_instructors') as any).delete().eq('course_id', id)
 
       const instructorAssignments = input.instructorIds.map((instructorId) => ({
         course_id: id,
@@ -174,7 +224,7 @@ export async function updateCourse(id: string, input: UpdateCourseInput) {
       }))
 
       if (instructorAssignments.length > 0) {
-        await supabase.from('course_instructors').insert(instructorAssignments)
+        await (supabase.from('course_instructors') as any).insert(instructorAssignments)
       }
     }
 
@@ -213,8 +263,8 @@ export async function generateCourseSessions(courseId: string, startDate: Date, 
     const supabase = await createServerSupabaseClient()
 
     // Get course with day of week
-    const { data: course, error: courseError } = await supabase
-      .from('courses')
+    const { data: course, error: courseError } = await (supabase
+      .from('courses') as any)
       .select('day_of_week')
       .eq('id', courseId)
       .single()
@@ -241,7 +291,7 @@ export async function generateCourseSessions(courseId: string, startDate: Date, 
       return { success: true, data: [] }
     }
 
-    const { data, error } = await supabase.from('course_sessions').insert(sessions).select()
+    const { data, error } = await (supabase.from('course_sessions') as any).insert(sessions).select()
 
     if (error) {
       console.error('Error generating sessions:', error)

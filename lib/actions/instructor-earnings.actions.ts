@@ -54,8 +54,8 @@ export async function getEarningsReport(instructorId: string, year: number, mont
     const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0]
     const endDate = new Date(year, month, 0).toISOString().split('T')[0]
 
-    const { data, error } = await supabase
-      .from('instructor_earnings')
+    const { data, error } = await (supabase
+      .from('instructor_earnings') as any)
       .select('*')
       .eq('instructor_id', instructorId)
       .gte('created_at', startDate)
@@ -66,7 +66,7 @@ export async function getEarningsReport(instructorId: string, year: number, mont
       return { error: 'Failed to fetch report' }
     }
 
-    const total = (data || []).reduce((sum, e) => sum + Number(e.amount), 0)
+    const total = ((data || []) as any[]).reduce((sum: number, e: any) => sum + Number(e.amount), 0)
     const count = data?.length || 0
 
     return {

@@ -18,6 +18,17 @@ export async function getStudents(searchQuery?: string) {
 
   try {
     const supabase = await createServerSupabaseClient()
+    
+    // Test: Get ALL students without organization filter
+    const { data: allData, error: allError } = await supabase
+      .from('students')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    console.log('[getStudents] ALL students (no filter):', allData?.length, allData)
+    console.log('[getStudents] ALL students error:', allError)
+    
+    // Now get with organization filter
     let query = supabase
       .from('students')
       .select('*')
@@ -30,11 +41,24 @@ export async function getStudents(searchQuery?: string) {
 
     const { data, error } = await query
 
+    console.log('[getStudents] User:', user.id)
+    console.log('[getStudents] Organization:', organization.id)
+    console.log('[getStudents] Search Query:', searchQuery)
+    console.log('[getStudents] Error:', error)
+    console.log('[getStudents] Data received:', data)
+    console.log('[getStudents] typeof data:', typeof data)
+    console.log('[getStudents] Array.isArray(data):', Array.isArray(data))
+    console.log('[getStudents] Object.keys(data):', Object.keys(data || {}))
+    console.log('[getStudents] Data JSON:', JSON.stringify(data))
+    console.log('[getStudents] Data length:', data?.length)
+    console.log('[getStudents] data[0]:', data?.[0])
+
     if (error) {
       console.error('Error fetching students:', error)
       return { error: 'Failed to fetch students' }
     }
 
+    console.log('[getStudents] Returning data:', data)
     return { data: data as Student[] }
   } catch (error) {
     console.error('Unexpected error:', error)
@@ -96,7 +120,7 @@ export async function createStudent(input: CreateStudentInput) {
         email: input.email,
         phone: input.phone || null,
         notes: input.notes || null,
-      })
+      } as any)
       .select()
       .single()
 
@@ -149,8 +173,7 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
     if (input.phone !== undefined) updateData.phone = input.phone
     if (input.notes !== undefined) updateData.notes = input.notes
 
-    const { data, error } = await supabase
-      .from('students')
+    const { data, error } = await (supabase.from('students') as any)
       .update(updateData)
       .eq('id', id)
       .eq('organization_id', organization.id)

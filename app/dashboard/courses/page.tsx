@@ -12,10 +12,11 @@ const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
 export default async function CoursesPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const branchId = typeof searchParams.branch === 'string' ? searchParams.branch : undefined
-  const searchQuery = typeof searchParams.q === 'string' ? searchParams.q : undefined
+  const params = await searchParams
+  const branchId = typeof params.branch === 'string' ? params.branch : undefined
+  const searchQuery = typeof params.q === 'string' ? params.q : undefined
 
   const [coursesResult, branchesResult] = await Promise.all([
     getCourses(branchId, searchQuery),

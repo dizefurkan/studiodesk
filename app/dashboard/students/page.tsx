@@ -1,76 +1,27 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { getStudents } from '@/lib/actions/students.actions'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Users, Plus, Edit2, Trash2, Search } from 'lucide-react'
-import { getStudents, deleteStudent } from '@/lib/actions/students.actions'
+import Link from 'next/link'
+import { Users, Plus, Edit2, Trash2 } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
 
 type Student = Database['public']['Tables']['students']['Row']
 
-export default function StudentsPage() {
-  const router = useRouter()
-  const [students, setStudents] = useState<Student[]>([])
-  const [filteredStudents, setFilteredStudents] = useState<Student[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+export default async function StudentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const params = await searchParams
+  const searchQuery = typeof params.q === 'string' ? params.q : undefined
 
-  useEffect(() => {
-    loadStudents()
-  }, [])
-
-  async function loadStudents() {
-    setIsLoading(true)
-    setError(null)
-    const result = await getStudents()
-
-    if (result.error) {
-      setError(result.error)
-    } else if (result.data) {
-      setStudents(result.data)
-      setFilteredStudents(result.data)
-    }
-
-    setIsLoading(false)
-  }
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    if (!query.trim()) {
-      setFilteredStudents(students)
-    } else {
-      const query_lower = query.toLowerCase()
-      const filtered = students.filter(
-        (student) =>
-          student.first_name?.toLowerCase().includes(query_lower) ||
-          student.last_name?.toLowerCase().includes(query_lower) ||
-          student.email?.toLowerCase().includes(query_lower)
-      )
-      setFilteredStudents(filtered)
-    }
-  }
-
-  async function handleDelete(id: string) {
-    if (!confirm('Are you sure you want to delete this student?')) return
-
-    setDeletingId(id)
-    const result = await deleteStudent(id)
-
-    if (result.error) {
-      setError(result.error)
-    } else {
-      setStudents(students.filter((s) => s.id !== id))
-      setFilteredStudents(filteredStudents.filter((s) => s.id !== id))
-    }
-
-    setDeletingId(null)
-  }
+  const result = await getStudents(searchQuery)
+  console.log('[StudentsPage] Result from getStudents:', result)
+  console.log('[StudentsPage] Result.error:', result.error)
+  console.log('[StudentsPage] Result.data:', result.data)
+  const students = result.data || []
+  console.log('[StudentsPage] Students to render:', students)
+  console.log('[StudentsPage] Students length:', students.length)
 
   return (
     <div className="space-y-6">
@@ -88,41 +39,10 @@ export default function StudentsPage() {
         </Link>
       </div>
 
-      {/* Search */}
-      <Card className="border-[#E5E7EB]">
-        <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 text-[#9CA3AF]" size={18} />
-            <Input
-              type="search"
-              placeholder="Search by name or email..."
-              className="pl-10 bg-[#F9FAFB] border-[#E5E7EB]"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Error Message */}
-      {error && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="pt-6">
-            <p className="text-red-600">{error}</p>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Content */}
-      {isLoading ? (
+      {students.length === 0 ? (
         <Card className="border-[#E5E7EB]">
-          <CardContent className="pt-6">
-            <p className="text-gray-500">Loading students...</p>
-          </CardContent>
-        </Card>
-      ) : filteredStudents.length === 0 ? (
-        <Card className="border-[#E5E7EB]">
-          <CardContent className="pt-12 text-center">
+          <div className="p-12 text-center">
             <Users className="mx-auto text-[#9CA3AF] mb-4" size={48} />
             <h3 className="text-lg font-semibold text-[#111827] mb-1">No students yet</h3>
             <p className="text-gray-600 mb-6">Get started by adding your first student</p>
@@ -132,7 +52,7 @@ export default function StudentsPage() {
                 Add First Student
               </Button>
             </Link>
-          </CardContent>
+          </div>
         </Card>
       ) : (
         <Card className="border-[#E5E7EB] overflow-hidden">
@@ -148,7 +68,7 @@ export default function StudentsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E7EB]">
-                {filteredStudents.map((student) => (
+                {students.map((student) => (
                   <tr key={student.id} className="hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-6 py-4">
                       <Link
@@ -177,8 +97,7 @@ export default function StudentsPage() {
                         variant="ghost"
                         size="sm"
                         className="text-red-600 hover:bg-red-50"
-                        onClick={() => handleDelete(student.id)}
-                        disabled={deletingId === student.id}
+                        title="Delete"
                       >
                         <Trash2 size={16} />
                       </Button>
@@ -188,9 +107,9 @@ export default function StudentsPage() {
               </tbody>
             </table>
           </div>
-          <CardContent className="pt-4 text-sm text-gray-600">
-            Showing {filteredStudents.length} of {students.length} students
-          </CardContent>
+          <div className="p-4 text-sm text-gray-600 border-t border-[#E5E7EB]">
+            Showing {students.length} students
+          </div>
         </Card>
       )}
     </div>

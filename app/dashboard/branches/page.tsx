@@ -1,75 +1,27 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Card, CardContent } from '@/components/ui/card'
+import { getBranches } from '@/lib/actions/branches.actions'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Plus, Edit2, Trash2, Search, MapPin } from 'lucide-react'
-import { getBranches, deleteBranch } from '@/lib/actions/branches.actions'
+import Link from 'next/link'
+import { MapPin, Plus, Edit2, Trash2 } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
 
 type Branch = Database['public']['Tables']['branches']['Row']
 
-export default function BranchesPage() {
-  const router = useRouter()
-  const [branches, setBranches] = useState<Branch[]>([])
-  const [filteredBranches, setFilteredBranches] = useState<Branch[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+export default async function BranchesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const params = await searchParams
+  const searchQuery = typeof params.q === 'string' ? params.q : undefined
 
-  useEffect(() => {
-    loadBranches()
-  }, [])
-
-  async function loadBranches() {
-    setIsLoading(true)
-    setError(null)
-    const result = await getBranches()
-
-    if (result.error) {
-      setError(result.error)
-    } else if (result.data) {
-      setBranches(result.data)
-      setFilteredBranches(result.data)
-    }
-
-    setIsLoading(false)
-  }
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    if (!query.trim()) {
-      setFilteredBranches(branches)
-    } else {
-      const query_lower = query.toLowerCase()
-      const filtered = branches.filter(
-        (branch) =>
-          branch.name?.toLowerCase().includes(query_lower) ||
-          branch.address?.toLowerCase().includes(query_lower)
-      )
-      setFilteredBranches(filtered)
-    }
-  }
-
-  async function handleDelete(id: string) {
-    if (!confirm('Are you sure you want to delete this branch?')) return
-
-    setDeletingId(id)
-    const result = await deleteBranch(id)
-
-    if (result.error) {
-      setError(result.error)
-    } else {
-      setBranches(branches.filter((b) => b.id !== id))
-      setFilteredBranches(filteredBranches.filter((b) => b.id !== id))
-    }
-
-    setDeletingId(null)
-  }
+  const result = await getBranches(searchQuery)
+  console.log('[BranchesPage] Result from getBranches:', result)
+  console.log('[BranchesPage] Result.error:', result.error)
+  console.log('[BranchesPage] Result.data:', result.data)
+  const branches = result.data || []
+  console.log('[BranchesPage] Branches to render:', branches)
+  console.log('[BranchesPage] Branches length:', branches.length)
 
   return (
     <div className="space-y-6">
@@ -77,7 +29,7 @@ export default function BranchesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#111827]">Branches</h1>
-          <p className="text-gray-600 mt-1">Manage your studio locations</p>
+          <p className="text-gray-600 mt-1">Manage your dance studio branches</p>
         </div>
         <Link href="/dashboard/branches/new">
           <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
@@ -87,41 +39,10 @@ export default function BranchesPage() {
         </Link>
       </div>
 
-      {/* Search */}
-      <Card className="border-[#E5E7EB]">
-        <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 text-[#9CA3AF]" size={18} />
-            <Input
-              type="search"
-              placeholder="Search by name or address..."
-              className="pl-10 bg-[#F9FAFB] border-[#E5E7EB]"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Error Message */}
-      {error && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="pt-6">
-            <p className="text-red-600">{error}</p>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Content */}
-      {isLoading ? (
+      {branches.length === 0 ? (
         <Card className="border-[#E5E7EB]">
-          <CardContent className="pt-6">
-            <p className="text-gray-500">Loading branches...</p>
-          </CardContent>
-        </Card>
-      ) : filteredBranches.length === 0 ? (
-        <Card className="border-[#E5E7EB]">
-          <CardContent className="pt-12 text-center">
+          <div className="p-12 text-center">
             <MapPin className="mx-auto text-[#9CA3AF] mb-4" size={48} />
             <h3 className="text-lg font-semibold text-[#111827] mb-1">No branches yet</h3>
             <p className="text-gray-600 mb-6">Get started by adding your first branch</p>
@@ -131,7 +52,7 @@ export default function BranchesPage() {
                 Add First Branch
               </Button>
             </Link>
-          </CardContent>
+          </div>
         </Card>
       ) : (
         <Card className="border-[#E5E7EB] overflow-hidden">
@@ -147,7 +68,7 @@ export default function BranchesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E7EB]">
-                {filteredBranches.map((branch) => (
+                {branches.map((branch) => (
                   <tr key={branch.id} className="hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-6 py-4">
                       <Link
@@ -176,8 +97,7 @@ export default function BranchesPage() {
                         variant="ghost"
                         size="sm"
                         className="text-red-600 hover:bg-red-50"
-                        onClick={() => handleDelete(branch.id)}
-                        disabled={deletingId === branch.id}
+                        title="Delete"
                       >
                         <Trash2 size={16} />
                       </Button>
@@ -187,9 +107,9 @@ export default function BranchesPage() {
               </tbody>
             </table>
           </div>
-          <CardContent className="pt-4 text-sm text-gray-600">
-            Showing {filteredBranches.length} of {branches.length} branches
-          </CardContent>
+          <div className="p-4 text-sm text-gray-600 border-t border-[#E5E7EB]">
+            Showing {branches.length} branches
+          </div>
         </Card>
       )}
     </div>

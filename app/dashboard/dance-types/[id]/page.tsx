@@ -19,10 +19,10 @@ export default async function DanceTypeDetailPage({ params }: DanceTypeDetailPag
     notFound()
   }
 
-  const danceType = result.data
+  const danceType = result.data!
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-8">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-8">
       <div className="max-w-2xl">
         <Link href="/dashboard/dance-types" className="text-[#4F46E5] hover:underline mb-6 inline-block">
           ← Back to Dance Types
