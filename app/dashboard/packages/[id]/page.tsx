@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Gift, edit } from 'lucide-react'
+import { Gift, Edit2 } from 'lucide-react'
 
 interface PackageDetailPageProps {
   params: {
@@ -37,7 +37,7 @@ export default async function PackageDetailPage({ params }: PackageDetailPagePro
               </div>
               <Link href={`/dashboard/packages/${pkg.id}/edit`}>
                 <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
-                  <edit size={18} />
+                  <Edit2 size={18} />
                   Edit
                 </Button>
               </Link>

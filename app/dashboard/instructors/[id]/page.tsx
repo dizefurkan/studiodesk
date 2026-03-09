@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { trash2, edit } from 'lucide-react'
+import { Edit2 } from 'lucide-react'
 import { User, Mail, Phone } from 'lucide-react'
 
 interface InstructorDetailPageProps {
@@ -41,7 +41,7 @@ export default async function InstructorDetailPage({ params }: InstructorDetailP
               <div className="flex gap-2">
                 <Link href={`/dashboard/instructors/${instructor.id}/edit`}>
                   <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
-                    <edit size={18} />
+                    <Edit2 size={18} />
                     Edit
                   </Button>
                 </Link>

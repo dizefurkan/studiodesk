@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { BookOpen, edit } from 'lucide-react'
+import { BookOpen, Edit2 } from 'lucide-react'
 
 interface DanceTypeDetailPageProps {
   params: {
@@ -37,7 +37,7 @@ export default async function DanceTypeDetailPage({ params }: DanceTypeDetailPag
               </div>
               <Link href={`/dashboard/dance-types/${danceType.id}/edit`}>
                 <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
-                  <edit size={18} />
+                  <Edit2 size={18} />
                   Edit
                 </Button>
               </Link>

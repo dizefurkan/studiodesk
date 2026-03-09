@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Clock, Users, edit, BookOpen } from 'lucide-react'
+import { Clock, Users, Edit2, BookOpen } from 'lucide-react'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -52,7 +52,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
               </div>
               <Link href={`/dashboard/courses/${course.id}/edit`}>
                 <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
-                  <edit size={18} />
+                  <Edit2 size={18} />
                   Edit
                 </Button>
               </Link>

@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { deleteCourse } from '@/lib/actions/courses.actions'
 
 interface DeleteCourseButtonProps {
@@ -29,7 +29,7 @@ export function DeleteCourseButton({ courseId }: DeleteCourseButtonProps) {
       title="Delete"
       onClick={handleDelete}
     >
-      <trash2 size={16} />
+      <Trash2 size={16} />
     </Button>
   )
 }
