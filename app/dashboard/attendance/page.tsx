@@ -1,7 +1,8 @@
-import { getCourseSessions } from '@/lib/actions/courses.actions'
+import { getCourses } from '@/lib/actions/courses.actions'
 import { getSessionAttendances } from '@/lib/actions/attendance.actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { RemoveAttendanceButton } from '@/components/attendance/RemoveAttendanceButton'
 import Link from 'next/link'
 import { Calendar, Users, CheckCircle } from 'lucide-react'
 
@@ -22,17 +23,12 @@ export default async function AttendancePage({
     const result = await getSessionAttendances(sessionId)
     attendances = result.data || []
   } else {
-    // Show upcoming sessions
+    // Show upcoming courses with their sessions
     const today = new Date()
     const in4Weeks = new Date(today.getTime() + 4 * 7 * 24 * 60 * 60 * 1000)
 
-    const sessionsResult = await getCourseSessions(
-      '',
-      today.toISOString().split('T')[0],
-      in4Weeks.toISOString().split('T')[0],
-    )
-
-    const sessions = sessionsResult.data || []
+    const coursesResult = await getCourses()
+    const courses = coursesResult.data || []
 
     return (
       <div className="space-y-6">
@@ -41,26 +37,26 @@ export default async function AttendancePage({
           <p className="text-gray-600 mt-1">Mark student attendance and manage class sessions</p>
         </div>
 
-        {sessions.length === 0 ? (
+        {courses.length === 0 ? (
           <Card className="border-[#E5E7EB] p-12 text-center">
             <div className="text-gray-500">
               <Calendar size={48} className="mx-auto mb-4 opacity-50" />
-              <p className="text-lg">No upcoming sessions</p>
+              <p className="text-lg">No courses found</p>
               <p className="text-sm mt-1">Create courses and schedule sessions to start tracking attendance</p>
             </div>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
-            {sessions.map((session) => (
-              <Card key={session.id} className="border-[#E5E7EB] p-6 hover:shadow-lg transition-shadow">
+          <div className="space-y-4">
+            {courses.map((course: any) => (
+              <Card key={course.id} className="border-[#E5E7EB] p-4">
                 <div className="flex justify-between items-center">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-[#111827]">{session.session_date}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{DAYS[new Date(session.session_date).getDay()]}</p>
+                  <div>
+                    <h3 className="font-semibold text-[#111827]">{course.name}</h3>
+                    <p className="text-sm text-gray-600">{course.branches?.name}</p>
                   </div>
-                  <Link href={`/dashboard/attendance?session=${session.id}`}>
+                  <Link href={`/dashboard/courses/${course.id}`}>
                     <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
-                      Mark Attendance
+                      View Sessions
                     </Button>
                   </Link>
                 </div>
@@ -116,18 +112,7 @@ export default async function AttendancePage({
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-red-200 text-red-600 hover:bg-red-50"
-                  onClick={() => {
-                    if (confirm('Remove this attendance record?')) {
-                      // Remove attendance
-                    }
-                  }}
-                >
-                  Remove
-                </Button>
+                <RemoveAttendanceButton attendanceId={record.id} />
               </div>
             </Card>
           ))}

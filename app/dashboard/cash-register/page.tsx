@@ -2,14 +2,9 @@ import { getTransactions, getDailyReport } from '@/lib/actions/cash-register.act
 import { getBranches } from '@/lib/actions/branches.actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { DeleteTransactionButton } from '@/components/cash-register/DeleteTransactionButton'
 import Link from 'next/link'
-import { Plus, Trash2, DollarSign, TrendingUp, TrendingDown } from 'lucide-react'
-
-async function deleteTransaction(transactionId: string) {
-  'use server'
-  const { deleteTransaction } = await import('@/lib/actions/cash-register.actions')
-  await deleteTransaction(transactionId)
-}
+import { Plus, DollarSign, TrendingUp, TrendingDown } from 'lucide-react'
 
 export default async function CashRegisterPage({
   searchParams,
@@ -171,19 +166,7 @@ export default async function CashRegisterPage({
                   >
                     {transaction.type === 'income' ? '+' : '-'}${transaction.amount}
                   </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-red-200 text-red-600 hover:bg-red-50"
-                    onClick={async () => {
-                      if (confirm('Delete this transaction?')) {
-                        await deleteTransaction(transaction.id)
-                        window.location.reload()
-                      }
-                    }}
-                  >
-                    <Trash2 size={16} />
-                  </Button>
+                  <DeleteTransactionButton transactionId={transaction.id} />
                 </div>
               </div>
             </Card>
