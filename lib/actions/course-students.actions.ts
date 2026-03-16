@@ -19,15 +19,17 @@ export async function getAvailableStudentsForCourse(courseId: string, danceTypeI
     const adminSupabase = createAdminClient()
 
     // Get all students with active packages for this dance type
+    // Join: student_packages -> packages -> dance_type
     const { data: studentsWithPackages, error: packagesError } = await (adminSupabase
       .from('student_packages') as any)
-      .select('student_id, students(id, first_name, last_name)')
+      .select('student_id, students(id, first_name, last_name), packages(dance_type_id)')
       .eq('students.organization_id', organization.id)
-      .eq('students.packages.dance_type_id', danceTypeId)
+      .eq('packages.dance_type_id', danceTypeId)
       .gt('remaining_credits', 0)
 
     if (packagesError) {
       console.error('Error fetching students with packages:', packagesError)
+      return { error: 'Failed to fetch available students' }
     }
 
     // Get students already enrolled in this course
