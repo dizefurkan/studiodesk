@@ -227,3 +227,65 @@ export async function getMonthlyReport(branchId: string, year: number, month: nu
     return { error: 'An unexpected error occurred' }
   }
 }
+
+export async function getInstructorEarningsByBranch(branchId?: string, fromDate?: string, toDate?: string) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
+  try {
+    const supabase = await createServerSupabaseClient()
+
+    // Get earnings for instructors
+    let query = (supabase
+      .from('instructor_earnings') as any)
+      .select(`
+        id,
+        instructor_id,
+        session_id,
+        amount,
+        created_at,
+        instructors(first_name, last_name),
+        course_sessions(id, course_id, courses(id, branch_id, name, branches(id, name)))
+      `)
+      .order('created_at', { ascending: false })
+
+    // Convert date strings to ISO format with time boundaries
+    if (fromDate) {
+      const startOfDay = `${fromDate}T00:00:00`
+      query = query.gte('created_at', startOfDay)
+    }
+
+    if (toDate) {
+      const endOfDay = `${toDate}T23:59:59`
+      query = query.lte('created_at', endOfDay)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Error fetching earnings:', error)
+      return { error: 'Failed to fetch earnings' }
+    }
+
+    // Filter by branch if specified
+    let filtered = (data || []) as any[]
+    if (branchId) {
+      filtered = filtered.filter((earning: any) => earning.course_sessions?.courses?.branch_id === branchId)
+    }
+
+    console.log('[getInstructorEarningsByBranch] Fetched:', { 
+      total: data?.length, 
+      filtered: filtered.length, 
+      branchId,
+      dates: { fromDate, toDate }
+    })
+
+    return { data: filtered }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
