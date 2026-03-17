@@ -458,8 +458,8 @@ export async function recordBatchAttendance(
               .eq('session_id', actualSessionId)
               .single()
 
-            // Only record if not already recorded
-            if (!existingEarning && amount > 0) {
+            // Only record if not already recorded (amount can be 0 if rate not set yet)
+            if (!existingEarning) {
               const { error: earningsError } = await (supabase
                 .from('instructor_earnings') as any)
                 .insert({

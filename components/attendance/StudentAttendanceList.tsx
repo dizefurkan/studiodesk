@@ -194,9 +194,10 @@ export function StudentAttendanceList({
         }
         setSuccessMessage(message)
         setAttendanceState([])
+        // Force hard page refresh to reload today's attendance from database
         setTimeout(() => {
-          router.refresh()
-        }, 1000)
+          window.location.reload()
+        }, 1500)
       }
     } catch (err) {
       console.error('[StudentAttendanceList] Unexpected error:', err)

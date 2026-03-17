@@ -2,6 +2,7 @@ import { getInstructorEarnings } from '@/lib/actions/instructor-earnings.actions
 import { getInstructors } from '@/lib/actions/instructors.actions'
 import { Card } from '@/components/ui/card'
 import { InstructorEarningsFilters } from '@/components/instructor-earnings/EarningsFilters'
+import { EarningsEditButton } from '@/components/instructor-earnings/EarningsEditButton'
 import { TrendingUp, DollarSign } from 'lucide-react'
 
 export default async function InstructorEarningsPage({
@@ -74,13 +75,19 @@ export default async function InstructorEarningsPage({
           {earnings.map((earning: any) => (
             <Card key={earning.id} className="border-[#E5E7EB] p-4">
               <div className="flex justify-between items-center">
-                <div>
+                <div className="flex-1">
                   <p className="font-medium text-[#111827]">
                     {earning.instructors?.first_name} {earning.instructors?.last_name} - Session Payment
                   </p>
                   <p className="text-sm text-gray-600">{new Date(earning.created_at).toLocaleDateString()}</p>
                 </div>
-                <p className="text-lg font-bold text-green-600">${earning.amount}</p>
+                <div className="flex items-center gap-4">
+                  <p className="text-lg font-bold text-green-600">${earning.amount}</p>
+                  <EarningsEditButton 
+                    earningsId={earning.id}
+                    currentAmount={Number(earning.amount)}
+                  />
+                </div>
               </div>
             </Card>
           ))}

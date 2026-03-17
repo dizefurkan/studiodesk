@@ -18,6 +18,7 @@ export default async function AttendancePage({
   const params = await searchParams
   const sessionId = typeof params.session === 'string' ? params.session : undefined
   const courseId = typeof params.course === 'string' ? params.course : undefined
+  const newSession = params.newSession === 'true'
 
   let selectedSession = null
   let attendances = []
@@ -197,9 +198,11 @@ export default async function AttendancePage({
       .single()
 
     let existingAttendances: any[] = []
-    const sessionIdToUse = existingSessionData?.id || uuidv4()
+    // Use fresh session ID if starting new session, otherwise use existing or create new
+    const sessionIdToUse = newSession ? uuidv4() : (existingSessionData?.id || uuidv4())
 
-    if (existingSessionData?.id) {
+    // Only load existing attendance if NOT starting a new session
+    if (existingSessionData?.id && !newSession) {
       const { data: attendancesData } = await supabase
         .from('attendances')
         .select('*, students(first_name, last_name), student_packages(remaining_credits)')
@@ -265,6 +268,18 @@ export default async function AttendancePage({
                     </Link>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {existingAttendances.length > 0 && (
+              <div className="border-t border-green-200 pt-4">
+                <p className="text-sm font-medium text-[#111827] mb-3">✓ Attendance already recorded for today</p>
+                <a
+                  href={`?course=${courseId}&newSession=true`}
+                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Start New Session
+                </a>
               </div>
             )}
           </div>

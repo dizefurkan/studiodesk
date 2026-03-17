@@ -124,3 +124,128 @@ export async function getEarningsReport(instructorId: string, year: number, mont
     return { error: 'An unexpected error occurred' }
   }
 }
+
+export async function updateInstructorEarnings(earningsId: string, amount: number) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
+  try {
+    const supabase = await createServerSupabaseClient()
+
+    // Verify the earning belongs to an instructor in the user's organization
+    const { data: earning, error: fetchError } = await (supabase
+      .from('instructor_earnings') as any)
+      .select('*, instructors(organization_id)')
+      .eq('id', earningsId)
+      .single()
+
+    console.log('[updateInstructorEarnings] Fetched earning:', { earning, fetchError, userId: user.id })
+
+    if (fetchError || !earning || earning.instructors?.organization_id !== organization.id) {
+      console.error('[updateInstructorEarnings] Access denied or not found', { fetchError, organization: organization.id })
+      return { error: 'Earning not found or access denied' }
+    }
+
+    // Use admin client to bypass RLS (we've already verified organization access above)
+    const adminSupabase = createAdminClient()
+    
+    // Update the amount
+    console.log('[updateInstructorEarnings] Attempting update:', { earningsId, newAmount: amount, oldAmount: earning.amount })
+    const { error: updateError, count } = await (adminSupabase
+      .from('instructor_earnings') as any)
+      .update({ amount })
+      .eq('id', earningsId)
+
+    console.log('[updateInstructorEarnings] Update response:', { updateError, count })
+
+    if (updateError) {
+      console.error('Error updating earnings:', updateError)
+      return { error: `Failed to update earnings: ${updateError.message || updateError}` }
+    }
+
+    // Verify the update was successful by fetching the record again
+    const { data: updatedEarning, error: verifyError } = await (adminSupabase
+      .from('instructor_earnings') as any)
+      .select('amount')
+      .eq('id', earningsId)
+      .single()
+
+    console.log('[updateInstructorEarnings] Verification:', { updatedEarning, verifyError })
+
+    if (updatedEarning?.amount !== amount) {
+      console.error('[updateInstructorEarnings] Verification failed - amount not updated', { expected: amount, actual: updatedEarning?.amount })
+      return { error: 'Update verification failed - data may not have been saved' }
+    }
+
+    return { success: true, message: 'Earnings updated successfully', data: updatedEarning }
+  } catch (error) {
+    console.error('Unexpected error in updateInstructorEarnings:', error)
+    return { error: `An unexpected error occurred: ${(error as any).message}` }
+  }
+}
+
+export async function deleteInstructorEarnings(earningsId: string) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
+  try {
+    const supabase = await createServerSupabaseClient()
+
+    // Verify the earning belongs to an instructor in the user's organization
+    const { data: earning, error: fetchError } = await (supabase
+      .from('instructor_earnings') as any)
+      .select('*, instructors(organization_id)')
+      .eq('id', earningsId)
+      .single()
+
+    console.log('[deleteInstructorEarnings] Fetched earning:', { earning, fetchError, userId: user.id })
+
+    if (fetchError || !earning || earning.instructors?.organization_id !== organization.id) {
+      console.error('[deleteInstructorEarnings] Access denied or not found', { fetchError, organization: organization.id })
+      return { error: 'Earning not found or access denied' }
+    }
+
+    // Delete the earning
+    console.log('[deleteInstructorEarnings] Attempting delete:', { earningsId })
+    
+    // Use admin client to bypass RLS (we've already verified organization access above)
+    const adminSupabase = createAdminClient()
+    
+    const { error: deleteError, count } = await (adminSupabase
+      .from('instructor_earnings') as any)
+      .delete()
+      .eq('id', earningsId)
+
+    console.log('[deleteInstructorEarnings] Delete response:', { deleteError, count })
+
+    if (deleteError) {
+      console.error('Error deleting earnings:', deleteError)
+      return { error: `Failed to delete earnings: ${deleteError.message || deleteError}` }
+    }
+
+    // Verify the deletion was successful
+    const { data: verifyData, error: verifyError } = await (adminSupabase
+      .from('instructor_earnings') as any)
+      .select('id')
+      .eq('id', earningsId)
+      .single()
+
+    console.log('[deleteInstructorEarnings] Verification:', { verifyData, verifyError })
+
+    if (verifyData) {
+      console.error('[deleteInstructorEarnings] Verification failed - record still exists')
+      return { error: 'Delete verification failed - record may still exist' }
+    }
+
+    return { success: true, message: 'Earnings deleted successfully' }
+  } catch (error) {
+    console.error('Unexpected error in deleteInstructorEarnings:', error)
+    return { error: `An unexpected error occurred: ${(error as any).message}` }
+  }
+}

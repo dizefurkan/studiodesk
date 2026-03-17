@@ -426,6 +426,40 @@ WITH CHECK (
   )
 );
 
+CREATE POLICY "Staff can update student_packages"
+ON student_packages FOR UPDATE
+USING (
+  student_id IN (
+    SELECT id FROM students
+    WHERE organization_id IN (
+      SELECT organization_id FROM organization_users WHERE user_id = auth.uid()
+    )
+  )
+)
+WITH CHECK (
+  student_id IN (
+    SELECT id FROM students
+    WHERE organization_id IN (
+      SELECT organization_id FROM organization_users
+      WHERE user_id = auth.uid()
+      AND role IN ('owner', 'manager', 'instructor', 'staff')
+    )
+  )
+);
+
+CREATE POLICY "Staff can delete student_packages"
+ON student_packages FOR DELETE
+USING (
+  student_id IN (
+    SELECT id FROM students
+    WHERE organization_id IN (
+      SELECT organization_id FROM organization_users
+      WHERE user_id = auth.uid()
+      AND role IN ('owner', 'manager', 'instructor', 'staff')
+    )
+  )
+);
+
 -- ========================================
 -- ATTENDANCES POLICIES
 -- ========================================
@@ -475,6 +509,83 @@ USING (
     SELECT id FROM instructors
     WHERE organization_id IN (
       SELECT organization_id FROM organization_users WHERE user_id = auth.uid()
+    )
+  )
+);
+
+CREATE POLICY "Users can create instructor_earnings"
+ON instructor_earnings FOR INSERT
+WITH CHECK (
+  instructor_id IN (
+    SELECT id FROM instructors
+    WHERE organization_id IN (
+      SELECT organization_id FROM organization_users WHERE user_id = auth.uid()
+    )
+  )
+  AND
+  session_id IN (
+    SELECT id FROM course_sessions
+    WHERE course_id IN (
+      SELECT id FROM courses
+      WHERE branch_id IN (
+        SELECT id FROM branches
+        WHERE organization_id IN (
+          SELECT organization_id FROM organization_users
+          WHERE user_id = auth.uid()
+          AND role IN ('owner', 'manager', 'instructor')
+        )
+      )
+    )
+  )
+);
+
+CREATE POLICY "Users can update instructor_earnings"
+ON instructor_earnings FOR UPDATE
+USING (
+  session_id IN (
+    SELECT id FROM course_sessions
+    WHERE course_id IN (
+      SELECT id FROM courses
+      WHERE branch_id IN (
+        SELECT id FROM branches
+        WHERE organization_id IN (
+          SELECT organization_id FROM organization_users
+          WHERE user_id = auth.uid()
+        )
+      )
+    )
+  )
+)
+WITH CHECK (
+  session_id IN (
+    SELECT id FROM course_sessions
+    WHERE course_id IN (
+      SELECT id FROM courses
+      WHERE branch_id IN (
+        SELECT id FROM branches
+        WHERE organization_id IN (
+          SELECT organization_id FROM organization_users
+          WHERE user_id = auth.uid()
+        )
+      )
+    )
+  )
+);
+
+CREATE POLICY "Users can delete instructor_earnings"
+ON instructor_earnings FOR DELETE
+USING (
+  session_id IN (
+    SELECT id FROM course_sessions
+    WHERE course_id IN (
+      SELECT id FROM courses
+      WHERE branch_id IN (
+        SELECT id FROM branches
+        WHERE organization_id IN (
+          SELECT organization_id FROM organization_users
+          WHERE user_id = auth.uid()
+        )
+      )
     )
   )
 );
