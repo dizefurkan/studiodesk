@@ -44,8 +44,8 @@ export function CurrencySettings({ organizationId, currentCurrency }: CurrencySe
   return (
     <Card className="border-[#E5E7EB] p-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="bg-[#4F46E5] bg-opacity-10 p-3 rounded-lg">
-          <DollarSign className="text-[#4F46E5]" size={24} />
+        <div className="bg-[#4F46E5] p-3 rounded-lg">
+          <DollarSign className="text-white" size={24} />
         </div>
         <div>
           <h2 className="text-2xl font-bold text-[#111827]">Currency Settings</h2>
@@ -72,7 +72,7 @@ export function CurrencySettings({ organizationId, currentCurrency }: CurrencySe
             onClick={() => setSelectedCurrency(currency.code)}
             className={`p-4 rounded-lg border-2 transition-all text-left ${
               selectedCurrency === currency.code
-                ? 'border-[#4F46E5] bg-[#4F46E5] bg-opacity-5'
+                ? 'border-[#4F46E5]'
                 : 'border-[#E5E7EB] hover:border-[#4F46E5]'
             }`}
           >

@@ -30,8 +30,8 @@ export default async function SettingsPage() {
       <Card className="border-[#E5E7EB] p-6">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
-            <div className="bg-[#4F46E5] bg-opacity-10 p-4 rounded-lg">
-              <Building className="text-[#4F46E5]" size={24} />
+            <div className="bg-[#4F46E5] p-4 rounded-lg">
+              <Building className="text-white" size={24} />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-[#111827]">{organization?.name}</h2>
@@ -45,7 +45,9 @@ export default async function SettingsPage() {
       {/* Team Management */}
       <Card className="border-[#E5E7EB] p-6">
         <div className="flex items-center gap-3 mb-6">
-          <Users className="text-[#4F46E5]" size={24} />
+          <div className="bg-[#4F46E5] p-3 rounded-lg">
+            <Users className="text-white" size={24} />
+          </div>
           <div>
             <h2 className="text-2xl font-bold text-[#111827]">Team Members</h2>
             <p className="text-sm text-gray-600">{teamMembers.length} member(s)</p>
@@ -75,7 +77,9 @@ export default async function SettingsPage() {
       {/* Security & Privacy */}
       <Card className="border-[#E5E7EB] p-6">
         <div className="flex items-center gap-3 mb-6">
-          <Lock className="text-[#4F46E5]" size={24} />
+          <div className="bg-[#4F46E5] p-3 rounded-lg">
+            <Lock className="text-white" size={24} />
+          </div>
           <h2 className="text-2xl font-bold text-[#111827]">Security</h2>
         </div>
 
@@ -105,7 +109,9 @@ export default async function SettingsPage() {
       {/* Notifications */}
       <Card className="border-[#E5E7EB] p-6">
         <div className="flex items-center gap-3 mb-6">
-          <Bell className="text-[#4F46E5]" size={24} />
+          <div className="bg-[#4F46E5] p-3 rounded-lg">
+            <Bell className="text-white" size={24} />
+          </div>
           <h2 className="text-2xl font-bold text-[#111827]">Notifications</h2>
         </div>
 
