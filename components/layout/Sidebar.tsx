@@ -40,6 +40,11 @@ const menuItems = [
     href: '/dashboard/instructors',
   },
   {
+    label: 'Instructor Rates',
+    icon: DollarSign,
+    href: '/dashboard/instructor-rates',
+  },
+  {
     label: 'Branches',
     icon: MapPin,
     href: '/dashboard/branches',
@@ -114,7 +119,7 @@ export function Sidebar() {
       >
         {/* Logo Section */}
         <div className="h-16 border-b border-[#E5E7EB] flex items-center px-6 gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#4F46E5] flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#4F46E5] flex items-center justify-center shrink-0">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
             </svg>
@@ -143,7 +148,7 @@ export function Sidebar() {
                 )}
                 onClick={() => setIsOpen(false)}
               >
-                <Icon size={20} className="flex-shrink-0" />
+                <Icon size={20} className="shrink-0" />
                 <span>{item.label}</span>
               </Link>
             )

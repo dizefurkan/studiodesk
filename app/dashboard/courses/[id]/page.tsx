@@ -1,10 +1,11 @@
 import { getCourse, getCourseSessions } from '@/lib/actions/courses.actions'
+import { getCourseAttendanceHistory } from '@/lib/actions/course-attendance.actions'
 import { CourseStudentsSection } from '@/components/courses/CourseStudentsSection'
 import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Clock, Users, Edit2, BookOpen } from 'lucide-react'
+import { Clock, Users, Edit2, BookOpen, CheckCircle } from 'lucide-react'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -24,16 +25,9 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
 
   const course = result.data!
 
-  // Get next 12 weeks of sessions
-  const today = new Date()
-  const in12Weeks = new Date(today.getTime() + 12 * 7 * 24 * 60 * 60 * 1000)
-  const sessionsResult = await getCourseSessions(
-    course.id,
-    today.toISOString().split('T')[0],
-    in12Weeks.toISOString().split('T')[0],
-  )
-
-  const sessions = sessionsResult.data || []
+  // Get attendance history
+  const historyResult = await getCourseAttendanceHistory(course.id)
+  const attendanceHistory = historyResult.data || []
 
   return (
     <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-8">
@@ -51,28 +45,28 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                   {course.branches?.name} • {course.dance_types?.name}
                 </p>
               </div>
-              <Link href={`/dashboard/courses/${course.id}/edit`}>
-                <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
-                  <Edit2 size={18} />
-                  Edit
-                </Button>
-              </Link>
+              <div className="flex gap-2">
+                <Link href={`/dashboard/attendance?course=${course.id}`}>
+                  <Button className="bg-green-600 hover:bg-green-700 text-white gap-2">
+                    <CheckCircle size={18} />
+                    Mark Attendance
+                  </Button>
+                </Link>
+                <Link href={`/dashboard/courses/${course.id}/edit`}>
+                  <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
+                    <Edit2 size={18} />
+                    Edit
+                  </Button>
+                </Link>
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 border-t border-[#E5E7EB] pt-8">
+            <div className="grid grid-cols-1 gap-6 border-t border-[#E5E7EB] pt-8">
               <div>
                 <p className="text-sm text-gray-600 mb-2">Schedule</p>
                 <div className="flex items-center gap-2 text-lg font-medium text-[#111827]">
                   <Clock size={20} className="text-[#4F46E5]" />
                   {DAYS[course.day_of_week]} {course.start_time} - {course.end_time}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-600 mb-2">Class Capacity</p>
-                <div className="flex items-center gap-2 text-lg font-medium text-[#111827]">
-                  <Users size={20} className="text-[#4F46E5]" />
-                  {course.capacity} students max
                 </div>
               </div>
             </div>
@@ -81,55 +75,77 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
               <div className="mt-8 pt-8 border-t border-[#E5E7EB]">
                 <p className="text-sm text-gray-600 mb-4">Assigned Instructors</p>
                 <div className="flex gap-2 flex-wrap">
-                  {course.course_instructors.map((ci: any) => (
-                    <div
-                      key={ci.instructor_id}
-                      className="bg-[#4F46E5] bg-opacity-10 text-[#4F46E5] px-3 py-1 rounded-full text-sm"
-                    >
-                      {ci.instructor_id}
-                    </div>
-                  ))}
+                  {course.course_instructors.map((ci: any) => {
+                    const instructor = ci.instructors
+                    const instructorName = instructor 
+                      ? `${instructor.first_name} ${instructor.last_name}`
+                      : ci.instructor_id
+                    
+                    return (
+                      <a
+                        key={ci.instructor_id}
+                        href={`/dashboard/instructors/${ci.instructor_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-[#4F46E5] text-white px-4 py-2 rounded-full text-sm hover:bg-[#4338CA] transition-colors cursor-pointer font-medium"
+                      >
+                        {instructorName}
+                      </a>
+                    )
+                  })}
                 </div>
               </div>
             )}
           </div>
         </Card>
 
-        {/* Sessions */}
+        {/* Attendance History */}
         <div className="mt-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-[#111827]">Upcoming Sessions (12 weeks)</h2>
-            <Link href={`/dashboard/courses/${course.id}/sessions`}>
-              <Button variant="outline" className="border-[#E5E7EB]">
-                Manage Sessions
-              </Button>
-            </Link>
-          </div>
+          <h2 className="text-2xl font-bold text-[#111827] mb-4">Attendance History</h2>
 
-          {sessions.length === 0 ? (
+        {attendanceHistory.length === 0 ? (
             <Card className="border-[#E5E7EB] p-12 text-center">
               <div className="text-gray-500">
                 <BookOpen size={48} className="mx-auto mb-4 opacity-50" />
-                <p className="text-lg">No sessions scheduled</p>
-                <p className="text-sm mt-1">Sessions will be auto-generated on the schedule day</p>
+                <p className="text-lg">No attendance records yet</p>
+                <p className="text-sm mt-1">Start marking attendance to build history</p>
               </div>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 gap-3">
-              {sessions.map((session) => (
-                <Card key={session.id} className="border-[#E5E7EB] p-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium text-[#111827]">{session.session_date}</p>
-                      <p className="text-sm text-gray-600">{DAYS[new Date(session.session_date).getDay()]}</p>
+            <div className="space-y-2">
+              {attendanceHistory.map((record: any) => (
+                <details key={record.id} className="border border-[#E5E7EB] rounded-lg hover:border-[#4F46E5] transition-colors group">
+                  <summary className="p-4 cursor-pointer hover:bg-gray-50 transition-colors flex justify-between items-center">
+                    <div className="flex-1">
+                      <p className="font-medium text-[#111827]">{record.session_date}</p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {record.attendance_count} student{record.attendance_count !== 1 ? 's' : ''} attended
+                        {record.attendances?.length > 0 && record.attendances[0]?.studios?.name && 
+                          ` • Studio: ${record.attendances[0].studios.name}`}
+                      </p>
                     </div>
-                    <Link href={`/dashboard/attendance?session=${session.id}`}>
-                      <Button size="sm" className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
-                        Attendance
-                      </Button>
-                    </Link>
+                    <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full ml-4">
+                      {record.attendance_count}/{record.attendance_count}
+                    </span>
+                  </summary>
+                  <div className="px-4 pb-4 border-t border-[#E5E7EB] pt-4 bg-gray-50">
+                    <p className="text-sm font-semibold text-[#111827] mb-3">Attendees:</p>
+                    <div className="space-y-2">
+                      {record.attendances && record.attendances.length > 0 ? (
+                        record.attendances.map((att: any, idx: number) => (
+                          <div key={idx} className="flex items-center gap-2 text-sm">
+                            <span className="text-green-600 font-bold">✓</span>
+                            <Link href={`/dashboard/students/${att.students.id}`} className="text-[#4F46E5] hover:underline font-medium">
+                              {att.students.first_name} {att.students.last_name}
+                            </Link>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500">No attendance records</p>
+                      )}
+                    </div>
                   </div>
-                </Card>
+                </details>
               ))}
             </div>
           )}

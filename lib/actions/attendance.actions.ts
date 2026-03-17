@@ -85,14 +85,13 @@ export async function getSessionStudents(sessionId: string) {
       return { error: 'Failed to fetch students' }
     }
 
-    // Extract students with active packages for this dance type (including those with 0 credits)
+    // Extract students with their packages for this dance type (including those with 0 credits or no matching packages)
     const filteredStudents = (courseStudents || [])
       .map((cs: any) => ({
         ...cs.students,
         student_packages: (cs.students.student_packages || [])
           .filter((sp: any) => sp.package?.dance_type_id === courseData.dance_type_id),
       }))
-      .filter((student: any) => student.student_packages.length > 0)
 
     return { data: filteredStudents }
   } catch (error) {
@@ -105,7 +104,7 @@ export async function getSessionStudents(sessionId: string) {
   }
 }
 
-export async function recordAttendance(sessionId: string, studentId: string, studentPackageId: string) {
+export async function recordAttendance(sessionId: string, studentId: string, studentPackageId: string, studioId?: string | null) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -119,6 +118,7 @@ export async function recordAttendance(sessionId: string, studentId: string, stu
         session_id: sessionId,
         student_id: studentId,
         student_package_id: studentPackageId,
+        studio_id: studioId || null,
       })
       .select()
       .single()
@@ -245,6 +245,7 @@ export async function removeAttendance(attendanceId: string, studentPackageId: s
 }
 
 export async function recordBatchAttendance(
+  courseId: string,
   sessionId: string,
   attendanceData: Array<{
     studentId: string
@@ -252,12 +253,77 @@ export async function recordBatchAttendance(
     status: 'geldi' | 'gelmedi' | 'none'
     notes?: string
   }>,
+  studioId?: string | null,
+  instructorIds?: string[] | null,
+  attendanceDate?: string,
 ) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
   try {
     const supabase = await createServerSupabaseClient()
+
+    // ✨ NEW: Ensure session exists (create on-demand if needed)
+    // Check if a session already exists for this course on the specified date
+    const checkDate = attendanceDate || new Date().toISOString().split('T')[0]
+    console.log('[recordBatchAttendance] Checking for session:', { courseId, checkDate })
+    
+    const { data: existingSession } = await (supabase
+      .from('course_sessions') as any)
+      .select('id')
+      .eq('course_id', courseId)
+      .eq('session_date', checkDate)
+      .single()
+
+    let actualSessionId = sessionId
+    
+    if (!existingSession) {
+      console.log('[recordBatchAttendance] Session not found, creating on-demand for course:', courseId)
+      const today = attendanceDate || new Date().toISOString().split('T')[0]
+      
+      // Use admin client to bypass RLS for session creation
+      const { createAdminClient } = await import('@/lib/supabase/admin')
+      const adminClient = createAdminClient()
+      
+      const { data: createdSession, error: createError } = await (adminClient
+        .from('course_sessions') as any)
+        .insert({ 
+          course_id: courseId,
+          session_date: today 
+        })
+        .select()
+        .single()
+
+      if (createError) {
+        console.error('[recordBatchAttendance] Failed to create session:', createError)
+        return { error: 'Failed to create session for attendance' }
+      }
+      
+      actualSessionId = createdSession?.id
+      console.log('[recordBatchAttendance] Session created successfully:', actualSessionId)
+
+      // If instructor(s) are specified, insert into session_instructors table
+      if (instructorIds && instructorIds.length > 0) {
+        const sessionInstructorRecords = instructorIds.map(id => ({
+          session_id: actualSessionId,
+          instructor_id: id
+        }))
+        
+        const { error: siError } = await (supabase
+          .from('session_instructors') as any)
+          .insert(sessionInstructorRecords)
+        
+        if (siError) {
+          console.error('[recordBatchAttendance] Failed to insert session instructors:', siError)
+        } else {
+          console.log('[recordBatchAttendance] Session instructors inserted:', { actualSessionId, count: instructorIds.length })
+        }
+      }
+    } else {
+      // Session already exists for this course on this date
+      actualSessionId = existingSession.id
+      console.log('[recordBatchAttendance] Session already exists:', actualSessionId)
+    }
 
     // Filter to only "geldi" records to process
     const geldiBatch = attendanceData.filter((a) => a.status === 'geldi')
@@ -266,13 +332,22 @@ export async function recordBatchAttendance(
       return { success: true, data: { recordedCount: 0, skippedCount: attendanceData.length } }
     }
 
+    // Validate that all records have studentPackageId
+    const invalidRecords = geldiBatch.filter((a) => !a.studentPackageId)
+    if (invalidRecords.length > 0) {
+      console.error('Invalid records - missing studentPackageId:', invalidRecords)
+      return { error: 'Some students are missing package data. Please refresh and try again.' }
+    }
+
     // Batch insert all attendance records
     const attendanceRecords = geldiBatch.map((a) => ({
-      session_id: sessionId,
+      session_id: actualSessionId,
       student_id: a.studentId,
       student_package_id: a.studentPackageId,
+      studio_id: studioId || null,
     }))
 
+    console.log('[recordBatchAttendance] Inserting attendance records:', attendanceRecords, 'with studio:', studioId || 'none')
     const { error: insertError } = await (supabase.from('attendances') as any).insert(attendanceRecords)
 
     if (insertError && (insertError as any)?.code !== '23505') {
@@ -282,6 +357,9 @@ export async function recordBatchAttendance(
     }
 
     // Batch update credits for each student package
+    console.log(`[recordBatchAttendance] Deducting credits for ${geldiBatch.length} students`)
+    const creditDeductionResults = []
+    
     for (const record of geldiBatch) {
       const { data: pkg } = await (supabase
         .from('student_packages') as any)
@@ -290,28 +368,62 @@ export async function recordBatchAttendance(
         .single()
 
       if (pkg && pkg.remaining_credits > 0) {
-        await (supabase
+        const { error: updateError } = await (supabase
           .from('student_packages') as any)
           .update({ remaining_credits: pkg.remaining_credits - 1 })
           .eq('id', record.studentPackageId)
+        
+        if (!updateError) {
+          creditDeductionResults.push({
+            studentId: record.studentId,
+            packageId: record.studentPackageId,
+            previousCredits: pkg.remaining_credits,
+            newCredits: pkg.remaining_credits - 1,
+            status: 'success'
+          })
+          console.log(`[recordBatchAttendance] Credits deducted: ${record.studentId} (${pkg.remaining_credits} → ${pkg.remaining_credits - 1})`)
+        } else {
+          console.error(`[recordBatchAttendance] Failed to deduct credits for ${record.studentId}:`, updateError)
+        }
+      } else {
+        console.warn(`[recordBatchAttendance] No credits to deduct for ${record.studentId} or invalid package`)
       }
     }
+    console.log(`[recordBatchAttendance] Credit deduction complete:`, creditDeductionResults)
 
     // Get session and course info for instructor earnings
+    console.log(`[recordBatchAttendance] Creating instructor earnings for session: ${actualSessionId}`)
     const { data: sessionData } = await (supabase
       .from('course_sessions') as any)
       .select('course_id')
-      .eq('id', sessionId)
+      .eq('id', actualSessionId)
       .single()
 
     if (sessionData) {
-      // Get instructors for this course
-      const { data: courseInstructors } = await (supabase
-        .from('course_instructors') as any)
+      // First check if session_instructors table has a specific instructor for this session
+      const { data: sessionInstructors } = await (supabase
+        .from('session_instructors') as any)
         .select('instructor_id')
-        .eq('course_id', sessionData.course_id)
+        .eq('session_id', actualSessionId)
 
-      if (courseInstructors && courseInstructors.length > 0) {
+      let instructorsToProcess: any[] = []
+      
+      if (sessionInstructors && sessionInstructors.length > 0) {
+        // Use specific instructor(s) from session_instructors
+        instructorsToProcess = sessionInstructors
+        console.log(`[recordBatchAttendance] Found ${instructorsToProcess.length} specific instructor(s) for this session`)
+      } else {
+        // Fall back to course instructors if no session-specific instructor set
+        const { data: courseInstructors } = await (supabase
+          .from('course_instructors') as any)
+          .select('instructor_id')
+          .eq('course_id', sessionData.course_id)
+        
+        instructorsToProcess = courseInstructors || []
+        console.log(`[recordBatchAttendance] No session-specific instructor; using ${instructorsToProcess.length} course instructor(s)`)
+      }
+
+      if (instructorsToProcess && instructorsToProcess.length > 0) {
         // Get course details for rate calculation
         const { data: courseData } = await (supabase
           .from('courses') as any)
@@ -320,8 +432,10 @@ export async function recordBatchAttendance(
           .single()
 
         if (courseData) {
+          const earningsCreated = []
+          
           // Calculate earnings for each instructor (only once per session)
-          for (const ci of courseInstructors) {
+          for (const ci of instructorsToProcess) {
             const { data: rateData } = await (supabase
               .from('instructor_rates') as any)
               .select('price_per_class')
@@ -337,20 +451,36 @@ export async function recordBatchAttendance(
               .from('instructor_earnings') as any)
               .select('id')
               .eq('instructor_id', ci.instructor_id)
-              .eq('session_id', sessionId)
+              .eq('session_id', actualSessionId)
               .single()
 
             // Only record if not already recorded
             if (!existingEarning && amount > 0) {
-              await (supabase
+              const { error: earningsError } = await (supabase
                 .from('instructor_earnings') as any)
                 .insert({
                   instructor_id: ci.instructor_id,
-                  session_id: sessionId,
+                  session_id: actualSessionId,
                   amount,
                 })
+              
+              if (!earningsError) {
+                earningsCreated.push({
+                  instructor_id: ci.instructor_id,
+                  amount,
+                  status: 'created'
+                })
+                console.log(`[recordBatchAttendance] Instructor earnings created: ${ci.instructor_id} - ₺${amount}`)
+              } else {
+                console.error(`[recordBatchAttendance] Failed to create earnings for ${ci.instructor_id}:`, earningsError)
+              }
+            } else if (existingEarning) {
+              console.log(`[recordBatchAttendance] Earnings already exist for ${ci.instructor_id}, skipping`)
+            } else {
+              console.warn(`[recordBatchAttendance] No rate found for instructor ${ci.instructor_id}`)
             }
           }
+          console.log(`[recordBatchAttendance] Earnings creation complete:`, earningsCreated)
         }
       }
     }

@@ -31,11 +31,22 @@ interface AttendanceRecord {
   }
 }
 
+interface Studio {
+  id: string
+  name: string
+  capacity?: number
+}
+
 interface StudentAttendanceListProps {
   sessionId: string
+  courseId: string
   availableStudents: StudentForAttendance[]
   recordedAttendances: AttendanceRecord[]
   loading?: boolean
+  studios?: Studio[]
+  instructors?: Array<{ id: string; first_name: string; last_name: string }>
+  selectedDate?: string
+  onDateChange?: (date: string) => void
 }
 
 type AttendanceStatus = 'geldi' | 'gelmedi' | 'none'
@@ -49,15 +60,25 @@ interface AttendanceState {
 
 export function StudentAttendanceList({
   sessionId,
+  courseId,
   availableStudents,
   recordedAttendances,
   loading,
+  studios = [],
+  instructors = [],
+  selectedDate: propSelectedDate,
+  onDateChange,
 }: StudentAttendanceListProps) {
   const router = useRouter()
   const [attendanceState, setAttendanceState] = useState<AttendanceState[]>([])
   const [savingBatch, setSavingBatch] = useState(false)
   const [error, setError] = useState<string>('')
   const [successMessage, setSuccessMessage] = useState<string>('')
+  const [selectedStudioId, setSelectedStudioId] = useState<string | null>(null)
+  const [selectedInstructorIds, setSelectedInstructorIds] = useState<string[]>([])
+  const [selectedDate, setSelectedDate] = useState<string>(
+    propSelectedDate || new Date().toISOString().split('T')[0]
+  )
 
   // Create a map of recorded attendances for quick lookup
   const recordedMap = useMemo(
@@ -83,17 +104,23 @@ export function StudentAttendanceList({
   )
 
   const handleStatusChange = (studentId: string, newStatus: AttendanceStatus) => {
+    console.log(`[StudentAttendanceList] handleStatusChange: ${studentId} -> ${newStatus}`)
     setAttendanceState((prev) => {
       const existing = prev.find((a) => a.studentId === studentId)
-      if (existing) {
-        if (newStatus === existing.status) {
-          // Toggle off
-          return prev.filter((a) => a.studentId !== studentId)
-        } else {
-          return prev.map((a) => (a.studentId === studentId ? { ...a, status: newStatus } : a))
-        }
+      if (existing && existing.status === newStatus) {
+        // Already selected - do nothing (keep it selected)
+        console.log(`[StudentAttendanceList] Already ${newStatus}, keeping`)
+        return prev
+      } else if (existing) {
+        // Change status
+        const newState = prev.map((a) => (a.studentId === studentId ? { ...a, status: newStatus } : a))
+        console.log(`[StudentAttendanceList] Updated state:`, newState)
+        return newState
       } else {
-        return [...prev, { studentId, status: newStatus, notes: '' }]
+        // Add new status
+        const newState = [...prev, { studentId, status: newStatus, notes: '' }]
+        console.log(`[StudentAttendanceList] Added new state:`, newState)
+        return newState
       }
     })
     setError('')
@@ -111,22 +138,27 @@ export function StudentAttendanceList({
   }
 
   const handleSaveAttendance = async () => {
+    console.log('[StudentAttendanceList] Save button clicked, attendanceState:', attendanceState)
     setError('')
     setSuccessMessage('')
 
     const geldiRecords = attendanceState.filter((a) => a.status === 'geldi')
+    console.log('[StudentAttendanceList] Geldi records:', geldiRecords)
 
     if (geldiRecords.length === 0) {
+      console.log('[StudentAttendanceList] No geldi records to save')
       setError('Please mark at least one student as "Geldi" to save')
       return
     }
 
     setSavingBatch(true)
+    console.log('[StudentAttendanceList] Starting batch save...')
 
     try {
       const batchData = geldiRecords.map((record) => {
         const student = availableStudents.find((s) => s.id === record.studentId)
         const studentPackageId = student?.student_packages?.[0]?.id || ''
+        console.log(`[StudentAttendanceList] Preparing batch for ${record.studentId}, packageId: ${studentPackageId}`)
 
         return {
           studentId: record.studentId,
@@ -136,11 +168,15 @@ export function StudentAttendanceList({
         }
       })
 
-      const result = await recordBatchAttendance(sessionId, batchData)
+      console.log('[StudentAttendanceList] Calling recordBatchAttendance with:', { courseId, sessionId, batchData, studioId: selectedStudioId, instructorIds: selectedInstructorIds, date: selectedDate })
+      const result = await recordBatchAttendance(courseId, sessionId, batchData, selectedStudioId, selectedInstructorIds, selectedDate)
+      console.log('[StudentAttendanceList] recordBatchAttendance result:', result)
 
       if (result.error) {
+        console.log('[StudentAttendanceList] Error from recordBatchAttendance:', result.error)
         setError(result.error)
       } else if (result.success) {
+        console.log('[StudentAttendanceList] Success! Recorded:', result.data.recordedCount)
         setSuccessMessage(
           `✅ Attendance saved! ${result.data.recordedCount} students marked present.`,
         )
@@ -150,8 +186,8 @@ export function StudentAttendanceList({
         }, 1000)
       }
     } catch (err) {
+      console.error('[StudentAttendanceList] Unexpected error:', err)
       setError('Failed to save attendance')
-      console.error(err)
     } finally {
       setSavingBatch(false)
     }
@@ -180,6 +216,15 @@ export function StudentAttendanceList({
   
   // Count how many are marked Geldi in current state
   const pendingGeldi = attendanceState.filter((a) => a.status === 'geldi').length
+  
+  // Debug render
+  console.log('[StudentAttendanceList] Render state:', {
+    studentsWithCredits: studentsWithCredits.length,
+    pendingGeldi,
+    attendanceState,
+    availableStudents: availableStudents.length,
+    recordedAttendances: recordedAttendances.length,
+  })
 
   return (
     <div className="space-y-6">
@@ -216,39 +261,97 @@ export function StudentAttendanceList({
         </div>
       )}
 
-      {/* Students with Credits Section */}
+      {/* Students with Credits Section - Table Format */}
       {studentsWithCredits.length > 0 && (
-        <div>
-          <h3 className="text-lg font-semibold text-[#111827] mb-4">Mark Attendance ({studentsWithCredits.length})</h3>
-          <div className="space-y-3">
-            {studentsWithCredits.map((student) => {
-              const creditsCount = student.student_packages?.[0]?.remaining_credits ?? 0
-              const currentState = attendanceState.find((a) => a.studentId === student.id)
-              const recordedAttendance = recordedMap.get(student.id)
-              const isMarked = !!recordedAttendance
+        <div className="space-y-4">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-semibold text-[#111827]">Mark Attendance ({studentsWithCredits.length} students)</h3>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-2">
+                Date
+              </label>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => {
+                  setSelectedDate(e.target.value)
+                  onDateChange?.(e.target.value)
+                }}
+                className="border border-[#D1D5DB] rounded px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+              />
+            </div>
+          </div>
+          <div className="overflow-x-auto border border-[#E5E7EB] rounded-lg">
+            <table className="w-full border-collapse">
+            <thead className="bg-gray-50 sticky top-0 border-b border-[#E5E7EB]">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Student Name</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Credits</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Notes</th>
+                <th className="px-4 py-3 text-right text-sm font-semibold text-[#111827]">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E5E7EB]">
+              {studentsWithCredits.map((student) => {
+                const creditsCount = student.student_packages?.[0]?.remaining_credits ?? 0
+                const currentState = attendanceState.find((a) => a.studentId === student.id)
+                const recordedAttendance = recordedMap.get(student.id)
+                const isMarked = !!recordedAttendance
 
-              return (
-                <Card
-                  key={student.id}
-                  className={`border p-4 transition-colors ${
-                    isMarked ? 'border-green-300 bg-green-50' : 'border-[#E5E7EB] hover:border-[#4F46E5]'
-                  }`}
-                >
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-[#111827]">
-                            {student.first_name} {student.last_name}
-                          </p>
-                          {isMarked && <span className="text-xs font-semibold text-green-700">✓ Marked</span>}
-                        </div>
-                        <div className="flex gap-2 mt-1">
-                          <span className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                            {creditsCount} credits
-                          </span>
-                        </div>
+                return (
+                  <tr
+                    key={student.id}
+                    className={`hover:bg-gray-50 transition-colors ${
+                      isMarked ? 'bg-green-50' : ''
+                    }`}
+                  >
+                    <td className="px-4 py-3 text-sm font-medium text-[#111827]">
+                      {student.first_name} {student.last_name}
+                      {isMarked && <span className="ml-2 text-xs font-semibold text-green-700">✓</span>}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      <span className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                        {creditsCount}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleStatusChange(student.id, 'geldi')}
+                          className={`px-3 py-1 rounded-lg font-medium text-xs transition-colors ${
+                            currentState?.status === 'geldi' || (isMarked && !currentState)
+                              ? 'bg-green-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-green-100'
+                          }`}
+                        >
+                          ✓ Geldi
+                        </button>
+                        <button
+                          onClick={() => handleStatusChange(student.id, 'gelmedi')}
+                          className={`px-3 py-1 rounded-lg font-medium text-xs transition-colors ${
+                            currentState?.status === 'gelmedi'
+                              ? 'bg-red-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-red-100'
+                          }`}
+                        >
+                          ✗ Gelmedi
+                        </button>
                       </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {(currentState?.status === 'geldi' || currentState?.status === 'gelmedi') && (
+                        <Input
+                          placeholder="Note"
+                          value={currentState?.notes || ''}
+                          onChange={(e) => handleNotesChange(student.id, e.target.value)}
+                          className="text-xs py-1 px-2"
+                        />
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm">
                       {isMarked && (
                         <Button
                           variant="ghost"
@@ -256,48 +359,15 @@ export function StudentAttendanceList({
                           onClick={() => handleRemoveAttendance(recordedAttendance.id, recordedAttendance.student_package_id)}
                           className="text-red-600 hover:bg-red-100"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={14} />
                         </Button>
                       )}
-                    </div>
-
-                    {/* Status Buttons */}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleStatusChange(student.id, 'geldi')}
-                        className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
-                          currentState?.status === 'geldi' || (isMarked && !currentState)
-                            ? 'bg-green-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-green-100'
-                        }`}
-                      >
-                        ✓ Geldi
-                      </button>
-                      <button
-                        onClick={() => handleStatusChange(student.id, 'gelmedi')}
-                        className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
-                          currentState?.status === 'gelmedi'
-                            ? 'bg-red-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-red-100'
-                        }`}
-                      >
-                        ✗ Gelmedi
-                      </button>
-                    </div>
-
-                    {/* Notes Input */}
-                    {(currentState?.status === 'geldi' || currentState?.status === 'gelmedi') && (
-                      <Input
-                        placeholder="Not (optional)"
-                        value={currentState?.notes || ''}
-                        onChange={(e) => handleNotesChange(student.id, e.target.value)}
-                        className="text-sm"
-                      />
-                    )}
-                  </div>
-                </Card>
-              )
-            })}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
           </div>
         </div>
       )}
@@ -332,13 +402,71 @@ export function StudentAttendanceList({
         </Card>
       )}
 
-      {/* Save Button */}
+      {/* Studio Selection, Instructor Selection & Save Button */}
       {studentsWithCredits.length > 0 && pendingGeldi > 0 && (
-        <div className="flex gap-2">
+        <div className="space-y-4">
+          {/* Selections Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {studios && studios.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-[#374151] mb-2">
+                  Studio (Optional)
+                </label>
+                <select
+                  value={selectedStudioId || ''}
+                  onChange={(e) => setSelectedStudioId(e.target.value || null)}
+                  className="w-full border border-[#D1D5DB] rounded px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+                >
+                  <option value="">No specific studio</option>
+                  {studios.map((studio: any) => (
+                    <option key={studio.id} value={studio.id}>
+                      {studio.name} {studio.capacity ? `(${studio.capacity})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {instructors && instructors.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-[#374151] mb-2">
+                  Instructors (Optional)
+                </label>
+                <div className="space-y-2 border border-[#D1D5DB] rounded px-3 py-2">
+                  {instructors.map((instructor) => (
+                    <label key={instructor.id} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedInstructorIds.includes(instructor.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedInstructorIds([...selectedInstructorIds, instructor.id])
+                          } else {
+                            setSelectedInstructorIds(selectedInstructorIds.filter(id => id !== instructor.id))
+                          }
+                        }}
+                        className="w-4 h-4 text-[#4F46E5] rounded focus:ring-2 focus:ring-[#4F46E5]"
+                      />
+                      <span className="text-sm text-[#111827]">
+                        {instructor.first_name} {instructor.last_name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {selectedInstructorIds.length > 0 
+                    ? `${selectedInstructorIds.length} instructor${selectedInstructorIds.length !== 1 ? 's' : ''} selected`
+                    : 'Leave unchecked to use course instructors'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Save Button */}
           <Button
             onClick={handleSaveAttendance}
             disabled={savingBatch}
-            className="flex-1 bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 py-2.5"
+            className="w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 py-2.5"
             size="lg"
           >
             <Save size={18} />

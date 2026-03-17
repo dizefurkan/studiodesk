@@ -2,7 +2,7 @@ import { getCourses, generateCourseSessions, getCourseSessions } from '@/lib/act
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Calendar, Clock, Users } from 'lucide-react'
+import { Calendar, Clock, Users, CheckCircle } from 'lucide-react'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -123,7 +123,7 @@ export default async function CalendarPage({
           {calendarDays.map((day, idx) => (
             <div
               key={idx}
-              className={`p-4 rounded-lg border-2 min-h-[120px] ${
+              className={`p-4 rounded-lg border-2 min-h-30 ${
                 day === null
                   ? 'bg-gray-50 border-gray-100'
                   : 'border-[#E5E7EB] bg-white hover:border-[#4F46E5] hover:bg-blue-50 transition-all'
@@ -177,12 +177,14 @@ export default async function CalendarPage({
                         <Clock size={14} />
                         {DAYS[course.day_of_week]} {course.start_time}
                       </div>
-                      <div className="flex items-center gap-1 text-gray-600">
-                        <Users size={14} />
-                        {course.capacity} max
-                      </div>
                     </div>
                   </div>
+                  <Link href={`/dashboard/attendance?course=${course.id}`}>
+                    <Button className="bg-green-600 hover:bg-green-700 text-white gap-2 shrink-0">
+                      <CheckCircle size={16} />
+                      Take Attendance
+                    </Button>
+                  </Link>
                 </div>
               </Card>
             ))}

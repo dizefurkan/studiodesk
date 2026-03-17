@@ -12,6 +12,11 @@ CREATE EXTENSION IF NOT EXISTS "json";
 CREATE TABLE IF NOT EXISTS organizations (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name VARCHAR(255) NOT NULL,
+  week_start_day INT DEFAULT 1 CHECK (week_start_day >= 0 AND week_start_day <= 6),
+  timezone VARCHAR(50) DEFAULT 'Europe/Istanbul',
+  virtual_sessions_weeks INT DEFAULT 12 CHECK (virtual_sessions_weeks > 0),
+  attendance_per_week_limit INT DEFAULT 1 CHECK (attendance_per_week_limit > 0),
+  allow_makeup_sessions BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -62,6 +67,23 @@ CREATE TABLE IF NOT EXISTS branches (
 
 CREATE INDEX idx_branches_org_id ON branches(organization_id);
 CREATE INDEX idx_branches_created_at ON branches(created_at);
+
+-- ========================================
+-- STUDIOS (Dance rooms/spaces per branch)
+-- ========================================
+CREATE TABLE IF NOT EXISTS studios (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  branch_id UUID NOT NULL REFERENCES branches(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  capacity INT,
+  image_url VARCHAR(500),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_studios_branch_id ON studios(branch_id);
+CREATE INDEX idx_studios_created_at ON studios(created_at);
 
 -- ========================================
 -- INSTRUCTORS
@@ -275,6 +297,7 @@ CREATE TABLE IF NOT EXISTS attendances (
   session_id UUID NOT NULL REFERENCES course_sessions(id) ON DELETE CASCADE,
   student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
   student_package_id UUID NOT NULL REFERENCES student_packages(id) ON DELETE CASCADE,
+  studio_id UUID REFERENCES studios(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(session_id, student_id)
@@ -283,6 +306,7 @@ CREATE TABLE IF NOT EXISTS attendances (
 CREATE INDEX idx_attendances_session_id ON attendances(session_id);
 CREATE INDEX idx_attendances_student_id ON attendances(student_id);
 CREATE INDEX idx_attendances_student_package_id ON attendances(student_package_id);
+CREATE INDEX idx_attendances_studio_id ON attendances(studio_id);
 CREATE INDEX idx_attendances_created_at ON attendances(created_at);
 
 -- ========================================

@@ -83,8 +83,8 @@ export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsS
   }
 
   return (
-    <Card className="border-[#E5E7EB] p-6">
-      <div className="flex items-center justify-between mb-4">
+    <Card className="border-[#E5E7EB] overflow-hidden">
+      <div className="p-6 border-b border-[#E5E7EB] flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Users size={20} className="text-[#4F46E5]" />
           <h3 className="text-lg font-semibold text-[#111827]">Enrolled Students</h3>
@@ -93,42 +93,52 @@ export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsS
         <AddStudentDialog
           courseId={courseId}
           danceTypeId={danceTypeId}
+          enrolledStudentIds={students.map(s => s.student_id)}
           onStudentsAdded={handleStudentsAdded}
         />
       </div>
 
-      {/* Students List */}
+      {/* Students Table */}
       {students.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-500 p-6">
           <Users size={32} className="mx-auto mb-2 opacity-50" />
           <p>No students enrolled yet</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {students.map((enrollment) => (
-            <div
-              key={enrollment.id}
-              className="flex items-center justify-between p-4 border border-[#E5E7EB] rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <div>
-                <div className="font-medium text-[#111827]">
-                  {enrollment.students.first_name} {enrollment.students.last_name}
-                </div>
-                <div className="text-sm text-gray-600">{enrollment.students.email}</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Joined {new Date(enrollment.joined_at).toLocaleDateString()}
-                </div>
-              </div>
-              <button
-                onClick={() => handleRemoveStudent(enrollment.student_id)}
-                disabled={loading}
-                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                title="Remove student"
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
-          ))}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead className="bg-gray-50 border-b border-[#E5E7EB]">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Student Name</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Email</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Joined</th>
+                <th className="px-6 py-3 text-right text-sm font-semibold text-[#111827]">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E5E7EB]">
+              {students.map((enrollment) => (
+                <tr key={enrollment.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 text-sm font-medium text-[#111827]">
+                    {enrollment.students.first_name} {enrollment.students.last_name}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{enrollment.students.email}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {new Date(enrollment.joined_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button
+                      onClick={() => handleRemoveStudent(enrollment.student_id)}
+                      disabled={loading}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                      title="Remove student"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </Card>

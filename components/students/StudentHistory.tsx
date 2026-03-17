@@ -9,7 +9,7 @@ interface AttendanceHistoryItem {
   id: string
   created_at: string
   course_sessions?: {
-    scheduled_at: string
+    session_date: string
     course?: {
       id: string
       name: string
@@ -95,8 +95,8 @@ export function StudentHistory({
           ) : (
             <div className="space-y-3">
               {attendanceHistory.map((record) => {
-                const sessionDate = record.course_sessions?.scheduled_at
-                  ? new Date(record.course_sessions.scheduled_at)
+                const sessionDate = record.course_sessions?.session_date
+                  ? new Date(record.course_sessions.session_date)
                   : null
                 const course = record.course_sessions?.course
 

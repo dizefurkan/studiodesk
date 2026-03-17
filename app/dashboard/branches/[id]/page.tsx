@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { MapPin, Phone, Edit2 } from 'lucide-react'
+import { MapPin, Phone, Edit2, Music } from 'lucide-react'
 
 interface BranchDetailPageProps {
   params: {
@@ -64,6 +64,19 @@ export default async function BranchDetailPage({ params }: BranchDetailPageProps
                 </div>
               )}
             </div>
+          </div>
+        </Card>
+
+        <Card className="border-[#E5E7EB] mt-6">
+          <div className="p-8">
+            <h2 className="text-xl font-bold text-[#111827] mb-4">Studio Management</h2>
+            <p className="text-gray-600 mb-6">Manage dance studios and spaces for this branch</p>
+            <Link href={`/dashboard/branches/${branch.id}/studios`}>
+              <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
+                <Music size={18} />
+                Manage Studios
+              </Button>
+            </Link>
           </div>
         </Card>
       </div>

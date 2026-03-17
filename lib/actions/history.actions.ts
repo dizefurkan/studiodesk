@@ -14,22 +14,22 @@ export async function getStudentAttendanceHistory(studentId: string) {
   try {
     const supabase = await createServerSupabaseClient()
 
-    const { data, error } = await supabase
-      .from('attendances')
+    const { data, error } = await (supabase
+      .from('attendances') as any)
       .select(
         `
         id,
         created_at,
-        course_sessions(
-          scheduled_at,
-          course:courses(
+        course_sessions!inner(
+          session_date,
+          courses(
             id,
             name,
             dance_types(name),
             branches(name)
           )
         )
-      `
+      `,
       )
       .eq('student_id', studentId)
       .order('created_at', { ascending: false })

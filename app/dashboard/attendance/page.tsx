@@ -1,10 +1,12 @@
-import { getCourses } from '@/lib/actions/courses.actions'
+import { getCourses, getCourse } from '@/lib/actions/courses.actions'
 import { getSessionAttendances, getSessionStudents } from '@/lib/actions/attendance.actions'
+import { getStudios } from '@/lib/actions/studios.actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StudentAttendanceList } from '@/components/attendance/StudentAttendanceList'
 import Link from 'next/link'
 import { Calendar, Users, CheckCircle } from 'lucide-react'
+import { v4 as uuidv4 } from 'uuid'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -15,18 +17,64 @@ export default async function AttendancePage({
 }) {
   const params = await searchParams
   const sessionId = typeof params.session === 'string' ? params.session : undefined
+  const courseId = typeof params.course === 'string' ? params.course : undefined
 
   let selectedSession = null
   let attendances = []
 
+  // MODE 1: Session-based attendance (legacy)
   if (sessionId) {
-    // Fetch attendances and available students for selected session
-    const [attendancesResult, studentsResult] = await Promise.all([
+    // Fetch attendances, students, and studios for selected session
+    const [attendancesResult, studentsResult, sessionDataResult] = await Promise.all([
       getSessionAttendances(sessionId),
       getSessionStudents(sessionId),
+      (async () => {
+        const { createServerSupabaseClient } = await import('@/lib/supabase/server')
+        const supabase = await createServerSupabaseClient()
+        const res = await (supabase.from('course_sessions') as any)
+          .select('course_id')
+          .eq('id', sessionId)
+          .single()
+        return res.data
+      })(),
     ])
     attendances = attendancesResult.data || []
     const availableStudents = studentsResult.data || []
+    const courseId = sessionDataResult?.course_id
+    let studios: any[] = []
+    let courseInstructors: any[] = []
+
+    if (courseId) {
+      const courseResult = await getCourse(courseId)
+      const branchId = courseResult.data?.branch_id
+      if (branchId) {
+        const studiosResult = await getStudios(branchId)
+        studios = studiosResult.data || []
+      }
+
+      // Get instructors for this course
+      const { createServerSupabaseClient: createClient } = await import('@/lib/supabase/server')
+      const supabase = await createClient()
+      const { data: courseInstructorsData } = await supabase
+        .from('course_instructors')
+        .select(`
+          instructor_id,
+          instructors(
+            id,
+            first_name,
+            last_name
+          )
+        `)
+        .eq('course_id', courseId)
+
+      courseInstructors = (courseInstructorsData || [])
+        .filter((ci: any) => ci.instructors)
+        .map((ci: any) => ({
+          id: ci.instructors.id,
+          first_name: ci.instructors.first_name,
+          last_name: ci.instructors.last_name,
+        }))
+    }
 
     return (
       <div className="space-y-6">
@@ -50,18 +98,155 @@ export default async function AttendancePage({
           </div>
         </Card>
 
+        {studios.length > 0 && (
+          <Card className="border-[#E5E7EB] p-4">
+            <p className="text-sm text-gray-600 mb-2">Available Studios: {studios.map((s: any) => s.name).join(', ')}</p>
+          </Card>
+        )}
+
         <StudentAttendanceList
           sessionId={sessionId}
+          courseId={courseId}
           availableStudents={availableStudents}
           recordedAttendances={attendances}
+          studios={studios}
+          instructors={courseInstructors}
         />
       </div>
     )
-  } else {
-    // Show upcoming courses with their sessions
-    const today = new Date()
-    const in4Weeks = new Date(today.getTime() + 4 * 7 * 24 * 60 * 60 * 1000)
+  }
 
+  // MODE 2: Course-based attendance (new - on-demand sessions)
+  if (courseId) {
+    const courseResult = await getCourse(courseId)
+    if (courseResult.error || !courseResult.data) {
+      return (
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold text-[#111827]">Error</h1>
+          <p className="text-gray-600">Course not found</p>
+        </div>
+      )
+    }
+
+    const course = courseResult.data
+    const branchId = course.branch_id
+
+    // Get enrolled students and their packages
+    const { createServerSupabaseClient } = await import('@/lib/supabase/server')
+    const supabase = await createServerSupabaseClient()
+
+    const { data: courseStudentsData } = await supabase
+      .from('course_students')
+      .select(`
+        student_id,
+        students(
+          id,
+          first_name,
+          last_name,
+          student_packages(
+            id,
+            remaining_credits,
+            packages(id)
+          )
+        )
+      `)
+      .eq('course_id', courseId)
+
+    // Get studios for branch
+    const studiosResult = await getStudios(branchId)
+    const studios = studiosResult.data || []
+
+    // Get instructors for this course
+    const { data: courseInstructorsData } = await supabase
+      .from('course_instructors')
+      .select(`
+        instructor_id,
+        instructors(
+          id,
+          first_name,
+          last_name
+        )
+      `)
+      .eq('course_id', courseId)
+
+    const courseInstructors = (courseInstructorsData || [])
+      .filter((ci: any) => ci.instructors)
+      .map((ci: any) => ({
+        id: ci.instructors.id,
+        first_name: ci.instructors.first_name,
+        last_name: ci.instructors.last_name,
+      }))
+
+    // Transform students data
+    const availableStudents = (courseStudentsData || [])
+      .filter((cs: any) => cs.students)
+      .map((cs: any) => ({
+        id: cs.students.id,
+        first_name: cs.students.first_name,
+        last_name: cs.students.last_name,
+        student_packages: cs.students.student_packages || [],
+      }))
+
+    // Check if a session exists for today and fetch attendances if it does
+    const today = new Date().toISOString().split('T')[0]
+    const { data: existingSessionData } = await (supabase
+      .from('course_sessions') as any)
+      .select('id')
+      .eq('course_id', courseId)
+      .eq('session_date', today)
+      .single()
+
+    let existingAttendances: any[] = []
+    const sessionIdToUse = existingSessionData?.id || uuidv4()
+
+    if (existingSessionData?.id) {
+      const { data: attendancesData } = await supabase
+        .from('attendances')
+        .select('*, students(first_name, last_name), student_packages(remaining_credits)')
+        .eq('session_id', existingSessionData.id)
+      
+      existingAttendances = attendancesData || []
+    }
+
+    // Create on-demand session ID (will be created in DB when attendance is saved if new)
+    const tempSessionId = sessionIdToUse
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <Link href="/dashboard/attendance" className="text-[#4F46E5] hover:underline mb-4 inline-block">
+            ← Back
+          </Link>
+          <h1 className="text-3xl font-bold text-[#111827]">Mark Attendance</h1>
+          <p className="text-gray-600 mt-1">{course.name} - Record attendance for today</p>
+        </div>
+
+        <Card className="border-[#E5E7EB] p-6 bg-green-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Users className="text-green-600" size={24} />
+              <div>
+                <p className="font-medium text-[#111827]">{course.name}</p>
+                <p className="text-sm text-gray-600">{availableStudents.length} enrolled students</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <StudentAttendanceList
+          sessionId={tempSessionId}
+          courseId={courseId}
+          availableStudents={availableStudents}
+          recordedAttendances={existingAttendances}
+          studios={studios}
+          instructors={courseInstructors}
+        />
+      </div>
+    )
+  }
+
+  // MODE 3: Default - Show courses list
+  {
     const coursesResult = await getCourses()
     const courses = coursesResult.data || []
 
@@ -83,15 +268,18 @@ export default async function AttendancePage({
         ) : (
           <div className="space-y-4">
             {courses.map((course: any) => (
-              <Card key={course.id} className="border-[#E5E7EB] p-4">
+              <Card key={course.id} className="border-[#E5E7EB] p-4 hover:border-[#4F46E5] transition-colors">
                 <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-semibold text-[#111827]">{course.name}</h3>
-                    <p className="text-sm text-gray-600">{course.branches?.name} • {course.dance_types?.name}</p>
-                  </div>
-                  <Link href={`/dashboard/courses/${course.id}`}>
-                    <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
-                      View Sessions
+                  <Link href={`/dashboard/courses/${course.id}`} className="flex-1">
+                    <div className="cursor-pointer">
+                      <h3 className="font-semibold text-[#4F46E5] hover:underline">{course.name}</h3>
+                      <p className="text-sm text-gray-600">{course.branches?.name} • {course.dance_types?.name}</p>
+                    </div>
+                  </Link>
+                  <Link href={`/dashboard/attendance?course=${course.id}`}>
+                    <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
+                      <CheckCircle size={16} />
+                      Mark Attendance
                     </Button>
                   </Link>
                 </div>

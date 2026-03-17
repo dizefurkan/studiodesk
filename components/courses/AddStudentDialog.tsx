@@ -27,10 +27,11 @@ interface Student {
 interface AddStudentDialogProps {
   courseId: string
   danceTypeId: string
+  enrolledStudentIds?: string[]
   onStudentsAdded?: () => void
 }
 
-export function AddStudentDialog({ courseId, danceTypeId, onStudentsAdded }: AddStudentDialogProps) {
+export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [], onStudentsAdded }: AddStudentDialogProps) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [students, setStudents] = useState<Student[]>([])
@@ -68,6 +69,9 @@ export function AddStudentDialog({ courseId, danceTypeId, onStudentsAdded }: Add
   useEffect(() => {
     let filtered = students
 
+    // Exclude already enrolled students
+    filtered = filtered.filter((s) => !enrolledStudentIds.includes(s.id))
+
     // Handle search query
     if (searchQuery) {
       filtered = filtered.filter(
@@ -89,7 +93,7 @@ export function AddStudentDialog({ courseId, danceTypeId, onStudentsAdded }: Add
     }
 
     setFilteredStudents(filtered)
-  }, [students, searchQuery, filterHasPackage, danceTypeId])
+  }, [students, searchQuery, filterHasPackage, danceTypeId, enrolledStudentIds])
 
   const handleStudentSelect = (studentId: string) => {
     const newSelected = new Set(selectedStudents)
@@ -206,70 +210,85 @@ export function AddStudentDialog({ courseId, danceTypeId, onStudentsAdded }: Add
               </label>
             </div>
 
-            {/* Student List */}
+            {/* Student List - Table Format */}
             <div className="flex-1 overflow-y-auto">
               {loading ? (
                 <div className="p-8 text-center text-gray-500">Loading students...</div>
               ) : filteredStudents.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
-                  {filterHasPackage && hasPackageCount === 0
-                    ? 'No students have active packages for this dance type'
+                  {filterHasPackage && students.filter(s => !enrolledStudentIds.includes(s.id)).length === 0
+                    ? 'No available students (all may already be enrolled)'
                     : 'No students found'}
                 </div>
               ) : (
-                <div className="divide-y divide-[#E5E7EB]">
-                  {filteredStudents.map((student) => {
-                    const hasPackage = student.student_packages?.some(
-                      (sp) =>
-                        sp.package?.dance_type_id === danceTypeId && sp.remaining_credits > 0,
-                    )
-                    const remainingCredits = student.student_packages?.find(
-                      (sp) =>
-                        sp.package?.dance_type_id === danceTypeId && sp.remaining_credits > 0,
-                    )?.remaining_credits
+                <table className="w-full divide-y divide-[#E5E7EB]">
+                  <thead className="bg-gray-50 sticky top-0 border-b border-[#E5E7EB]">
+                    <tr>
+                      <th className="px-4 py-3 text-left">
+                        <input
+                          type="checkbox"
+                          checked={filteredStudents.length > 0 && filteredStudents.every(s => selectedStudents.has(s.id))}
+                          onChange={() => {
+                            if (filteredStudents.every(s => selectedStudents.has(s.id))) {
+                              filteredStudents.forEach(s => selectedStudents.delete(s.id))
+                              setSelectedStudents(new Set(selectedStudents))
+                            } else {
+                              const newSelected = new Set(selectedStudents)
+                              filteredStudents.forEach(s => newSelected.add(s.id))
+                              setSelectedStudents(newSelected)
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-[#E5E7EB]"
+                        />
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Email</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Credits</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredStudents.map((student) => {
+                      const hasPackage = student.student_packages?.some(
+                        (sp) =>
+                          sp.package?.dance_type_id === danceTypeId && sp.remaining_credits > 0,
+                      )
+                      const remainingCredits = student.student_packages?.find(
+                        (sp) =>
+                          sp.package?.dance_type_id === danceTypeId && sp.remaining_credits > 0,
+                      )?.remaining_credits
 
-                    return (
-                      <div
-                        key={student.id}
-                        className={`p-4 hover:bg-gray-50 transition-colors ${
-                          !hasPackage && filterHasPackage ? 'opacity-50' : ''
-                        }`}
-                      >
-                        <label className="flex items-start gap-3 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedStudents.has(student.id)}
-                            onChange={() => handleStudentSelect(student.id)}
-                            disabled={!hasPackage && filterHasPackage}
-                            className="mt-1 w-4 h-4 rounded border-[#E5E7EB] disabled:opacity-50"
-                          />
-                          <div className="flex-1 min-w-0">
+                      return (
+                        <tr key={student.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-4 py-3">
+                            <input
+                              type="checkbox"
+                              checked={selectedStudents.has(student.id)}
+                              onChange={() => handleStudentSelect(student.id)}
+                              className="w-4 h-4 rounded border-[#E5E7EB]"
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-sm">
                             <p className="font-medium text-[#111827]">
                               {student.first_name} {student.last_name}
                             </p>
-                            <p className="text-sm text-gray-600 truncate">{student.email}</p>
-                            {student.phone && (
-                              <p className="text-sm text-gray-600">{student.phone}</p>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">{student.email}</td>
+                          <td className="px-4 py-3 text-sm">
+                            {hasPackage ? (
+                              <span className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                {remainingCredits}
+                              </span>
+                            ) : (
+                              <span className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+                                —
+                              </span>
                             )}
-
-                            {/* Package Status */}
-                            <div className="flex gap-2 mt-2">
-                              {hasPackage ? (
-                                <span className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                                  ✓ Package ({remainingCredits} credits)
-                                </span>
-                              ) : (
-                                <span className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
-                                  ✗ No package
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </label>
-                      </div>
-                    )
-                  })}
-                </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
               )}
             </div>
 

@@ -70,7 +70,7 @@ export async function getCourse(id: string) {
     const supabase = await createServerSupabaseClient()
     const { data, error } = await (supabase
       .from('courses') as any)
-      .select('*, branches(name), dance_types(name), course_instructors(instructor_id)')
+      .select('*, branches(name), dance_types(name), course_instructors(instructor_id, instructors(id, first_name, last_name))')
       .eq('id', id)
       .single()
 

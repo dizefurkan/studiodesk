@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Calendar, Users, Clock, BookOpen } from 'lucide-react'
+import { Calendar, Clock, BookOpen } from 'lucide-react'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -48,7 +48,7 @@ export default async function SessionsPage({ params }: SessionsPageProps) {
 
       {/* Course Info */}
       <Card className="border-[#E5E7EB] p-6">
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 gap-6">
           <div>
             <p className="text-sm text-gray-600 mb-2">Schedule</p>
             <div className="flex items-center gap-2">
@@ -56,13 +56,6 @@ export default async function SessionsPage({ params }: SessionsPageProps) {
               <span className="font-medium text-[#111827]">
                 {DAYS[course.day_of_week]} {course.start_time} - {course.end_time}
               </span>
-            </div>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600 mb-2">Capacity</p>
-            <div className="flex items-center gap-2">
-              <Users size={18} className="text-[#4F46E5]" />
-              <span className="font-medium text-[#111827]">{course.capacity} students</span>
             </div>
           </div>
           <div>
