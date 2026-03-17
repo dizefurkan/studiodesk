@@ -133,33 +133,45 @@ export function PackagesPageContent({ currency }: PackagesPageContentProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {filteredPackages.map((pkg) => (
-            <Card key={pkg.id} className="border-[#E5E7EB] hover:shadow-lg transition-shadow">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-[#111827] mb-2">{pkg.name}</h3>
-                <div className="space-y-2 mb-4">
-                  <p className="text-sm text-gray-600">
+            <Card key={pkg.id} className="border-[#E5E7EB] hover:shadow-lg transition-all hover:border-[#4F46E5]">
+              <div className="p-4">
+                {/* Title */}
+                <h3 className="text-base font-bold text-[#111827] mb-2">{pkg.name}</h3>
+                
+                {/* Info */}
+                <div className="text-xs text-gray-600 mb-4 space-y-1">
+                  <p>
                     <span className="font-medium">Credits:</span> {pkg.total_credits}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p>
                     <span className="font-medium">Price:</span> {formatCurrency(pkg.price || 0, currency)}
                   </p>
                 </div>
+                
+                {/* Divider */}
+                <div className="border-t border-[#E5E7EB] mb-3"></div>
+                
+                {/* Action Buttons */}
                 <div className="flex gap-2">
                   <Link href={`/dashboard/packages/${pkg.id}/edit`} className="flex-1">
-                    <Button variant="ghost" size="sm" className="w-full text-[#4F46E5] hover:bg-[#EEF2FF]">
-                      <Edit2 size={16} />
+                    <Button
+                      size="sm"
+                      className="w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white text-xs h-8"
+                    >
+                      <Edit2 size={14} className="mr-1" />
+                      Edit
                     </Button>
                   </Link>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-red-600 hover:bg-red-50"
+                    className="text-red-600 hover:bg-red-50 hover:text-red-700 h-8"
                     onClick={() => handleDelete(pkg.id)}
                     disabled={deletingId === pkg.id}
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                   </Button>
                 </div>
               </div>
