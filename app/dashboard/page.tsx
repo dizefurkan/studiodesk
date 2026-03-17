@@ -5,7 +5,9 @@ import { Users, BookOpen, Calendar, TrendingUp, ArrowRight, CheckCircle2, Clock,
 import { getStudents } from '@/lib/actions/students.actions'
 import { getCourses } from '@/lib/actions/courses.actions'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { DEFAULT_CURRENCY } from '@/config/currencies'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { formatCurrency } from '@/lib/utils/format'
 
 export default async function DashboardPage() {
   const organization = await getOrganization()
@@ -50,7 +52,7 @@ export default async function DashboardPage() {
     { label: 'Total Students', value: totalStudents.toString(), icon: Users, color: 'text-blue-600' },
     { label: 'Active Courses', value: activeCourses.toString(), icon: BookOpen, color: 'text-purple-600' },
     { label: 'This Month Sessions', value: sessionCount.toString(), icon: Calendar, color: 'text-green-600' },
-    { label: 'Revenue', value: `R$ ${revenue.toFixed(2)}`, icon: TrendingUp, color: 'text-orange-600' },
+    { label: 'Revenue', value: formatCurrency(revenue, organization?.currency || DEFAULT_CURRENCY), icon: TrendingUp, color: 'text-orange-600' },
   ]
 
   const quickActions = [

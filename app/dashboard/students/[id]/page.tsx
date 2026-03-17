@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Edit2, ArrowLeft, Mail, Phone } from 'lucide-react'
 import { getStudent, getStudentPackages } from '@/lib/actions/students.actions'
 import { getPackages } from '@/lib/actions/packages.actions'
+import { getOrganization } from '@/lib/auth/getOrganization'
+import { DEFAULT_CURRENCY } from '@/config/currencies'
 import { getStudentAttendanceHistory, getStudentPackageHistory } from '@/lib/actions/history.actions'
 import { StudentCredits } from '@/components/students/StudentCredits'
 import { StudentPurchaseDialog } from '@/components/students/StudentPurchaseDialog'
@@ -26,6 +28,8 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
   }
 
   const student = result.data
+  const organization = await getOrganization()
+  const currency = organization?.currency || DEFAULT_CURRENCY
 
   // Fetch student packages, available packages, and history
   const [packagesResult, availablePackagesResult, attendanceHistoryResult, packageHistoryResult] = await Promise.all([
@@ -59,7 +63,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
           <p className="text-gray-600 mt-1">Student Profile</p>
         </div>
         <div className="flex gap-2">
-          <StudentPurchaseDialog studentId={id} packages={availablePackages as any} />
+          <StudentPurchaseDialog studentId={id} packages={availablePackages as any} currency={currency} />
           <Link href={`/dashboard/students/${student.id}/edit`}>
             <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
               <Edit2 size={16} className="mr-2" />

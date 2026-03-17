@@ -1,9 +1,12 @@
 import { getTransactions, getDailyReport, getInstructorEarningsByBranch } from '@/lib/actions/cash-register.actions'
 import { getBranches } from '@/lib/actions/branches.actions'
+import { getOrganization } from '@/lib/auth/getOrganization'
+import { DEFAULT_CURRENCY } from '@/config/currencies'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { DeleteTransactionButton } from '@/components/cash-register/DeleteTransactionButton'
 import { CashRegisterFilters } from '@/components/cash-register/CashRegisterFilters'
+import { formatCurrency } from '@/lib/utils/format'
 import Link from 'next/link'
 import { Plus, DollarSign, TrendingUp, TrendingDown, Users } from 'lucide-react'
 
@@ -17,6 +20,9 @@ export default async function CashRegisterPage({
   const type = (typeof params.type === 'string' ? params.type : undefined) as 'income' | 'expense' | undefined
   const dataType = (typeof params.dataType === 'string' ? params.dataType : 'all') as 'all' | 'transactions' | 'earnings'
   const dateStr = typeof params.date === 'string' ? params.date : new Date().toISOString().split('T')[0]
+
+  const organization = await getOrganization()
+  const currency = organization?.currency || DEFAULT_CURRENCY
 
   const [transactionsResult, branchesResult, dailyReportResult, earningsResult] = await Promise.all([
     dataType === 'earnings' ? { data: [] } : getTransactions(branchId, type),
@@ -88,7 +94,7 @@ export default async function CashRegisterPage({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Income</p>
-              <p className="text-3xl font-bold text-green-600">${income.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-green-600">{formatCurrency(income, currency)}</p>
             </div>
             <TrendingUp className="text-green-600" size={32} />
           </div>
@@ -98,7 +104,7 @@ export default async function CashRegisterPage({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Expenses</p>
-              <p className="text-3xl font-bold text-red-600">${expenses.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-red-600">{formatCurrency(expenses, currency)}</p>
             </div>
             <TrendingDown className="text-red-600" size={32} />
           </div>
@@ -108,7 +114,7 @@ export default async function CashRegisterPage({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Instructor Pay</p>
-              <p className="text-3xl font-bold text-purple-600">${totalEarnings.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-purple-600">{formatCurrency(totalEarnings, currency)}</p>
             </div>
             <Users className="text-purple-600" size={32} />
           </div>
@@ -123,7 +129,7 @@ export default async function CashRegisterPage({
                   netBalance >= 0 ? 'text-[#4F46E5]' : 'text-red-600'
                 }`}
               >
-                ${netBalance.toFixed(2)}
+                {formatCurrency(netBalance, currency)}
               </p>
             </div>
             <DollarSign className="text-[#4F46E5]" size={32} />
@@ -175,7 +181,7 @@ export default async function CashRegisterPage({
                       item.type === 'income' ? 'text-green-600' : item.type === 'expense' ? 'text-red-600' : 'text-purple-600'
                     }`}
                   >
-                    {item.type === 'income' ? '+' : '-'}${item.amount}
+                    {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount, currency)}
                   </p>
                   {item.type !== 'earning' && <DeleteTransactionButton transactionId={item.id} />}
                 </div>

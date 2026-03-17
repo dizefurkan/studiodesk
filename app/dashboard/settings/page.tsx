@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Settings, Users, Lock, Bell, Building } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { CurrencySettings } from '@/components/settings/CurrencySettings'
 
 export default async function SettingsPage() {
   const organization = await getOrganization()
@@ -145,6 +146,9 @@ export default async function SettingsPage() {
           </label>
         </div>
       </Card>
+
+      {/* Currency Settings */}
+      <CurrencySettings organizationId={organization?.id || ''} currentCurrency={organization?.currency} />
     </div>
   )
 }

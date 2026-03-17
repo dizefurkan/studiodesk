@@ -1,8 +1,11 @@
 import { getInstructorEarnings } from '@/lib/actions/instructor-earnings.actions'
 import { getInstructors } from '@/lib/actions/instructors.actions'
+import { getOrganization } from '@/lib/auth/getOrganization'
+import { DEFAULT_CURRENCY } from '@/config/currencies'
 import { Card } from '@/components/ui/card'
 import { InstructorEarningsFilters } from '@/components/instructor-earnings/EarningsFilters'
 import { EarningsEditButton } from '@/components/instructor-earnings/EarningsEditButton'
+import { formatCurrency } from '@/lib/utils/format'
 import { TrendingUp, DollarSign } from 'lucide-react'
 
 export default async function InstructorEarningsPage({
@@ -14,6 +17,9 @@ export default async function InstructorEarningsPage({
   const instructorId = typeof params.instructor === 'string' ? params.instructor : undefined
   const fromDate = typeof params.from === 'string' ? params.from : undefined
   const toDate = typeof params.to === 'string' ? params.to : undefined
+
+  const organization = await getOrganization()
+  const currency = organization?.currency || DEFAULT_CURRENCY
 
   const [earningsResult, instructorsResult] = await Promise.all([
     getInstructorEarnings(instructorId, fromDate, toDate),
@@ -39,7 +45,7 @@ export default async function InstructorEarningsPage({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Total Earnings (Selected Period)</p>
-              <p className="text-3xl font-bold text-[#4F46E5]">${totalEarnings.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-[#4F46E5]">{formatCurrency(totalEarnings, currency)}</p>
             </div>
             <DollarSign className="text-[#4F46E5]" size={32} />
           </div>
@@ -82,7 +88,7 @@ export default async function InstructorEarningsPage({
                   <p className="text-sm text-gray-600">{new Date(earning.created_at).toLocaleDateString()}</p>
                 </div>
                 <div className="flex items-center gap-4">
-                  <p className="text-lg font-bold text-green-600">${earning.amount}</p>
+                  <p className="text-lg font-bold text-green-600">{formatCurrency(earning.amount, currency)}</p>
                   <EarningsEditButton 
                     earningsId={earning.id}
                     currentAmount={Number(earning.amount)}

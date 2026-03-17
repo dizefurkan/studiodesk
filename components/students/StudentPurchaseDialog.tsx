@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ShoppingCart, AlertCircle } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils/format'
 import { purchasePackage } from '@/lib/actions/students.actions'
 import { useRouter } from 'next/navigation'
 
@@ -18,9 +19,10 @@ interface StudentPurchaseDialogProps {
     price: number
     dance_types?: { name: string } | null
   }>
+  currency?: string
 }
 
-export function StudentPurchaseDialog({ studentId, packages }: StudentPurchaseDialogProps) {
+export function StudentPurchaseDialog({ studentId, packages, currency = 'TRY' }: StudentPurchaseDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedPackageId, setSelectedPackageId] = useState<string>('')
   const [customPrice, setCustomPrice] = useState<string>('')
@@ -117,7 +119,7 @@ export function StudentPurchaseDialog({ studentId, packages }: StudentPurchaseDi
                   <p className="text-sm text-[#6B7280]">
                     {pkg.total_credits} credits • {pkg.dance_types?.name}
                   </p>
-                  <p className="text-sm font-medium text-[#4F46E5] mt-1">Price: {pkg.price} TL</p>
+                  <p className="text-sm font-medium text-[#4F46E5] mt-1">Price: {formatCurrency(pkg.price, currency)}</p>
                 </button>
               ))}
             </div>

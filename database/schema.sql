@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS organizations (
   name VARCHAR(255) NOT NULL,
   week_start_day INT DEFAULT 1 CHECK (week_start_day >= 0 AND week_start_day <= 6),
   timezone VARCHAR(50) DEFAULT 'Europe/Istanbul',
+  currency VARCHAR(3) DEFAULT 'TRY',
   virtual_sessions_weeks INT DEFAULT 12 CHECK (virtual_sessions_weeks > 0),
   attendance_per_week_limit INT DEFAULT 1 CHECK (attendance_per_week_limit > 0),
   allow_makeup_sessions BOOLEAN DEFAULT true,
