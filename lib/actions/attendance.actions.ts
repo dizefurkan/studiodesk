@@ -325,29 +325,33 @@ export async function recordBatchAttendance(
       console.log('[recordBatchAttendance] Session already exists:', actualSessionId)
     }
 
-    // Filter to only "geldi" records to process
+    // Filter to "geldi" and "gelmedi with notes" records to process
     const geldiBatch = attendanceData.filter((a) => a.status === 'geldi')
+    const gelmediWithNotesBatch = attendanceData.filter((a) => a.status === 'gelmedi' && a.notes)
 
-    if (geldiBatch.length === 0) {
+    if (geldiBatch.length === 0 && gelmediWithNotesBatch.length === 0) {
       return { success: true, data: { recordedCount: 0, skippedCount: attendanceData.length } }
     }
 
     // Validate that all records have studentPackageId
-    const invalidRecords = geldiBatch.filter((a) => !a.studentPackageId)
+    const allBatchRecords = [...geldiBatch, ...gelmediWithNotesBatch]
+    const invalidRecords = allBatchRecords.filter((a) => !a.studentPackageId)
     if (invalidRecords.length > 0) {
       console.error('Invalid records - missing studentPackageId:', invalidRecords)
       return { error: 'Some students are missing package data. Please refresh and try again.' }
     }
 
-    // Batch insert all attendance records
-    const attendanceRecords = geldiBatch.map((a) => ({
+    // Batch insert all attendance records (both geldi and gelmedi with notes)
+    const attendanceRecords = allBatchRecords.map((a) => ({
       session_id: actualSessionId,
       student_id: a.studentId,
       student_package_id: a.studentPackageId,
       studio_id: studioId || null,
+      notes: a.notes || null,
+      is_present: a.status === 'geldi',
     }))
 
-    console.log('[recordBatchAttendance] Inserting attendance records:', attendanceRecords, 'with studio:', studioId || 'none')
+    console.log('[recordBatchAttendance] Inserting attendance records:', attendanceRecords, 'with studio:', studioId || 'none', `(${geldiBatch.length} geldi + ${gelmediWithNotesBatch.length} gelmedi with notes)`)
     const { error: insertError } = await (supabase.from('attendances') as any).insert(attendanceRecords)
 
     if (insertError && (insertError as any)?.code !== '23505') {
@@ -485,9 +489,16 @@ export async function recordBatchAttendance(
       }
     }
 
+    // All records (geldi + gelmedi with notes) have been inserted in the batch above
+    // No need for separate gelmedi handling
+
     return {
       success: true,
-      data: { recordedCount: geldiBatch.length, skippedCount: attendanceData.length - geldiBatch.length },
+      data: { 
+        recordedCount: geldiBatch.length, 
+        absenceNotesCount: gelmediWithNotesBatch.length,
+        skippedCount: attendanceData.length - allBatchRecords.length 
+      },
     }
   } catch (error) {
     console.error('Unexpected error in recordBatchAttendance:', error)

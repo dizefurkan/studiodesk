@@ -298,6 +298,7 @@ CREATE TABLE IF NOT EXISTS attendances (
   student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
   student_package_id UUID NOT NULL REFERENCES student_packages(id) ON DELETE CASCADE,
   studio_id UUID REFERENCES studios(id) ON DELETE SET NULL,
+  notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(session_id, student_id)

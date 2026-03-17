@@ -125,7 +125,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                       </p>
                     </div>
                     <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full ml-4">
-                      {record.attendance_count}/{record.attendance_count}
+                      {record.attendance_count}/{record.attendances?.length || 0}
                     </span>
                   </summary>
                   <div className="px-4 pb-4 border-t border-[#E5E7EB] pt-4 bg-gray-50">
@@ -134,10 +134,13 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                       {record.attendances && record.attendances.length > 0 ? (
                         record.attendances.map((att: any, idx: number) => (
                           <div key={idx} className="flex items-center gap-2 text-sm">
-                            <span className="text-green-600 font-bold">✓</span>
+                            <span className={`font-bold ${att.is_present ? 'text-green-600' : 'text-red-600'}`}>
+                              {att.is_present ? '✓' : '✗'}
+                            </span>
                             <Link href={`/dashboard/students/${att.students.id}`} className="text-[#4F46E5] hover:underline font-medium">
                               {att.students.first_name} {att.students.last_name}
                             </Link>
+                            {att.notes && <span className="text-gray-600">({att.notes})</span>}
                           </div>
                         ))
                       ) : (

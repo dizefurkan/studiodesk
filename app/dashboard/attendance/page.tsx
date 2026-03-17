@@ -221,15 +221,52 @@ export default async function AttendancePage({
           <p className="text-gray-600 mt-1">{course.name} - Record attendance for today</p>
         </div>
 
-        <Card className="border-[#E5E7EB] p-6 bg-green-50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Users className="text-green-600" size={24} />
+        <Card className="border-[#E5E7EB] p-6 bg-linear-to-r from-green-50 to-emerald-50">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-4">
+              <Users className="text-green-600" size={28} />
               <div>
-                <p className="font-medium text-[#111827]">{course.name}</p>
-                <p className="text-sm text-gray-600">{availableStudents.length} enrolled students</p>
+                <p className="font-semibold text-lg text-[#111827]">{course.name}</p>
+                <p className="text-xs text-gray-500">Record attendance for today</p>
               </div>
             </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-blue-500 text-white rounded-lg p-4 text-center">
+                <p className="text-2xl font-bold">{availableStudents.length}</p>
+                <p className="text-xs font-medium mt-1">Total Enrolled</p>
+              </div>
+              <div className="bg-green-500 text-white rounded-lg p-4 text-center">
+                <p className="text-2xl font-bold">
+                  {existingAttendances.filter((a: any) => a.is_present).length}
+                </p>
+                <p className="text-xs font-medium mt-1">✓ Present</p>
+              </div>
+              <div className="bg-red-500 text-white rounded-lg p-4 text-center">
+                <p className="text-2xl font-bold">
+                  {existingAttendances.filter((a: any) => !a.is_present).length}
+                </p>
+                <p className="text-xs font-medium mt-1">✗ Absent</p>
+              </div>
+            </div>
+
+            {courseInstructors.length > 0 && (
+              <div className="border-t border-green-200 pt-4">
+                <p className="text-sm font-medium text-[#111827] mb-2">Instructors:</p>
+                <div className="flex flex-wrap gap-2">
+                  {courseInstructors.map((instructor) => (
+                    <Link
+                      key={instructor.id}
+                      href={`/dashboard/instructors/${instructor.id}`}
+                      className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-green-700 transition-colors cursor-pointer"
+                    >
+                      {instructor.first_name} {instructor.last_name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </Card>
 

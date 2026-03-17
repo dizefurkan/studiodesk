@@ -23,7 +23,9 @@ export async function getCourseAttendanceHistory(courseId: string) {
         attendances(
           id,
           created_at,
-          students(first_name, last_name),
+          is_present,
+          notes,
+          students(id, first_name, last_name),
           studios(name)
         )
       `)
@@ -39,7 +41,7 @@ export async function getCourseAttendanceHistory(courseId: string) {
     const formattedSessions = (sessions || []).map((session: any) => ({
       id: session.id,
       session_date: session.session_date,
-      attendance_count: session.attendances?.length || 0,
+      attendance_count: (session.attendances || []).filter((a: any) => a.is_present).length,
       attendances: session.attendances || [],
     }))
 

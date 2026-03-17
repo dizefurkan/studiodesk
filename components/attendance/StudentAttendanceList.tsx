@@ -22,6 +22,8 @@ interface AttendanceRecord {
   id: string
   student_id: string
   student_package_id: string
+  is_present?: boolean
+  notes?: string | null
   students?: {
     first_name: string
     last_name: string
@@ -142,12 +144,16 @@ export function StudentAttendanceList({
     setError('')
     setSuccessMessage('')
 
-    const geldiRecords = attendanceState.filter((a) => a.status === 'geldi')
-    console.log('[StudentAttendanceList] Geldi records:', geldiRecords)
+    const presentRecords = attendanceState.filter((a) => a.status === 'geldi')
+    const absentWithNotesRecords = attendanceState.filter((a) => a.status === 'gelmedi' && a.notes)
+    const allRecordsToSave = [...presentRecords, ...absentWithNotesRecords]
+    
+    console.log('[StudentAttendanceList] Present records:', presentRecords)
+    console.log('[StudentAttendanceList] Absent with notes records:', absentWithNotesRecords)
 
-    if (geldiRecords.length === 0) {
-      console.log('[StudentAttendanceList] No geldi records to save')
-      setError('Please mark at least one student as "Geldi" to save')
+    if (allRecordsToSave.length === 0) {
+      console.log('[StudentAttendanceList] No records to save')
+      setError('Please mark at least one student as "Geldi" or add notes for absent students to save')
       return
     }
 
@@ -155,16 +161,16 @@ export function StudentAttendanceList({
     console.log('[StudentAttendanceList] Starting batch save...')
 
     try {
-      const batchData = geldiRecords.map((record) => {
+      const batchData = allRecordsToSave.map((record) => {
         const student = availableStudents.find((s) => s.id === record.studentId)
         const studentPackageId = student?.student_packages?.[0]?.id || ''
-        console.log(`[StudentAttendanceList] Preparing batch for ${record.studentId}, packageId: ${studentPackageId}`)
+        console.log(`[StudentAttendanceList] Preparing batch for ${record.studentId}, packageId: ${studentPackageId}, status: ${record.status}`)
 
         return {
           studentId: record.studentId,
           studentPackageId,
-          status: 'geldi' as const,
-          notes: record.notes,
+          status: record.status,
+          notes: record.notes || undefined,
         }
       })
 
@@ -177,9 +183,16 @@ export function StudentAttendanceList({
         setError(result.error)
       } else if (result.success) {
         console.log('[StudentAttendanceList] Success! Recorded:', result.data.recordedCount)
-        setSuccessMessage(
-          `✅ Attendance saved! ${result.data.recordedCount} students marked present.`,
-        )
+        const markedCount = presentRecords.length
+        const notesCount = absentWithNotesRecords.length
+        let message = '✅ Attendance saved! '
+        if (markedCount > 0) {
+          message += `${markedCount} student${markedCount !== 1 ? 's' : ''} marked present. `
+        }
+        if (notesCount > 0) {
+          message += `${notesCount} absence note${notesCount !== 1 ? 's' : ''} recorded.`
+        }
+        setSuccessMessage(message)
         setAttendanceState([])
         setTimeout(() => {
           router.refresh()
@@ -214,13 +227,16 @@ export function StudentAttendanceList({
   const totalStudents = availableStudents.length
   const markedCount = recordedAttendances.length
   
-  // Count how many are marked Geldi in current state
-  const pendingGeldi = attendanceState.filter((a) => a.status === 'geldi').length
+  // Count how many are marked present in current state
+  const pendingPresent = attendanceState.filter((a) => a.status === 'geldi').length
+  const pendingAbsentWithNotes = attendanceState.filter((a) => a.status === 'gelmedi' && a.notes).length
+  const totalPendingRecords = pendingPresent + pendingAbsentWithNotes
   
   // Debug render
   console.log('[StudentAttendanceList] Render state:', {
     studentsWithCredits: studentsWithCredits.length,
-    pendingGeldi,
+    pendingPresent,
+    pendingAbsentWithNotes,
     attendanceState,
     availableStudents: availableStudents.length,
     recordedAttendances: recordedAttendances.length,
@@ -228,24 +244,6 @@ export function StudentAttendanceList({
 
   return (
     <div className="space-y-6">
-      {/* Stats Bar */}
-      <Card className="border-[#E5E7EB] p-4 bg-linear-to-r from-blue-50 to-indigo-50">
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm text-gray-600">Total Students</p>
-            <p className="text-2xl font-bold text-[#111827]">{totalStudents}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Already Marked</p>
-            <p className="text-2xl font-bold text-green-600">{markedCount}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Pending to Mark</p>
-            <p className="text-2xl font-bold text-orange-600">{totalStudents - markedCount}</p>
-          </div>
-        </div>
-      </Card>
-
       {/* Error Message */}
       {error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
@@ -322,7 +320,7 @@ export function StudentAttendanceList({
                         <button
                           onClick={() => handleStatusChange(student.id, 'geldi')}
                           className={`px-3 py-1 rounded-lg font-medium text-xs transition-colors ${
-                            currentState?.status === 'geldi' || (isMarked && !currentState)
+                            currentState?.status === 'geldi' || (isMarked && !currentState && recordedAttendance?.is_present)
                               ? 'bg-green-600 text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-green-100'
                           }`}
@@ -332,7 +330,7 @@ export function StudentAttendanceList({
                         <button
                           onClick={() => handleStatusChange(student.id, 'gelmedi')}
                           className={`px-3 py-1 rounded-lg font-medium text-xs transition-colors ${
-                            currentState?.status === 'gelmedi'
+                            currentState?.status === 'gelmedi' || (isMarked && !currentState && !recordedAttendance?.is_present)
                               ? 'bg-red-600 text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-red-100'
                           }`}
@@ -342,10 +340,10 @@ export function StudentAttendanceList({
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm">
-                      {(currentState?.status === 'geldi' || currentState?.status === 'gelmedi') && (
+                      {((currentState?.status === 'geldi' || currentState?.status === 'gelmedi') || (isMarked && recordedAttendance?.notes)) && (
                         <Input
                           placeholder="Note"
-                          value={currentState?.notes || ''}
+                          value={currentState?.notes || recordedAttendance?.notes || ''}
                           onChange={(e) => handleNotesChange(student.id, e.target.value)}
                           className="text-xs py-1 px-2"
                         />
@@ -403,7 +401,7 @@ export function StudentAttendanceList({
       )}
 
       {/* Studio Selection, Instructor Selection & Save Button */}
-      {studentsWithCredits.length > 0 && pendingGeldi > 0 && (
+      {studentsWithCredits.length > 0 && totalPendingRecords > 0 && (
         <div className="space-y-4">
           {/* Selections Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -470,7 +468,7 @@ export function StudentAttendanceList({
             size="lg"
           >
             <Save size={18} />
-            {savingBatch ? 'Saving...' : `Save Attendance (${pendingGeldi} students)`}
+            {savingBatch ? 'Saving...' : `Save Attendance (${totalPendingRecords} record${totalPendingRecords !== 1 ? 's' : ''})`}
           </Button>
         </div>
       )}
