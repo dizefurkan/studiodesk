@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
-import { createOrganizationWithBranch } from '@/lib/actions/auth.actions'
+import { createOrganizationWithBranch, checkOrganizationHasBranches } from '@/lib/actions/auth.actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -37,6 +37,26 @@ export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [generalError, setGeneralError] = useState<string | null>(null)
   const [step, setStep] = useState<'info' | 'success'>('info')
+  const [isChecking, setIsChecking] = useState(true)
+
+  // Check if organization already has branches on mount
+  useEffect(() => {
+    async function checkBranches() {
+      try {
+        const result = await checkOrganizationHasBranches()
+        if (result.hasBranches) {
+          // Redirect to dashboard if branches already exist
+          router.push('/dashboard')
+        }
+      } catch (error) {
+        console.error('Error checking branches:', error)
+      } finally {
+        setIsChecking(false)
+      }
+    }
+
+    checkBranches()
+  }, [router])
 
   const form = useForm<OnboardingFormValues>({
     resolver: zodResolver(onboardingSchema),
@@ -73,9 +93,27 @@ export default function OnboardingPage() {
     }
   }
 
+  // Show loading screen while checking if branches exist
+  if (isChecking) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-[#111827] via-[#1F2937] to-[#4F46E5] flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-xl">
+          <CardContent className="pt-8">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-[#4F46E5] animate-pulse"></div>
+                <p className="text-sm text-[#6B7280]">Loading...</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   if (step === 'success') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#111827] via-[#1F2937] to-[#4F46E5] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-linear-to-br from-[#111827] via-[#1F2937] to-[#4F46E5] flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-xl">
           <CardContent className="pt-8">
             <div className="text-center">
@@ -100,7 +138,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#111827] via-[#1F2937] to-[#4F46E5] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-[#111827] via-[#1F2937] to-[#4F46E5] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Card className="shadow-xl">
           <CardHeader>

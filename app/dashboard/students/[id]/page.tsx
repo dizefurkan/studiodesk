@@ -5,8 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Edit2, ArrowLeft, Mail, Phone } from 'lucide-react'
 import { getStudent, getStudentPackages } from '@/lib/actions/students.actions'
 import { getPackages } from '@/lib/actions/packages.actions'
+import { getStudentAttendanceHistory, getStudentPackageHistory } from '@/lib/actions/history.actions'
 import { StudentCredits } from '@/components/students/StudentCredits'
 import { StudentPurchaseDialog } from '@/components/students/StudentPurchaseDialog'
+import { StudentCoursesSection } from '@/components/students/StudentCoursesSection'
+import { StudentHistory } from '@/components/students/StudentHistory'
 
 interface StudentDetailPageProps {
   params: {
@@ -24,14 +27,18 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
 
   const student = result.data
 
-  // Fetch student packages and available packages
-  const [packagesResult, availablePackagesResult] = await Promise.all([
+  // Fetch student packages, available packages, and history
+  const [packagesResult, availablePackagesResult, attendanceHistoryResult, packageHistoryResult] = await Promise.all([
     getStudentPackages(id),
     getPackages(),
+    getStudentAttendanceHistory(id),
+    getStudentPackageHistory(id),
   ])
 
   const studentPackages = packagesResult.data || []
   const availablePackages = availablePackagesResult.data || []
+  const attendanceHistory = attendanceHistoryResult.data || []
+  const packageHistory = packageHistoryResult.data || []
 
   return (
     <div className="space-y-6">
@@ -64,6 +71,15 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
 
       {/* Credits Section */}
       <StudentCredits packages={studentPackages as any} />
+
+      {/* Enrolled Courses Section */}
+      <StudentCoursesSection studentId={id} />
+
+      {/* History Section */}
+      <StudentHistory 
+        attendanceHistory={attendanceHistory}
+        packageHistory={packageHistory}
+      />
 
       {/* Main Info Card */}
       <Card className="border-[#E5E7EB]">

@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Plus, Trash2, Users } from 'lucide-react'
-import { getCourseStudents, getAvailableStudentsForCourse, addStudentToCourse, removeStudentFromCourse } from '@/lib/actions/course-students.actions'
+import { Trash2, Users } from 'lucide-react'
+import { getCourseStudents, removeStudentFromCourse } from '@/lib/actions/course-students.actions'
+import { AddStudentDialog } from './AddStudentDialog'
 
 interface CourseStudent {
   id: string
@@ -30,56 +31,25 @@ interface CourseStudentsSectionProps {
 
 export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsSectionProps) {
   const [students, setStudents] = useState<CourseStudent[]>([])
-  const [availableStudents, setAvailableStudents] = useState<AvailableStudent[]>([])
-  const [showAddForm, setShowAddForm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   // Load students on mount
-  useEffect(() => {
-    const loadStudents = async () => {
-      setIsLoading(true)
-      try {
-        const [studentsResult, availableResult] = await Promise.all([
-          getCourseStudents(courseId),
-          getAvailableStudentsForCourse(courseId, danceTypeId),
-        ])
-
-        if (studentsResult.data) setStudents(studentsResult.data)
-        if (availableResult.data) setAvailableStudents(availableResult.data)
-      } catch (error) {
-        console.error('Error loading students:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadStudents()
-  }, [courseId, danceTypeId])
-
-  const handleAddStudent = async (studentId: string) => {
-    setLoading(true)
+  const loadStudents = async () => {
+    setIsLoading(true)
     try {
-      const result = await addStudentToCourse(courseId, studentId)
-      if (result.success) {
-        // Reload students
-        const [studentsResult, availableResult] = await Promise.all([
-          getCourseStudents(courseId),
-          getAvailableStudentsForCourse(courseId, danceTypeId),
-        ])
-        if (studentsResult.data) setStudents(studentsResult.data)
-        if (availableResult.data) setAvailableStudents(availableResult.data)
-        setShowAddForm(false)
-      } else {
-        alert(result.error || 'Failed to add student')
-      }
+      const result = await getCourseStudents(courseId)
+      if (result.data) setStudents(result.data)
     } catch (error) {
-      console.error('Error adding student:', error)
-      alert('Failed to add student')
+      console.error('Error loading students:', error)
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadStudents()
+  }, [courseId])
 
   const handleRemoveStudent = async (studentId: string) => {
     if (!confirm('Remove this student from the course?')) return
@@ -88,13 +58,7 @@ export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsS
     try {
       const result = await removeStudentFromCourse(courseId, studentId)
       if (result.success) {
-        // Reload students
-        const [studentsResult, availableResult] = await Promise.all([
-          getCourseStudents(courseId),
-          getAvailableStudentsForCourse(courseId, danceTypeId),
-        ])
-        if (studentsResult.data) setStudents(studentsResult.data)
-        if (availableResult.data) setAvailableStudents(availableResult.data)
+        await loadStudents()
       } else {
         alert(result.error || 'Failed to remove student')
       }
@@ -104,6 +68,10 @@ export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsS
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleStudentsAdded = () => {
+    loadStudents()
   }
 
   if (isLoading) {
@@ -122,46 +90,12 @@ export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsS
           <h3 className="text-lg font-semibold text-[#111827]">Enrolled Students</h3>
           <span className="text-sm font-medium text-gray-600">({students.length})</span>
         </div>
-        <Button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2"
-          disabled={loading}
-        >
-          <Plus size={16} />
-          Add Student
-        </Button>
+        <AddStudentDialog
+          courseId={courseId}
+          danceTypeId={danceTypeId}
+          onStudentsAdded={handleStudentsAdded}
+        />
       </div>
-
-      {/* Add Student Form */}
-      {showAddForm && (
-        <div className="mb-6 p-4 border border-[#E5E7EB] rounded-lg bg-gray-50">
-          {availableStudents.length === 0 ? (
-            <p className="text-gray-600 text-sm">
-              No students with active packages for this dance type are available to add.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#111827] block mb-2">
-                Select Student to Add
-              </label>
-              <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
-                {availableStudents.map((student) => (
-                  <button
-                    key={student.id}
-                    onClick={() => handleAddStudent(student.id)}
-                    disabled={loading}
-                    className="text-left p-3 border border-[#E5E7EB] rounded-lg hover:bg-[#4F46E5] hover:text-white hover:border-[#4F46E5] transition-colors disabled:opacity-50"
-                  >
-                    <div className="font-medium">
-                      {student.first_name} {student.last_name}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Students List */}
       {students.length === 0 ? (

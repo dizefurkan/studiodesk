@@ -16,7 +16,6 @@ interface CreateCourseInput {
   dayOfWeek: number
   startTime: string
   endTime: string
-  capacity: number
   instructorIds?: string[]
   studentIds?: string[]
 }
@@ -26,7 +25,6 @@ interface UpdateCourseInput {
   dayOfWeek?: number
   startTime?: string
   endTime?: string
-  capacity?: number
   instructorIds?: string[]
   studentIds?: string[]
 }
@@ -119,7 +117,6 @@ export async function createCourse(input: CreateCourseInput) {
         day_of_week: input.dayOfWeek,
         start_time: input.startTime,
         end_time: input.endTime,
-        capacity: input.capacity,
       })
       .select()
       .single()
@@ -205,7 +202,6 @@ export async function updateCourse(id: string, input: UpdateCourseInput) {
     if (input.dayOfWeek !== undefined) updateData.day_of_week = input.dayOfWeek
     if (input.startTime !== undefined) updateData.start_time = input.startTime
     if (input.endTime !== undefined) updateData.end_time = input.endTime
-    if (input.capacity !== undefined) updateData.capacity = input.capacity
 
     console.log('[updateCourse] Update data:', updateData)
     const { data, error } = await (supabase.from('courses') as any)

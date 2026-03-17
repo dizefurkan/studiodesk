@@ -71,10 +71,6 @@ export default async function CoursesPage({
                       <Clock size={16} />
                       {DAYS[course.day_of_week]} {course.start_time} - {course.end_time}
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Users size={16} />
-                      Max {course.capacity} students
-                    </div>
                   </div>
                 </div>
 

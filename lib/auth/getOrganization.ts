@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { getOrganizationIdFromCookie, getCurrentUser, setOrganizationCookie } from './getCurrentUser'
+import { getOrganizationIdFromCookie, getCurrentUser } from './getCurrentUser'
 import type { Database } from '@/lib/types/database.types'
 
 export async function getOrganization() {
@@ -56,8 +56,6 @@ export async function getOrganization() {
     }
 
     if (orgs && orgs.length > 0) {
-      // Set the cookie for future requests
-      await setOrganizationCookie(orgId)
       console.log('Organization found for user:', user.id, 'orgId:', orgId)
       return orgs[0] as Database['public']['Tables']['organizations']['Row']
     }

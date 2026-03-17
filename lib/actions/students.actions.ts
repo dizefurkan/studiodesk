@@ -1,9 +1,9 @@
 'use server'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
-import { autoEnrollStudentInCourses } from '@/lib/actions/course-students.actions'
 import type { Database } from '@/lib/types/database.types'
 
 type Student = Database['public']['Tables']['students']['Row']
@@ -20,16 +20,6 @@ export async function getStudents(searchQuery?: string) {
   try {
     const supabase = await createServerSupabaseClient()
     
-    // Test: Get ALL students without organization filter
-    const { data: allData, error: allError } = await supabase
-      .from('students')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    console.log('[getStudents] ALL students (no filter):', allData?.length, allData)
-    console.log('[getStudents] ALL students error:', allError)
-    
-    // Now get with organization filter
     let query = supabase
       .from('students')
       .select('*')
@@ -42,25 +32,123 @@ export async function getStudents(searchQuery?: string) {
 
     const { data, error } = await query
 
-    console.log('[getStudents] User:', user.id)
-    console.log('[getStudents] Organization:', organization.id)
-    console.log('[getStudents] Search Query:', searchQuery)
-    console.log('[getStudents] Error:', error)
-    console.log('[getStudents] Data received:', data)
-    console.log('[getStudents] typeof data:', typeof data)
-    console.log('[getStudents] Array.isArray(data):', Array.isArray(data))
-    console.log('[getStudents] Object.keys(data):', Object.keys(data || {}))
-    console.log('[getStudents] Data JSON:', JSON.stringify(data))
-    console.log('[getStudents] Data length:', data?.length)
-    console.log('[getStudents] data[0]:', data?.[0])
-
     if (error) {
       console.error('Error fetching students:', error)
       return { error: 'Failed to fetch students' }
     }
 
-    console.log('[getStudents] Returning data:', data)
     return { data: data as Student[] }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
+export async function getStudentsWithStats(searchQuery?: string) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
+  try {
+    const adminSupabase = createAdminClient()
+
+    let query = adminSupabase
+      .from('students')
+      .select(`
+        id, 
+        first_name, 
+        last_name, 
+        email, 
+        phone,
+        created_at,
+        student_packages(
+          id,
+          remaining_credits,
+          package:packages(dance_type_id)
+        ),
+        course_students!inner(
+          course_id
+        )
+      `)
+      .eq('organization_id', organization.id)
+      .order('created_at', { ascending: false })
+
+    if (searchQuery) {
+      query = query.or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Error fetching students with stats:', error)
+      return { error: 'Failed to fetch students' }
+    }
+
+    // Process data to add calculated stats
+    const studentsWithStats = (data || []).map((student: any) => {
+      const totalCredits = (student.student_packages || []).reduce(
+        (sum: number, sp: any) => sum + (sp.remaining_credits || 0),
+        0
+      )
+      const activeCourses = new Set(
+        (student.course_students || []).map((cs: any) => cs.course_id)
+      ).size
+
+      return {
+        ...student,
+        totalRemainingCredits: totalCredits,
+        enrolledCoursesCount: activeCourses,
+      }
+    })
+
+    return { data: studentsWithStats }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
+export async function getStudentsWithPackages(searchQuery?: string) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
+  try {
+    const adminSupabase = createAdminClient()
+
+    let query = adminSupabase
+      .from('students')
+      .select(`
+        id, 
+        first_name, 
+        last_name, 
+        email, 
+        phone,
+        student_packages(
+          id, 
+          remaining_credits,
+          package:packages(id, name, dance_type_id)
+        )
+      `)
+      .eq('organization_id', organization.id)
+      .order('created_at', { ascending: false })
+
+    if (searchQuery) {
+      query = query.or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Error fetching students with packages:', error)
+      return { error: 'Failed to fetch students' }
+    }
+
+    return { data: data as any[] }
   } catch (error) {
     console.error('Unexpected error:', error)
     return { error: 'An unexpected error occurred' }
@@ -334,14 +422,6 @@ export async function purchasePackage(input: PurchasePackageInput) {
         console.error('Error creating transaction:', transError)
         // Don't fail the whole operation if transaction fails
       }
-    }
-
-    // Auto-enroll student in matching courses for this dance type
-    try {
-      await autoEnrollStudentInCourses(input.studentId, packageData.dance_type_id, branchId || undefined)
-    } catch (enrollError) {
-      console.error('Error auto-enrolling student in courses:', enrollError)
-      // Don't fail the purchase if auto-enrollment fails
     }
 
     return {

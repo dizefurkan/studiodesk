@@ -691,7 +691,7 @@ export function StudentAttendanceTable({
     <div>
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-          <AlertCircle className="text-red-600 mt-0.5 flex-shrink-0" size={18} />
+          <AlertCircle className="text-red-600 mt-0.5 shrink-0" size={18} />
           <div className="text-red-700 text-sm">{error}</div>
         </div>
       )}

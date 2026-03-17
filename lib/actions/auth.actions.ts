@@ -190,3 +190,46 @@ export async function resendVerificationEmail(email: string) {
 
   return { success: true }
 }
+
+export async function checkOrganizationHasBranches() {
+  const supabase = await createServerSupabaseClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { hasBranches: false }
+  }
+
+  try {
+    // Get user's organization from organization_users table
+    const { data: orgUsers, error: orgUsersError } = await supabase
+      .from('organization_users')
+      .select('organization_id')
+      .eq('user_id', user.id)
+      .limit(1)
+
+    if (orgUsersError || !orgUsers || orgUsers.length === 0) {
+      return { hasBranches: false }
+    }
+
+    const organizationId = (orgUsers[0] as any).organization_id
+
+    // Check if organization has any branches
+    const { data: branches, error: branchesError } = await supabase
+      .from('branches')
+      .select('id')
+      .eq('organization_id', organizationId)
+      .limit(1)
+
+    if (branchesError) {
+      console.error('Error checking branches:', branchesError)
+      return { hasBranches: false }
+    }
+
+    return { hasBranches: Array.isArray(branches) && branches.length > 0 }
+  } catch (error) {
+    console.error('Error in checkOrganizationHasBranches:', error)
+    return { hasBranches: false }
+  }
+}

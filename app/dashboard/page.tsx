@@ -1,16 +1,56 @@
-'use client'
-
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Users, BookOpen, Calendar, TrendingUp, ArrowRight, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
+import { getStudents } from '@/lib/actions/students.actions'
+import { getCourses } from '@/lib/actions/courses.actions'
+import { getOrganization } from '@/lib/auth/getOrganization'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const organization = await getOrganization()
+  
+  // Fetch students
+  const studentsResult = await getStudents()
+  const totalStudents = (studentsResult.data && Array.isArray(studentsResult.data)) ? studentsResult.data.length : 0
+  
+  // Fetch courses
+  const coursesResult = await getCourses()
+  const activeCourses = (coursesResult.data && Array.isArray(coursesResult.data)) ? coursesResult.data.length : 0
+  
+  // Fetch revenue this month
+  let sessionCount = 0
+  let revenue = 0
+  
+  if (organization) {
+    try {
+      const supabase = await createServerSupabaseClient()
+      const now = new Date()
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString()
+      
+      // Get cash transactions for this month
+      const { data: transactions } = await supabase
+        .from('cash_transactions')
+        .select('amount')
+        .eq('type', 'income')
+        .gte('created_at', firstDay)
+        .lte('created_at', lastDay)
+      
+      if (transactions && Array.isArray(transactions)) {
+        revenue = transactions.reduce((sum, t) => sum + (t.amount || 0), 0)
+        sessionCount = transactions.length
+      }
+    } catch (error) {
+      console.error('Error fetching transactions:', error)
+    }
+  }
+  
   const stats = [
-    { label: 'Total Students', value: '0', icon: Users, color: 'text-blue-600' },
-    { label: 'Active Courses', value: '0', icon: BookOpen, color: 'text-purple-600' },
-    { label: 'This Month Sessions', value: '0', icon: Calendar, color: 'text-green-600' },
-    { label: 'Revenue', value: 'R$ 0', icon: TrendingUp, color: 'text-orange-600' },
+    { label: 'Total Students', value: totalStudents.toString(), icon: Users, color: 'text-blue-600' },
+    { label: 'Active Courses', value: activeCourses.toString(), icon: BookOpen, color: 'text-purple-600' },
+    { label: 'This Month Sessions', value: sessionCount.toString(), icon: Calendar, color: 'text-green-600' },
+    { label: 'Revenue', value: `R$ ${revenue.toFixed(2)}`, icon: TrendingUp, color: 'text-orange-600' },
   ]
 
   const quickActions = [
@@ -100,9 +140,9 @@ export default function DashboardPage() {
                   <Link key={item.title} href={item.href}>
                     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-[#E5E7EB] transition-colors">
                       {item.completed ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
                       ) : (
-                        <Clock className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                        <Clock className="w-5 h-5 text-gray-400 shrink-0" />
                       )}
                       <span className={item.completed ? 'text-gray-500 line-through' : 'text-[#111827]'}>
                         {item.title}

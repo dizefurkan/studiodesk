@@ -1,8 +1,8 @@
-import { getStudents } from '@/lib/actions/students.actions'
+import { getStudentsWithStats } from '@/lib/actions/students.actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Users, Plus, Edit2, Trash2 } from 'lucide-react'
+import { Users, Plus, Edit2, Trash2, BookOpen, Zap } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
 
 type Student = Database['public']['Tables']['students']['Row']
@@ -15,13 +15,8 @@ export default async function StudentsPage({
   const params = await searchParams
   const searchQuery = typeof params.q === 'string' ? params.q : undefined
 
-  const result = await getStudents(searchQuery)
-  console.log('[StudentsPage] Result from getStudents:', result)
-  console.log('[StudentsPage] Result.error:', result.error)
-  console.log('[StudentsPage] Result.data:', result.data)
+  const result = await getStudentsWithStats(searchQuery)
   const students = result.data || []
-  console.log('[StudentsPage] Students to render:', students)
-  console.log('[StudentsPage] Students length:', students.length)
 
   return (
     <div className="space-y-6">
@@ -63,12 +58,14 @@ export default async function StudentsPage({
                   <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Name</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Email</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Phone</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Credits</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Courses</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Joined</th>
                   <th className="px-6 py-4 text-right text-sm font-semibold text-[#111827]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E7EB]">
-                {students.map((student) => (
+                {students.map((student: any) => (
                   <tr key={student.id} className="hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-6 py-4">
                       <Link
@@ -80,6 +77,20 @@ export default async function StudentsPage({
                     </td>
                     <td className="px-6 py-4 text-gray-600">{student.email}</td>
                     <td className="px-6 py-4 text-gray-600">{student.phone || '-'}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-1">
+                        <Zap size={14} className="text-amber-500" />
+                        <span className={student.totalRemainingCredits === 0 ? 'text-red-600 font-medium' : 'text-[#111827] font-semibold'}>
+                          {student.totalRemainingCredits || 0}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-1">
+                        <BookOpen size={14} className="text-purple-500" />
+                        <span className="text-[#111827] font-semibold">{student.enrolledCoursesCount || 0}</span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-gray-600">
                       {new Date(student.created_at!).toLocaleDateString()}
                     </td>

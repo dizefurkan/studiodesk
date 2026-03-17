@@ -36,7 +36,6 @@ const courseSchema = z.object({
   dayOfWeek: z.coerce.number().min(0).max(6),
   startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:mm format'),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:mm format'),
-  capacity: z.coerce.number().min(1, 'Capacity must be at least 1'),
   instructorIds: z.array(z.string()).optional(),
   studentIds: z.array(z.string()).optional(),
 })
@@ -65,7 +64,6 @@ export function CourseForm({ course }: CourseFormProps) {
       dayOfWeek: course?.day_of_week || 0,
       startTime: course?.start_time || '',
       endTime: course?.end_time || '',
-      capacity: course?.capacity || 20,
       instructorIds: course?.course_instructors?.map((ci) => ci.instructor_id) || [],
       studentIds: [],
     },
@@ -117,7 +115,6 @@ export function CourseForm({ course }: CourseFormProps) {
             dayOfWeek: data.dayOfWeek,
             startTime: data.startTime,
             endTime: data.endTime,
-            capacity: data.capacity,
             instructorIds: data.instructorIds,
             studentIds: data.studentIds,
           })
@@ -128,7 +125,6 @@ export function CourseForm({ course }: CourseFormProps) {
             dayOfWeek: data.dayOfWeek,
             startTime: data.startTime,
             endTime: data.endTime,
-            capacity: data.capacity,
             instructorIds: data.instructorIds,
             studentIds: data.studentIds,
           })
@@ -277,20 +273,6 @@ export function CourseForm({ course }: CourseFormProps) {
                     <FormLabel>End Time</FormLabel>
                     <FormControl>
                       <Input type="time" disabled={isLoading} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="capacity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Capacity</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="20" disabled={isLoading} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

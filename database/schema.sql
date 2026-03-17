@@ -159,7 +159,6 @@ CREATE TABLE IF NOT EXISTS courses (
   day_of_week INT NOT NULL CHECK (day_of_week >= 0 AND day_of_week <= 6),
   start_time TIME NOT NULL,
   end_time TIME NOT NULL,
-  capacity INT NOT NULL DEFAULT 20,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

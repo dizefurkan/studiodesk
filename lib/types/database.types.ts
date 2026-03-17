@@ -250,7 +250,6 @@ export type Database = {
           day_of_week: number
           start_time: string
           end_time: string
-          capacity: number
           created_at: string
           updated_at: string
         }
@@ -262,7 +261,6 @@ export type Database = {
           day_of_week: number
           start_time: string
           end_time: string
-          capacity: number
           created_at?: string
           updated_at?: string
         }
@@ -274,7 +272,6 @@ export type Database = {
           day_of_week?: number
           start_time?: string
           end_time?: string
-          capacity?: number
           created_at?: string
           updated_at?: string
         }

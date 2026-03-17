@@ -214,3 +214,87 @@ export async function autoEnrollStudentInCourses(studentId: string, danceTypeId:
     return { error: 'An unexpected error occurred' }
   }
 }
+
+/**
+ * Get all courses a student is enrolled in with attendance stats
+ */
+export async function getStudentEnrolledCourses(studentId: string) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  try {
+    const supabase = await createServerSupabaseClient()
+
+    // Get all courses this student is enrolled in
+    const { data: courseEnrollments, error: enrollmentError } = await (supabase
+      .from('course_students') as any)
+      .select(
+        `
+        id,
+        course_id,
+        joined_at,
+        courses(
+          id, name, day_of_week, start_time, end_time,
+          branches(name),
+          dance_types(name),
+          course_instructors(instructor_id)
+        ),
+        student_packages(id, remaining_credits, package:packages(dance_type_id))
+      `,
+      )
+      .eq('student_id', studentId)
+      .order('joined_at', { ascending: false })
+
+    if (enrollmentError) {
+      console.error('Error fetching course enrollments:', enrollmentError)
+      return { error: 'Failed to fetch enrolled courses' }
+    }
+
+    if (!courseEnrollments || courseEnrollments.length === 0) {
+      return { data: { active: [], completed: [] } }
+    }
+
+    // For each course, get attendance counts
+    const coursesWithStats = await Promise.all(
+      courseEnrollments.map(async (enrollment: any) => {
+        // Get attendance records for this student in this course
+        const { data: attendances } = await (supabase
+          .from('attendances') as any)
+          .select('id, created_at, course_sessions(session_date)')
+          .eq('student_id', studentId)
+          .in(
+            'session_id',
+            (
+              await (supabase.from('course_sessions') as any)
+                .select('id')
+                .eq('course_id', enrollment.courses.id)
+            ).data?.map((s: any) => s.id) || [],
+          )
+
+        return {
+          courseId: enrollment.courses.id,
+          courseName: enrollment.courses.name,
+          branchName: enrollment.courses.branches?.name,
+          danceTypeName: enrollment.courses.dance_types?.name,
+          dayOfWeek: enrollment.courses.day_of_week,
+          startTime: enrollment.courses.start_time,
+          endTime: enrollment.courses.end_time,
+          enrolledAt: enrollment.joined_at,
+          attendanceCount: attendances?.length || 0,
+          attendanceDates: attendances?.map((a: any) => a.course_sessions?.session_date) || [],
+          remainingCredits: enrollment.student_packages?.[0]?.remaining_credits || 0,
+          packageDanceTypeId: enrollment.student_packages?.[0]?.package?.dance_type_id,
+        }
+      }),
+    )
+
+    // Separate into active (remaining_credits > 0) and completed (remaining_credits = 0)
+    const active = coursesWithStats.filter((c) => c.remainingCredits > 0)
+    const completed = coursesWithStats.filter((c) => c.remainingCredits === 0)
+
+    return { data: { active, completed } }
+  } catch (error) {
+    console.error('Unexpected error in getStudentEnrolledCourses:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
