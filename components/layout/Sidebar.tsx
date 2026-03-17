@@ -28,72 +28,103 @@ const menuItems = [
     label: 'Dashboard',
     icon: LayoutDashboard,
     href: '/dashboard',
+    category: false,
   },
   {
-    label: 'Students',
-    icon: Users,
-    href: '/dashboard/students',
+    label: 'Core Operations',
+    category: true,
+    items: [
+      {
+        label: 'Students',
+        icon: Users,
+        href: '/dashboard/students',
+      },
+      {
+        label: 'Courses',
+        icon: BookOpen,
+        href: '/dashboard/courses',
+      },
+      {
+        label: 'Attendance',
+        icon: ClipboardCheck,
+        href: '/dashboard/attendance',
+      },
+      {
+        label: 'Calendar',
+        icon: Calendar,
+        href: '/dashboard/calendar',
+      },
+    ],
   },
   {
-    label: 'Instructors',
-    icon: UserCheck,
-    href: '/dashboard/instructors',
+    label: 'Instructor Management',
+    category: true,
+    items: [
+      {
+        label: 'Instructors',
+        icon: UserCheck,
+        href: '/dashboard/instructors',
+      },
+      {
+        label: 'Instructor Rates',
+        icon: DollarSign,
+        href: '/dashboard/instructor-rates',
+      },
+      {
+        label: 'Instructor Earnings',
+        icon: TrendingUp,
+        href: '/dashboard/instructor-earnings',
+      },
+    ],
   },
   {
-    label: 'Instructor Rates',
-    icon: DollarSign,
-    href: '/dashboard/instructor-rates',
-  },
-  {
-    label: 'Branches',
-    icon: MapPin,
-    href: '/dashboard/branches',
-  },
-  {
-    label: 'Dance Types',
-    icon: Music2,
-    href: '/dashboard/dance-types',
-  },
-  {
-    label: 'Courses',
-    icon: BookOpen,
-    href: '/dashboard/courses',
-  },
-  {
-    label: 'Calendar',
-    icon: Calendar,
-    href: '/dashboard/calendar',
-  },
-  {
-    label: 'Attendance',
-    icon: ClipboardCheck,
-    href: '/dashboard/attendance',
-  },
-  {
-    label: 'Packages',
-    icon: Package,
-    href: '/dashboard/packages',
-  },
-  {
-    label: 'Cash Register',
-    icon: DollarSign,
-    href: '/dashboard/cash-register',
-  },
-  {
-    label: 'Instructor Earnings',
-    icon: TrendingUp,
-    href: '/dashboard/instructor-earnings',
+    label: 'Financial',
+    category: true,
+    items: [
+      {
+        label: 'Packages',
+        icon: Package,
+        href: '/dashboard/packages',
+      },
+      {
+        label: 'Cash Register',
+        icon: DollarSign,
+        href: '/dashboard/cash-register',
+      },
+    ],
   },
   {
     label: 'Settings',
-    icon: Settings,
-    href: '/dashboard/settings',
+    category: true,
+    items: [
+      {
+        label: 'Branches',
+        icon: MapPin,
+        href: '/dashboard/branches',
+      },
+      {
+        label: 'Dance Types',
+        icon: Music2,
+        href: '/dashboard/dance-types',
+      },
+      {
+        label: 'System Settings',
+        icon: Settings,
+        href: '/dashboard/settings',
+      },
+    ],
   },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(true)
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
+    'Core Operations': true,
+    'Instructor Management': false,
+    'Financial': false,
+    'Settings': false,
+  })
 
   return (
     <>
@@ -131,26 +162,92 @@ export function Sidebar() {
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 overflow-y-auto px-3 py-6 space-y-2">
+        <nav className="flex-1 overflow-y-auto px-3 py-6 space-y-3">
           {menuItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+            // Dashboard - single item
+            if (!item.category) {
+              const Icon = item.icon
+              const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-sm font-medium',
+                    isActive
+                      ? 'bg-[#4F46E5] text-white'
+                      : 'text-[#6B7280] hover:bg-[#F3F4F6]'
+                  )}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Icon size={20} className="shrink-0" />
+                  <span>{item.label}</span>
+                </Link>
+              )
+            }
+
+            // Category with subitems
+            const isExpanded = expandedCategories[item.label]
+            const toggleCategory = () => {
+              setExpandedCategories((prev) => ({
+                ...prev,
+                [item.label]: !prev[item.label],
+              }))
+            }
+
+            // Check if any subitem is active
+            const hasActiveChild = item.items?.some(
+              (subitem: any) => pathname === subitem.href || pathname.startsWith(subitem.href + '/')
+            )
 
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-sm font-medium',
-                  isActive
-                    ? 'bg-[#4F46E5] text-white'
-                    : 'text-[#6B7280] hover:bg-[#F3F4F6]'
+              <div key={item.label}>
+                {/* Category Header */}
+                <button
+                  onClick={toggleCategory}
+                  className={cn(
+                    'w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors text-sm font-semibold',
+                    hasActiveChild
+                      ? 'text-[#4F46E5] bg-blue-50'
+                      : 'text-[#374151] hover:bg-[#F3F4F6]'
+                  )}
+                >
+                  <span>{item.label}</span>
+                  <ChevronDown
+                    size={16}
+                    className={cn('transition-transform', isExpanded ? 'rotate-180' : '')}
+                  />
+                </button>
+
+                {/* Category Items */}
+                {isExpanded && (
+                  <div className="mt-1 ml-2 space-y-1 border-l border-[#E5E7EB] pl-3">
+                    {item.items?.map((subitem: any) => {
+                      const SubIcon = subitem.icon
+                      const isSubActive =
+                        pathname === subitem.href || pathname.startsWith(subitem.href + '/')
+
+                      return (
+                        <Link
+                          key={subitem.href}
+                          href={subitem.href}
+                          className={cn(
+                            'flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm font-medium',
+                            isSubActive
+                              ? 'bg-[#4F46E5] text-white'
+                              : 'text-[#6B7280] hover:bg-[#F3F4F6]'
+                          )}
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <SubIcon size={18} className="shrink-0" />
+                          <span>{subitem.label}</span>
+                        </Link>
+                      )
+                    })}
+                  </div>
                 )}
-                onClick={() => setIsOpen(false)}
-              >
-                <Icon size={20} className="shrink-0" />
-                <span>{item.label}</span>
-              </Link>
+              </div>
             )
           })}
         </nav>
