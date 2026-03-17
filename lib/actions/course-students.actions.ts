@@ -238,8 +238,7 @@ export async function getStudentEnrolledCourses(studentId: string) {
           branches(name),
           dance_types(name),
           course_instructors(instructor_id)
-        ),
-        student_packages(id, remaining_credits, package:packages(dance_type_id))
+        )
       `,
       )
       .eq('student_id', studentId)
@@ -252,6 +251,17 @@ export async function getStudentEnrolledCourses(studentId: string) {
 
     if (!courseEnrollments || courseEnrollments.length === 0) {
       return { data: { active: [], completed: [] } }
+    }
+
+    // Get student packages to check remaining credits
+    const { data: studentPackages, error: packagesError } = await (supabase
+      .from('student_packages') as any)
+      .select('id, remaining_credits, packages(dance_type_id)')
+      .eq('student_id', studentId)
+
+    if (packagesError) {
+      console.error('Error fetching student packages:', packagesError)
+      return { error: 'Failed to fetch student packages' }
     }
 
     // For each course, get attendance counts
@@ -271,6 +281,11 @@ export async function getStudentEnrolledCourses(studentId: string) {
             ).data?.map((s: any) => s.id) || [],
           )
 
+        // Find matching package for this course's dance type
+        const matchingPackage = studentPackages?.find(
+          (pkg: any) => pkg.packages?.dance_type_id === enrollment.courses.dance_type_id
+        )
+
         return {
           courseId: enrollment.courses.id,
           courseName: enrollment.courses.name,
@@ -282,8 +297,8 @@ export async function getStudentEnrolledCourses(studentId: string) {
           enrolledAt: enrollment.joined_at,
           attendanceCount: attendances?.length || 0,
           attendanceDates: attendances?.map((a: any) => a.course_sessions?.session_date) || [],
-          remainingCredits: enrollment.student_packages?.[0]?.remaining_credits || 0,
-          packageDanceTypeId: enrollment.student_packages?.[0]?.package?.dance_type_id,
+          remainingCredits: matchingPackage?.remaining_credits || 0,
+          packageDanceTypeId: matchingPackage?.packages?.dance_type_id,
         }
       }),
     )
