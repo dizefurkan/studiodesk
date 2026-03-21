@@ -89,7 +89,6 @@ export default async function SettingsPage() {
       <Card className="border-[#E5E7EB] p-6">
         <TeamMembersSection
           teamMembers={teamMembers}
-          availableUsers={availableUsers}
           userRole={userRole}
           canManageTeam={canManageTeam}
           organization={organization}

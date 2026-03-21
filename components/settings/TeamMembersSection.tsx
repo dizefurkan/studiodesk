@@ -9,7 +9,6 @@ import { ROLE_LABELS } from '@/lib/constants/roles'
 
 interface TeamMembersSectionProps {
   teamMembers: any[]
-  availableUsers: Array<{ id: string; full_name: string; email?: string }>
   userRole: string
   canManageTeam: boolean
   organization: any
@@ -17,7 +16,6 @@ interface TeamMembersSectionProps {
 
 export function TeamMembersSection({
   teamMembers,
-  availableUsers,
   userRole,
   canManageTeam,
   organization,
@@ -43,13 +41,12 @@ export function TeamMembersSection({
 
           {/* Add button in header if members exist */}
           {teamMembers.length > 0 && (
-            <Button
-              onClick={() => setIsAddingTeamMember(true)}
-              className="bg-[#4F46E5] hover:bg-[#4338CA] text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
-            >
-              <UserPlus size={18} />
-              Add Member
-            </Button>
+            <AddTeamMemberForm
+              userRole={userRole}
+              canManageTeam={canManageTeam}
+              isHeaderMode={true}
+              onOpen={() => setIsAddingTeamMember(true)}
+            />
           )}
         </div>
       )}
@@ -67,7 +64,6 @@ export function TeamMembersSection({
 
           {/* Add button in footer if no members */}
           <AddTeamMemberForm
-            availableUsers={availableUsers}
             userRole={userRole}
             canManageTeam={canManageTeam}
             isHeaderMode={false}
@@ -136,7 +132,6 @@ export function TeamMembersSection({
           ) : (
             /* Show add form when isAddingTeamMember is true */
             <AddTeamMemberForm
-              availableUsers={availableUsers}
               userRole={userRole}
               canManageTeam={canManageTeam}
               isHeaderMode={false}
