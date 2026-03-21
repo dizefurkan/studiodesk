@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getOrganizationIdFromCookie, getCurrentUser } from './getCurrentUser'
 import type { Database } from '@/lib/types/database.types'
 
@@ -8,7 +9,8 @@ export async function getOrganization() {
   if (!user) return null
 
   try {
-    const supabase = await createServerSupabaseClient()
+    // Use admin client to bypass RLS for server-side operations
+    const supabase = createAdminClient()
     
     // First try to get from cookie
     const organizationId = await getOrganizationIdFromCookie()
@@ -32,7 +34,12 @@ export async function getOrganization() {
       .limit(1)
 
     if (orgUsersError) {
-      console.error('Error fetching organization_users:', orgUsersError)
+      console.error('Error fetching organization_users:', {
+        message: orgUsersError.message,
+        code: (orgUsersError as any).code,
+        details: (orgUsersError as any).details,
+        hint: (orgUsersError as any).hint,
+      })
       return null
     }
 

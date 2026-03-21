@@ -18,6 +18,9 @@ CREATE TABLE IF NOT EXISTS organizations (
   virtual_sessions_weeks INT DEFAULT 12 CHECK (virtual_sessions_weeks > 0),
   attendance_per_week_limit INT DEFAULT 1 CHECK (attendance_per_week_limit > 0),
   allow_makeup_sessions BOOLEAN DEFAULT true,
+  allow_manager_invite BOOLEAN DEFAULT false,
+  allow_role_change BOOLEAN DEFAULT false,
+  allow_member_delete BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

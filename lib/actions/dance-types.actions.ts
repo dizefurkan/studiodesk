@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import type { Database } from '@/lib/types/database.types'
@@ -15,8 +16,8 @@ export async function getDanceTypes(searchQuery?: string) {
   if (!organization) return { error: 'No organization found' }
 
   try {
-    const supabase = await createServerSupabaseClient()
-    let query = supabase
+    const admin = createAdminClient()
+    let query = (admin as any)
       .from('dance_types')
       .select('*')
       .eq('organization_id', organization.id)
@@ -48,8 +49,8 @@ export async function getDanceType(id: string) {
   if (!organization) return { error: 'No organization found' }
 
   try {
-    const supabase = await createServerSupabaseClient()
-    const { data, error } = await supabase
+    const admin = createAdminClient()
+    const { data, error } = await (admin as any)
       .from('dance_types')
       .select('*')
       .eq('id', id)

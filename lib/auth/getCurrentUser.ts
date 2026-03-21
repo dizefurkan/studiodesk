@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { cookies } from 'next/headers'
 import type { User } from '@supabase/supabase-js'
 
@@ -23,15 +24,24 @@ export async function getUserRoleInOrganization(organizationId: string) {
   if (!user) return null
 
   try {
-    const { data } = await supabase
+    // Use admin client to bypass RLS
+    const admin = createAdminClient()
+    const { data, error } = await (admin as any)
       .from('organization_users')
       .select('role')
       .eq('organization_id', organizationId)
       .eq('user_id', user.id)
       .single()
 
+    if (error) {
+      console.error('❌ Error fetching user role:', error)
+      return null
+    }
+
+    console.log('✅ User role fetched successfully:', data)
     return data
-  } catch {
+  } catch (e) {
+    console.error('❌ Exception in getUserRoleInOrganization:', e)
     return null
   }
 }

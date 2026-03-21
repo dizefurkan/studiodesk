@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import type { Database } from '@/lib/types/database.types'
@@ -15,19 +16,9 @@ export async function getBranches(searchQuery?: string) {
   if (!organization) return { error: 'No organization found' }
 
   try {
-    const supabase = await createServerSupabaseClient()
+    const admin = createAdminClient()
     
-    // Test: Get ALL branches without organization filter
-    const { data: allData, error: allError } = await supabase
-      .from('branches')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    console.log('[getBranches] ALL branches (no filter):', allData?.length, allData)
-    console.log('[getBranches] ALL branches error:', allError)
-    
-    // Now get with organization filter
-    let query = supabase
+    let query = (admin as any)
       .from('branches')
       .select('*')
       .eq('organization_id', organization.id)
@@ -39,24 +30,11 @@ export async function getBranches(searchQuery?: string) {
 
     const { data, error } = await query
 
-    console.log('[getBranches] User:', user.id)
-    console.log('[getBranches] Organization:', organization.id)
-    console.log('[getBranches] Search Query:', searchQuery)
-    console.log('[getBranches] Error:', error)
-    console.log('[getBranches] Data received:', data)
-    console.log('[getBranches] typeof data:', typeof data)
-    console.log('[getBranches] Array.isArray(data):', Array.isArray(data))
-    console.log('[getBranches] Object.keys(data):', Object.keys(data || {}))
-    console.log('[getBranches] Data JSON:', JSON.stringify(data))
-    console.log('[getBranches] Data length:', data?.length)
-    console.log('[getBranches] data[0]:', data?.[0])
-
     if (error) {
       console.error('Error fetching branches:', error)
       return { error: 'Failed to fetch branches' }
     }
 
-    console.log('[getBranches] Returning data:', data)
     return { data: data as Branch[] }
   } catch (error) {
     console.error('Unexpected error:', error)
@@ -72,8 +50,8 @@ export async function getBranch(id: string) {
   if (!organization) return { error: 'No organization found' }
 
   try {
-    const supabase = await createServerSupabaseClient()
-    const { data, error } = await supabase
+    const admin = createAdminClient()
+    const { data, error } = await (admin as any)
       .from('branches')
       .select('*')
       .eq('id', id)

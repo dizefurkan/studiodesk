@@ -34,9 +34,9 @@ export async function getCourses(branchId?: string, searchQuery?: string) {
   if (!user) return { error: 'Not authenticated' }
 
   try {
-    const supabase = await createServerSupabaseClient()
-    let query = (supabase
-      .from('courses') as any)
+    const admin = createAdminClient()
+    let query = (admin as any)
+      .from('courses')
       .select('*, branches(name), dance_types(name)')
       .order('created_at', { ascending: false })
 
@@ -67,9 +67,9 @@ export async function getCourse(id: string) {
   if (!user) return { error: 'Not authenticated' }
 
   try {
-    const supabase = await createServerSupabaseClient()
-    const { data, error } = await (supabase
-      .from('courses') as any)
+    const admin = createAdminClient()
+    const { data, error } = await (admin as any)
+      .from('courses')
       .select('*, branches(name), dance_types(name), course_instructors(instructor_id, instructors(id, first_name, last_name))')
       .eq('id', id)
       .single()

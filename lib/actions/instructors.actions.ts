@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import type { Database } from '@/lib/types/database.types'
@@ -15,19 +16,10 @@ export async function getInstructors(searchQuery?: string) {
   if (!organization) return { error: 'No organization found' }
 
   try {
-    const supabase = await createServerSupabaseClient()
+    // Use admin client to bypass RLS
+    const admin = createAdminClient()
     
-    // Test: Get ALL instructors without organization filter
-    const { data: allData, error: allError } = await supabase
-      .from('instructors')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    console.log('[getInstructors] ALL instructors (no filter):', allData?.length, allData)
-    console.log('[getInstructors] ALL instructors error:', allError)
-    
-    // Now get with organization filter
-    let query = supabase
+    let query = (admin as any)
       .from('instructors')
       .select('*')
       .eq('organization_id', organization.id)
@@ -44,12 +36,7 @@ export async function getInstructors(searchQuery?: string) {
     console.log('[getInstructors] Search Query:', searchQuery)
     console.log('[getInstructors] Error:', error)
     console.log('[getInstructors] Data received:', data)
-    console.log('[getInstructors] typeof data:', typeof data)
-    console.log('[getInstructors] Array.isArray(data):', Array.isArray(data))
-    console.log('[getInstructors] Object.keys(data):', Object.keys(data || {}))
-    console.log('[getInstructors] Data JSON:', JSON.stringify(data))
     console.log('[getInstructors] Data length:', data?.length)
-    console.log('[getInstructors] data[0]:', data?.[0])
 
     if (error) {
       console.error('Error fetching instructors:', error)
@@ -72,8 +59,8 @@ export async function getInstructor(id: string) {
   if (!organization) return { error: 'No organization found' }
 
   try {
-    const supabase = await createServerSupabaseClient()
-    const { data, error } = await supabase
+    const admin = createAdminClient()
+    const { data, error } = await (admin as any)
       .from('instructors')
       .select('*')
       .eq('id', id)

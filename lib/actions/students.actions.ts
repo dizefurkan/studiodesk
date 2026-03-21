@@ -18,9 +18,9 @@ export async function getStudents(searchQuery?: string) {
   if (!organization) return { error: 'No organization found' }
 
   try {
-    const supabase = await createServerSupabaseClient()
+    const admin = createAdminClient()
     
-    let query = supabase
+    let query = (admin as any)
       .from('students')
       .select('*')
       .eq('organization_id', organization.id)
@@ -163,8 +163,8 @@ export async function getStudent(id: string) {
   if (!organization) return { error: 'No organization found' }
 
   try {
-    const supabase = await createServerSupabaseClient()
-    const { data, error } = await supabase
+    const admin = createAdminClient()
+    const { data, error } = await (admin as any)
       .from('students')
       .select('*')
       .eq('id', id)
@@ -318,9 +318,9 @@ export async function getStudentPackages(studentId: string) {
   if (!user) return { error: 'Not authenticated' }
 
   try {
-    const supabase = await createServerSupabaseClient()
-    const { data, error } = await (supabase
-      .from('student_packages') as any)
+    const admin = createAdminClient()
+    const { data, error } = await (admin as any)
+      .from('student_packages')
       .select('*, packages(name, total_credits, price, dance_types(name))')
       .eq('student_id', studentId)
       .order('created_at', { ascending: false })
