@@ -121,6 +121,7 @@ export async function sendTeamInvitation(email: string, role: string) {
                   id: existingAuthUser.id,
                   email: email.toLowerCase(),
                   full_name: email.split('@')[0],
+                  profile_completed: true, // Mark as completed since they're being invited to existing org
                 })
               
               if (profileError) {
@@ -176,13 +177,14 @@ export async function sendTeamInvitation(email: string, role: string) {
       return { error: `Failed to create user account: ${authError.message}` }
     }
 
-    // Create user profile
+    // Create user profile with profile_completed flag (invited users skip onboarding)
     const { error: profileError } = await (admin as any)
       .from('profiles')
       .insert({
         id: authData.user.id,
         email: email.toLowerCase(),
         full_name: email.split('@')[0], // Use email prefix as default name
+        profile_completed: true, // Mark as completed since they're being invited to existing org
       })
 
     if (profileError) {

@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
-import { createOrganizationWithBranch, checkOrganizationHasBranches } from '@/lib/actions/auth.actions'
+import { createOrganizationWithBranch, checkShouldShowOnboarding } from '@/lib/actions/auth.actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -39,24 +39,34 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<'info' | 'success'>('info')
   const [isChecking, setIsChecking] = useState(true)
 
-  // Check if organization already has branches on mount
+  // Check if user should see onboarding (owner with no branches)
   useEffect(() => {
-    async function checkBranches() {
+    async function checkOnboarding() {
       try {
-        const result = await checkOrganizationHasBranches()
-        if (result.hasBranches) {
-          // Redirect to dashboard if branches already exist
+        const result = await checkShouldShowOnboarding()
+        if (!result.shouldShow) {
+          // Not an owner or already has branches - skip to dashboard
           router.push('/dashboard')
+          return
         }
       } catch (error) {
-        console.error('Error checking branches:', error)
+        console.error('Error checking onboarding:', error)
       } finally {
         setIsChecking(false)
       }
     }
 
-    checkBranches()
+    checkOnboarding()
   }, [router])
+
+  // Auto-redirect if still checking
+  if (isChecking) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    )
+  }
 
   const form = useForm<OnboardingFormValues>({
     resolver: zodResolver(onboardingSchema),

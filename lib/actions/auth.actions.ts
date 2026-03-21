@@ -191,6 +191,57 @@ export async function resendVerificationEmail(email: string) {
   return { success: true }
 }
 
+export async function checkShouldShowOnboarding() {
+  const supabase = await createServerSupabaseClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { shouldShow: false }
+  }
+
+  try {
+    // Get user's organization and role from organization_users table
+    const { data: orgUsers, error: orgUsersError } = await supabase
+      .from('organization_users')
+      .select('organization_id, role')
+      .eq('user_id', user.id)
+      .limit(1)
+
+    if (orgUsersError || !orgUsers || orgUsers.length === 0) {
+      return { shouldShow: false }
+    }
+
+    const organizationId = (orgUsers[0] as any).organization_id
+    const userRole = (orgUsers[0] as any).role
+
+    // Onboarding only for owners
+    if (userRole !== 'owner' && userRole !== 4) {
+      // Not an owner - skip onboarding for team members
+      return { shouldShow: false }
+    }
+
+    // Check if organization has any branches
+    const { data: branches, error: branchesError } = await supabase
+      .from('branches')
+      .select('id')
+      .eq('organization_id', organizationId)
+      .limit(1)
+
+    if (branchesError) {
+      console.error('Error checking branches:', branchesError)
+      return { shouldShow: false }
+    }
+
+    // Show onboarding only if owner has no branches yet
+    return { shouldShow: Array.isArray(branches) && branches.length === 0 }
+  } catch (error) {
+    console.error('Error in checkShouldShowOnboarding:', error)
+    return { shouldShow: false }
+  }
+}
+
 export async function checkOrganizationHasBranches() {
   const supabase = await createServerSupabaseClient()
   const {
