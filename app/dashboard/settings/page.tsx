@@ -5,7 +5,7 @@ import { Settings, Users, Lock, Bell, Building, Edit2, Trash2 } from 'lucide-rea
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { CurrencySettings } from '@/components/settings/CurrencySettings'
 import { OrganizationPermissionSettings } from '@/components/settings/OrganizationPermissionSettings'
-import { AddTeamMemberForm } from '@/components/settings/AddTeamMemberForm'
+import { TeamMembersSection } from '@/components/settings/TeamMembersSection'
 import { getCurrentUser, getUserRoleInOrganization } from '@/lib/auth/getCurrentUser'
 import { removeTeamMember, updateTeamMemberRole } from '@/lib/actions/organization.actions'
 import { ROLE_LABELS } from '@/lib/constants/roles'
@@ -87,79 +87,13 @@ export default async function SettingsPage() {
 
       {/* Team Management */}
       <Card className="border-[#E5E7EB] p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="bg-[#4F46E5] p-3 rounded-lg">
-            <Users className="text-white" size={24} />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-[#111827]">Team Members</h2>
-            <p className="text-sm text-gray-600">{teamMembers.length} member(s)</p>
-          </div>
-        </div>
-
-        {/* Add Team Member Form */}
-        <AddTeamMemberForm
+        <TeamMembersSection
+          teamMembers={teamMembers}
           availableUsers={availableUsers}
           userRole={userRole}
           canManageTeam={canManageTeam}
+          organization={organization}
         />
-
-        {/* Team Members List */}
-        {teamMembers.length === 0 ? (
-          <p className="text-gray-600 text-center py-8 mt-4">No team members</p>
-        ) : (
-          <div className="space-y-3 mt-4">
-            {teamMembers.map((member: any) => (
-              <div
-                key={member.id}
-                className="flex justify-between items-center p-4 border border-[#E5E7EB] rounded-lg"
-              >
-                <div>
-                  <p className="font-medium text-[#111827]">{member.profiles?.full_name}</p>
-                  <p className="text-sm text-gray-600">{ROLE_LABELS[member.role] || member.role}</p>
-                </div>
-
-                {/* Edit/Delete Buttons */}
-                {canManageTeam && member.role !== 'owner' && (
-                  <div className="flex gap-2">
-                    {(organization as any)?.allow_role_change && (
-                      <select
-                        defaultValue={member.role}
-                        onChange={(e) => {
-                          updateTeamMemberRole(member.id, e.target.value)
-                        }}
-                        className="text-xs px-2 py-1 border border-[#E5E7EB] rounded bg-white"
-                      >
-                        <option value="manager">Manager</option>
-                        <option value="instructor">Instructor</option>
-                        <option value="staff">Staff</option>
-                      </select>
-                    )}
-
-                    {(organization as any)?.allow_member_delete && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-600 hover:bg-red-50"
-                        onClick={() => {
-                          if (
-                            confirm(
-                              `Are you sure you want to remove ${member.profiles?.full_name}?`,
-                            )
-                          ) {
-                            removeTeamMember(member.id)
-                          }
-                        }}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
       </Card>
 
       {/* Team Management Permissions (Owner only) */}
