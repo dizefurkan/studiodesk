@@ -32,17 +32,21 @@ export async function getAvailableStudentsForCourse(courseId: string, danceTypeI
       return { error: 'Failed to fetch available students' }
     }
 
-    // Get students already enrolled in this course
-    const { data: enrolledStudents, error: enrolledError } = await (adminSupabase
-      .from('course_students') as any)
-      .select('student_id')
-      .eq('course_id', courseId)
+    // Get students already enrolled in this course (only if courseId is valid)
+    let enrolledStudentIds = new Set()
+    
+    if (courseId) {
+      const { data: enrolledStudents, error: enrolledError } = await (adminSupabase
+        .from('course_students') as any)
+        .select('student_id')
+        .eq('course_id', courseId)
 
-    if (enrolledError) {
-      console.error('Error fetching enrolled students:', enrolledError)
+      if (enrolledError) {
+        console.error('Error fetching enrolled students:', enrolledError)
+      }
+
+      enrolledStudentIds = new Set((enrolledStudents || []).map((cs: any) => cs.student_id))
     }
-
-    const enrolledStudentIds = new Set((enrolledStudents || []).map((cs: any) => cs.student_id))
 
     // Filter out already enrolled students and deduplicate
     const uniqueStudents = new Map()

@@ -8,7 +8,7 @@ import type { Database } from '@/lib/types/database.types'
 
 type Instructor = Database['public']['Tables']['instructors']['Row']
 
-export async function getInstructors(searchQuery?: string) {
+export async function getInstructorsForDanceType(danceTypeId?: string) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -19,6 +19,51 @@ export async function getInstructors(searchQuery?: string) {
     // Use admin client to bypass RLS
     const admin = createAdminClient()
     
+    if (danceTypeId) {
+      // If danceTypeId provided, filter by those with rates for this dance type
+      const query = (admin as any)
+        .from('instructors')
+        .select(`
+          *,
+          instructor_rates!inner(
+            id,
+            price_per_class,
+            branch_id,
+            dance_type_id
+          )
+        `)
+        .eq('organization_id', organization.id)
+        .eq('instructor_rates.dance_type_id', danceTypeId)
+        .order('created_at', { ascending: false })
+
+      const { data, error } = await query
+
+      if (error) {
+        console.error('Error fetching instructors:', error)
+        return { error: 'Failed to fetch instructors' }
+      }
+
+      return { data: data as any[] }
+    } else {
+      // If no danceTypeId, return empty
+      return { data: [] }
+    }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
+export async function getInstructors(searchQuery?: string) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
+  try {
+    const admin = createAdminClient()
+    
     let query = (admin as any)
       .from('instructors')
       .select('*')
@@ -26,25 +71,19 @@ export async function getInstructors(searchQuery?: string) {
       .order('created_at', { ascending: false })
 
     if (searchQuery) {
-      query = query.or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`)
+      query = query.or(
+        `first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`
+      )
     }
 
     const { data, error } = await query
-
-    console.log('[getInstructors] User:', user.id)
-    console.log('[getInstructors] Organization:', organization.id)
-    console.log('[getInstructors] Search Query:', searchQuery)
-    console.log('[getInstructors] Error:', error)
-    console.log('[getInstructors] Data received:', data)
-    console.log('[getInstructors] Data length:', data?.length)
 
     if (error) {
       console.error('Error fetching instructors:', error)
       return { error: 'Failed to fetch instructors' }
     }
 
-    console.log('[getInstructors] Returning data:', data)
-    return { data: data as Instructor[] }
+    return { data: data as any[] }
   } catch (error) {
     console.error('Unexpected error:', error)
     return { error: 'An unexpected error occurred' }

@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { createCourse, updateCourse } from '@/lib/actions/courses.actions'
 import { getBranches } from '@/lib/actions/branches.actions'
 import { getDanceTypes } from '@/lib/actions/dance-types.actions'
-import { getInstructors } from '@/lib/actions/instructors.actions'
+import { getInstructorsForDanceType } from '@/lib/actions/instructors.actions'
 import { getAvailableStudentsForCourse } from '@/lib/actions/course-students.actions'
 import type { Database } from '@/lib/types/database.types'
 
@@ -46,12 +46,24 @@ interface CourseFormProps {
   course?: Course & { course_instructors?: { instructor_id: string }[] }
 }
 
+interface InstructorWithRates {
+  id: string
+  first_name: string
+  last_name: string
+  instructor_rates?: Array<{
+    id: string
+    price_per_class: number
+    branch_id: string
+    dance_type_id: string
+  }>
+}
+
 export function CourseForm({ course }: CourseFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [branches, setBranches] = useState<Branch[]>([])
   const [danceTypes, setDanceTypes] = useState<DanceType[]>([])
-  const [instructors, setInstructors] = useState<Instructor[]>([])
+  const [instructors, setInstructors] = useState<InstructorWithRates[]>([])
   const [availableStudents, setAvailableStudents] = useState<Student[]>([])
   const [generalError, setGeneralError] = useState<string | null>(null)
 
@@ -71,19 +83,35 @@ export function CourseForm({ course }: CourseFormProps) {
 
   useEffect(() => {
     async function loadData() {
-      const [branchesResult, danceTypesResult, instructorsResult] = await Promise.all([
+      const [branchesResult, danceTypesResult] = await Promise.all([
         getBranches(),
         getDanceTypes(),
-        getInstructors(),
       ])
 
       setBranches(branchesResult.data || [])
       setDanceTypes(danceTypesResult.data || [])
-      setInstructors(instructorsResult.data || [])
+      setInstructors([])  // Clear instructors until dance type is selected
     }
 
     loadData()
   }, [])
+
+  // Watch for danceTypeId changes and fetch instructors accordingly
+  useEffect(() => {
+    const danceTypeId = form.watch('danceTypeId')
+    
+    if (!danceTypeId) {
+      setInstructors([])
+      return
+    }
+
+    async function loadInstructorsForDanceType() {
+      const result = await getInstructorsForDanceType(danceTypeId)
+      setInstructors(result.data || [])
+    }
+
+    loadInstructorsForDanceType()
+  }, [form.watch('danceTypeId')])
 
   // Load available students when dance type changes
   useEffect(() => {
@@ -226,6 +254,69 @@ export function CourseForm({ course }: CourseFormProps) {
               />
             </div>
 
+            {/* Show Instructors section ONLY after dance type is selected */}
+            {form.watch('danceTypeId') && (
+              <FormField
+                control={form.control}
+                name="instructorIds"
+                render={({ field }) => {
+                  const danceTypeId = form.watch('danceTypeId')
+                  const isLoadingInstructors = !instructors.length && danceTypeId
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Instructors (for {danceTypes.find(d => d.id === danceTypeId)?.name})</FormLabel>
+
+                      {isLoadingInstructors ? (
+                        <div className="p-4 border border-[#E5E7EB] rounded-lg bg-gray-50 text-gray-600 text-sm">
+                          Loading instructors...
+                        </div>
+                      ) : instructors.length === 0 ? (
+                        <div className="p-4 border border-[#E5E7EB] rounded-lg bg-amber-50 text-amber-700 text-sm">
+                          ⚠️ No instructors with rates for this dance type. Please set up instructor rates first.
+                        </div>
+                      ) : (
+                        <div className="space-y-2 border border-[#E5E7EB] rounded-lg p-4 max-h-50 overflow-y-auto">
+                          {instructors.map((instructor) => {
+                            const pricePerClass = instructor.instructor_rates?.[0]?.price_per_class
+
+                            return (
+                              <label
+                                key={instructor.id}
+                                className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-50 transition-colors"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={field.value?.includes(instructor.id) || false}
+                                  onChange={(e) => {
+                                    const value = field.value || []
+                                    if (e.target.checked) {
+                                      field.onChange([...value, instructor.id])
+                                    } else {
+                                      field.onChange(value.filter((id) => id !== instructor.id))
+                                    }
+                                  }}
+                                  disabled={isLoading}
+                                  className="w-4 h-4 rounded border-[#E5E7EB]"
+                                />
+                                <span className="text-sm text-[#111827] flex-1">
+                                  {instructor.first_name} {instructor.last_name}
+                                </span>
+                                <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded">
+                                  ₺{pricePerClass}/session
+                                </span>
+                              </label>
+                            )
+                          })}
+                        </div>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )
+                }}
+              />
+            )}
+
             <div className="grid grid-cols-4 gap-4">
               <FormField
                 control={form.control}
@@ -279,40 +370,6 @@ export function CourseForm({ course }: CourseFormProps) {
                 )}
               />
             </div>
-
-            <FormField
-              control={form.control}
-              name="instructorIds"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Instructors</FormLabel>
-                  <div className="space-y-2 border border-[#E5E7EB] rounded-lg p-4 max-h-50 overflow-y-auto">
-                    {instructors.map((instructor) => (
-                      <label key={instructor.id} className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={field.value?.includes(instructor.id) || false}
-                          onChange={(e) => {
-                            const value = field.value || []
-                            if (e.target.checked) {
-                              field.onChange([...value, instructor.id])
-                            } else {
-                              field.onChange(value.filter((id) => id !== instructor.id))
-                            }
-                          }}
-                          disabled={isLoading}
-                          className="w-4 h-4 rounded border-[#E5E7EB]"
-                        />
-                        <span className="text-sm text-[#111827]">
-                          {instructor.first_name} {instructor.last_name}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <FormField
               control={form.control}
