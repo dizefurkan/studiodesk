@@ -85,11 +85,11 @@ export async function getStudentsWithStats(
         student_packages(
           id,
           remaining_credits,
-          package:packages(dance_type_id)
+          package:packages(id, name, dance_type_id, dance_types:dance_types(id, name))
         ),
         course_students(
           course_id,
-          course:courses(branch_id, id)
+          course:courses(id, name, branch_id)
         )
       `)
       .eq('organization_id', organization.id)
@@ -149,18 +149,27 @@ export async function getStudentsWithStats(
         0
       )
       const activeCourses = (student.course_students || [])
-        .map((cs: any) => cs.course_id)
+        .map((cs: any) => cs.course)
         .filter(Boolean)
       const branches = (student.course_students || [])
         .map((cs: any) => cs.course?.branch_id)
+        .filter(Boolean)
+      const courseNames = (student.course_students || [])
+        .map((cs: any) => cs.course?.name)
         .filter(Boolean)
 
       return {
         ...student,
         totalRemainingCredits: totalCredits,
         enrolledCoursesCount: activeCourses.length,
-        enrolledCourseIds: activeCourses,
+        enrolledCourseNames: courseNames,
+        enrolledCourses: activeCourses,
         branchIds: branches,
+        packageDetails: (student.student_packages || []).map((sp: any) => ({
+          name: sp.package?.name || 'Unknown Package',
+          danceType: sp.package?.dance_types?.name || sp.package?.dance_type_id || 'Unknown',
+          remaining: sp.remaining_credits,
+        })),
       }
     })
 

@@ -2,8 +2,9 @@ import { getStudentsWithStats, getStudentFilterOptions } from '@/lib/actions/stu
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StudentFilters } from '@/components/students/StudentFilters'
+import { StudentTable } from '@/components/students/StudentTable'
 import Link from 'next/link'
-import { Users, Plus, Edit2, Trash2, BookOpen, Zap, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Users, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
 
 type Student = Database['public']['Tables']['students']['Row']
@@ -79,76 +80,11 @@ export default async function StudentsPage({
           </div>
         </Card>
       ) : (
-        <Card className="border-[#E5E7EB] overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Name</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Email</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Phone</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Credits</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Courses</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Joined</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-[#111827]">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E5E7EB]">
-                {students.map((student: any) => (
-                  <tr key={student.id} className="hover:bg-[#F9FAFB] transition-colors">
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/dashboard/students/${student.id}`}
-                        className="font-medium text-[#111827] hover:text-[#4F46E5]"
-                      >
-                        {student.first_name} {student.last_name}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">{student.email}</td>
-                    <td className="px-6 py-4 text-gray-600">{student.phone || '-'}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1">
-                        <Zap size={14} className="text-amber-500" />
-                        <span className={student.totalRemainingCredits === 0 ? 'text-red-600 font-medium' : 'text-[#111827] font-semibold'}>
-                          {student.totalRemainingCredits || 0}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1">
-                        <BookOpen size={14} className="text-purple-500" />
-                        <span className="text-[#111827] font-semibold">{student.enrolledCoursesCount || 0}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {new Date(student.created_at!).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-2 flex justify-end">
-                      <Link href={`/dashboard/students/${student.id}/edit`}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-[#4F46E5] hover:bg-[#EEF2FF]"
-                        >
-                          <Edit2 size={16} />
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-600 hover:bg-red-50"
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <Card className="border-[#E5E7EB] p-6">
+          <StudentTable students={students} />
+
           {/* Pagination Controls */}
-          <div className="p-4 border-t border-[#E5E7EB] flex items-center justify-between">
+          <div className="mt-6 pt-6 border-t border-[#E5E7EB] flex items-center justify-between">
             <div className="text-sm text-gray-600">
               Showing {(pagination.page - 1) * pagination.limit + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} students
             </div>
