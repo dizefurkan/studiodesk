@@ -2,7 +2,7 @@ import { getOrganization } from '@/lib/auth/getOrganization'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Settings, Users, Lock, Bell, Building, Edit2, Trash2 } from 'lucide-react'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { CurrencySettings } from '@/components/settings/CurrencySettings'
 import { OrganizationPermissionSettings } from '@/components/settings/OrganizationPermissionSettings'
 import { TeamMembersSection } from '@/components/settings/TeamMembersSection'
@@ -29,28 +29,82 @@ export default async function SettingsPage() {
   let userRole = 'staff'
 
   if (organization && currentUser) {
-    const supabase = await createServerSupabaseClient()
+    const admin = createAdminClient()
 
-    // Get team members
-    const { data: members } = await supabase
+    console.log('📋 Fetching team members for organization:', organization.id)
+
+    // Get team members (use admin client to bypass RLS - RLS-free read)
+    // First, get organization users without nested profiles to ensure data is returned
+    const { data: members, error: membersError } = await (admin as any)
       .from('organization_users')
-      .select('id, role, user_id, profiles(id, full_name)')
+      .select('id, role, user_id, organization_id')
       .eq('organization_id', organization.id)
 
-    teamMembers = members || []
+    console.log('🔍 Raw members query response:', JSON.stringify(members, null, 2))
+    console.log('🔍 Raw members error:', membersError)
+    console.log('🔍 Members received - count:', members?.length || 0)
+
+    if (membersError) {
+      console.error('❌ Error fetching team members:', membersError)
+      teamMembers = []
+    } else if (Array.isArray(members) && members.length > 0) {
+      // Now get profile data for all user IDs
+      const userIds = members.map(m => m.user_id)
+      console.log('📋 User IDs to fetch profiles for:', userIds)
+      console.log('📋 User IDs count:', userIds.length)
+      
+      const { data: memberProfiles, error: memberProfilesError } = await (admin as any)
+        .from('profiles')
+        .select('id, email, full_name')
+        .in('id', userIds)
+
+      console.log('🔍 Member profiles query response:', JSON.stringify(memberProfiles, null, 2))
+      console.log('🔍 Member profiles count:', memberProfiles?.length || 0)
+      console.log('🔍 Member profiles error:', memberProfilesError)
+
+      // Merge profile data with member data
+      const profileMap = new Map(memberProfiles?.map((p: any) => [p.id, p]) || [])
+      console.log('🗺️ Profile Map entries:', Array.from(profileMap.entries()))
+      
+      teamMembers = members.map((member: any) => {
+        const profile = profileMap.get(member.user_id)
+        console.log(`🔎 Looking for user_id ${member.user_id}, found:`, profile ? 'YES' : 'NO')
+        return {
+          ...member,
+          profiles: profile || { id: member.user_id, full_name: 'Unknown' },
+        }
+      })
+
+      console.log('✅ Team members with profiles merged:', JSON.stringify(teamMembers, null, 2))
+    } else {
+      console.log('⚠️  No members found:', members)
+      teamMembers = []
+    }
 
     // Get all profiles for the add user dropdown
-    const { data: profiles } = await supabase.from('profiles').select('id, full_name')
+    const { data: allProfilesData, error: allProfilesError } = await (admin as any)
+      .from('profiles')
+      .select('id, full_name')
 
-    allProfiles = profiles || []
+    if (allProfilesError) {
+      console.error('❌ Error fetching all profiles:', allProfilesError)
+    } else {
+      console.log('✅ All profiles fetched:', allProfilesData?.length || 0)
+    }
+
+    allProfiles = allProfilesData || []
 
     // Get current user role
     const roleData = await getUserRoleInOrganization(organization.id)
     userRole = (roleData as any)?.role || 'staff'
     
-    console.log('🔍 Role Data from getUserRoleInOrganization:', roleData)
-    console.log('User Role:', userRole)
-    console.log('Team Members Count:', teamMembers.length)
+    console.log('� Current User Role:', userRole)
+    console.log('📋 Final Team Members Array:', teamMembers)
+    console.log('📊 Team Members Count:', teamMembers.length)
+  } else {
+    console.log('⚠️  Missing organization or currentUser')
+    console.log('   Organization:', !!organization)
+    console.log('   CurrentUser:', !!currentUser)
   }
 
   // Get available users (not already in organization)

@@ -121,12 +121,12 @@ export async function sendTeamInvitation(email: string, role: string) {
                   id: existingAuthUser.id,
                   email: email.toLowerCase(),
                   full_name: email.split('@')[0],
-                  profile_completed: true, // Mark as completed since they're being invited to existing org
                 })
               
               if (profileError) {
-                console.error('Error creating profile:', profileError)
-                // Continue anyway - try to add to organization
+                console.error('❌ Error creating profile (existing user):', profileError)
+              } else {
+                console.log('✅ Profile created for existing user:', existingAuthUser.id)
               }
             }
             
@@ -177,19 +177,20 @@ export async function sendTeamInvitation(email: string, role: string) {
       return { error: `Failed to create user account: ${authError.message}` }
     }
 
-    // Create user profile with profile_completed flag (invited users skip onboarding)
+    // Create user profile
     const { error: profileError } = await (admin as any)
       .from('profiles')
       .insert({
         id: authData.user.id,
         email: email.toLowerCase(),
-        full_name: email.split('@')[0], // Use email prefix as default name
-        profile_completed: true, // Mark as completed since they're being invited to existing org
+        full_name: email.split('@')[0],
       })
 
     if (profileError) {
-      console.error('Error creating profile:', profileError)
+      console.error('❌ Error creating profile (new user):', profileError)
       // Continue anyway - try to add to organization
+    } else {
+      console.log('✅ Profile created for new user:', authData.user.id)
     }
 
     // Add user to organization
@@ -202,11 +203,17 @@ export async function sendTeamInvitation(email: string, role: string) {
       })
 
     if (orgError) {
-      console.error('Error adding to organization:', orgError)
+      console.error('❌ Error adding to organization:', orgError)
       return { error: 'Failed to add user to organization' }
     }
 
+    console.log('✅ User successfully added to organization_users')
+    console.log('   User ID:', authData.user.id)
+    console.log('   Organization ID:', organization.id)
+    console.log('   Role:', role)
+
     revalidatePath('/dashboard/settings')
+
 
     return {
       success: true,

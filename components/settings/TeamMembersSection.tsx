@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Users, Trash2, UserPlus } from 'lucide-react'
+import { Users, Trash2, UserPlus, Key, Copy, Check } from 'lucide-react'
 import { AddTeamMemberForm } from './AddTeamMemberForm'
-import { removeTeamMember, updateTeamMemberRole } from '@/lib/actions/organization.actions'
+import { removeTeamMember, updateTeamMemberRole, resetTeamMemberPassword } from '@/lib/actions/organization.actions'
 import { ROLE_LABELS } from '@/lib/constants/roles'
 
 interface TeamMembersSectionProps {
@@ -14,6 +14,11 @@ interface TeamMembersSectionProps {
   organization: any
 }
 
+interface PasswordModalData {
+  memberName: string
+  password: string
+}
+
 export function TeamMembersSection({
   teamMembers,
   userRole,
@@ -21,6 +26,85 @@ export function TeamMembersSection({
   organization,
 }: TeamMembersSectionProps) {
   const [isAddingTeamMember, setIsAddingTeamMember] = useState(false)
+  const [passwordModal, setPasswordModal] = useState<PasswordModalData | null>(null)
+  const [copiedPassword, setCopiedPassword] = useState(false)
+  const [resettingPasswordFor, setResettingPasswordFor] = useState<string | null>(null)
+
+  const handleResetPassword = async (memberId: string, memberName: string) => {
+    setResettingPasswordFor(memberId)
+    try {
+      const result = await resetTeamMemberPassword(memberId)
+      if (result.success && result.temporaryPassword) {
+        setPasswordModal({
+          memberName,
+          password: result.temporaryPassword,
+        })
+      } else {
+        alert(result.error || 'Failed to reset password')
+      }
+    } catch (error) {
+      alert('Failed to reset password')
+    } finally {
+      setResettingPasswordFor(null)
+    }
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedPassword(true)
+    setTimeout(() => setCopiedPassword(false), 2000)
+  }
+
+  // Password Modal UI
+  if (passwordModal) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full animate-in">
+          <div className="text-center mb-6">
+            <div className="inline-flex p-3 bg-blue-100 rounded-lg mb-3">
+              <Key className="text-blue-600" size={24} />
+            </div>
+            <h2 className="text-2xl font-bold text-[#111827]">New Password</h2>
+            <p className="text-gray-600 text-sm mt-1">
+              for {passwordModal.memberName}
+            </p>
+          </div>
+
+          <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
+            <div className="flex items-center gap-2">
+              <code className="flex-1 text-lg font-mono text-[#111827] tracking-wide">
+                {passwordModal.password}
+              </code>
+              <button
+                onClick={() => copyToClipboard(passwordModal.password)}
+                className="shrink-0 p-2 hover:bg-gray-300 rounded transition-colors"
+                title="Copy password"
+              >
+                {copiedPassword ? (
+                  <Check size={18} className="text-green-600" />
+                ) : (
+                  <Copy size={18} className="text-gray-600" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-yellow-50 p-3 rounded-lg mb-6 border border-yellow-200">
+            <p className="text-xs text-yellow-800">
+              <strong>Share this password</strong> with the team member. They should change it after first login.
+            </p>
+          </div>
+
+          <Button
+            onClick={() => setPasswordModal(null)}
+            className="w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white font-semibold"
+          >
+            Done
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -83,7 +167,7 @@ export function TeamMembersSection({
                   className="flex justify-between items-center p-4 border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] transition-colors"
                 >
                   <div className="flex-1">
-                    <p className="font-semibold text-[#111827]">{member.profiles?.full_name}</p>
+                    <p className="font-semibold text-[#111827]">{member.profiles?.email || 'Unknown'}</p>
                     <p className="text-sm text-gray-600 mt-0.5">
                       {ROLE_LABELS[member.role] || member.role}
                     </p>
@@ -92,6 +176,22 @@ export function TeamMembersSection({
                   {/* Edit/Delete Buttons */}
                   {canManageTeam && member.role !== 'owner' && (
                     <div className="flex gap-2 items-center">
+                      {/* Reset Password Button (Owner only) */}
+                      {userRole === 'owner' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                          onClick={() =>
+                            handleResetPassword(member.id, member.profiles?.email || 'Team member')
+                          }
+                          disabled={resettingPasswordFor === member.id}
+                          title="Reset password"
+                        >
+                          <Key size={16} />
+                        </Button>
+                      )}
+
                       {organization?.allow_role_change && (
                         <select
                           defaultValue={member.role}

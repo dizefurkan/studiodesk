@@ -32,12 +32,14 @@ CREATE INDEX idx_organizations_created_at ON organizations(created_at);
 -- ========================================
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email VARCHAR(255),
   full_name VARCHAR(255),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX idx_profiles_created_at ON profiles(created_at);
+CREATE INDEX idx_profiles_email ON profiles(email);
 
 -- ========================================
 -- ORGANIZATION_USERS (User-Organization Relationship)

@@ -54,7 +54,8 @@ WITH CHECK (auth.uid() = id);
 -- ========================================
 -- ORGANIZATION_USERS POLICIES
 -- ========================================
--- Users can read their own organization_users record
+-- Note: These policies are minimal since we use admin client for server-side operations
+-- Users can only read their own organization_users record (minimal RLS)
 CREATE POLICY "Users can read their organization memberships"
 ON organization_users FOR SELECT
 USING (

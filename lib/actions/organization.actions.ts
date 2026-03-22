@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { getUserRoleInOrganization } from '@/lib/auth/getCurrentUser'
+import { generateTemporaryPassword } from '@/lib/utils/generatePassword'
 import { ROLE_HIERARCHY } from '@/lib/constants/roles'
 
 export async function updateOrganizationSettings(currency: string) {
@@ -337,6 +338,69 @@ export async function removeTeamMember(memberId: string) {
     }
 
     return { success: true }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
+/**
+ * Reset team member password and return new temporary password
+ */
+export async function resetTeamMemberPassword(memberId: string) {
+  const currentUser = await getCurrentUser()
+  if (!currentUser) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
+  // Check permissions - only owner can reset passwords
+  const userRoleData = await getUserRoleInOrganization(organization.id)
+  const userRole = (userRoleData as any)?.role
+
+  if (userRole !== 'owner') {
+    return { error: 'Only organization owner can reset team member passwords' }
+  }
+
+  try {
+    const admin = createAdminClient()
+
+    // Get member info to get user_id
+    const { data: member, error: fetchError } = await (admin as any)
+      .from('organization_users')
+      .select('user_id, role')
+      .eq('id', memberId)
+      .eq('organization_id', organization.id)
+      .single()
+
+    if (fetchError || !member) {
+      return { error: 'Team member not found' }
+    }
+
+    // Cannot reset owner password
+    if (member.role === 'owner') {
+      return { error: 'Cannot reset owner password' }
+    }
+
+    // Generate new temporary password
+    const tempPassword = generateTemporaryPassword()
+
+    // Update user password in Auth
+    const { error: updateError } = await (admin as any).auth.admin.updateUserById(
+      member.user_id,
+      { password: tempPassword }
+    )
+
+    if (updateError) {
+      console.error('Error updating password:', updateError)
+      return { error: 'Failed to update password' }
+    }
+
+    return {
+      success: true,
+      temporaryPassword: tempPassword,
+      message: 'Password reset successfully',
+    }
   } catch (error) {
     console.error('Unexpected error:', error)
     return { error: 'An unexpected error occurred' }
