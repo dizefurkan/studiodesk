@@ -252,6 +252,7 @@ export async function recordBatchAttendance(
     studentPackageId: string
     status: 'geldi' | 'gelmedi' | 'none'
     notes?: string
+    deductCredits?: boolean  // New: whether to deduct credits
   }>,
   studioId?: string | null,
   instructorIds?: string[] | null,
@@ -347,8 +348,9 @@ export async function recordBatchAttendance(
       student_id: a.studentId,
       student_package_id: a.studentPackageId,
       studio_id: studioId || null,
-      notes: a.notes || null,
       is_present: a.status === 'geldi',
+      deduct_credits: a.deductCredits !== false,  // Save deduct_credits flag to database
+      notes: a.notes || null,
     }))
 
     console.log('[recordBatchAttendance] Inserting attendance records:', attendanceRecords, 'with studio:', studioId || 'none', `(${geldiBatch.length} geldi + ${gelmediWithNotesBatch.length} gelmedi with notes)`)
@@ -361,10 +363,12 @@ export async function recordBatchAttendance(
     }
 
     // Batch update credits for each student package
-    console.log(`[recordBatchAttendance] Deducting credits for ${geldiBatch.length} students`)
+    // Credit deduction happens for both "geldi" and "gelmedi" records if deductCredits is true
+    const recordsToDeductCredits = allBatchRecords.filter((a) => a.deductCredits !== false)
+    console.log(`[recordBatchAttendance] Deducting credits for ${recordsToDeductCredits.length} students (geldi + gelmedi)`)
     const creditDeductionResults = []
     
-    for (const record of geldiBatch) {
+    for (const record of recordsToDeductCredits) {
       const { data: pkg } = await (supabase
         .from('student_packages') as any)
         .select('remaining_credits')

@@ -58,6 +58,7 @@ interface AttendanceState {
   status: AttendanceStatus
   existingAttendanceId?: string
   notes: string
+  deductCredits: boolean  // New: Controls whether to deduct credits
 }
 
 export function StudentAttendanceList({
@@ -120,7 +121,7 @@ export function StudentAttendanceList({
         return newState
       } else {
         // Add new status
-        const newState = [...prev, { studentId, status: newStatus, notes: '' }]
+        const newState = [...prev, { studentId, status: newStatus, notes: '', deductCredits: true }]
         console.log(`[StudentAttendanceList] Added new state:`, newState)
         return newState
       }
@@ -134,6 +135,16 @@ export function StudentAttendanceList({
       const existing = prev.find((a) => a.studentId === studentId)
       if (existing) {
         return prev.map((a) => (a.studentId === studentId ? { ...a, notes } : a))
+      }
+      return prev
+    })
+  }
+
+  const handleDeductCreditsChange = (studentId: string, deductCredits: boolean) => {
+    setAttendanceState((prev) => {
+      const existing = prev.find((a) => a.studentId === studentId)
+      if (existing) {
+        return prev.map((a) => (a.studentId === studentId ? { ...a, deductCredits } : a))
       }
       return prev
     })
@@ -164,13 +175,15 @@ export function StudentAttendanceList({
       const batchData = allRecordsToSave.map((record) => {
         const student = availableStudents.find((s) => s.id === record.studentId)
         const studentPackageId = student?.student_packages?.[0]?.id || ''
-        console.log(`[StudentAttendanceList] Preparing batch for ${record.studentId}, packageId: ${studentPackageId}, status: ${record.status}`)
+        const deductCredits = record.deductCredits !== false  // Default to true
+        console.log(`[StudentAttendanceList] Preparing batch for ${record.studentId}, packageId: ${studentPackageId}, status: ${record.status}, deductCredits: ${deductCredits}`)
 
         return {
           studentId: record.studentId,
           studentPackageId,
           status: record.status,
           notes: record.notes || undefined,
+          deductCredits,  // Pass this to server action
         }
       })
 
@@ -289,6 +302,7 @@ export function StudentAttendanceList({
                 <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Student Name</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Credits</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Deduct Credits</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Notes</th>
                 <th className="px-4 py-3 text-right text-sm font-semibold text-[#111827]">Actions</th>
               </tr>
@@ -339,6 +353,20 @@ export function StudentAttendanceList({
                           ✗ Gelmedi
                         </button>
                       </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {((currentState?.status === 'geldi' || currentState?.status === 'gelmedi') || (isMarked && recordedAttendance?.notes)) && (
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={currentState?.deductCredits ?? true}
+                            onChange={(e) => handleDeductCreditsChange(student.id, e.target.checked)}
+                            className="rounded cursor-pointer accent-[#4F46E5]"
+                            title="Kredi düşsün mü?"
+                          />
+                          <span className="text-xs text-gray-600">Evet</span>
+                        </label>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {((currentState?.status === 'geldi' || currentState?.status === 'gelmedi') || (isMarked && recordedAttendance?.notes)) && (

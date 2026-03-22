@@ -304,6 +304,8 @@ CREATE TABLE IF NOT EXISTS attendances (
   student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
   student_package_id UUID NOT NULL REFERENCES student_packages(id) ON DELETE CASCADE,
   studio_id UUID REFERENCES studios(id) ON DELETE SET NULL,
+  is_present BOOLEAN DEFAULT true NOT NULL,
+  deduct_credits BOOLEAN DEFAULT true NOT NULL,
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -314,6 +316,7 @@ CREATE INDEX idx_attendances_session_id ON attendances(session_id);
 CREATE INDEX idx_attendances_student_id ON attendances(student_id);
 CREATE INDEX idx_attendances_student_package_id ON attendances(student_package_id);
 CREATE INDEX idx_attendances_studio_id ON attendances(studio_id);
+CREATE INDEX idx_attendances_deduct_credits ON attendances(deduct_credits);
 CREATE INDEX idx_attendances_created_at ON attendances(created_at);
 
 -- ========================================
