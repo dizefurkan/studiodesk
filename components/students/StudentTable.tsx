@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { StudentColumnSettings } from './StudentColumnSettings'
 import { StudentPopover } from './StudentPopover'
+import { StudentFilters } from './StudentFilters'
 import { useStudentColumns } from '@/hooks/useStudentColumns'
 import { Edit2, Trash2 } from 'lucide-react'
 
@@ -38,9 +39,28 @@ interface Student {
 interface StudentTableProps {
   students: Student[]
   showPagination?: boolean
+  danceTypes?: Array<{ id: string; name: string }>
+  branches?: Array<{ id: string; name: string }>
+  courses?: Array<{ id: string; name: string }>
+  searchQuery?: string
+  hasCredits?: boolean
+  danceTypeId?: string
+  branchId?: string
+  courseId?: string
 }
 
-export function StudentTable({ students, showPagination = false }: StudentTableProps) {
+export function StudentTable({ 
+  students, 
+  showPagination = false,
+  danceTypes = [],
+  branches = [],
+  courses = [],
+  searchQuery = '',
+  hasCredits,
+  danceTypeId,
+  branchId,
+  courseId,
+}: StudentTableProps) {
   const { columns, toggleColumn, resetColumns, isLoaded } = useStudentColumns()
 
   if (!isLoaded) return <div>Loading...</div>
@@ -58,7 +78,20 @@ export function StudentTable({ students, showPagination = false }: StudentTableP
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      {/* Toolbar: Filters + Column Settings */}
+      <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+        <div className="flex-1">
+          <StudentFilters
+            danceTypes={danceTypes}
+            branches={branches}
+            courses={courses}
+            searchQuery={searchQuery}
+            hasCredits={hasCredits}
+            danceTypeId={danceTypeId}
+            branchId={branchId}
+            courseId={courseId}
+          />
+        </div>
         <StudentColumnSettings
           columns={columns}
           onToggle={toggleColumn}

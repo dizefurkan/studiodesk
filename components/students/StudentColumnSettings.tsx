@@ -34,7 +34,7 @@ export function StudentColumnSettings({
       <Button
         variant="outline"
         size="sm"
-        className="border-[#E5E7EB]"
+        className="border-[#E5E7EB] h-10"
         onClick={() => setIsOpen(!isOpen)}
       >
         <Settings size={16} className="mr-2" />

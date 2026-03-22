@@ -52,18 +52,6 @@ export default async function StudentsPage({
         </Link>
       </div>
 
-      {/* Filters */}
-      <StudentFilters
-        danceTypes={danceTypes}
-        branches={branches}
-        courses={courses}
-        searchQuery={searchQuery}
-        hasCredits={hasCredits}
-        danceTypeId={danceTypeId}
-        branchId={branchId}
-        courseId={courseId}
-      />
-
       {/* Content */}
       {students.length === 0 ? (
         <Card className="border-[#E5E7EB]">
@@ -81,7 +69,17 @@ export default async function StudentsPage({
         </Card>
       ) : (
         <Card className="border-[#E5E7EB] p-6">
-          <StudentTable students={students} />
+          <StudentTable
+            students={students}
+            danceTypes={danceTypes}
+            branches={branches}
+            courses={courses}
+            searchQuery={searchQuery}
+            hasCredits={hasCredits}
+            danceTypeId={danceTypeId}
+            branchId={branchId}
+            courseId={courseId}
+          />
 
           {/* Pagination Controls */}
           <div className="mt-6 pt-6 border-t border-[#E5E7EB] flex items-center justify-between">

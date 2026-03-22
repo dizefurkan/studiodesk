@@ -1,11 +1,10 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { X, Search } from 'lucide-react'
-import Link from 'next/link'
+import { Search, RotateCcw } from 'lucide-react'
+import { SelectDropdown } from '@/components/ui/select-dropdown'
 
 interface StudentFiltersProps {
   danceTypes: Array<{ id: string; name: string }>
@@ -41,149 +40,160 @@ export function StudentFilters({
     return `/dashboard/students?${params.toString()}`
   }
 
-  const clearUrl = () => {
-    const params = new URLSearchParams()
-    if (search) params.set('q', search)
-    return `/dashboard/students?${params.toString()}`
+  const handleSearch = () => {
+    router.push(
+      buildUrl({
+        search,
+        hasCredits: hasCredits ? true : null,
+        danceType: danceTypeId,
+        branch: branchId,
+        course: courseId,
+      })
+    )
   }
 
-  const hasActiveFilters = hasCredits || danceTypeId || courseId || branchId
+  const handleReset = () => {
+    setSearch('')
+    router.push('/dashboard/students')
+  }
+
+  const hasActiveFilters = hasCredits || danceTypeId || courseId || branchId || search
 
   return (
-    <Card className="border-[#E5E7EB] p-6">
-      <div className="space-y-4">
-        <h3 className="font-semibold text-[#111827]">Search & Filters</h3>
-        
-        {/* Search Input */}
-        <div className="relative">
-          <Search className="absolute left-3 top-3 text-gray-400" size={18} />
-          <input
-            type="text"
-            placeholder="Search by name or email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                router.push(
-                  buildUrl({
-                    search,
-                    hasCredits: hasCredits ? true : null,
-                    danceType: danceTypeId,
-                    branch: branchId,
-                    course: courseId,
-                  })
-                )
-              }
-            }}
-            className="w-full pl-10 pr-3 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-0"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-          {/* Has Credits Filter */}
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={hasCredits || false}
-              onChange={(e) => {
-                router.push(
-                  buildUrl({
-                    search,
-                    hasCredits: e.target.checked ? true : null,
-                    danceType: danceTypeId,
-                    branch: branchId,
-                    course: courseId,
-                  })
-                )
-              }}
-              className="rounded"
-            />
-            <span className="text-sm font-medium text-[#111827]">Has Credits</span>
-          </label>
-
-          {/* Dance Type Filter */}
-          <select
-            value={danceTypeId || ''}
-            onChange={(e) => {
-              router.push(
-                buildUrl({
-                  search,
-                  hasCredits: hasCredits ? true : null,
-                  danceType: e.target.value || null,
-                  branch: branchId,
-                  course: courseId,
-                })
-              )
-            }}
-            className="px-3 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-0"
-          >
-            <option value="">All Dance Types</option>
-            {danceTypes.map((dt) => (
-              <option key={dt.id} value={dt.id}>
-                {dt.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Branch Filter */}
-          <select
-            value={branchId || ''}
-            onChange={(e) => {
-              router.push(
-                buildUrl({
-                  search,
-                  hasCredits: hasCredits ? true : null,
-                  danceType: danceTypeId,
-                  branch: e.target.value || null,
-                  course: courseId,
-                })
-              )
-            }}
-            className="px-3 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-0"
-          >
-            <option value="">All Branches</option>
-            {branches.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Course Filter */}
-          <select
-            value={courseId || ''}
-            onChange={(e) => {
-              router.push(
-                buildUrl({
-                  search,
-                  hasCredits: hasCredits ? true : null,
-                  danceType: danceTypeId,
-                  branch: branchId,
-                  course: e.target.value || null,
-                })
-              )
-            }}
-            className="px-3 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-0"
-          >
-            <option value="">All Courses</option>
-            {courses.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Clear Filters */}
-          {hasActiveFilters && (
-            <Link href={clearUrl()}>
-              <Button variant="outline" className="w-full border-[#E5E7EB] text-red-600 hover:bg-red-50">
-                <X size={16} className="mr-1" />
-                Clear Filters
-              </Button>
-            </Link>
-          )}
-        </div>
+    <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+      <div className="relative flex-1 md:flex-initial md:w-64 h-10 flex items-center">
+        <Search 
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
+          size={18}
+          aria-hidden="true"
+        />
+        <input
+          type="text"
+          placeholder="Search by name or email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSearch()
+          }}
+          aria-label="Search students by name or email"
+          className="w-full h-10 pl-10 pr-3 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-0 transition-all"
+        />
       </div>
-    </Card>
+
+      {/* Filters Container */}
+      <div className="flex flex-1 md:flex-initial gap-2 md:gap-2 flex-wrap md:flex-nowrap items-center">
+        {/* Dance Type Filter */}
+        <SelectDropdown
+          placeholder="Dance Type"
+          value={danceTypeId || ''}
+          onChange={(value) => {
+            router.push(
+              buildUrl({
+                search,
+                hasCredits: hasCredits ? true : null,
+                danceType: value || null,
+                branch: branchId,
+                course: courseId,
+              })
+            )
+          }}
+          ariaLabel="Filter by dance type"
+          options={[
+            { value: '', label: 'Dance Type' },
+            ...danceTypes.map((dt) => ({ value: dt.id, label: dt.name })),
+          ]}
+        />
+
+        {/* Branch Filter */}
+        <SelectDropdown
+          placeholder="Branch"
+          value={branchId || ''}
+          onChange={(value) => {
+            router.push(
+              buildUrl({
+                search,
+                hasCredits: hasCredits ? true : null,
+                danceType: danceTypeId,
+                branch: value || null,
+                course: courseId,
+              })
+            )
+          }}
+          ariaLabel="Filter by branch"
+          options={[
+            { value: '', label: 'Branch' },
+            ...branches.map((b) => ({ value: b.id, label: b.name })),
+          ]}
+        />
+
+        {/* Course Filter */}
+        <SelectDropdown
+          placeholder="Course"
+          value={courseId || ''}
+          onChange={(value) => {
+            router.push(
+              buildUrl({
+                search,
+                hasCredits: hasCredits ? true : null,
+                danceType: danceTypeId,
+                branch: branchId,
+                course: value || null,
+              })
+            )
+          }}
+          ariaLabel="Filter by course"
+          options={[
+            { value: '', label: 'Course' },
+            ...courses.map((c) => ({ value: c.id, label: c.name })),
+          ]}
+        />
+
+        {/* Has Credits Filter */}
+        <label className="flex items-center gap-2 cursor-pointer px-3 h-10 border border-[#E5E7EB] rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap">
+          <input
+            type="checkbox"
+            checked={hasCredits || false}
+            onChange={(e) => {
+              router.push(
+                buildUrl({
+                  search,
+                  hasCredits: e.target.checked ? true : null,
+                  danceType: danceTypeId,
+                  branch: branchId,
+                  course: courseId,
+                })
+              )
+            }}
+            aria-label="Filter for students with credits"
+            className="rounded cursor-pointer accent-[#4F46E5]"
+          />
+          <span className="text-sm font-medium text-[#111827]">Credits</span>
+        </label>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-2 h-10">
+        <Button
+          onClick={handleSearch}
+          className="bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm px-4"
+          aria-label="Apply search and filter"
+        >
+          Search
+        </Button>
+
+        {hasActiveFilters && (
+          <Button
+            onClick={handleReset}
+            variant="outline"
+            className="border-[#E5E7EB] text-gray-600 hover:bg-gray-50 text-sm px-3"
+            aria-label="Clear all filters and search"
+            title="Clear all filters"
+          >
+            <RotateCcw size={16} />
+            <span className="hidden sm:inline ml-1">Reset</span>
+          </Button>
+        )}
+      </div>
+    </div>
   )
 }
