@@ -44,7 +44,7 @@ export async function getStudents(searchQuery?: string) {
   }
 }
 
-export async function getStudentsWithStats(searchQuery?: string) {
+export async function getStudentsWithStats(searchQuery?: string, page: number = 1, limit: number = 10) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -53,6 +53,14 @@ export async function getStudentsWithStats(searchQuery?: string) {
 
   try {
     const adminSupabase = createAdminClient()
+
+    // Get total count
+    const { count: totalCount } = await adminSupabase
+      .from('students')
+      .select('id', { count: 'exact', head: true })
+      .eq('organization_id', organization.id)
+
+    const offset = (page - 1) * limit
 
     let query = adminSupabase
       .from('students')
@@ -68,12 +76,13 @@ export async function getStudentsWithStats(searchQuery?: string) {
           remaining_credits,
           package:packages(dance_type_id)
         ),
-        course_students!inner(
+        course_students(
           course_id
         )
       `)
       .eq('organization_id', organization.id)
       .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
 
     if (searchQuery) {
       query = query.or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`)
@@ -103,7 +112,19 @@ export async function getStudentsWithStats(searchQuery?: string) {
       }
     })
 
-    return { data: studentsWithStats }
+    const totalPages = Math.ceil((totalCount || 0) / limit)
+
+    return { 
+      data: studentsWithStats,
+      pagination: {
+        page,
+        limit,
+        total: totalCount || 0,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      }
+    }
   } catch (error) {
     console.error('Unexpected error:', error)
     return { error: 'An unexpected error occurred' }

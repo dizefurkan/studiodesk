@@ -2,7 +2,7 @@ import { getStudentsWithStats } from '@/lib/actions/students.actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Users, Plus, Edit2, Trash2, BookOpen, Zap } from 'lucide-react'
+import { Users, Plus, Edit2, Trash2, BookOpen, Zap, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
 
 type Student = Database['public']['Tables']['students']['Row']
@@ -14,9 +14,11 @@ export default async function StudentsPage({
 }) {
   const params = await searchParams
   const searchQuery = typeof params.q === 'string' ? params.q : undefined
+  const page = typeof params.page === 'string' ? parseInt(params.page, 10) : 1
 
-  const result = await getStudentsWithStats(searchQuery)
+  const result = await getStudentsWithStats(searchQuery, page, 10)
   const students = result.data || []
+  const pagination = result.pagination || { page: 1, limit: 10, total: 0, totalPages: 1, hasNextPage: false, hasPrevPage: false }
 
   return (
     <div className="space-y-6">
@@ -118,8 +120,59 @@ export default async function StudentsPage({
               </tbody>
             </table>
           </div>
-          <div className="p-4 text-sm text-gray-600 border-t border-[#E5E7EB]">
-            Showing {students.length} students
+          {/* Pagination Controls */}
+          <div className="p-4 border-t border-[#E5E7EB] flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {(pagination.page - 1) * pagination.limit + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} students
+            </div>
+            <div className="flex gap-2 items-center">
+              <Link 
+                href={`/dashboard/students?q=${searchQuery || ''}&page=${pagination.page - 1}`}
+                className={pagination.hasPrevPage ? '' : 'pointer-events-none opacity-50'}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-[#E5E7EB]"
+                  disabled={!pagination.hasPrevPage}
+                >
+                  <ChevronLeft size={16} className="mr-1" />
+                  Previous
+                </Button>
+              </Link>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((p) => (
+                  <Link 
+                    key={p}
+                    href={`/dashboard/students?q=${searchQuery || ''}&page=${p}`}
+                  >
+                    <Button
+                      variant={p === pagination.page ? 'default' : 'outline'}
+                      size="sm"
+                      className={p === pagination.page ? 'bg-[#4F46E5] text-white' : 'border-[#E5E7EB]'}
+                    >
+                      {p}
+                    </Button>
+                  </Link>
+                ))}
+              </div>
+
+              <Link 
+                href={`/dashboard/students?q=${searchQuery || ''}&page=${pagination.page + 1}`}
+                className={pagination.hasNextPage ? '' : 'pointer-events-none opacity-50'}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-[#E5E7EB]"
+                  disabled={!pagination.hasNextPage}
+                >
+                  Next
+                  <ChevronRight size={16} className="ml-1" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </Card>
       )}
