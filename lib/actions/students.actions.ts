@@ -44,7 +44,17 @@ export async function getStudents(searchQuery?: string) {
   }
 }
 
-export async function getStudentsWithStats(searchQuery?: string, page: number = 1, limit: number = 10) {
+export async function getStudentsWithStats(
+  searchQuery?: string, 
+  page: number = 1, 
+  limit: number = 10,
+  filters?: {
+    hasCredits?: boolean
+    danceTypeId?: string
+    courseId?: string
+    branchId?: string
+  }
+) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -54,15 +64,16 @@ export async function getStudentsWithStats(searchQuery?: string, page: number = 
   try {
     const adminSupabase = createAdminClient()
 
-    // Get total count
-    const { count: totalCount } = await adminSupabase
+    // Check if we have client-side filters that require fetching all data
+    const hasClientSideFilters = filters?.hasCredits || filters?.courseId || filters?.branchId
+
+    // Build count query (for total count)
+    let countQuery = adminSupabase
       .from('students')
       .select('id', { count: 'exact', head: true })
       .eq('organization_id', organization.id)
 
-    const offset = (page - 1) * limit
-
-    let query = adminSupabase
+    let dataQuery = adminSupabase
       .from('students')
       .select(`
         id, 
@@ -77,49 +88,123 @@ export async function getStudentsWithStats(searchQuery?: string, page: number = 
           package:packages(dance_type_id)
         ),
         course_students(
-          course_id
+          course_id,
+          course:courses(branch_id, id)
         )
       `)
       .eq('organization_id', organization.id)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
 
+    // Apply search filter to both queries
     if (searchQuery) {
-      query = query.or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`)
+      const searchFilter = `first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`
+      countQuery = countQuery.or(searchFilter)
+      dataQuery = dataQuery.or(searchFilter)
     }
 
-    const { data, error } = await query
+    // Apply dance type filter (can be done at DB level)
+    if (filters?.danceTypeId && !hasClientSideFilters) {
+      dataQuery = dataQuery.select(`
+        id, 
+        first_name, 
+        last_name, 
+        email, 
+        phone,
+        created_at,
+        student_packages!inner(
+          id,
+          remaining_credits,
+          package!inner(dance_type_id)
+        ),
+        course_students(
+          course_id,
+          course:courses(branch_id, id)
+        )
+      `)
+      dataQuery = (dataQuery as any).eq('student_packages.package.dance_type_id', filters.danceTypeId)
+    }
+
+    // Get total count BEFORE pagination
+    const { count: totalCount } = await countQuery
+
+    // Order by created_at
+    dataQuery = dataQuery.order('created_at', { ascending: false })
+
+    // Only apply pagination if NO client-side filters
+    if (!hasClientSideFilters) {
+      const offset = (page - 1) * limit
+      dataQuery = dataQuery.range(offset, offset + limit - 1)
+    }
+
+    const { data, error } = await dataQuery
 
     if (error) {
       console.error('Error fetching students with stats:', error)
       return { error: 'Failed to fetch students' }
     }
 
-    // Process data to add calculated stats
-    const studentsWithStats = (data || []).map((student: any) => {
+    // Process data to add calculated stats and apply client-side filters
+    let studentsWithStats = (data || []).map((student: any) => {
       const totalCredits = (student.student_packages || []).reduce(
         (sum: number, sp: any) => sum + (sp.remaining_credits || 0),
         0
       )
-      const activeCourses = new Set(
-        (student.course_students || []).map((cs: any) => cs.course_id)
-      ).size
+      const activeCourses = (student.course_students || [])
+        .map((cs: any) => cs.course_id)
+        .filter(Boolean)
+      const branches = (student.course_students || [])
+        .map((cs: any) => cs.course?.branch_id)
+        .filter(Boolean)
 
       return {
         ...student,
         totalRemainingCredits: totalCredits,
-        enrolledCoursesCount: activeCourses,
+        enrolledCoursesCount: activeCourses.length,
+        enrolledCourseIds: activeCourses,
+        branchIds: branches,
       }
     })
 
-    const totalPages = Math.ceil((totalCount || 0) / limit)
+    // Apply client-side filters (AFTER fetching all data)
+    if (filters?.hasCredits) {
+      studentsWithStats = studentsWithStats.filter(s => s.totalRemainingCredits > 0)
+    }
+
+    if (filters?.courseId) {
+      studentsWithStats = studentsWithStats.filter(s => 
+        s.enrolledCourseIds.includes(filters.courseId!)
+      )
+    }
+
+    if (filters?.branchId) {
+      studentsWithStats = studentsWithStats.filter(s => 
+        s.branchIds.includes(filters.branchId!)
+      )
+    }
+
+    if (filters?.danceTypeId && hasClientSideFilters) {
+      studentsWithStats = studentsWithStats.filter(s =>
+        (s.student_packages || []).some((sp: any) => sp.package?.dance_type_id === filters.danceTypeId)
+      )
+    }
+
+    // Apply pagination to filtered results
+    let paginatedStudents = studentsWithStats
+    let finalTotal = totalCount || 0
+    
+    if (hasClientSideFilters) {
+      finalTotal = studentsWithStats.length
+      const offset = (page - 1) * limit
+      paginatedStudents = studentsWithStats.slice(offset, offset + limit)
+    }
+
+    const totalPages = Math.ceil(finalTotal / limit)
 
     return { 
-      data: studentsWithStats,
+      data: paginatedStudents,
       pagination: {
         page,
         limit,
-        total: totalCount || 0,
+        total: finalTotal,
         totalPages,
         hasNextPage: page < totalPages,
         hasPrevPage: page > 1,
@@ -128,6 +213,51 @@ export async function getStudentsWithStats(searchQuery?: string, page: number = 
   } catch (error) {
     console.error('Unexpected error:', error)
     return { error: 'An unexpected error occurred' }
+  }
+}
+
+/**
+ * Get filter options for students page
+ */
+export async function getStudentFilterOptions() {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
+  try {
+    const adminSupabase = createAdminClient()
+
+    // Get dance types
+    const { data: danceTypes } = await adminSupabase
+      .from('dance_types')
+      .select('id, name')
+      .eq('organization_id', organization.id)
+      .order('name')
+
+    // Get branches
+    const { data: branches } = await adminSupabase
+      .from('branches')
+      .select('id, name')
+      .eq('organization_id', organization.id)
+      .order('name')
+
+    // Get courses
+    const { data: courses } = await adminSupabase
+      .from('courses')
+      .select('id, name, branch_id')
+      .eq('organization_id', organization.id)
+      .order('name')
+
+    return {
+      danceTypes: danceTypes || [],
+      branches: branches || [],
+      courses: courses || [],
+    }
+  } catch (error) {
+    console.error('Error fetching filter options:', error)
+    return { error: 'Failed to fetch filter options', danceTypes: [], branches: [], courses: [] }
   }
 }
 

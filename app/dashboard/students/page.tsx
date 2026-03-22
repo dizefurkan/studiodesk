@@ -1,6 +1,7 @@
-import { getStudentsWithStats } from '@/lib/actions/students.actions'
+import { getStudentsWithStats, getStudentFilterOptions } from '@/lib/actions/students.actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { StudentFilters } from '@/components/students/StudentFilters'
 import Link from 'next/link'
 import { Users, Plus, Edit2, Trash2, BookOpen, Zap, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
@@ -15,10 +16,24 @@ export default async function StudentsPage({
   const params = await searchParams
   const searchQuery = typeof params.q === 'string' ? params.q : undefined
   const page = typeof params.page === 'string' ? parseInt(params.page, 10) : 1
+  const hasCredits = params.hasCredits === 'true'
+  const danceTypeId = typeof params.danceType === 'string' ? params.danceType : undefined
+  const courseId = typeof params.course === 'string' ? params.course : undefined
+  const branchId = typeof params.branch === 'string' ? params.branch : undefined
 
-  const result = await getStudentsWithStats(searchQuery, page, 10)
+  const result = await getStudentsWithStats(searchQuery, page, 10, {
+    hasCredits,
+    danceTypeId,
+    courseId,
+    branchId,
+  })
   const students = result.data || []
   const pagination = result.pagination || { page: 1, limit: 10, total: 0, totalPages: 1, hasNextPage: false, hasPrevPage: false }
+
+  const filterOptions = await getStudentFilterOptions()
+  const danceTypes = (filterOptions as any).danceTypes || []
+  const branches = (filterOptions as any).branches || []
+  const courses = (filterOptions as any).courses || []
 
   return (
     <div className="space-y-6">
@@ -35,6 +50,18 @@ export default async function StudentsPage({
           </Button>
         </Link>
       </div>
+
+      {/* Filters */}
+      <StudentFilters
+        danceTypes={danceTypes}
+        branches={branches}
+        courses={courses}
+        searchQuery={searchQuery}
+        hasCredits={hasCredits}
+        danceTypeId={danceTypeId}
+        branchId={branchId}
+        courseId={courseId}
+      />
 
       {/* Content */}
       {students.length === 0 ? (
