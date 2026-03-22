@@ -125,7 +125,16 @@ export function StudentTable({ students, showPagination = false }: StudentTableP
                 )}
                 {columns.phone && (
                   <td className="px-6 py-4 text-gray-600">
-                    {student.phone || '-'}
+                    {student.phone ? (
+                      <a
+                        href={`tel:${student.phone}`}
+                        className="text-[#4F46E5] hover:underline cursor-pointer"
+                      >
+                        {student.phone}
+                      </a>
+                    ) : (
+                      '-'
+                    )}
                   </td>
                 )}
                 {columns.credits && (
