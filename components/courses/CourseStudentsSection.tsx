@@ -5,23 +5,29 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Trash2, Users } from 'lucide-react'
 import { getCourseStudents, removeStudentFromCourse } from '@/lib/actions/course-students.actions'
-import { AddStudentDialog } from './AddStudentDialog'
+import Link from 'next/link'
 
 interface CourseStudent {
   id: string
   student_id: string
   joined_at: string
+  courses?: {
+    dance_type_id: string
+  }
   students: {
+    id: string
     first_name: string
     last_name: string
-    email: string
+    phone?: string
+    student_packages?: Array<{
+      id: string
+      remaining_credits: number
+      packages?: {
+        id: string
+        dance_type_id: string
+      }
+    }>
   }
-}
-
-interface AvailableStudent {
-  id: string
-  first_name: string
-  last_name: string
 }
 
 interface CourseStudentsSectionProps {
@@ -70,8 +76,15 @@ export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsS
     }
   }
 
-  const handleStudentsAdded = () => {
-    loadStudents()
+  // Get remaining credits for a student for this dance type
+  const getStudentCredits = (studentPackages?: CourseStudent['students']['student_packages']) => {
+    if (!studentPackages) return '-'
+    
+    const packageForDanceType = studentPackages.find(
+      (pkg) => pkg.packages?.dance_type_id === danceTypeId
+    )
+    
+    return packageForDanceType ? packageForDanceType.remaining_credits : '-'
   }
 
   if (isLoading) {
@@ -84,23 +97,9 @@ export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsS
 
   return (
     <Card className="border-[#E5E7EB] overflow-hidden">
-      <div className="p-6 border-b border-[#E5E7EB] flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Users size={20} className="text-[#4F46E5]" />
-          <h3 className="text-lg font-semibold text-[#111827]">Enrolled Students</h3>
-          <span className="text-sm font-medium text-gray-600">({students.length})</span>
-        </div>
-        <AddStudentDialog
-          courseId={courseId}
-          danceTypeId={danceTypeId}
-          enrolledStudentIds={students.map(s => s.student_id)}
-          onStudentsAdded={handleStudentsAdded}
-        />
-      </div>
-
       {/* Students Table */}
       {students.length === 0 ? (
-        <div className="text-center py-8 text-gray-500 p-6">
+        <div className="text-center py-12 text-gray-500 p-6">
           <Users size={32} className="mx-auto mb-2 opacity-50" />
           <p>No students enrolled yet</p>
         </div>
@@ -110,7 +109,8 @@ export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsS
             <thead className="bg-gray-50 border-b border-[#E5E7EB]">
               <tr>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Student Name</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Email</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Phone</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Credits</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Joined</th>
                 <th className="px-6 py-3 text-right text-sm font-semibold text-[#111827]">Action</th>
               </tr>
@@ -119,9 +119,21 @@ export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsS
               {students.map((enrollment) => (
                 <tr key={enrollment.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 text-sm font-medium text-[#111827]">
-                    {enrollment.students.first_name} {enrollment.students.last_name}
+                    <Link
+                      href={`/dashboard/students/${enrollment.students.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#4F46E5] hover:underline cursor-pointer"
+                    >
+                      {enrollment.students.first_name} {enrollment.students.last_name}
+                    </Link>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{enrollment.students.email}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{enrollment.students.phone || '-'}</td>
+                  <td className="px-6 py-4 text-sm">
+                    <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                      {getStudentCredits(enrollment.students.student_packages)}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {new Date(enrollment.joined_at).toLocaleDateString()}
                   </td>

@@ -80,7 +80,28 @@ export async function getCourseStudents(courseId: string) {
 
     const { data, error } = await (supabase
       .from('course_students') as any)
-      .select('id, student_id, joined_at, students(first_name, last_name, email)')
+      .select(`
+        id, 
+        student_id, 
+        joined_at, 
+        students(
+          id,
+          first_name, 
+          last_name, 
+          phone,
+          student_packages(
+            id,
+            remaining_credits,
+            packages(
+              id,
+              dance_type_id
+            )
+          )
+        ),
+        courses(
+          dance_type_id
+        )
+      `)
       .eq('course_id', courseId)
       .order('joined_at', { ascending: false })
 
