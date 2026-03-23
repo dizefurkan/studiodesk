@@ -1,7 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { BookOpen, AlertCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { BookOpen, AlertCircle, Plus, Minus, X } from 'lucide-react'
+import { updateStudentPackageCredits } from '@/lib/actions/students.actions'
 
 interface StudentCreditsProps {
   packages: Array<{
@@ -17,6 +20,32 @@ interface StudentCreditsProps {
 }
 
 export function StudentCredits({ packages, loading }: StudentCreditsProps) {
+  const [updating, setUpdating] = useState<string | null>(null)
+  const [editingPackageId, setEditingPackageId] = useState<string | null>(null)
+
+  const handleUpdateCredits = async (packageId: string, newAmount: number) => {
+    if (!packageId) {
+      alert('Package ID is missing')
+      return
+    }
+    if (newAmount < 0) return
+    
+    setUpdating(packageId)
+    try {
+      const result = await updateStudentPackageCredits(packageId, newAmount)
+      if (result.error) {
+        alert(`Error: ${result.error}`)
+      } else {
+        // Refresh page to see updates
+        window.location.reload()
+      }
+    } catch (err) {
+      alert('Failed to update credits')
+    } finally {
+      setUpdating(null)
+    }
+  }
+
   if (loading) {
     return (
       <Card className="border-[#E5E7EB] p-6">
@@ -79,14 +108,55 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
                 </div>
 
                 {/* Progress Bar */}
-                <div className="w-full bg-gray-300 rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-gray-300 rounded-full h-2 overflow-hidden mb-3">
                   <div
                     className="bg-[#4F46E5] h-full transition-all duration-300"
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
 
-                <p className="text-xs text-[#6B7280] mt-2">{used} used • {remaining} left</p>
+                <div className="text-xs text-[#6B7280] mb-4 flex items-center justify-between">
+                  <span>{used} used • {remaining} left</span>
+                  {editingPackageId === pkg.id ? (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleUpdateCredits(pkg.id, remaining - 1)}
+                        disabled={updating === pkg.id || remaining === 0}
+                        className="text-red-600 border-red-300 hover:bg-red-50 h-7 px-2"
+                      >
+                        <Minus size={14} />
+                      </Button>
+                      <span className="text-sm font-semibold min-w-[40px] text-center">{remaining}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleUpdateCredits(pkg.id, remaining + 1)}
+                        disabled={updating === pkg.id || remaining === total}
+                        className="text-green-600 border-green-300 hover:bg-green-50 h-7 px-2"
+                      >
+                        <Plus size={14} />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditingPackageId(null)}
+                        disabled={updating === pkg.id}
+                        className="text-gray-500 border-gray-300 hover:bg-gray-50 h-7 px-2"
+                      >
+                        <X size={14} />
+                      </Button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setEditingPackageId(pkg.id)}
+                      className="text-[#4F46E5] text-sm font-semibold hover:underline"
+                    >
+                      Düzenle
+                    </button>
+                  )}
+                </div>
               </div>
             )
           })}

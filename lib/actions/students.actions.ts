@@ -635,3 +635,102 @@ export async function reduceStudentCredits(studentPackageId: string, amount: num
     return { error: 'An unexpected error occurred' }
   }
 }
+
+export async function increaseStudentCredits(studentPackageId: string, amount: number = 1) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  try {
+    const supabase = await createServerSupabaseClient()
+
+    // Get current credits and total from packages table
+    const { data: studentPackage, error: fetchError } = await (supabase
+      .from('student_packages') as any)
+      .select('id, remaining_credits, package:packages(total_credits)')
+      .eq('id', studentPackageId)
+      .single()
+
+    if (fetchError || !studentPackage) {
+      return { error: 'Package not found' }
+    }
+
+    const totalCredits = studentPackage.package?.total_credits || 0
+    // Don't exceed total credits
+    const newCredits = Math.min(totalCredits, studentPackage.remaining_credits + amount)
+
+    // Update credits
+    const { data, error } = await (supabase
+      .from('student_packages') as any)
+      .update({
+        remaining_credits: newCredits,
+      })
+      .eq('id', studentPackageId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating credits:', error)
+      return { error: 'Failed to update credits' }
+    }
+
+    return { success: true, data }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
+export async function updateStudentPackageCredits(
+  studentPackageId: string,
+  newCreditsAmount: number,
+) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  try {
+    const supabase = await createServerSupabaseClient()
+
+    // Get package info with total_credits from packages table
+    const { data: studentPackage, error: fetchError } = await (supabase
+      .from('student_packages') as any)
+      .select('id, remaining_credits, package:packages(total_credits)')
+      .eq('id', studentPackageId)
+      .single()
+
+    if (fetchError) {
+      console.error('Error fetching student package:', fetchError)
+      console.error('Student Package ID:', studentPackageId)
+      return { error: `Failed to fetch package: ${fetchError.message}` }
+    }
+
+    if (!studentPackage) {
+      console.error('Student package not found for ID:', studentPackageId)
+      return { error: 'Package not found' }
+    }
+
+    const totalCredits = studentPackage.package?.total_credits || 0
+
+    // Ensure credits don't exceed total or go below 0
+    const finalCredits = Math.max(0, Math.min(newCreditsAmount, totalCredits))
+
+    // Update credits
+    const { data, error } = await (supabase
+      .from('student_packages') as any)
+      .update({
+        remaining_credits: finalCredits,
+      })
+      .eq('id', studentPackageId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating credits:', error)
+      return { error: 'Failed to update credits' }
+    }
+
+    return { success: true, data }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
