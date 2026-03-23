@@ -1,19 +1,61 @@
-import { getInstructorRates, getInstructorsAndBranchesAndDanceTypes } from '@/lib/actions/instructor-rates.actions'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { getInstructorRates, getInstructorsAndBranchesAndDanceTypes, getInstructorRate } from '@/lib/actions/instructor-rates.actions'
 import { InstructorRatesTable } from '@/components/instructor-rates/InstructorRatesTable'
+import { AddInstructorRateDrawer } from '@/components/instructor-rates/AddInstructorRateDrawer'
 import { Card } from '@/components/ui/card'
 import Link from 'next/link'
 import { DollarSign } from 'lucide-react'
 
-export default async function InstructorRatesPage() {
-  const [ratesResult, dataResult] = await Promise.all([
-    getInstructorRates(),
-    getInstructorsAndBranchesAndDanceTypes(),
-  ])
+export default function InstructorRatesPage() {
+  const searchParams = useSearchParams()
+  const [rates, setRates] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editLoading, setEditLoading] = useState(false)
+  const [drawerData, setDrawerData] = useState<any>(null)
+  const [editingRate, setEditingRate] = useState<any>(null)
 
-  const rates = ratesResult.data || []
-  const instructors = dataResult.data?.instructors || []
-  const branches = dataResult.data?.branches || []
-  const danceTypes = dataResult.data?.danceTypes || []
+  const modalType = searchParams?.get('modal')
+  const editId = searchParams?.get('id')
+
+  // Load rates and drawer data
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true)
+      const [ratesResult, drawerDataResult] = await Promise.all([
+        getInstructorRates(),
+        getInstructorsAndBranchesAndDanceTypes()
+      ])
+      setRates(ratesResult.data || [])
+      setDrawerData(drawerDataResult.data)
+      setLoading(false)
+    }
+    loadData()
+  }, [])
+
+  // Load editing rate if in edit mode
+  useEffect(() => {
+    if (modalType === 'edit' && editId) {
+      setEditLoading(true)
+      async function loadEditingRate() {
+        const result = await getInstructorRate(editId)
+        setEditingRate(result.data)
+        setEditLoading(false)
+      }
+      loadEditingRate()
+    } else {
+      setEditingRate(null)
+      setEditLoading(false)
+    }
+  }, [modalType, editId])
+
+  const handleCloseDrawer = () => {
+    window.history.pushState({}, '', '/dashboard/instructor-rates')
+  }
+
+  const isDrawerOpen = modalType === 'new' || modalType === 'edit'
 
   return (
     <div className="space-y-6">
@@ -45,12 +87,18 @@ export default async function InstructorRatesPage() {
         </div>
       </Card>
 
-      <InstructorRatesTable
-        rates={rates}
-        instructors={instructors}
-        branches={branches}
-        danceTypes={danceTypes}
-      />
+      <InstructorRatesTable rates={rates} onRatesChange={() => location.reload()} />
+
+      {!loading && drawerData && isDrawerOpen && !editLoading && (
+        <AddInstructorRateDrawer
+          instructors={drawerData.instructors || []}
+          branches={drawerData.branches || []}
+          danceTypes={drawerData.danceTypes || []}
+          isOpen={true}
+          onOpenChange={handleCloseDrawer}
+          initialRate={editingRate}
+        />
+      )}
     </div>
   )
 }

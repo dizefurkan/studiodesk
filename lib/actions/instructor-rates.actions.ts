@@ -284,3 +284,59 @@ export async function getInstructorsAndBranchesAndDanceTypes() {
     return { error: 'An unexpected error occurred' }
   }
 }
+
+export async function getInstructorRate(rateId: string) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
+  try {
+    const adminSupabase = createAdminClient()
+
+    const { data, error } = await (adminSupabase
+      .from('instructor_rates') as any)
+      .select(`
+        id,
+        price_per_class,
+        instructor_id,
+        branch_id,
+        dance_type_id,
+        instructors(first_name, last_name),
+        branches(name),
+        dance_types(name)
+      `)
+      .eq('id', rateId)
+      .single()
+
+    if (error) {
+      console.error('Error fetching instructor rate:', error)
+      return { error: 'Rate not found' }
+    }
+
+    // Transform to nested structure to match getInstructorRates format
+    return {
+      data: {
+        id: data.id,
+        price_per_class: data.price_per_class,
+        instructors: {
+          id: data.instructor_id,
+          first_name: data.instructors?.first_name,
+          last_name: data.instructors?.last_name,
+        },
+        branches: {
+          id: data.branch_id,
+          name: data.branches?.name,
+        },
+        dance_types: {
+          id: data.dance_type_id,
+          name: data.dance_types?.name,
+        },
+      },
+    }
+  } catch (error) {
+    console.error('Unexpected error in getInstructorRate:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
