@@ -1,9 +1,11 @@
 import { getCourses, getCourse } from '@/lib/actions/courses.actions'
 import { getSessionAttendances, getSessionStudents } from '@/lib/actions/attendance.actions'
+import { getCourseAttendanceHistory } from '@/lib/actions/course-attendance.actions'
 import { getStudios } from '@/lib/actions/studios.actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StudentAttendanceList } from '@/components/attendance/StudentAttendanceList'
+import { AttendancePageWrapper } from '@/components/attendance/AttendancePageWrapper'
 import Link from 'next/link'
 import { Calendar, Users, CheckCircle } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
@@ -44,6 +46,7 @@ export default async function AttendancePage({
     const courseId = sessionDataResult?.course_id
     let studios: any[] = []
     let courseInstructors: any[] = []
+    let attendanceHistory: any[] = []
 
     if (courseId) {
       const courseResult = await getCourse(courseId)
@@ -75,6 +78,10 @@ export default async function AttendancePage({
           first_name: ci.instructors.first_name,
           last_name: ci.instructors.last_name,
         }))
+
+      // Fetch attendance history for this course
+      const attendanceHistoryResult = await getCourseAttendanceHistory(courseId)
+      attendanceHistory = attendanceHistoryResult.data || []
     }
 
     return (
@@ -110,6 +117,7 @@ export default async function AttendancePage({
           courseId={courseId}
           availableStudents={availableStudents}
           recordedAttendances={attendances}
+          attendanceHistory={attendanceHistory}
           studios={studios}
           instructors={courseInstructors}
         />
@@ -214,26 +222,22 @@ export default async function AttendancePage({
     // Create on-demand session ID (will be created in DB when attendance is saved if new)
     const tempSessionId = sessionIdToUse
 
+    // Fetch attendance history for this course
+    const attendanceHistoryResult = await getCourseAttendanceHistory(courseId)
+    const attendanceHistory = attendanceHistoryResult.data || []
+
     return (
       <div className="space-y-6">
         <div>
           <Link href="/dashboard/attendance" className="text-[#4F46E5] hover:underline mb-4 inline-block">
             ← Back
           </Link>
-          <h1 className="text-3xl font-bold text-[#111827]">Mark Attendance</h1>
-          <p className="text-gray-600 mt-1">{course.name} - Record attendance for today</p>
+          <h1 className="text-3xl font-bold text-[#111827]">{course.name}</h1>
+          <p className="text-gray-600 mt-1">Record and manage attendance</p>
         </div>
 
         <Card className="border-[#E5E7EB] p-6 bg-linear-to-r from-green-50 to-emerald-50">
           <div className="space-y-4">
-            <div className="flex items-center gap-3 mb-4">
-              <Users className="text-green-600" size={28} />
-              <div>
-                <p className="font-semibold text-lg text-[#111827]">{course.name}</p>
-                <p className="text-xs text-gray-500">Record attendance for today</p>
-              </div>
-            </div>
-
             {/* Stats Grid */}
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-blue-500 text-white rounded-lg p-4 text-center">
@@ -285,11 +289,12 @@ export default async function AttendancePage({
           </div>
         </Card>
 
-        <StudentAttendanceList
+        <AttendancePageWrapper
           sessionId={tempSessionId}
           courseId={courseId}
           availableStudents={availableStudents}
           recordedAttendances={existingAttendances}
+          attendanceHistory={attendanceHistory}
           studios={studios}
           instructors={courseInstructors}
         />

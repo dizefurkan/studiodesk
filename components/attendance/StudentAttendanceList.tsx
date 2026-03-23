@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Trash2, Save, AlertCircle } from 'lucide-react'
+import { Trash2, Save, AlertCircle, Calendar } from 'lucide-react'
 import { recordBatchAttendance, removeAttendance } from '@/lib/actions/attendance.actions'
 import { useRouter } from 'next/navigation'
 
@@ -33,6 +33,12 @@ interface AttendanceRecord {
   }
 }
 
+interface AttendanceHistoryRecord {
+  id: string
+  session_date: string
+  attendance_count: number
+}
+
 interface Studio {
   id: string
   name: string
@@ -44,6 +50,7 @@ interface StudentAttendanceListProps {
   courseId: string
   availableStudents: StudentForAttendance[]
   recordedAttendances: AttendanceRecord[]
+  attendanceHistory?: AttendanceHistoryRecord[]
   loading?: boolean
   studios?: Studio[]
   instructors?: Array<{ id: string; first_name: string; last_name: string }>
@@ -66,6 +73,7 @@ export function StudentAttendanceList({
   courseId,
   availableStudents,
   recordedAttendances,
+  attendanceHistory = [],
   loading,
   studios = [],
   instructors = [],
@@ -79,9 +87,35 @@ export function StudentAttendanceList({
   const [successMessage, setSuccessMessage] = useState<string>('')
   const [selectedStudioId, setSelectedStudioId] = useState<string | null>(null)
   const [selectedInstructorIds, setSelectedInstructorIds] = useState<string[]>([])
+  const today = new Date().toISOString().split('T')[0]
   const [selectedDate, setSelectedDate] = useState<string>(
-    propSelectedDate || new Date().toISOString().split('T')[0]
+    propSelectedDate || today
   )
+
+  // Helper: format date display (Today or X days after DATE DAYNAME)
+  const formatDateDisplay = (date: string) => {
+    if (date === today) return 'Today'
+    
+    const selected = new Date(date)
+    const todayDate = new Date(today)
+    const diffTime = Math.abs(selected.getTime() - todayDate.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const dayName = selected.toLocaleString('en-US', { weekday: 'long' })
+    const formattedDate = selected.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    
+    return `${diffDays} days after ${formattedDate} ${dayName}`
+  }
+
+  // Filter attendance history to last 30 days
+  const lastMonthAttendances = useMemo(() => {
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0]
+    
+    return (attendanceHistory || []).filter(
+      (a) => a.session_date >= thirtyDaysAgoStr
+    )
+  }, [attendanceHistory])
 
   // Create a map of recorded attendances for quick lookup
   const recordedMap = useMemo(
@@ -276,38 +310,55 @@ export function StudentAttendanceList({
       {/* Students with Credits Section - Table Format */}
       {studentsWithCredits.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-semibold text-[#111827]">Mark Attendance ({studentsWithCredits.length} students)</h3>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#374151] mb-2">
-                Date
-              </label>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => {
-                  setSelectedDate(e.target.value)
-                  onDateChange?.(e.target.value)
-                }}
-                className="border border-[#D1D5DB] rounded px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
-              />
-            </div>
-          </div>
+          {/* Calendar Heat Map - Last 30 days */}
+          {lastMonthAttendances.length > 0 && (
+            <Card className="border-[#E5E7EB] p-4 bg-blue-50">
+              <div className="flex items-start gap-3 mb-3">
+                <Calendar className="text-[#4F46E5] mt-0.5" size={18} />
+                <div>
+                  <p className="text-sm font-medium text-[#111827]">Attendance History (Last 30 days)</p>
+                  <p className="text-xs text-gray-600 mt-1">{lastMonthAttendances.length} session(s) recorded</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {lastMonthAttendances.map((record) => (
+                  <button
+                    key={record.session_date}
+                    onClick={() => {
+                      setSelectedDate(record.session_date)
+                      onDateChange?.(record.session_date)
+                    }}
+                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                      selectedDate === record.session_date
+                        ? 'bg-[#4F46E5] text-white'
+                        : 'bg-white border border-[#E5E7EB] text-[#111827] hover:border-[#4F46E5]'
+                    }`}
+                    title={`${record.attendance_count} students`}
+                  >
+                    {new Date(record.session_date).toLocaleDateString('tr-TR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                    })}
+                  </button>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          <h3 className="text-lg font-semibold text-[#111827]">Mark Attendance ({studentsWithCredits.length} students)</h3>
           <div className="overflow-x-auto border border-[#E5E7EB] rounded-lg">
             <table className="w-full border-collapse">
-            <thead className="bg-gray-50 sticky top-0 border-b border-[#E5E7EB]">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Student Name</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Credits</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Deduct Credits</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Notes</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-[#111827]">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E5E7EB]">
+              <thead className="bg-gray-50 sticky top-0 border-b border-[#E5E7EB]">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Student Name</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Credits</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Status</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Deduct Credits</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Notes</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-[#111827]">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E5E7EB]">
               {studentsWithCredits.map((student) => {
                 const creditsCount = student.student_packages?.[0]?.remaining_credits ?? 0
                 const currentState = attendanceState.find((a) => a.studentId === student.id)
