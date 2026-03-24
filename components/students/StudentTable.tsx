@@ -29,8 +29,10 @@ interface Student {
     }
   }>
   packageDetails?: Array<{
+    id: string
     name: string
     danceType: string
+    danceTypeId: string
     remaining: number
   }>
 }
@@ -41,6 +43,7 @@ interface StudentTableProps {
   danceTypes?: Array<{ id: string; name: string }>
   branches?: Array<{ id: string; name: string }>
   courses?: Array<{ id: string; name: string }>
+  filteredDanceTypeId?: string
 }
 
 export function StudentTable({ 
@@ -49,6 +52,7 @@ export function StudentTable({
   danceTypes = [],
   branches = [],
   courses = [],
+  filteredDanceTypeId,
 }: StudentTableProps) {
   const { columns, toggleColumn, resetColumns, isLoaded } = useStudentColumns()
 
@@ -153,6 +157,7 @@ export function StudentTable({
                       type="credits"
                       credits={student.totalRemainingCredits}
                       packageDetails={student.packageDetails}
+                      filteredDanceTypeId={filteredDanceTypeId}
                     />
                   </td>
                 )}

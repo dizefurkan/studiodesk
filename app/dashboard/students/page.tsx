@@ -104,6 +104,7 @@ export default async function StudentsPage({
                 danceTypes={danceTypes}
                 branches={branches}
                 courses={courses}
+                filteredDanceTypeId={danceTypeId}
               />
             </div>
 

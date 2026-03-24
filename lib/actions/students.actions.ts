@@ -146,8 +146,8 @@ export async function getStudentsWithStats(
       student.student_packages = studentPackagesByStudentId.get(student.id) || []
     })
 
-    // Fetch packages and create mapping for dance_type
-    let packageDanceTypeMap = new Map<string, string>()
+    // Fetch packages and create mapping for dance_type (with name)
+    let packageDanceTypeMap = new Map<string, { id: string; name: string }>()
     const packageIds = studentPackages.map(sp => sp.package_id).filter(Boolean)
     
     if (packageIds.length > 0) {
@@ -157,20 +157,44 @@ export async function getStudentsWithStats(
         .in('id', packageIds)
       
       if (packagesData) {
-        packagesData.forEach(pkg => {
-          packageDanceTypeMap.set(pkg.id, pkg.dance_type_id)
-        })
+        // Get unique dance_type_ids
+        const danceTypeIds = [...new Set(packagesData.map(pkg => pkg.dance_type_id).filter(Boolean))]
+        
+        // Fetch dance_types to get names
+        if (danceTypeIds.length > 0) {
+          const { data: danceTypesData } = await adminSupabase
+            .from('dance_types')
+            .select('id, name')
+            .in('id', danceTypeIds)
+          
+          // Create dance_type mapping
+          const danceTypeMap = new Map<string, string>()
+          if (danceTypesData) {
+            danceTypesData.forEach(dt => {
+              danceTypeMap.set(dt.id, dt.name)
+            })
+          }
+          
+          // Create package mapping with dance_type_id and name
+          packagesData.forEach(pkg => {
+            packageDanceTypeMap.set(pkg.id, {
+              id: pkg.dance_type_id,
+              name: danceTypeMap.get(pkg.dance_type_id) || 'Unknown'
+            })
+          })
+        }
       }
     }
 
-    // Enrich student_packages with dance_type_id from packages
+    // Enrich student_packages with dance_type from packages
     data?.forEach((student: any) => {
       if (student.student_packages) {
         student.student_packages = student.student_packages.map((sp: any) => ({
           ...sp,
           packages: {
             id: sp.package_id,
-            dance_type_id: packageDanceTypeMap.get(sp.package_id)
+            dance_type_id: packageDanceTypeMap.get(sp.package_id)?.id,
+            dance_type_name: packageDanceTypeMap.get(sp.package_id)?.name
           }
         }))
       }
@@ -204,8 +228,10 @@ export async function getStudentsWithStats(
         enrolledCourses: activeCourses,
         branchIds: branches,
         packageDetails: (student.student_packages || []).map((sp: any) => ({
-          name: sp.package?.name || 'Unknown Package',
-          danceType: sp.package?.dance_types?.name || sp.package?.dance_type_id || 'Unknown',
+          id: sp.package_id,
+          name: sp.packages?.id || 'Unknown Package',
+          danceType: sp.packages?.dance_type_name || 'Unknown',
+          danceTypeId: sp.packages?.dance_type_id,
           remaining: sp.remaining_credits,
         })),
       }
