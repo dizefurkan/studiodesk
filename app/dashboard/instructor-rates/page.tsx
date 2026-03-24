@@ -28,6 +28,14 @@ export default function InstructorRatesPage() {
         getInstructorRates(),
         getInstructorsAndBranchesAndDanceTypes()
       ])
+      console.log('Rates result:', ratesResult)
+      console.log('Drawer data result:', drawerDataResult)
+      if (ratesResult.error) {
+        console.error('Error fetching rates:', ratesResult.error)
+      }
+      if (drawerDataResult.error) {
+        console.error('Error fetching drawer data:', drawerDataResult.error)
+      }
       setRates(ratesResult.data || [])
       setDrawerData(drawerDataResult.data)
       setLoading(false)

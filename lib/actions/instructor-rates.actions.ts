@@ -19,7 +19,7 @@ export async function getInstructorRates(instructorId?: string) {
       .from('instructor_rates')
       .select(`
         id,
-        price_per_class,
+        ratio_per_class,
         instructors(
           id,
           first_name,
@@ -43,10 +43,16 @@ export async function getInstructorRates(instructorId?: string) {
     const { data, error } = await query
 
     if (error) {
-      console.error('Error fetching instructor rates:', error)
-      return { error: 'Failed to fetch rates' }
+      console.error('Error fetching instructor rates:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      })
+      return { error: `Failed to fetch rates: ${error.message}` }
     }
 
+    console.log(`Successfully fetched ${data?.length || 0} instructor rates`)
     return { data }
   } catch (error) {
     console.error('Unexpected error in getInstructorRates:', error)
@@ -58,7 +64,7 @@ export async function createInstructorRate(
   instructorId: string,
   branchId: string,
   danceTypeId: string,
-  pricePerClass: number,
+  ratioPerClass: number,
 ) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
@@ -122,7 +128,7 @@ export async function createInstructorRate(
         instructor_id: instructorId,
         branch_id: branchId,
         dance_type_id: danceTypeId,
-        price_per_class: pricePerClass,
+        ratio_per_class: ratioPerClass,
       })
       .select()
       .single()
@@ -141,7 +147,7 @@ export async function createInstructorRate(
 
 export async function updateInstructorRate(
   rateId: string,
-  pricePerClass: number,
+  ratioPerClass: number,
 ) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
@@ -176,7 +182,7 @@ export async function updateInstructorRate(
     // Update rate
     const { data, error } = await (adminSupabase
       .from('instructor_rates') as any)
-      .update({ price_per_class: pricePerClass })
+      .update({ ratio_per_class: ratioPerClass })
       .eq('id', rateId)
       .select()
       .single()
@@ -299,7 +305,7 @@ export async function getInstructorRate(rateId: string) {
       .from('instructor_rates') as any)
       .select(`
         id,
-        price_per_class,
+        ratio_per_class,
         instructor_id,
         branch_id,
         dance_type_id,
@@ -319,7 +325,7 @@ export async function getInstructorRate(rateId: string) {
     return {
       data: {
         id: data.id,
-        price_per_class: data.price_per_class,
+        ratio_per_class: data.ratio_per_class,
         instructors: {
           id: data.instructor_id,
           first_name: data.instructors?.first_name,

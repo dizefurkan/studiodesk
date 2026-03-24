@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS instructor_rates (
   instructor_id UUID NOT NULL REFERENCES instructors(id) ON DELETE CASCADE,
   branch_id UUID NOT NULL REFERENCES branches(id) ON DELETE CASCADE,
   dance_type_id UUID NOT NULL REFERENCES dance_types(id) ON DELETE CASCADE,
-  price_per_class NUMERIC(10, 2) NOT NULL,
+  ratio_per_class NUMERIC(5, 2) NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(instructor_id, branch_id, dance_type_id)

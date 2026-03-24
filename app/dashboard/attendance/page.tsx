@@ -155,7 +155,7 @@ export default async function AttendancePage({
           student_packages(
             id,
             remaining_credits,
-            packages(id)
+            packages(id, dance_type_id)
           )
         )
       `)
@@ -186,18 +186,29 @@ export default async function AttendancePage({
         last_name: ci.instructors.last_name,
       }))
 
-    // Transform students data
+    // Transform students data and filter packages by dance_type_id
     const availableStudents = (courseStudentsData || [])
       .filter((cs: any) => cs.students)
       .map((cs: any) => ({
         id: cs.students.id,
         first_name: cs.students.first_name,
         last_name: cs.students.last_name,
-        student_packages: cs.students.student_packages || [],
+        student_packages: (cs.students.student_packages || [])
+          .filter((pkg: any) => pkg.packages?.dance_type_id === course.dance_type_id)
+          .map((pkg: any) => ({
+            id: pkg.id,
+            remaining_credits: pkg.remaining_credits,
+          })),
       }))
 
     // Check if a session exists for today and fetch attendances if it does
     const today = new Date().toISOString().split('T')[0]
+    const todayDate = new Date()
+    const todayDayOfWeek = todayDate.getDay()
+    
+    // Check if today matches the course's scheduled day
+    const isCourseScheduledToday = course.day_of_week === todayDayOfWeek
+    
     const { data: existingSessionData } = await (supabase
       .from('course_sessions') as any)
       .select('id')
@@ -277,7 +288,7 @@ export default async function AttendancePage({
 
             {existingAttendances.length > 0 && (
               <div className="border-t border-green-200 pt-4">
-                <p className="text-sm font-medium text-[#111827] mb-3">✓ Attendance already recorded for today</p>
+                <p className="text-sm font-medium text-green-700 mb-3">✓ Attendance already recorded for today</p>
                 <a
                   href={`?course=${courseId}&newSession=true`}
                   className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
@@ -286,12 +297,21 @@ export default async function AttendancePage({
                 </a>
               </div>
             )}
+
+            {!isCourseScheduledToday && (
+              <div className="border-t border-blue-200 pt-4">
+                <p className="text-sm text-blue-700 mb-3">
+                  This course is scheduled for {DAYS[course.day_of_week]}. You can mark attendance for a different date using the date picker.
+                </p>
+              </div>
+            )}
           </div>
         </Card>
 
         <AttendancePageWrapper
           sessionId={tempSessionId}
           courseId={courseId}
+          danceTypeId={course.dance_type_id}
           availableStudents={availableStudents}
           recordedAttendances={existingAttendances}
           attendanceHistory={attendanceHistory}
@@ -306,6 +326,19 @@ export default async function AttendancePage({
   {
     const coursesResult = await getCourses()
     const courses = coursesResult.data || []
+
+    // Fetch attendance count for each course
+    const coursesWithAttendance = await Promise.all(
+      courses.map(async (course: any) => {
+        const historyResult = await getCourseAttendanceHistory(course.id)
+        const attendanceRecords = historyResult.data || []
+        const totalAttendance = attendanceRecords.reduce((sum, record) => sum + record.attendance_count, 0)
+        return {
+          ...course,
+          totalAttendance,
+        }
+      })
+    )
 
     return (
       <div className="space-y-6">
@@ -324,13 +357,20 @@ export default async function AttendancePage({
           </Card>
         ) : (
           <div className="space-y-4">
-            {courses.map((course: any) => (
+            {coursesWithAttendance.map((course: any) => (
               <Card key={course.id} className="border-[#E5E7EB] p-4 hover:border-[#4F46E5] transition-colors">
                 <div className="flex justify-between items-center">
                   <Link href={`/dashboard/courses/${course.id}`} className="flex-1">
                     <div className="cursor-pointer">
                       <h3 className="font-semibold text-[#4F46E5] hover:underline">{course.name}</h3>
-                      <p className="text-sm text-gray-600">{course.branches?.name} • {course.dance_types?.name}</p>
+                      <p className="text-sm text-gray-600">
+                        {course.branches?.name} • {course.dance_types?.name}
+                        {course.totalAttendance > 0 && (
+                          <span className="ml-4 inline-block px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                            {course.totalAttendance} attendee{course.totalAttendance !== 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </p>
                     </div>
                   </Link>
                   <Link href={`/dashboard/attendance?course=${course.id}`}>

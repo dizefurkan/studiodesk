@@ -169,13 +169,13 @@ export async function recordAttendance(sessionId: string, studentId: string, stu
           for (const ci of courseInstructors) {
             const { data: rateData } = await (supabase
               .from('instructor_rates') as any)
-              .select('price_per_class')
+              .select('ratio_per_class')
               .eq('instructor_id', ci.instructor_id)
               .eq('branch_id', courseData.branch_id)
               .eq('dance_type_id', courseData.dance_type_id)
               .single()
 
-            const amount = rateData?.price_per_class || 0
+            const ratio = rateData?.ratio_per_class || 0
 
             // Check if earnings already recorded for this instructor and session
             const { data: existingEarning } = await (supabase
@@ -186,13 +186,13 @@ export async function recordAttendance(sessionId: string, studentId: string, stu
               .single()
 
             // Only record if not already recorded
-            if (!existingEarning && amount > 0) {
+            if (!existingEarning && ratio > 0) {
               await (supabase
                 .from('instructor_earnings') as any)
                 .insert({
                   instructor_id: ci.instructor_id,
                   session_id: sessionId,
-                  amount,
+                  amount: ratio,
                 })
             }
           }
@@ -446,13 +446,13 @@ export async function recordBatchAttendance(
           for (const ci of instructorsToProcess) {
             const { data: rateData } = await (supabase
               .from('instructor_rates') as any)
-              .select('price_per_class')
+              .select('ratio_per_class')
               .eq('instructor_id', ci.instructor_id)
               .eq('branch_id', courseData.branch_id)
               .eq('dance_type_id', courseData.dance_type_id)
               .single()
 
-            const amount = rateData?.price_per_class || 0
+            const ratio = rateData?.ratio_per_class || 0
 
             // Check if earnings already recorded for this instructor and session
             const { data: existingEarning } = await (supabase
@@ -462,20 +462,20 @@ export async function recordBatchAttendance(
               .eq('session_id', actualSessionId)
               .single()
 
-            // Only record if not already recorded (amount can be 0 if rate not set yet)
+            // Only record if not already recorded (ratio can be 0 if rate not set yet)
             if (!existingEarning) {
               const { error: earningsError } = await (supabase
                 .from('instructor_earnings') as any)
                 .insert({
                   instructor_id: ci.instructor_id,
                   session_id: actualSessionId,
-                  amount,
+                  amount: ratio,
                 })
               
               if (!earningsError) {
                 earningsCreated.push({
                   instructor_id: ci.instructor_id,
-                  amount,
+                  amount: ratio,
                   status: 'created'
                 })
                 console.log(`[recordBatchAttendance] Instructor earnings created: ${ci.instructor_id} - ₺${amount}`)

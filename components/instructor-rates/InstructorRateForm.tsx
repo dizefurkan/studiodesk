@@ -23,7 +23,7 @@ interface DanceType {
 
 interface InstructorRate {
   id: string
-  price_per_class: number
+  ratio_per_class: number
   instructors: Instructor
   branches: Branch
   dance_types: DanceType
@@ -52,7 +52,7 @@ export function InstructorRateForm({
     instructorId: initialRate?.instructors.id || '',
     branchId: initialRate?.branches.id || '',
     danceTypeId: initialRate?.dance_types.id || '',
-    price: initialRate?.price_per_class.toString() || '',
+    ratio: initialRate?.ratio_per_class.toString() || '',
   })
 
   // Update form data when initialRate changes (for edit mode)
@@ -62,7 +62,7 @@ export function InstructorRateForm({
         instructorId: initialRate.instructors?.id || '',
         branchId: initialRate.branches?.id || '',
         danceTypeId: initialRate.dance_types?.id || '',
-        price: initialRate.price_per_class?.toString() || '',
+        ratio: initialRate.ratio_per_class?.toString() || '',
       })
     }
   }, [initialRate])
@@ -71,14 +71,14 @@ export function InstructorRateForm({
     e.preventDefault()
     setError('')
 
-    if (!formData.instructorId || !formData.branchId || !formData.danceTypeId || !formData.price) {
+    if (!formData.instructorId || !formData.branchId || !formData.danceTypeId || !formData.ratio) {
       setError('All fields are required')
       return
     }
 
-    const price = parseFloat(formData.price)
-    if (isNaN(price) || price <= 0) {
-      setError('Price must be a valid positive number')
+    const ratio = parseFloat(formData.ratio)
+    if (isNaN(ratio) || ratio <= 0 || ratio > 100) {
+      setError('Ratio must be a valid percentage between 0-100')
       return
     }
 
@@ -86,13 +86,13 @@ export function InstructorRateForm({
     try {
       let result
       if (initialRate) {
-        result = await updateInstructorRate(initialRate.id, price)
+        result = await updateInstructorRate(initialRate.id, ratio)
       } else {
         result = await createInstructorRate(
           formData.instructorId,
           formData.branchId,
           formData.danceTypeId,
-          price,
+          ratio,
         )
       }
 
@@ -113,7 +113,7 @@ export function InstructorRateForm({
       instructorId: initialRate?.instructors.id || '',
       branchId: initialRate?.branches.id || '',
       danceTypeId: initialRate?.dance_types.id || '',
-      price: initialRate?.price_per_class.toString() || '',
+      ratio: initialRate?.ratio_per_class.toString() || '',
     })
     setError('')
     onCancel?.()
@@ -187,14 +187,15 @@ export function InstructorRateForm({
 
         <div>
           <label className="block text-sm font-medium text-[#374151] mb-2">
-            Price per Class (₺) *
+            Commission Ratio (%) *
           </label>
           <Input
             type="number"
             step="0.01"
             min="0"
-            value={formData.price}
-            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+            max="100"
+            value={formData.ratio}
+            onChange={(e) => setFormData({ ...formData, ratio: e.target.value })}
             placeholder="0.00"
             className="border-[#D1D5DB]"
           />

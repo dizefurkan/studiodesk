@@ -7,6 +7,7 @@ import { StudentAttendanceList } from './StudentAttendanceList'
 interface AttendancePageWrapperProps {
   sessionId: string
   courseId: string
+  danceTypeId: string
   availableStudents: any[]
   recordedAttendances: any[]
   attendanceHistory?: any[]
@@ -17,6 +18,7 @@ interface AttendancePageWrapperProps {
 export function AttendancePageWrapper({
   sessionId,
   courseId,
+  danceTypeId,
   availableStudents,
   recordedAttendances,
   attendanceHistory = [],
@@ -39,6 +41,7 @@ export function AttendancePageWrapper({
       <StudentAttendanceList
         sessionId={sessionId}
         courseId={courseId}
+        danceTypeId={danceTypeId}
         availableStudents={availableStudents}
         recordedAttendances={recordedAttendances}
         attendanceHistory={attendanceHistory}

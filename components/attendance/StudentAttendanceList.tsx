@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Trash2, Save, AlertCircle, Calendar } from 'lucide-react'
+import { Trash2, Save, AlertCircle, Calendar, Search } from 'lucide-react'
 import { recordBatchAttendance, removeAttendance } from '@/lib/actions/attendance.actions'
 import { useRouter } from 'next/navigation'
 
@@ -48,6 +48,7 @@ interface Studio {
 interface StudentAttendanceListProps {
   sessionId: string
   courseId: string
+  danceTypeId: string
   availableStudents: StudentForAttendance[]
   recordedAttendances: AttendanceRecord[]
   attendanceHistory?: AttendanceHistoryRecord[]
@@ -71,6 +72,7 @@ interface AttendanceState {
 export function StudentAttendanceList({
   sessionId,
   courseId,
+  danceTypeId,
   availableStudents,
   recordedAttendances,
   attendanceHistory = [],
@@ -87,6 +89,7 @@ export function StudentAttendanceList({
   const [successMessage, setSuccessMessage] = useState<string>('')
   const [selectedStudioId, setSelectedStudioId] = useState<string | null>(null)
   const [selectedInstructorIds, setSelectedInstructorIds] = useState<string[]>([])
+  const [searchQuery, setSearchQuery] = useState<string>('')
   const today = new Date().toISOString().split('T')[0]
   const [selectedDate, setSelectedDate] = useState<string>(
     propSelectedDate || today
@@ -123,13 +126,33 @@ export function StudentAttendanceList({
     [recordedAttendances],
   )
 
+  // Get remaining credits for a student for this specific dance type
+  const getStudentCredits = (studentPackages?: StudentForAttendance['student_packages']) => {
+    if (!studentPackages || studentPackages.length === 0) return 0
+    // Return the remaining credits from the first package
+    // (In an ideal scenario, the query would be pre-filtered by dance_type_id)
+    return studentPackages[0]?.remaining_credits || 0
+  }
+
   // Separate students: with credits vs needing renewal
   const studentsWithCredits = useMemo(
-    () =>
-      availableStudents.filter(
+    () => {
+      const filtered = availableStudents.filter(
         (s) => s.student_packages && s.student_packages.some((sp) => sp.remaining_credits > 0),
-      ),
-    [availableStudents],
+      )
+
+      // Apply search filter
+      if (!searchQuery.trim()) return filtered
+
+      const query = searchQuery.toLowerCase()
+      return filtered.filter(
+        (s) =>
+          `${s.first_name} ${s.last_name}`.toLowerCase().includes(query) ||
+          s.first_name.toLowerCase().includes(query) ||
+          s.last_name.toLowerCase().includes(query),
+      )
+    },
+    [availableStudents, searchQuery],
   )
 
   const studentsNeedingRenewal = useMemo(
@@ -321,9 +344,9 @@ export function StudentAttendanceList({
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                {lastMonthAttendances.map((record) => (
+                {lastMonthAttendances.map((record, idx) => (
                   <button
-                    key={record.session_date}
+                    key={`attendance-${record.session_date}-${idx}`}
                     onClick={() => {
                       setSelectedDate(record.session_date)
                       onDateChange?.(record.session_date)
@@ -346,6 +369,19 @@ export function StudentAttendanceList({
           )}
 
           <h3 className="text-lg font-semibold text-[#111827]">Mark Attendance ({studentsWithCredits.length} students)</h3>
+          
+          {/* Search Input */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <input
+              type="text"
+              placeholder="Search students by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+            />
+          </div>
+          
           <div className="overflow-x-auto border border-[#E5E7EB] rounded-lg">
             <table className="w-full border-collapse">
               <thead className="bg-gray-50 sticky top-0 border-b border-[#E5E7EB]">
@@ -360,7 +396,7 @@ export function StudentAttendanceList({
               </thead>
               <tbody className="divide-y divide-[#E5E7EB]">
               {studentsWithCredits.map((student) => {
-                const creditsCount = student.student_packages?.[0]?.remaining_credits ?? 0
+                const creditsCount = getStudentCredits(student.student_packages)
                 const currentState = attendanceState.find((a) => a.studentId === student.id)
                 const recordedAttendance = recordedMap.get(student.id)
                 const isMarked = !!recordedAttendance

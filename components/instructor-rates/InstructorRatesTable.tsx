@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation'
 
 interface InstructorRate {
   id: string
-  price_per_class: number
+  ratio_per_class: number
   instructors: {
     id: string
     first_name: string
@@ -100,7 +100,7 @@ export function InstructorRatesTable({
                     Dance Type
                   </th>
                   <th className="px-6 py-3 text-right text-sm font-semibold text-[#111827]">
-                    Price per Class
+                    Commission Ratio (%)
                   </th>
                   <th className="px-6 py-3 text-right text-sm font-semibold text-[#111827]">
                     Action
@@ -116,7 +116,7 @@ export function InstructorRatesTable({
                     <td className="px-6 py-4 text-sm text-gray-600">{rate.branches.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{rate.dance_types.name}</td>
                     <td className="px-6 py-4 text-sm text-right font-semibold text-[#111827]">
-                      ₺{Number(rate.price_per_class).toFixed(2)}
+                      {Number(rate.ratio_per_class).toFixed(2)}%
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
                       <button
