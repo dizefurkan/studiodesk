@@ -65,7 +65,7 @@ export async function getStudentsWithStats(
     const adminSupabase = createAdminClient()
 
     // Check if we have client-side filters that require fetching all data
-    const hasClientSideFilters = filters?.hasCredits || filters?.courseId || filters?.branchId
+    const hasClientSideFilters = filters?.hasCredits || filters?.courseId || filters?.branchId || filters?.danceTypeId
 
     // Build count query (for total count)
     let countQuery = adminSupabase
@@ -82,11 +82,6 @@ export async function getStudentsWithStats(
         email, 
         phone,
         created_at,
-        student_packages(
-          id,
-          remaining_credits,
-          package:packages(id, name, dance_type_id, dance_types:dance_types(id, name))
-        ),
         course_students(
           course_id,
           course:courses(id, name, branch_id)
@@ -99,28 +94,6 @@ export async function getStudentsWithStats(
       const searchFilter = `first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`
       countQuery = countQuery.or(searchFilter)
       dataQuery = dataQuery.or(searchFilter)
-    }
-
-    // Apply dance type filter (can be done at DB level)
-    if (filters?.danceTypeId && !hasClientSideFilters) {
-      dataQuery = dataQuery.select(`
-        id, 
-        first_name, 
-        last_name, 
-        email, 
-        phone,
-        created_at,
-        student_packages!inner(
-          id,
-          remaining_credits,
-          package!inner(dance_type_id)
-        ),
-        course_students(
-          course_id,
-          course:courses(branch_id, id)
-        )
-      `)
-      dataQuery = (dataQuery as any).eq('student_packages.package.dance_type_id', filters.danceTypeId)
     }
 
     // Get total count BEFORE pagination
@@ -138,9 +111,70 @@ export async function getStudentsWithStats(
     const { data, error } = await dataQuery
 
     if (error) {
-      console.error('Error fetching students with stats:', error)
-      return { error: 'Failed to fetch students' }
+      console.error('Error fetching students with stats:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        fullError: error
+      })
+      return { error: `Failed to fetch students: ${error.message || JSON.stringify(error)}` }
     }
+
+    // Fetch student_packages separately (RLS works better this way)
+    const studentIds = data?.map((s: any) => s.id) || []
+    let studentPackages: any[] = []
+    if (studentIds.length > 0) {
+      const { data: packagesData } = await adminSupabase
+        .from('student_packages')
+        .select('id, remaining_credits, package_id, student_id')
+        .in('student_id', studentIds)
+      studentPackages = packagesData || []
+      console.log(`Fetched ${studentPackages.length} student_packages for ${studentIds.length} students`)
+    }
+
+    // Merge student_packages into students data
+    const studentPackagesByStudentId = new Map<string, any[]>()
+    studentPackages.forEach(sp => {
+      if (!studentPackagesByStudentId.has(sp.student_id)) {
+        studentPackagesByStudentId.set(sp.student_id, [])
+      }
+      studentPackagesByStudentId.get(sp.student_id)!.push(sp)
+    })
+
+    data?.forEach((student: any) => {
+      student.student_packages = studentPackagesByStudentId.get(student.id) || []
+    })
+
+    // Fetch packages and create mapping for dance_type
+    let packageDanceTypeMap = new Map<string, string>()
+    const packageIds = studentPackages.map(sp => sp.package_id).filter(Boolean)
+    
+    if (packageIds.length > 0) {
+      const { data: packagesData } = await adminSupabase
+        .from('packages')
+        .select('id, dance_type_id')
+        .in('id', packageIds)
+      
+      if (packagesData) {
+        packagesData.forEach(pkg => {
+          packageDanceTypeMap.set(pkg.id, pkg.dance_type_id)
+        })
+      }
+    }
+
+    // Enrich student_packages with dance_type_id from packages
+    data?.forEach((student: any) => {
+      if (student.student_packages) {
+        student.student_packages = student.student_packages.map((sp: any) => ({
+          ...sp,
+          packages: {
+            id: sp.package_id,
+            dance_type_id: packageDanceTypeMap.get(sp.package_id)
+          }
+        }))
+      }
+    })
 
     // Process data to add calculated stats and apply client-side filters
     let studentsWithStats = (data || []).map((student: any) => {
@@ -157,12 +191,16 @@ export async function getStudentsWithStats(
       const courseNames = (student.course_students || [])
         .map((cs: any) => cs.course?.name)
         .filter(Boolean)
+      const courseIds = (student.course_students || [])
+        .map((cs: any) => cs.course?.id)
+        .filter(Boolean)
 
       return {
         ...student,
         totalRemainingCredits: totalCredits,
         enrolledCoursesCount: activeCourses.length,
         enrolledCourseNames: courseNames,
+        enrolledCourseIds: courseIds,
         enrolledCourses: activeCourses,
         branchIds: branches,
         packageDetails: (student.student_packages || []).map((sp: any) => ({
@@ -190,10 +228,32 @@ export async function getStudentsWithStats(
       )
     }
 
-    if (filters?.danceTypeId && hasClientSideFilters) {
-      studentsWithStats = studentsWithStats.filter(s =>
-        (s.student_packages || []).some((sp: any) => sp.package?.dance_type_id === filters.danceTypeId)
-      )
+    if (filters?.danceTypeId) {
+      console.log(`Filtering students by danceTypeId: ${filters.danceTypeId}`)
+      console.log(`Total students before filter: ${studentsWithStats.length}`)
+      
+      // Debug: show sample student packages
+      if (studentsWithStats.length > 0) {
+        const sampleStudent = studentsWithStats[0]
+        console.log(`Sample student packages:`, {
+          studentId: sampleStudent.id,
+          packages: sampleStudent.student_packages?.map(sp => ({
+            packageId: sp.packages?.id,
+            packageName: sp.packages?.name,
+            danceTypeId: sp.packages?.dance_type_id,
+            remainingCredits: sp.remaining_credits
+          }))
+        })
+      }
+      
+      studentsWithStats = studentsWithStats.filter(s => {
+        const hasMatchingDanceType = (s.student_packages || []).some((sp: any) => {
+          const matches = sp.packages?.dance_type_id === filters.danceTypeId
+          return matches
+        })
+        return hasMatchingDanceType
+      })
+      console.log(`After dance type filter: ${studentsWithStats.length} students`)
     }
 
     // Apply pagination to filtered results
@@ -238,31 +298,108 @@ export async function getStudentFilterOptions() {
   try {
     const adminSupabase = createAdminClient()
 
-    // Get dance types
-    const { data: danceTypes } = await adminSupabase
+    // Get dance types list
+    const { data: danceTypesList } = await adminSupabase
       .from('dance_types')
       .select('id, name')
       .eq('organization_id', organization.id)
       .order('name')
 
-    // Get branches
-    const { data: branches } = await adminSupabase
+    // Get student counts per dance type
+    const { data: studentsByDanceType } = await adminSupabase
+      .from('student_packages')
+      .select('packages(dance_type_id)', { count: 'exact' })
+
+    // Count students per dance type
+    const danceTypeCounts = new Map<string, number>()
+    if (studentsByDanceType) {
+      danceTypesList?.forEach(dt => {
+        const count = (studentsByDanceType as any[]).filter(
+          sp => sp.packages?.dance_type_id === dt.id
+        ).length
+        danceTypeCounts.set(dt.id, count)
+      })
+    }
+
+    const danceTypes = (danceTypesList || []).map(dt => ({
+      ...dt,
+      studentCount: danceTypeCounts.get(dt.id) || 0
+    }))
+
+    // Get branches list
+    const { data: branchesList } = await adminSupabase
       .from('branches')
       .select('id, name')
       .eq('organization_id', organization.id)
       .order('name')
 
-    // Get courses
-    const { data: courses } = await adminSupabase
+    // Get courses list via branches (courses table has no organization_id, only branch_id)
+    const { data: coursesList } = await adminSupabase
       .from('courses')
       .select('id, name, branch_id')
-      .eq('organization_id', organization.id)
+      .in('branch_id', branchesList?.map(b => b.id) || [])
       .order('name')
 
+    // Get student counts per course
+    const { data: studentsByCourse } = await adminSupabase
+      .from('course_students')
+      .select('student_id, course_id')
+
+    // Calculate branch student counts from coursesList and studentsByCourse
+    const branchStudentSets = new Map<string, Set<string>>()
+    coursesList?.forEach(course => {
+      if (!branchStudentSets.has(course.branch_id)) {
+        branchStudentSets.set(course.branch_id, new Set())
+      }
+      const courseStudents = (studentsByCourse || [])
+        .filter(cs => cs.course_id === course.id)
+        .map(cs => cs.student_id)
+        .filter(Boolean)
+      
+      courseStudents.forEach(studentId => {
+        branchStudentSets.get(course.branch_id)!.add(studentId)
+      })
+    })
+
+    const branchCounts = new Map<string, number>()
+    branchStudentSets.forEach((studentSet, branchId) => {
+      branchCounts.set(branchId, studentSet.size)
+    })
+
+    const branches = (branchesList || []).map(branch => ({
+      ...branch,
+      studentCount: branchCounts.get(branch.id) || 0
+    }))
+
+    // Calculate course student counts
+    const courseCounts = new Map<string, number>()
+    coursesList?.forEach(course => {
+      const uniqueStudents = new Set(
+        (studentsByCourse || [])
+          .filter(cs => cs.course_id === course.id)
+          .map(cs => cs.student_id)
+          .filter(Boolean)
+      )
+      courseCounts.set(course.id, uniqueStudents.size)
+    })
+
+    const courses = (coursesList || []).map(course => ({
+      ...course,
+      studentCount: courseCounts.get(course.id) || 0
+    }))
+
+    console.log('Filter options loaded:', {
+      danceTypesCount: danceTypes.length,
+      branchesCount: branches.length,
+      coursesCount: courses.length,
+      branchStudentCounts: Array.from(branchCounts.entries()),
+      courseStudentCounts: Array.from(courseCounts.entries()),
+    })
+
     return {
-      danceTypes: danceTypes || [],
-      branches: branches || [],
-      courses: courses || [],
+      danceTypes,
+      branches,
+      courses,
     }
   } catch (error) {
     console.error('Error fetching filter options:', error)

@@ -7,9 +7,9 @@ import { Search, RotateCcw } from 'lucide-react'
 import { SelectDropdown } from '@/components/ui/select-dropdown'
 
 interface StudentFiltersProps {
-  danceTypes: Array<{ id: string; name: string }>
-  branches: Array<{ id: string; name: string }>
-  courses: Array<{ id: string; name: string }>
+  danceTypes: Array<{ id: string; name: string; studentCount?: number }>
+  branches: Array<{ id: string; name: string; studentCount?: number }>
+  courses: Array<{ id: string; name: string; studentCount?: number }>
   searchQuery?: string
   hasCredits?: boolean
   danceTypeId?: string
@@ -100,7 +100,10 @@ export function StudentFilters({
           ariaLabel="Filter by dance type"
           options={[
             { value: '', label: 'Dance Type' },
-            ...danceTypes.map((dt) => ({ value: dt.id, label: dt.name })),
+            ...danceTypes.map((dt) => ({ 
+              value: dt.id, 
+              label: `${dt.name} (${dt.studentCount || 0})` 
+            })),
           ]}
         />
 
@@ -122,7 +125,10 @@ export function StudentFilters({
           ariaLabel="Filter by branch"
           options={[
             { value: '', label: 'Branch' },
-            ...branches.map((b) => ({ value: b.id, label: b.name })),
+            ...branches.map((b) => ({ 
+              value: b.id, 
+              label: `${b.name} (${b.studentCount || 0})` 
+            })),
           ]}
         />
 
@@ -144,7 +150,10 @@ export function StudentFilters({
           ariaLabel="Filter by course"
           options={[
             { value: '', label: 'Course' },
-            ...courses.map((c) => ({ value: c.id, label: c.name })),
+            ...courses.map((c) => ({ 
+              value: c.id, 
+              label: `${c.name} (${c.studentCount || 0})` 
+            })),
           ]}
         />
 
