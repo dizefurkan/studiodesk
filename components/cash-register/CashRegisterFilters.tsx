@@ -1,5 +1,8 @@
 'use client'
 
+import { DatePicker } from '@/components/ui/date-picker'
+import { format, parse } from 'date-fns'
+
 interface CashRegisterFiltersProps {
   branches: Array<{ id: string; name: string }>
   branchId?: string
@@ -51,14 +54,18 @@ export function CashRegisterFilters({
     window.location.href = `/dashboard/cash-register?${params.toString()}`
   }
 
-  const handleDateChange = (value: string) => {
+  const handleDateChange = (date: Date) => {
+    const dateValue = format(date, 'yyyy-MM-dd')
     const params = new URLSearchParams()
     if (branchId) params.set('branch', branchId)
     if (type) params.set('type', type)
     if (dataType) params.set('dataType', dataType)
-    if (value) params.set('date', value)
+    if (dateValue) params.set('date', dateValue)
     window.location.href = `/dashboard/cash-register?${params.toString()}`
   }
+
+  // Parse date string to Date object for DatePicker
+  const dateObj = dateStr ? parse(dateStr, 'yyyy-MM-dd', new Date()) : undefined
 
   return (
     <div className="flex gap-4 flex-wrap items-end">
@@ -107,11 +114,11 @@ export function CashRegisterFilters({
 
       <div className="flex-1 min-w-50">
         <label className="text-sm font-medium text-[#111827] block mb-2">Date</label>
-        <input
-          type="date"
-          defaultValue={dateStr || ''}
-          onChange={(e) => handleDateChange(e.target.value)}
-          className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+        <DatePicker
+          value={dateObj}
+          onDateChange={handleDateChange}
+          placeholder="Select date"
+          className="w-full"
         />
       </div>
     </div>

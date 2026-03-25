@@ -7,6 +7,9 @@ import { Input } from '@/components/ui/input'
 import { Trash2, Save, AlertCircle, Calendar, Search } from 'lucide-react'
 import { recordBatchAttendance, removeAttendance } from '@/lib/actions/attendance.actions'
 import { useRouter } from 'next/navigation'
+import { InstructorSelector } from './InstructorSelector'
+import { InstructorDropdown } from './InstructorDropdown'
+import { StudioDropdown } from './StudioDropdown'
 
 interface StudentForAttendance {
   id: string
@@ -55,6 +58,8 @@ interface StudentAttendanceListProps {
   loading?: boolean
   studios?: Studio[]
   instructors?: Array<{ id: string; first_name: string; last_name: string }>
+  allInstructors?: Array<{ id: string; first_name: string; last_name: string }>
+  instructorRates?: Array<{ instructor_id: string; dance_type_id: string; ratio_per_class: number }>
   selectedDate?: string
   onDateChange?: (date: string) => void
 }
@@ -79,6 +84,8 @@ export function StudentAttendanceList({
   loading,
   studios = [],
   instructors = [],
+  allInstructors = [],
+  instructorRates = [],
   selectedDate: propSelectedDate,
   onDateChange,
 }: StudentAttendanceListProps) {
@@ -88,8 +95,11 @@ export function StudentAttendanceList({
   const [error, setError] = useState<string>('')
   const [successMessage, setSuccessMessage] = useState<string>('')
   const [selectedStudioId, setSelectedStudioId] = useState<string | null>(null)
-  const [selectedInstructorIds, setSelectedInstructorIds] = useState<string[]>([])
+  const [instructorOverrides, setInstructorOverrides] = useState<Record<string, string>>({})
+  const [editingInstructorId, setEditingInstructorId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>('')
+  const [checkedStudentIds, setCheckedStudentIds] = useState<Set<string>>(new Set())
+  const [showInstructorSelector, setShowInstructorSelector] = useState(false)
   const today = new Date().toISOString().split('T')[0]
   const [selectedDate, setSelectedDate] = useState<string>(
     propSelectedDate || today
@@ -163,48 +173,117 @@ export function StudentAttendanceList({
     [availableStudents],
   )
 
+  // Initialize checked students on first load
+  useMemo(() => {
+    if (checkedStudentIds.size === 0 && studentsWithCredits.length > 0) {
+      setCheckedStudentIds(new Set(studentsWithCredits.map(s => s.id)))
+    }
+  }, [studentsWithCredits])
+
   const handleStatusChange = (studentId: string, newStatus: AttendanceStatus) => {
-    console.log(`[StudentAttendanceList] handleStatusChange: ${studentId} -> ${newStatus}`)
+    console.log(`[StudentAttendanceList] handleStatusChange: ${studentId} -> ${newStatus}, applying to ${checkedStudentIds.size} checked students`)
     setAttendanceState((prev) => {
-      const existing = prev.find((a) => a.studentId === studentId)
-      if (existing && existing.status === newStatus) {
-        // Already selected - do nothing (keep it selected)
-        console.log(`[StudentAttendanceList] Already ${newStatus}, keeping`)
-        return prev
-      } else if (existing) {
-        // Change status
-        const newState = prev.map((a) => (a.studentId === studentId ? { ...a, status: newStatus } : a))
-        console.log(`[StudentAttendanceList] Updated state:`, newState)
-        return newState
-      } else {
-        // Add new status
-        const newState = [...prev, { studentId, status: newStatus, notes: '', deductCredits: true }]
-        console.log(`[StudentAttendanceList] Added new state:`, newState)
-        return newState
-      }
+      // Apply to ALL checked students
+      const studentsToUpdate = Array.from(checkedStudentIds)
+      let updated = [...prev]
+      
+      studentsToUpdate.forEach((id) => {
+        const existingIndex = updated.findIndex((a) => a.studentId === id)
+        
+        if (existingIndex >= 0) {
+          // Update existing - toggle off if same status, otherwise set new
+          if (updated[existingIndex].status === newStatus) {
+            updated[existingIndex] = { ...updated[existingIndex], status: 'none' }
+          } else {
+            updated[existingIndex] = { ...updated[existingIndex], status: newStatus }
+          }
+        } else {
+          // Add new entry
+          updated.push({
+            studentId: id,
+            status: newStatus,
+            notes: '',
+            deductCredits: true,
+          })
+        }
+      })
+      
+      console.log(`[StudentAttendanceList] Applied ${newStatus} to ${studentsToUpdate.length} students`)
+      return updated
     })
     setError('')
     setSuccessMessage('')
   }
 
   const handleNotesChange = (studentId: string, notes: string) => {
+    // Apply notes to ALL checked students
     setAttendanceState((prev) => {
-      const existing = prev.find((a) => a.studentId === studentId)
-      if (existing) {
-        return prev.map((a) => (a.studentId === studentId ? { ...a, notes } : a))
-      }
-      return prev
+      const studentsToUpdate = Array.from(checkedStudentIds)
+      let updated = [...prev]
+      
+      studentsToUpdate.forEach((id) => {
+        const existingIndex = updated.findIndex((a) => a.studentId === id)
+        if (existingIndex >= 0) {
+          updated[existingIndex] = { ...updated[existingIndex], notes }
+        } else {
+          updated.push({
+            studentId: id,
+            status: 'none',
+            notes,
+            deductCredits: true,
+          })
+        }
+      })
+      
+      return updated
     })
   }
 
   const handleDeductCreditsChange = (studentId: string, deductCredits: boolean) => {
+    // Apply deductCredits to ALL checked students
     setAttendanceState((prev) => {
-      const existing = prev.find((a) => a.studentId === studentId)
-      if (existing) {
-        return prev.map((a) => (a.studentId === studentId ? { ...a, deductCredits } : a))
-      }
-      return prev
+      const studentsToUpdate = Array.from(checkedStudentIds)
+      let updated = [...prev]
+      
+      studentsToUpdate.forEach((id) => {
+        const existingIndex = updated.findIndex((a) => a.studentId === id)
+        if (existingIndex >= 0) {
+          updated[existingIndex] = { ...updated[existingIndex], deductCredits }
+        } else {
+          updated.push({
+            studentId: id,
+            status: 'none',
+            notes: '',
+            deductCredits,
+          })
+        }
+      })
+      
+      return updated
     })
+  }
+
+  // Checkbox handlers
+  const handleToggleStudent = (studentId: string) => {
+    setCheckedStudentIds((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(studentId)) {
+        newSet.delete(studentId)
+      } else {
+        newSet.add(studentId)
+      }
+      return newSet
+    })
+  }
+
+  const handleToggleMasterCheckbox = () => {
+    if (checkedStudentIds.size === studentsWithCredits.length) {
+      // All checked, uncheck all
+      setCheckedStudentIds(new Set())
+    } else {
+      // Not all checked, check all
+      setCheckedStudentIds(new Set(studentsWithCredits.map(s => s.id)))
+    }
   }
 
   const handleSaveAttendance = async () => {
@@ -212,8 +291,10 @@ export function StudentAttendanceList({
     setError('')
     setSuccessMessage('')
 
-    const presentRecords = attendanceState.filter((a) => a.status === 'geldi')
-    const absentWithNotesRecords = attendanceState.filter((a) => a.status === 'gelmedi' && a.notes)
+    // Filter records to only include checked students
+    const checkedRecords = attendanceState.filter((a) => checkedStudentIds.has(a.studentId))
+    const presentRecords = checkedRecords.filter((a) => a.status === 'geldi')
+    const absentWithNotesRecords = checkedRecords.filter((a) => a.status === 'gelmedi' && a.notes)
     const allRecordsToSave = [...presentRecords, ...absentWithNotesRecords]
     
     console.log('[StudentAttendanceList] Present records:', presentRecords)
@@ -221,7 +302,7 @@ export function StudentAttendanceList({
 
     if (allRecordsToSave.length === 0) {
       console.log('[StudentAttendanceList] No records to save')
-      setError('Please mark at least one student as "Geldi" or add notes for absent students to save')
+      setError('Please mark at least one checked student as "Geldi" or add notes for absent students to save')
       return
     }
 
@@ -244,8 +325,13 @@ export function StudentAttendanceList({
         }
       })
 
-      console.log('[StudentAttendanceList] Calling recordBatchAttendance with:', { courseId, sessionId, batchData, studioId: selectedStudioId, instructorIds: selectedInstructorIds, date: selectedDate })
-      const result = await recordBatchAttendance(courseId, sessionId, batchData, selectedStudioId, selectedInstructorIds, selectedDate)
+      // Build instructor IDs: use overrides if set, otherwise use original course instructors
+      const instructorIds = instructors.map((instructor) => 
+        instructorOverrides[instructor.id] || instructor.id
+      )
+
+      console.log('[StudentAttendanceList] Calling recordBatchAttendance with:', { courseId, sessionId, batchData, studioId: selectedStudioId, instructorIds, date: selectedDate })
+      const result = await recordBatchAttendance(courseId, sessionId, batchData, selectedStudioId, instructorIds, selectedDate)
       console.log('[StudentAttendanceList] recordBatchAttendance result:', result)
 
       if (result.error) {
@@ -370,6 +456,89 @@ export function StudentAttendanceList({
 
           <h3 className="text-lg font-semibold text-[#111827]">Mark Attendance ({studentsWithCredits.length} students)</h3>
           
+          {/* Studio & Instructor Selection */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {studios && studios.length > 0 && (
+              <div>
+                <label className="block text-xs font-semibold text-[#6B7280] mb-2 uppercase tracking-wide">
+                  Studio (Optional)
+                </label>
+                <StudioDropdown
+                  studios={studios}
+                  selectedStudioId={selectedStudioId}
+                  onSelect={setSelectedStudioId}
+                />
+              </div>
+            )}
+
+            {instructors && instructors.length > 0 && (
+              <div>
+                <label className="block text-xs font-semibold text-[#6B7280] mb-2 uppercase tracking-wide">
+                  Instructors
+                </label>
+                <div className="flex gap-2 flex-wrap">
+                  {instructors.map((instructor) => {
+                    const replacement = instructorOverrides[instructor.id]
+                    const isOverridden = !!replacement
+                    const replacementInstructor = isOverridden
+                      ? allInstructors.find((i) => i.id === replacement)
+                      : undefined
+
+                    return (
+                      <div key={instructor.id} className="">
+                        <InstructorDropdown
+                          instructor={instructor}
+                          replacementInstructor={replacementInstructor}
+                          isOverridden={isOverridden}
+                          onReplaceClick={() => {
+                            setEditingInstructorId(instructor.id)
+                            setShowInstructorSelector(true)
+                          }}
+                          onClearOverride={() => {
+                            setInstructorOverrides((prev) => {
+                              const newOverrides = { ...prev }
+                              delete newOverrides[instructor.id]
+                              return newOverrides
+                            })
+                          }}
+                        />
+                        {isOverridden && (
+                          <div className="text-xs text-gray-500 mt-1.5 ml-0.5">
+                            Original: {instructor.first_name} {instructor.last_name}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {showInstructorSelector && editingInstructorId && (
+            <InstructorSelector
+              instructors={instructors}
+              allInstructors={allInstructors}
+              instructorRates={instructorRates}
+              danceTypeId={danceTypeId}
+              editingInstructorId={editingInstructorId}
+              selectedReplacementId={instructorOverrides[editingInstructorId]}
+              instructorOverrides={instructorOverrides}
+              onSave={(replacementId: string) => {
+                setInstructorOverrides((prev) => ({
+                  ...prev,
+                  [editingInstructorId]: replacementId,
+                }))
+                setShowInstructorSelector(false)
+                setEditingInstructorId(null)
+              }}
+              onClose={() => {
+                setShowInstructorSelector(false)
+                setEditingInstructorId(null)
+              }}
+            />
+          )}
+          
           {/* Search Input */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -386,6 +555,15 @@ export function StudentAttendanceList({
             <table className="w-full border-collapse">
               <thead className="bg-gray-50 sticky top-0 border-b border-[#E5E7EB]">
                 <tr>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">
+                    <input
+                      type="checkbox"
+                      checked={checkedStudentIds.size === studentsWithCredits.length && studentsWithCredits.length > 0}
+                      onChange={handleToggleMasterCheckbox}
+                      className="w-4 h-4 text-[#4F46E5] rounded focus:ring-2 focus:ring-[#4F46E5]"
+                      title={checkedStudentIds.size === studentsWithCredits.length ? 'Uncheck all' : 'Check all'}
+                    />
+                  </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Student Name</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Credits</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Status</th>
@@ -408,6 +586,14 @@ export function StudentAttendanceList({
                       isMarked ? 'bg-green-50' : ''
                     }`}
                   >
+                    <td className="px-4 py-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={checkedStudentIds.has(student.id)}
+                        onChange={() => handleToggleStudent(student.id)}
+                        className="w-4 h-4 text-[#4F46E5] rounded focus:ring-2 focus:ring-[#4F46E5]"
+                      />
+                    </td>
                     <td className="px-4 py-3 text-sm font-medium text-[#111827]">
                       {student.first_name} {student.last_name}
                       {isMarked && <span className="ml-2 text-xs font-semibold text-green-700">✓</span>}
@@ -460,7 +646,7 @@ export function StudentAttendanceList({
                         <Input
                           placeholder="Note"
                           value={currentState?.notes || recordedAttendance?.notes || ''}
-                          onChange={(e) => handleNotesChange(student.id, e.target.value)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleNotesChange(student.id, e.target.value)}
                           className="text-xs py-1 px-2"
                         />
                       )}
@@ -519,63 +705,6 @@ export function StudentAttendanceList({
       {/* Studio Selection, Instructor Selection & Save Button */}
       {studentsWithCredits.length > 0 && totalPendingRecords > 0 && (
         <div className="space-y-4">
-          {/* Selections Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {studios && studios.length > 0 && (
-              <div>
-                <label className="block text-sm font-medium text-[#374151] mb-2">
-                  Studio (Optional)
-                </label>
-                <select
-                  value={selectedStudioId || ''}
-                  onChange={(e) => setSelectedStudioId(e.target.value || null)}
-                  className="w-full border border-[#D1D5DB] rounded px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
-                >
-                  <option value="">No specific studio</option>
-                  {studios.map((studio: any) => (
-                    <option key={studio.id} value={studio.id}>
-                      {studio.name} {studio.capacity ? `(${studio.capacity})` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {instructors && instructors.length > 0 && (
-              <div>
-                <label className="block text-sm font-medium text-[#374151] mb-2">
-                  Instructors (Optional)
-                </label>
-                <div className="space-y-2 border border-[#D1D5DB] rounded px-3 py-2">
-                  {instructors.map((instructor) => (
-                    <label key={instructor.id} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedInstructorIds.includes(instructor.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedInstructorIds([...selectedInstructorIds, instructor.id])
-                          } else {
-                            setSelectedInstructorIds(selectedInstructorIds.filter(id => id !== instructor.id))
-                          }
-                        }}
-                        className="w-4 h-4 text-[#4F46E5] rounded focus:ring-2 focus:ring-[#4F46E5]"
-                      />
-                      <span className="text-sm text-[#111827]">
-                        {instructor.first_name} {instructor.last_name}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {selectedInstructorIds.length > 0 
-                    ? `${selectedInstructorIds.length} instructor${selectedInstructorIds.length !== 1 ? 's' : ''} selected`
-                    : 'Leave unchecked to use course instructors'}
-                </p>
-              </div>
-            )}
-          </div>
-
           {/* Save Button */}
           <Button
             onClick={handleSaveAttendance}

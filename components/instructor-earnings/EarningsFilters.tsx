@@ -1,5 +1,8 @@
 'use client'
 
+import { DatePicker } from '@/components/ui/date-picker'
+import { format, parse } from 'date-fns'
+
 interface InstructorEarningsFiltersProps {
   instructors: Array<{ id: string; first_name: string; last_name: string }>
   instructorId?: string
@@ -21,21 +24,27 @@ export function InstructorEarningsFilters({
     window.location.href = `/dashboard/instructor-earnings?${params.toString()}`
   }
 
-  const handleFromDateChange = (value: string) => {
+  const handleFromDateChange = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd')
     const params = new URLSearchParams()
     if (instructorId) params.set('instructor', instructorId)
-    if (value) params.set('from', value)
+    if (dateStr) params.set('from', dateStr)
     if (toDate) params.set('to', toDate)
     window.location.href = `/dashboard/instructor-earnings?${params.toString()}`
   }
 
-  const handleToDateChange = (value: string) => {
+  const handleToDateChange = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd')
     const params = new URLSearchParams()
     if (instructorId) params.set('instructor', instructorId)
     if (fromDate) params.set('from', fromDate)
-    if (value) params.set('to', value)
+    if (dateStr) params.set('to', dateStr)
     window.location.href = `/dashboard/instructor-earnings?${params.toString()}`
   }
+
+  // Parse date strings to Date objects for DatePicker
+  const fromDateObj = fromDate ? parse(fromDate, 'yyyy-MM-dd', new Date()) : undefined
+  const toDateObj = toDate ? parse(toDate, 'yyyy-MM-dd', new Date()) : undefined
 
   return (
     <div className="flex gap-4 flex-wrap items-end">
@@ -57,21 +66,21 @@ export function InstructorEarningsFilters({
 
       <div className="flex-1 min-w-50">
         <label className="text-sm font-medium text-[#111827] block mb-2">From Date</label>
-        <input
-          type="date"
-          defaultValue={fromDate || ''}
-          onChange={(e) => handleFromDateChange(e.target.value)}
-          className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+        <DatePicker
+          value={fromDateObj}
+          onDateChange={handleFromDateChange}
+          placeholder="Select from date"
+          className="w-full"
         />
       </div>
 
       <div className="flex-1 min-w-50">
         <label className="text-sm font-medium text-[#111827] block mb-2">To Date</label>
-        <input
-          type="date"
-          defaultValue={toDate || ''}
-          onChange={(e) => handleToDateChange(e.target.value)}
-          className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+        <DatePicker
+          value={toDateObj}
+          onDateChange={handleToDateChange}
+          placeholder="Select to date"
+          className="w-full"
         />
       </div>
     </div>

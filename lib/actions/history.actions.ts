@@ -22,7 +22,7 @@ export async function getStudentAttendanceHistory(studentId: string) {
         created_at,
         course_sessions!inner(
           session_date,
-          courses(
+          course:courses(
             id,
             name,
             dance_types(name),

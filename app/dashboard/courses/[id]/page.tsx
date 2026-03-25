@@ -137,8 +137,8 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                             <span className={`font-bold ${att.is_present ? 'text-green-600' : 'text-red-600'}`}>
                               {att.is_present ? '✓' : '✗'}
                             </span>
-                            <Link href={`/dashboard/students/${att.students.id}`} className="text-[#4F46E5] hover:underline font-medium">
-                              {att.students.first_name} {att.students.last_name}
+                            <Link href={`/dashboard/students/${att.student.id}`} className="text-[#4F46E5] hover:underline font-medium">
+                              {att.student.first_name} {att.student.last_name}
                             </Link>
                             {att.notes && <span className="text-gray-600">({att.notes})</span>}
                           </div>

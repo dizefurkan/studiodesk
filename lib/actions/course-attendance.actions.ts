@@ -25,7 +25,7 @@ export async function getCourseAttendanceHistory(courseId: string) {
           created_at,
           is_present,
           notes,
-          students(id, first_name, last_name),
+          student:students(id, first_name, last_name),
           studios(name)
         )
       `)

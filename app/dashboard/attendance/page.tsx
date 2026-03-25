@@ -2,6 +2,7 @@ import { getCourses, getCourse } from '@/lib/actions/courses.actions'
 import { getSessionAttendances, getSessionStudents } from '@/lib/actions/attendance.actions'
 import { getCourseAttendanceHistory } from '@/lib/actions/course-attendance.actions'
 import { getStudios } from '@/lib/actions/studios.actions'
+import { getOrganization } from '@/lib/auth/getOrganization'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StudentAttendanceList } from '@/components/attendance/StudentAttendanceList'
@@ -46,11 +47,15 @@ export default async function AttendancePage({
     const courseId = sessionDataResult?.course_id
     let studios: any[] = []
     let courseInstructors: any[] = []
+    let allInstructors: any[] = []
+    let instructorRates: any[] = []
+    let danceTypeId = ''
     let attendanceHistory: any[] = []
 
     if (courseId) {
       const courseResult = await getCourse(courseId)
       const branchId = courseResult.data?.branch_id
+      danceTypeId = courseResult.data?.dance_type_id || ''
       if (branchId) {
         const studiosResult = await getStudios(branchId)
         studios = studiosResult.data || []
@@ -78,6 +83,27 @@ export default async function AttendancePage({
           first_name: ci.instructors.first_name,
           last_name: ci.instructors.last_name,
         }))
+
+      // Fetch all instructors for the organization (not just branch)
+      const { createServerSupabaseClient: createSupabaseClient } = await import('@/lib/supabase/server')
+      const supabaseClient = await createSupabaseClient()
+      const organization = await getOrganization()
+      
+      const { data: orgInstructorsData } = await supabaseClient
+        .from('instructors')
+        .select('id, first_name, last_name')
+        .eq('organization_id', organization?.id || '')
+
+      const allInstructors = (orgInstructorsData || [])
+        .map((instructor: any) => ({
+          id: instructor.id,
+          first_name: instructor.first_name,
+          last_name: instructor.last_name,
+        }))
+
+      const { data: instructorRatesData } = await supabaseClient
+        .from('instructor_rates')
+        .select('instructor_id, dance_type_id, ratio_per_class')
 
       // Fetch attendance history for this course
       const attendanceHistoryResult = await getCourseAttendanceHistory(courseId)
@@ -115,11 +141,14 @@ export default async function AttendancePage({
         <StudentAttendanceList
           sessionId={sessionId}
           courseId={courseId}
+          danceTypeId={danceTypeId}
           availableStudents={availableStudents}
           recordedAttendances={attendances}
           attendanceHistory={attendanceHistory}
           studios={studios}
           instructors={courseInstructors}
+          allInstructors={allInstructors}
+          instructorRates={instructorRates}
         />
       </div>
     )
@@ -186,6 +215,24 @@ export default async function AttendancePage({
         last_name: ci.instructors.last_name,
       }))
 
+    // Fetch all instructors for the organization (not just branch)
+    const organization = await getOrganization()
+    const { data: orgInstructorsData } = await supabase
+      .from('instructors')
+      .select('id, first_name, last_name')
+      .eq('organization_id', organization?.id || '')
+
+    const allInstructors = (orgInstructorsData || [])
+      .map((instructor: any) => ({
+        id: instructor.id,
+        first_name: instructor.first_name,
+        last_name: instructor.last_name,
+      }))
+
+    const { data: instructorRatesData } = await supabase
+      .from('instructor_rates')
+      .select('instructor_id, dance_type_id, ratio_per_class')
+
     // Transform students data and filter packages by dance_type_id
     const availableStudents = (courseStudentsData || [])
       .filter((cs: any) => cs.students)
@@ -239,84 +286,21 @@ export default async function AttendancePage({
 
     return (
       <div className="space-y-6">
-        <div>
-          <Link href="/dashboard/attendance" className="text-[#4F46E5] hover:underline mb-4 inline-block">
-            ← Back
-          </Link>
-          <h1 className="text-3xl font-bold text-[#111827]">{course.name}</h1>
-          <p className="text-gray-600 mt-1">Record and manage attendance</p>
-        </div>
-
-        <Card className="border-[#E5E7EB] p-6 bg-linear-to-r from-green-50 to-emerald-50">
-          <div className="space-y-4">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-blue-500 text-white rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold">{availableStudents.length}</p>
-                <p className="text-xs font-medium mt-1">Total Enrolled</p>
-              </div>
-              <div className="bg-green-500 text-white rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold">
-                  {existingAttendances.filter((a: any) => a.is_present).length}
-                </p>
-                <p className="text-xs font-medium mt-1">✓ Present</p>
-              </div>
-              <div className="bg-red-500 text-white rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold">
-                  {existingAttendances.filter((a: any) => !a.is_present).length}
-                </p>
-                <p className="text-xs font-medium mt-1">✗ Absent</p>
-              </div>
-            </div>
-
-            {courseInstructors.length > 0 && (
-              <div className="border-t border-green-200 pt-4">
-                <p className="text-sm font-medium text-[#111827] mb-2">Instructors:</p>
-                <div className="flex flex-wrap gap-2">
-                  {courseInstructors.map((instructor) => (
-                    <Link
-                      key={instructor.id}
-                      href={`/dashboard/instructors/${instructor.id}`}
-                      className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-green-700 transition-colors cursor-pointer"
-                    >
-                      {instructor.first_name} {instructor.last_name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {existingAttendances.length > 0 && (
-              <div className="border-t border-green-200 pt-4">
-                <p className="text-sm font-medium text-green-700 mb-3">✓ Attendance already recorded for today</p>
-                <a
-                  href={`?course=${courseId}&newSession=true`}
-                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                >
-                  Start New Session
-                </a>
-              </div>
-            )}
-
-            {!isCourseScheduledToday && (
-              <div className="border-t border-blue-200 pt-4">
-                <p className="text-sm text-blue-700 mb-3">
-                  This course is scheduled for {DAYS[course.day_of_week]}. You can mark attendance for a different date using the date picker.
-                </p>
-              </div>
-            )}
-          </div>
-        </Card>
-
         <AttendancePageWrapper
           sessionId={tempSessionId}
           courseId={courseId}
+          courseName={course.name}
           danceTypeId={course.dance_type_id}
           availableStudents={availableStudents}
           recordedAttendances={existingAttendances}
           attendanceHistory={attendanceHistory}
           studios={studios}
           instructors={courseInstructors}
+          allInstructors={allInstructors}
+          instructorRates={instructorRatesData || []}
+          totalEnrolled={availableStudents.length}
+          presentCount={existingAttendances.filter((a: any) => a.is_present).length}
+          absentCount={existingAttendances.filter((a: any) => !a.is_present).length}
         />
       </div>
     )
