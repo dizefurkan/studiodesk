@@ -151,32 +151,33 @@ export async function getStudentsWithStats(
     const packageIds = studentPackages.map(sp => sp.package_id).filter(Boolean)
     
     if (packageIds.length > 0) {
-      const { data: packagesData } = await adminSupabase
-        .from('packages')
+      const { data: packagesData } = await (adminSupabase
+        .from('packages') as any)
         .select('id, dance_type_id')
         .in('id', packageIds)
       
       if (packagesData) {
+        const packages = packagesData as any
         // Get unique dance_type_ids
-        const danceTypeIds = [...new Set(packagesData.map(pkg => pkg.dance_type_id).filter(Boolean))]
+        const danceTypeIds = [...new Set(packages.map((pkg: any) => pkg.dance_type_id).filter(Boolean))]
         
         // Fetch dance_types to get names
         if (danceTypeIds.length > 0) {
-          const { data: danceTypesData } = await adminSupabase
-            .from('dance_types')
+          const { data: danceTypesData } = await (adminSupabase
+            .from('dance_types') as any)
             .select('id, name')
             .in('id', danceTypeIds)
           
           // Create dance_type mapping
           const danceTypeMap = new Map<string, string>()
           if (danceTypesData) {
-            danceTypesData.forEach(dt => {
+            (danceTypesData as any[]).forEach((dt: any) => {
               danceTypeMap.set(dt.id, dt.name)
             })
           }
           
           // Create package mapping with dance_type_id and name
-          packagesData.forEach(pkg => {
+          (packages as any[]).forEach((pkg: any) => {
             packageDanceTypeMap.set(pkg.id, {
               id: pkg.dance_type_id,
               name: danceTypeMap.get(pkg.dance_type_id) || 'Unknown'
@@ -263,7 +264,7 @@ export async function getStudentsWithStats(
         const sampleStudent = studentsWithStats[0]
         console.log(`Sample student packages:`, {
           studentId: sampleStudent.id,
-          packages: sampleStudent.student_packages?.map(sp => ({
+          packages: sampleStudent.student_packages?.map((sp: any) => ({
             packageId: sp.packages?.id,
             packageName: sp.packages?.name,
             danceTypeId: sp.packages?.dance_type_id,
@@ -325,101 +326,111 @@ export async function getStudentFilterOptions() {
     const adminSupabase = createAdminClient()
 
     // Get dance types list
-    const { data: danceTypesList } = await adminSupabase
-      .from('dance_types')
+    const { data: danceTypesData } = await (adminSupabase
+      .from('dance_types') as any)
       .select('id, name')
       .eq('organization_id', organization.id)
       .order('name')
 
+    const danceTypesList = danceTypesData as any
+
     // Get student counts per dance type
-    const { data: studentsByDanceType } = await adminSupabase
-      .from('student_packages')
+    const { data: studentsByDanceType } = await (adminSupabase
+      .from('student_packages') as any)
       .select('packages(dance_type_id)', { count: 'exact' })
 
     // Count students per dance type
-    const danceTypeCounts = new Map<string, number>()
+    const danceTypeCounts: Record<string, number> = {}
     if (studentsByDanceType) {
-      danceTypesList?.forEach(dt => {
+      danceTypesList?.forEach((dt: any) => {
         const count = (studentsByDanceType as any[]).filter(
-          sp => sp.packages?.dance_type_id === dt.id
+          (sp: any) => sp.packages?.dance_type_id === dt.id
         ).length
-        danceTypeCounts.set(dt.id, count)
+        danceTypeCounts[dt.id] = count
       })
     }
 
-    const danceTypes = (danceTypesList || []).map(dt => ({
+    const danceTypes = ((danceTypesList || []) as any[]).map((dt: any) => ({
       ...dt,
-      studentCount: danceTypeCounts.get(dt.id) || 0
+      studentCount: danceTypeCounts[dt.id] || 0
     }))
 
     // Get branches list
-    const { data: branchesList } = await adminSupabase
-      .from('branches')
+    const { data: branchesData } = await (adminSupabase
+      .from('branches') as any)
       .select('id, name')
       .eq('organization_id', organization.id)
       .order('name')
 
+    const branchesList = branchesData as any
+
     // Get courses list via branches (courses table has no organization_id, only branch_id)
-    const { data: coursesList } = await adminSupabase
-      .from('courses')
+    const { data: coursesData } = await (adminSupabase
+      .from('courses') as any)
       .select('id, name, branch_id')
-      .in('branch_id', branchesList?.map(b => b.id) || [])
+      .in('branch_id', (branchesList || [])?.map((b: any) => b.id) || [])
       .order('name')
 
+    const coursesList = coursesData as any
+
     // Get student counts per course
-    const { data: studentsByCourse } = await adminSupabase
-      .from('course_students')
+    const { data: studentsByCoursData } = await (adminSupabase
+      .from('course_students') as any)
       .select('student_id, course_id')
 
+    const studentsByCourse = studentsByCoursData as any
+
     // Calculate branch student counts from coursesList and studentsByCourse
-    const branchStudentSets = new Map<string, Set<string>>()
-    coursesList?.forEach(course => {
-      if (!branchStudentSets.has(course.branch_id)) {
-        branchStudentSets.set(course.branch_id, new Set())
+    const branchStudentSetsArray: Array<[string, Set<string>]> = [] as Array<[string, Set<string>]>
+    (coursesList || []).forEach((course: any) => {
+      let branchSet = branchStudentSetsArray.find(([id]) => id === course.branch_id)
+      if (!branchSet) {
+        branchSet = [course.branch_id, new Set()]
+        branchStudentSetsArray.push(branchSet)
       }
       const courseStudents = (studentsByCourse || [])
-        .filter(cs => cs.course_id === course.id)
-        .map(cs => cs.student_id)
+        .filter((cs: any) => cs.course_id === course.id)
+        .map((cs: any) => cs.student_id)
         .filter(Boolean)
       
-      courseStudents.forEach(studentId => {
-        branchStudentSets.get(course.branch_id)!.add(studentId)
+      courseStudents.forEach((studentId: any) => {
+        branchSet[1].add(studentId)
       })
     })
 
-    const branchCounts = new Map<string, number>()
-    branchStudentSets.forEach((studentSet, branchId) => {
-      branchCounts.set(branchId, studentSet.size)
+    const branchCounts: Record<string, number> = {}
+    branchStudentSetsArray.forEach(([branchId, studentSet]) => {
+      branchCounts[branchId] = studentSet.size
     })
 
-    const branches = (branchesList || []).map(branch => ({
+    const branches = ((branchesList || []) as any[]).map((branch: any) => ({
       ...branch,
-      studentCount: branchCounts.get(branch.id) || 0
+      studentCount: branchCounts[branch.id] || 0
     }))
 
     // Calculate course student counts
-    const courseCounts = new Map<string, number>()
-    coursesList?.forEach(course => {
+    const courseCounts: Record<string, number> = {}
+    (coursesList || []).forEach((course: any) => {
       const uniqueStudents = new Set(
         (studentsByCourse || [])
-          .filter(cs => cs.course_id === course.id)
-          .map(cs => cs.student_id)
+          .filter((cs: any) => cs.course_id === course.id)
+          .map((cs: any) => cs.student_id)
           .filter(Boolean)
       )
-      courseCounts.set(course.id, uniqueStudents.size)
+      courseCounts[course.id] = uniqueStudents.size
     })
 
-    const courses = (coursesList || []).map(course => ({
+    const courses = ((coursesList || []) as any[]).map((course: any) => ({
       ...course,
-      studentCount: courseCounts.get(course.id) || 0
+      studentCount: courseCounts[course.id] || 0
     }))
 
     console.log('Filter options loaded:', {
       danceTypesCount: danceTypes.length,
       branchesCount: branches.length,
       coursesCount: courses.length,
-      branchStudentCounts: Array.from(branchCounts.entries()),
-      courseStudentCounts: Array.from(courseCounts.entries()),
+      branchStudentCounts: Object.entries(branchCounts),
+      courseStudentCounts: Object.entries(courseCounts),
     })
 
     return {

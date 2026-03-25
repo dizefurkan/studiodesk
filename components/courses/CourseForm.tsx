@@ -66,6 +66,7 @@ export function CourseForm({ course }: CourseFormProps) {
   const [instructors, setInstructors] = useState<InstructorWithRates[]>([])
   const [availableStudents, setAvailableStudents] = useState<Student[]>([])
   const [generalError, setGeneralError] = useState<string | null>(null)
+  const [loadingInstructors, setLoadingInstructors] = useState(false)
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseSchema),
@@ -102,12 +103,21 @@ export function CourseForm({ course }: CourseFormProps) {
     
     if (!danceTypeId) {
       setInstructors([])
+      setLoadingInstructors(false)
       return
     }
 
     async function loadInstructorsForDanceType() {
-      const result = await getInstructorsForDanceType(danceTypeId)
-      setInstructors(result.data || [])
+      setLoadingInstructors(true)
+      try {
+        const result = await getInstructorsForDanceType(danceTypeId)
+        setInstructors(result.data || [])
+      } catch (error) {
+        console.error('Error loading instructors:', error)
+        setInstructors([])
+      } finally {
+        setLoadingInstructors(false)
+      }
     }
 
     loadInstructorsForDanceType()
@@ -212,7 +222,7 @@ export function CourseForm({ course }: CourseFormProps) {
                     <FormControl>
                       <select
                         disabled={isLoading || !!course}
-                        className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+                        className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
                         {...field}
                       >
                         <option value="">Select a branch</option>
@@ -237,7 +247,7 @@ export function CourseForm({ course }: CourseFormProps) {
                     <FormControl>
                       <select
                         disabled={isLoading || !!course}
-                        className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+                        className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
                         {...field}
                       >
                         <option value="">Select a dance type</option>
@@ -261,13 +271,12 @@ export function CourseForm({ course }: CourseFormProps) {
                 name="instructorIds"
                 render={({ field }) => {
                   const danceTypeId = form.watch('danceTypeId')
-                  const isLoadingInstructors = !instructors.length && danceTypeId
 
                   return (
                     <FormItem>
                       <FormLabel>Instructors (for {danceTypes.find(d => d.id === danceTypeId)?.name})</FormLabel>
 
-                      {isLoadingInstructors ? (
+                      {loadingInstructors ? (
                         <div className="p-4 border border-[#E5E7EB] rounded-lg bg-gray-50 text-gray-600 text-sm">
                           Loading instructors...
                         </div>
@@ -327,7 +336,7 @@ export function CourseForm({ course }: CourseFormProps) {
                     <FormControl>
                       <select
                         disabled={isLoading}
-                        className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+                        className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
                         {...field}
                       >
                         {DAYS.map((day, idx) => (

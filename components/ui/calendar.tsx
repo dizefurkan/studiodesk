@@ -35,19 +35,23 @@ export interface CalendarProps {
   initialFocus?: boolean
 }
 
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  selected,
-  onSelect,
-  disabled,
-  fromDate,
-  toDate,
-  markedDates = new Set(),
-  initialFocus,
-  ...props
-}: CalendarProps & React.HTMLAttributes<HTMLDivElement>) {
+function Calendar(
+  props: CalendarProps & Omit<React.HTMLAttributes<HTMLDivElement>, keyof CalendarProps>
+) {
+  const {
+    className,
+    classNames,
+    showOutsideDays = true,
+    selected,
+    onSelect,
+    disabled,
+    fromDate,
+    toDate,
+    markedDates = new Set(),
+    initialFocus,
+    // Spread remaining HTML attributes
+    ...htmlProps
+  } = props
   const [currentMonth, setCurrentMonth] = React.useState<Date>(
     (selected instanceof Date ? selected : new Date())
   )
@@ -92,7 +96,7 @@ function Calendar({
   const isDateToday = (date: Date) => isToday(date)
 
   return (
-    <div className={cn("p-3", className)} {...props}>
+    <div className={cn("p-3", className)} {...htmlProps}>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-[#111827]">
           {format(currentMonth, "MMMM yyyy")}

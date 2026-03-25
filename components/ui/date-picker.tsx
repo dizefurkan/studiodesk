@@ -56,7 +56,11 @@ const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
           <Calendar
             mode="single"
             selected={value}
-            onSelect={onDateChange}
+            onSelect={(date) => {
+              if (date) {
+                onDateChange?.(date)
+              }
+            }}
             disabled={disabled}
             initialFocus
           />

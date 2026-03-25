@@ -1,7 +1,6 @@
 import { getInstructorEarnings } from '@/lib/actions/instructor-earnings.actions'
 import { getInstructors } from '@/lib/actions/instructors.actions'
 import { getOrganization } from '@/lib/auth/getOrganization'
-import { DEFAULT_CURRENCY } from '@/config/currencies'
 import { Card } from '@/components/ui/card'
 import { InstructorEarningsFilters } from '@/components/instructor-earnings/EarningsFilters'
 import { EarningsEditButton } from '@/components/instructor-earnings/EarningsEditButton'
@@ -19,7 +18,7 @@ export default async function InstructorEarningsPage({
   const toDate = typeof params.to === 'string' ? params.to : undefined
 
   const organization = await getOrganization()
-  const currency = organization?.currency || DEFAULT_CURRENCY
+  const currency = organization?.currency || 'TRY'
 
   const [earningsResult, instructorsResult] = await Promise.all([
     getInstructorEarnings(instructorId, fromDate, toDate),

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { getInstructorRates, getInstructorsAndBranchesAndDanceTypes, getInstructorRate } from '@/lib/actions/instructor-rates.actions'
 import { InstructorRatesTable } from '@/components/instructor-rates/InstructorRatesTable'
+import { InstructorSelectionDrawer } from '@/components/instructor-rates/InstructorSelectionDrawer'
 import { AddInstructorRateDrawer } from '@/components/instructor-rates/AddInstructorRateDrawer'
 import { Card } from '@/components/ui/card'
 import Link from 'next/link'
@@ -19,6 +20,7 @@ export default function InstructorRatesPage() {
 
   const modalType = searchParams?.get('modal')
   const editId = searchParams?.get('id')
+  const selectedInstructor = searchParams?.get('instructor')
 
   // Load rates and drawer data
   useEffect(() => {
@@ -48,7 +50,7 @@ export default function InstructorRatesPage() {
     if (modalType === 'edit' && editId) {
       setEditLoading(true)
       async function loadEditingRate() {
-        const result = await getInstructorRate(editId)
+        const result = await getInstructorRate(editId as string)
         setEditingRate(result.data)
         setEditLoading(false)
       }
@@ -63,7 +65,8 @@ export default function InstructorRatesPage() {
     window.history.pushState({}, '', '/dashboard/instructor-rates')
   }
 
-  const isDrawerOpen = modalType === 'new' || modalType === 'edit'
+  const isSelectionDrawerOpen = modalType === 'new' && !selectedInstructor
+  const isFormDrawerOpen = (modalType === 'new' && selectedInstructor) || modalType === 'edit'
 
   return (
     <div className="space-y-6">
@@ -97,7 +100,17 @@ export default function InstructorRatesPage() {
 
       <InstructorRatesTable rates={rates} onRatesChange={() => location.reload()} />
 
-      {!loading && drawerData && isDrawerOpen && !editLoading && (
+      {/* Instructor Selection Drawer (for 'new' modal without instructor selected) */}
+      {!loading && drawerData && isSelectionDrawerOpen && (
+        <InstructorSelectionDrawer
+          instructors={drawerData.instructors || []}
+          isOpen={true}
+          onOpenChange={handleCloseDrawer}
+        />
+      )}
+
+      {/* Rate Form Drawer (for 'new' with instructor selected, or 'edit' mode) */}
+      {!loading && drawerData && isFormDrawerOpen && !editLoading && (
         <AddInstructorRateDrawer
           instructors={drawerData.instructors || []}
           branches={drawerData.branches || []}

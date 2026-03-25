@@ -478,7 +478,7 @@ export async function recordBatchAttendance(
                   amount: ratio,
                   status: 'created'
                 })
-                console.log(`[recordBatchAttendance] Instructor earnings created: ${ci.instructor_id} - ₺${amount}`)
+                console.log(`[recordBatchAttendance] Instructor earnings created: ${ci.instructor_id} - ₺${ratio}`)
               } else {
                 console.error(`[recordBatchAttendance] Failed to create earnings for ${ci.instructor_id}:`, earningsError)
               }

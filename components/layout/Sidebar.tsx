@@ -163,16 +163,16 @@ export function Sidebar() {
 
         {/* Navigation Menu */}
         <nav className="flex-1 overflow-y-auto px-3 py-6 space-y-3">
-          {menuItems.map((item) => {
+          {menuItems.map((item, idx) => {
             // Dashboard - single item
             if (!item.category) {
-              const Icon = item.icon
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+              const Icon = item.icon as any
+              const isActive = pathname === item.href || pathname.startsWith((item.href || '') + '/')
 
               return (
                 <Link
-                  key={item.href}
-                  href={item.href}
+                  key={item.href || `item-${idx}`}
+                  href={item.href || '/'}
                   className={cn(
                     'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-sm font-medium',
                     isActive

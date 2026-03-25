@@ -25,7 +25,7 @@ function PopoverContent({
   children,
 }: {
   isOpen: boolean
-  triggerRef: React.RefObject<HTMLDivElement>
+  triggerRef: React.RefObject<HTMLDivElement | null>
   title: string
   children: React.ReactNode
 }) {
@@ -95,7 +95,7 @@ export function StudentPopover({ type, courses, credits, packageDetails, filtere
           </span>
         </div>
 
-        <PopoverContent isOpen={isOpen && courses && courses.length > 0} triggerRef={triggerRef} title="Enrolled Courses">
+        <PopoverContent isOpen={!!(isOpen && courses && courses.length > 0)} triggerRef={triggerRef} title="Enrolled Courses">
           <ul className="space-y-1">
             {courses?.map((course) => (
               <li key={course.id} className="text-xs text-gray-600">

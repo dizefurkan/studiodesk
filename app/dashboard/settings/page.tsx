@@ -9,7 +9,6 @@ import { TeamMembersSection } from '@/components/settings/TeamMembersSection'
 import { getCurrentUser, getUserRoleInOrganization } from '@/lib/auth/getCurrentUser'
 import { removeTeamMember, updateTeamMemberRole } from '@/lib/actions/organization.actions'
 import { ROLE_LABELS } from '@/lib/constants/roles'
-
 export default async function SettingsPage() {
   const organization = await getOrganization()
   const currentUser = await getCurrentUser()

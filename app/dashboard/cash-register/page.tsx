@@ -1,7 +1,6 @@
 import { getTransactions, getDailyReport, getInstructorEarningsByBranch } from '@/lib/actions/cash-register.actions'
 import { getBranches } from '@/lib/actions/branches.actions'
 import { getOrganization } from '@/lib/auth/getOrganization'
-import { DEFAULT_CURRENCY } from '@/config/currencies'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { DeleteTransactionButton } from '@/components/cash-register/DeleteTransactionButton'
@@ -22,7 +21,7 @@ export default async function CashRegisterPage({
   const dateStr = typeof params.date === 'string' ? params.date : new Date().toISOString().split('T')[0]
 
   const organization = await getOrganization()
-  const currency = organization?.currency || DEFAULT_CURRENCY
+  const currency = organization?.currency || 'TRY'
 
   const [transactionsResult, branchesResult, dailyReportResult, earningsResult] = await Promise.all([
     dataType === 'earnings' ? { data: [] } : getTransactions(branchId, type),

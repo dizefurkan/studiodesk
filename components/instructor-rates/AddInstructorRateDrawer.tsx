@@ -25,7 +25,7 @@ interface DanceType {
 
 interface InstructorRate {
   id: string
-  price_per_class: number
+  ratio_per_class: number
   instructors: Instructor
   branches: Branch
   dance_types: DanceType

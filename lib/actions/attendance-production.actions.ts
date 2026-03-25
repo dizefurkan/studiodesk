@@ -110,7 +110,7 @@ export async function markAttendance(
       {
         p_session_id: sessionId,
         p_student_id: studentId,
-      }
+      } as any
     )
 
     // 5. HANDLE DATABASE ERROR
@@ -156,21 +156,22 @@ export async function markAttendance(
     }
 
     // 6. HANDLE FUNCTION RESPONSE ERROR
-    if (!data || !data.success) {
+    const responseData = data as any
+    if (!responseData || !responseData.success) {
       console.error('Function returned error:', {
-        functionError: data?.error,
+        functionError: responseData?.error,
         sessionId,
         studentId,
       })
       return {
         success: false,
-        error: data?.error || 'Unknown error during attendance processing',
+        error: responseData?.error || 'Unknown error during attendance processing',
       }
     }
 
     // 7. VALIDATE RESPONSE DATA STRUCTURE
-    if (!data.data || !data.data.attendance_id) {
-      console.error('Invalid response structure from attendance function:', data)
+    if (!responseData.data || !responseData.data.attendance_id) {
+      console.error('Invalid response structure from attendance function:', responseData)
       return {
         success: false,
         error: 'Invalid response from server. Please try again.',
@@ -181,12 +182,12 @@ export async function markAttendance(
     return {
       success: true,
       data: {
-        attendance_id: data.data.attendance_id,
-        student_package_id: data.data.student_package_id,
-        remaining_credits: data.data.remaining_credits,
-        validity_days: data.data.validity_days,
-        expires_at: data.data.expires_at,
-        instructors_paid: data.data.instructors_paid,
+        attendance_id: responseData.data.attendance_id,
+        student_package_id: responseData.data.student_package_id,
+        remaining_credits: responseData.data.remaining_credits,
+        validity_days: responseData.data.validity_days,
+        expires_at: responseData.data.expires_at,
+        instructors_paid: responseData.data.instructors_paid,
       },
     }
   } catch (error) {
@@ -231,11 +232,13 @@ export async function removeAttendance(attendanceId: string) {
     const supabase = await createServerSupabaseClient()
 
     // 1. Fetch attendance record
-    const { data: attendance, error: fetchError } = await supabase
-      .from('attendances')
+    const { data: attendanceData, error: fetchError } = await (supabase
+      .from('attendances') as any)
       .select('id, student_package_id, student_id')
       .eq('id', attendanceId)
       .single()
+
+    const attendance = attendanceData as any
 
     if (fetchError || !attendance) {
       console.error('Attendance not found:', { attendanceId, fetchError })
@@ -260,21 +263,37 @@ export async function removeAttendance(attendanceId: string) {
     }
 
     // 3. Restore credit to student package
-    const { error: updateError } = await supabase
-      .from('student_packages')
-      .update({
-        remaining_credits: supabase.raw('remaining_credits + 1'),
-        updated_at: new Date().toISOString(),
-      })
+    // Get the current remaining_credits value first
+    const { data: pkgData, error: pkgError } = await (supabase
+      .from('student_packages') as any)
+      .select('remaining_credits')
       .eq('id', attendance.student_package_id)
+      .single()
 
-    if (updateError) {
-      console.warn('Warning: Could not restore credit:', {
+    if (pkgError || !pkgData) {
+      console.warn('Warning: Could not fetch current credits:', {
         attendanceId,
         packageId: attendance.student_package_id,
-        error: updateError.message,
       })
-      // Don't fail the operation - attendance is already deleted
+    } else {
+      // Update with incremented value
+      const newCredits = (pkgData.remaining_credits || 0) + 1
+      const { error: updateError } = await (supabase
+        .from('student_packages') as any)
+        .update({
+          remaining_credits: newCredits,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', attendance.student_package_id)
+
+      if (updateError) {
+        console.warn('Warning: Could not restore credit:', {
+          attendanceId,
+          packageId: attendance.student_package_id,
+          error: updateError.message,
+        })
+        // Don't fail the operation - attendance is already deleted
+      }
     }
 
     // 4. Log the removal for audit trail
@@ -332,11 +351,13 @@ export async function canMarkAttendance(
     const supabase = await createServerSupabaseClient()
 
     // 1. Check if session exists
-    const { data: session, error: sessionError } = await supabase
-      .from('course_sessions')
+    const { data: sessionData, error: sessionError } = await (supabase
+      .from('course_sessions') as any)
       .select('course_id')
       .eq('id', sessionId)
       .single()
+
+    const session = sessionData as any
 
     if (sessionError || !session) {
       return {
@@ -346,11 +367,13 @@ export async function canMarkAttendance(
     }
 
     // 2. Get course and dance type
-    const { data: course, error: courseError } = await supabase
-      .from('courses')
+    const { data: courseData, error: courseError } = await (supabase
+      .from('courses') as any)
       .select('id, dance_type_id')
       .eq('id', session.course_id)
       .single()
+
+    const course = courseData as any
 
     if (courseError || !course) {
       return {
@@ -360,13 +383,15 @@ export async function canMarkAttendance(
     }
 
     // 3. Check if already marked
-    const { data: existing } = await supabase
-      .from('attendances')
+    const { data: existingData } = await (supabase
+      .from('attendances') as any)
       .select('id')
       .eq('session_id', sessionId)
       .eq('student_id', studentId)
       .eq('deleted_at', null)
       .single()
+
+    const existing = existingData as any
 
     if (existing) {
       return {
@@ -376,12 +401,14 @@ export async function canMarkAttendance(
     }
 
     // 4. Check enrollment
-    const { data: enrolled } = await supabase
-      .from('course_students')
+    const { data: enrolledData } = await (supabase
+      .from('course_students') as any)
       .select('id')
       .eq('course_id', course.id)
       .eq('student_id', studentId)
       .single()
+
+    const enrolled = enrolledData as any
 
     if (!enrolled) {
       return {
@@ -391,8 +418,8 @@ export async function canMarkAttendance(
     }
 
     // 5. Check for valid credits
-    const { data: packages } = await supabase
-      .from('student_packages')
+    const { data: packagesData } = await (supabase
+      .from('student_packages') as any)
       .select('remaining_credits, expire_date, validity_days')
       .eq('student_id', studentId)
       .gt('remaining_credits', 0)
@@ -400,6 +427,8 @@ export async function canMarkAttendance(
         `expire_date.is.null,expire_date.gt.${new Date().toISOString()},validity_days.gt.0`
       )
       .limit(1)
+
+    const packages = packagesData as any
 
     if (!packages || packages.length === 0) {
       return {
@@ -471,11 +500,13 @@ export async function getSessionStudents(
     const supabase = await createServerSupabaseClient()
 
     // 1. Get course from session
-    const { data: session, error: sessionError } = await supabase
-      .from('course_sessions')
+    const { data: sessionData, error: sessionError } = await (supabase
+      .from('course_sessions') as any)
       .select('course_id')
       .eq('id', sessionId)
       .single()
+
+    const session = sessionData as any
 
     if (sessionError || !session) {
       return {
@@ -485,8 +516,8 @@ export async function getSessionStudents(
     }
 
     // 2. Get enrolled students with their active credits
-    const { data: students, error: studentsError } = await supabase
-      .from('course_students')
+    const { data: studentsData, error: studentsError } = await (supabase
+      .from('course_students') as any)
       .select(
         `
         student_id,
@@ -496,6 +527,8 @@ export async function getSessionStudents(
       )
       .eq('course_id', session.course_id)
       .is('deleted_at', null) // Only active enrollments
+
+    const students = studentsData as any
 
     if (studentsError) {
       console.error('Error fetching students:', {
@@ -516,11 +549,13 @@ export async function getSessionStudents(
     }
 
     // 3. Check which students already have attendance
-    const { data: attendances } = await supabase
-      .from('attendances')
+    const { data: attendancesData } = await (supabase
+      .from('attendances') as any)
       .select('student_id')
       .eq('session_id', sessionId)
       .is('deleted_at', null)
+
+    const attendances = attendancesData as any
 
     const markedStudents = new Set(attendances?.map((a: any) => a.student_id) || [])
 
@@ -719,7 +754,7 @@ export async function getCourseAttendanceStats(
     const supabase = await createServerSupabaseClient()
 
     // Use the analytics view if it exists
-    const { data, error } = await supabase.rpc('get_attendance_summary', {
+    const { data, error } = await (supabase.rpc as any)('get_attendance_summary', {
       p_start_date: startDate,
       p_end_date: endDate,
       p_branch_id: null, // Optional: filter by branch

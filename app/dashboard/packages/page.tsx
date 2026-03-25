@@ -4,7 +4,7 @@ import { PackagesPageContent } from './packages-client'
 
 export default async function PackagesPage() {
   const organization = await getOrganization()
-  const currency = organization?.currency || DEFAULT_CURRENCY
+  const currency = organization?.currency || 'TRY'
 
   return <PackagesPageContent currency={currency} />
 }

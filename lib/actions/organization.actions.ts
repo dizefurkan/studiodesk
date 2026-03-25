@@ -19,8 +19,8 @@ export async function updateOrganizationSettings(currency: string) {
   try {
     const supabase = await createAdminClient()
 
-    const { data, error } = await supabase
-      .from('organizations')
+    const { data, error } = await (supabase
+      .from('organizations') as any)
       .update({ currency })
       .eq('id', organization.id)
       .select()
@@ -73,8 +73,8 @@ export async function updateOrganizationPermissions(permissions: {
     }
     updateData.updated_at = new Date().toISOString()
 
-    const { data, error } = await supabase
-      .from('organizations')
+    const { data, error } = await (supabase
+      .from('organizations') as any)
       .update(updateData)
       .eq('id', organization.id)
       .select()

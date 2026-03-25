@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Trash2, Plus } from 'lucide-react'
+import { Trash2, Plus, ChevronDown, ChevronUp } from 'lucide-react'
 import { deleteInstructorRate } from '@/lib/actions/instructor-rates.actions'
 import { useRouter } from 'next/navigation'
 
@@ -30,12 +30,41 @@ interface InstructorRatesTableProps {
   onRatesChange?: () => void
 }
 
+interface GroupedInstructor {
+  id: string
+  name: string
+  rates: InstructorRate[]
+}
+
 export function InstructorRatesTable({
   rates,
   onRatesChange
 }: InstructorRatesTableProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [expandedInstructors, setExpandedInstructors] = useState<Set<string>>(new Set())
+
+  // Group rates by instructor
+  const groupedInstructors = useMemo(() => {
+    const grouped = new Map<string, GroupedInstructor>()
+    
+    rates.forEach((rate) => {
+      const instructorId = rate.instructors.id
+      const instructorName = `${rate.instructors.first_name} ${rate.instructors.last_name}`
+
+      if (!grouped.has(instructorId)) {
+        grouped.set(instructorId, {
+          id: instructorId,
+          name: instructorName,
+          rates: [],
+        })
+      }
+
+      grouped.get(instructorId)!.rates.push(rate)
+    })
+
+    return Array.from(grouped.values())
+  }, [rates])
 
   const handleDelete = async (rateId: string) => {
     if (!confirm('Delete this rate?')) return
@@ -63,6 +92,18 @@ export function InstructorRatesTable({
       // New rate mode
       router.push('/dashboard/instructor-rates?modal=new')
     }
+  }
+
+  const toggleExpand = (instructorId: string) => {
+    setExpandedInstructors((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(instructorId)) {
+        newSet.delete(instructorId)
+      } else {
+        newSet.add(instructorId)
+      }
+      return newSet
+    })
   }
 
   return (
@@ -94,49 +135,80 @@ export function InstructorRatesTable({
                     Instructor
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">
-                    Branch
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">
-                    Dance Type
+                    Rates
                   </th>
                   <th className="px-6 py-3 text-right text-sm font-semibold text-[#111827]">
-                    Commission Ratio (%)
-                  </th>
-                  <th className="px-6 py-3 text-right text-sm font-semibold text-[#111827]">
-                    Action
+                    Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E7EB]">
-                {rates.map((rate) => (
-                  <tr key={rate.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-[#111827]">
-                      {rate.instructors.first_name} {rate.instructors.last_name}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{rate.branches.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{rate.dance_types.name}</td>
-                    <td className="px-6 py-4 text-sm text-right font-semibold text-[#111827]">
-                      {Number(rate.ratio_per_class).toFixed(2)}%
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-2">
-                      <button
-                        onClick={() => handleOpenDrawer(rate)}
-                        disabled={loading}
-                        className="px-3 py-1 text-sm text-[#4F46E5] hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(rate.id)}
-                        disabled={loading}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 inline-flex"
-                        title="Delete rate"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {groupedInstructors.map((instructor) => {
+                  const isExpanded = expandedInstructors.has(instructor.id)
+                  const rateCount = instructor.rates.length
+
+                  return (
+                    <React.Fragment key={instructor.id}>
+                      {/* Main instructor row */}
+                      <tr className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 text-sm font-medium text-[#111827]">
+                          {instructor.name}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {rateCount} rate{rateCount > 1 ? 's' : ''} configured
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-2">
+                          <button
+                            onClick={() => toggleExpand(instructor.id)}
+                            className="px-3 py-1 text-sm text-[#4F46E5] hover:bg-blue-50 rounded transition-colors inline-flex items-center gap-1"
+                          >
+                            {isExpanded ? (
+                              <>
+                                <ChevronUp size={16} />
+                                Hide
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown size={16} />
+                                Show
+                              </>
+                            )}
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* Expanded rate details */}
+                      {isExpanded &&
+                        instructor.rates.map((rate) => (
+                          <tr key={rate.id} className="bg-blue-50/30 hover:bg-blue-50/50 transition-colors">
+                            <td className="px-6 py-4 text-sm text-gray-600 pl-12">
+                              {rate.branches.name} • {rate.dance_types.name}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-[#111827] font-semibold">
+                              {Number(rate.ratio_per_class).toFixed(2)}%
+                            </td>
+                            <td className="px-6 py-4 text-right space-x-2">
+                              <button
+                                onClick={() => handleOpenDrawer(rate)}
+                                disabled={loading}
+                                className="px-3 py-1 text-sm text-[#4F46E5] hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(rate.id)}
+                                disabled={loading}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 inline-flex"
+                                title="Delete rate"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                    </React.Fragment>
+                  )
+                })}
               </tbody>
             </table>
           </div>

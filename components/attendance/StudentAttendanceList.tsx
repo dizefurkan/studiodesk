@@ -181,22 +181,25 @@ export function StudentAttendanceList({
   }, [studentsWithCredits])
 
   const handleStatusChange = (studentId: string, newStatus: AttendanceStatus) => {
-    console.log(`[StudentAttendanceList] handleStatusChange: ${studentId} -> ${newStatus}, applying to ${checkedStudentIds.size} checked students`)
+    console.log(`[StudentAttendanceList] handleStatusChange: ${studentId} -> ${newStatus}`)
     setAttendanceState((prev) => {
-      // Apply to ALL checked students
-      const studentsToUpdate = Array.from(checkedStudentIds)
+      // If the row is checked, apply to all checked students
+      // Otherwise, apply only to this specific student
+      const isRowChecked = checkedStudentIds.has(studentId)
+      const studentsToUpdate = isRowChecked ? Array.from(checkedStudentIds) : [studentId]
+      
       let updated = [...prev]
       
       studentsToUpdate.forEach((id) => {
         const existingIndex = updated.findIndex((a) => a.studentId === id)
         
         if (existingIndex >= 0) {
-          // Update existing - toggle off if same status, otherwise set new
-          if (updated[existingIndex].status === newStatus) {
-            updated[existingIndex] = { ...updated[existingIndex], status: 'none' }
-          } else {
+          // Update existing - don't toggle, only set if different
+          // Radio button behavior: geldi OR gelmedi, not toggle
+          if (updated[existingIndex].status !== newStatus) {
             updated[existingIndex] = { ...updated[existingIndex], status: newStatus }
           }
+          // If same status, keep it (don't deselect)
         } else {
           // Add new entry
           updated.push({
@@ -216,9 +219,12 @@ export function StudentAttendanceList({
   }
 
   const handleNotesChange = (studentId: string, notes: string) => {
-    // Apply notes to ALL checked students
+    // If the row is checked, apply to all checked students
+    // Otherwise, apply only to this specific student
     setAttendanceState((prev) => {
-      const studentsToUpdate = Array.from(checkedStudentIds)
+      const isRowChecked = checkedStudentIds.has(studentId)
+      const studentsToUpdate = isRowChecked ? Array.from(checkedStudentIds) : [studentId]
+      
       let updated = [...prev]
       
       studentsToUpdate.forEach((id) => {
@@ -240,9 +246,12 @@ export function StudentAttendanceList({
   }
 
   const handleDeductCreditsChange = (studentId: string, deductCredits: boolean) => {
-    // Apply deductCredits to ALL checked students
+    // If the row is checked, apply to all checked students
+    // Otherwise, apply only to this specific student
     setAttendanceState((prev) => {
-      const studentsToUpdate = Array.from(checkedStudentIds)
+      const isRowChecked = checkedStudentIds.has(studentId)
+      const studentsToUpdate = isRowChecked ? Array.from(checkedStudentIds) : [studentId]
+      
       let updated = [...prev]
       
       studentsToUpdate.forEach((id) => {

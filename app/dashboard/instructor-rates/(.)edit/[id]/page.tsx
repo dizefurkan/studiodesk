@@ -37,24 +37,7 @@ export default function EditInstructorRatePage({ params }: EditInstructorRatePag
 
       const rateData = rateResult.data
       if (rateData) {
-        const transformedRate = {
-          id: rateData.id,
-          price_per_class: rateData.price_per_class,
-          instructors: {
-            id: rateData.instructor_id,
-            first_name: rateData.first_name,
-            last_name: rateData.last_name,
-          },
-          branches: {
-            id: rateData.branch_id,
-            name: rateData.branch_name,
-          },
-          dance_types: {
-            id: rateData.dance_type_id,
-            name: rateData.dance_type_name,
-          },
-        }
-        setRate(transformedRate)
+        setRate(rateData)
       }
 
       setLoading(false)

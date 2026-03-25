@@ -29,7 +29,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
 
   const student = result.data
   const organization = await getOrganization()
-  const currency = organization?.currency || DEFAULT_CURRENCY
+  const currency = organization?.currency || 'TRY'
 
   // Fetch student packages, available packages, and history
   const [packagesResult, availablePackagesResult, attendanceHistoryResult, packageHistoryResult] = await Promise.all([
