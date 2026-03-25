@@ -440,6 +440,16 @@ export async function recordBatchAttendance(
           .single()
 
         if (courseData) {
+          // Get package price for this dance type
+          const { data: packageData } = await (supabase
+            .from('packages') as any)
+            .select('price')
+            .eq('dance_type_id', courseData.dance_type_id)
+            .single()
+
+          const packagePrice = packageData?.price || 0
+          console.log(`[recordBatchAttendance] Package price for dance type: ₺${packagePrice}`)
+
           const earningsCreated = []
           
           // Calculate earnings for each instructor (only once per session)
@@ -454,6 +464,10 @@ export async function recordBatchAttendance(
 
             const ratio = rateData?.ratio_per_class || 0
 
+            // Calculate amount: ratio × package_price
+            const calculatedAmount = ratio * packagePrice
+            console.log(`[recordBatchAttendance] Calculating earnings: ${ratio} (ratio) × ₺${packagePrice} (price) = ₺${calculatedAmount}`)
+
             // Check if earnings already recorded for this instructor and session
             const { data: existingEarning } = await (supabase
               .from('instructor_earnings') as any)
@@ -462,29 +476,29 @@ export async function recordBatchAttendance(
               .eq('session_id', actualSessionId)
               .single()
 
-            // Only record if not already recorded (ratio can be 0 if rate not set yet)
+            // Only record if not already recorded
             if (!existingEarning) {
               const { error: earningsError } = await (supabase
                 .from('instructor_earnings') as any)
                 .insert({
                   instructor_id: ci.instructor_id,
                   session_id: actualSessionId,
-                  amount: ratio,
+                  amount: calculatedAmount,
                 })
               
               if (!earningsError) {
                 earningsCreated.push({
                   instructor_id: ci.instructor_id,
-                  amount: ratio,
+                  amount: calculatedAmount,
                   status: 'created'
                 })
-                console.log(`[recordBatchAttendance] Instructor earnings created: ${ci.instructor_id} - ₺${ratio}`)
+                console.log(`[recordBatchAttendance] Instructor earnings created: ${ci.instructor_id} - ₺${calculatedAmount}`)
               } else {
                 console.error(`[recordBatchAttendance] Failed to create earnings for ${ci.instructor_id}:`, earningsError)
               }
             } else if (existingEarning) {
               console.log(`[recordBatchAttendance] Earnings already exist for ${ci.instructor_id}, skipping`)
-            } else {
+            } else if (ratio === 0) {
               console.warn(`[recordBatchAttendance] No rate found for instructor ${ci.instructor_id}`)
             }
           }
