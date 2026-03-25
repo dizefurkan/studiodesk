@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   const coursesResult = await getCourses()
   const activeCourses = (coursesResult.data && Array.isArray(coursesResult.data)) ? coursesResult.data.length : 0
   
-  // Fetch revenue this month
+  // Fetch sessions and revenue this month
   let sessionCount = 0
   let revenue = 0
   
@@ -28,23 +28,43 @@ export default async function DashboardPage() {
     try {
       const supabase = await createServerSupabaseClient()
       const now = new Date()
-      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString()
       
-      // Get cash transactions for this month
+      // First day of current month (e.g., 2026-03-01)
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
+      // Last day of current month (e.g., 2026-03-31)
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      
+      // Format dates for date comparison (YYYY-MM-DD)
+      const firstDayStr = firstDay.toISOString().split('T')[0]
+      const lastDayStr = lastDay.toISOString().split('T')[0]
+      
+      // Get sessions for this month (by session_date)
+      const { data: sessions } = await supabase
+        .from('course_sessions')
+        .select('id')
+        .gte('session_date', firstDayStr)
+        .lte('session_date', lastDayStr)
+      
+      if (sessions && Array.isArray(sessions)) {
+        sessionCount = sessions.length
+      }
+      
+      // Get cash transactions for this month (for revenue)
+      const firstDayTimestamp = firstDay.toISOString()
+      const lastDayTimestamp = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString()
+      
       const { data: transactions } = await supabase
         .from('cash_transactions')
         .select('amount')
         .eq('type', 'income')
-        .gte('created_at', firstDay)
-        .lte('created_at', lastDay)
+        .gte('created_at', firstDayTimestamp)
+        .lte('created_at', lastDayTimestamp)
       
       if (transactions && Array.isArray(transactions)) {
         revenue = transactions.reduce((sum, t) => sum + (t.amount || 0), 0)
-        sessionCount = transactions.length
       }
     } catch (error) {
-      console.error('Error fetching transactions:', error)
+      console.error('Error fetching dashboard data:', error)
     }
   }
   
