@@ -119,7 +119,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                     <div className="flex-1">
                       <p className="font-medium text-[#111827]">{record.session_date}</p>
                       <p className="text-sm text-gray-600 mt-1">
-                        {record.attendance_count} student{record.attendance_count !== 1 ? 's' : ''} attended
+                        {record.attendance_count} present (out of {record.attendances?.length || 0} total)
                         {record.attendances?.length > 0 && record.attendances[0]?.studios?.name && 
                           ` • Studio: ${record.attendances[0].studios.name}`}
                       </p>

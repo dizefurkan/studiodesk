@@ -398,7 +398,7 @@ export async function getStudentFilterOptions() {
       })
     })
 
-    const branchCounts: Record<string, number> = {}
+    const branchCounts = {} as Record<string, number>
     branchStudentSetsArray.forEach(([branchId, studentSet]) => {
       branchCounts[branchId] = studentSet.size
     })
@@ -409,7 +409,7 @@ export async function getStudentFilterOptions() {
     }))
 
     // Calculate course student counts
-    const courseCounts: Record<string, number> = {}
+    const courseCounts = {} as Record<string, number>
     (coursesList || []).forEach((course: any) => {
       const uniqueStudents = new Set(
         (studentsByCourse || [])

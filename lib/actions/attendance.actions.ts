@@ -326,9 +326,9 @@ export async function recordBatchAttendance(
       console.log('[recordBatchAttendance] Session already exists:', actualSessionId)
     }
 
-    // Filter to "geldi" and "gelmedi with notes" records to process
+    // Filter to "geldi" and "gelmedi" records to process (save all records, not just those with notes)
     const geldiBatch = attendanceData.filter((a) => a.status === 'geldi')
-    const gelmediWithNotesBatch = attendanceData.filter((a) => a.status === 'gelmedi' && a.notes)
+    const gelmediWithNotesBatch = attendanceData.filter((a) => a.status === 'gelmedi')
 
     if (geldiBatch.length === 0 && gelmediWithNotesBatch.length === 0) {
       return { success: true, data: { recordedCount: 0, skippedCount: attendanceData.length } }
@@ -342,18 +342,18 @@ export async function recordBatchAttendance(
       return { error: 'Some students are missing package data. Please refresh and try again.' }
     }
 
-    // Batch insert all attendance records (both geldi and gelmedi with notes)
+    // Batch insert all attendance records (both geldi and gelmedi)
     const attendanceRecords = allBatchRecords.map((a) => ({
       session_id: actualSessionId,
       student_id: a.studentId,
       student_package_id: a.studentPackageId,
       studio_id: studioId || null,
-      is_present: a.status === 'geldi',
+      is_present: a.status === 'geldi',  // TRUE for geldi, FALSE for gelmedi
       deduct_credits: a.deductCredits !== false,  // Save deduct_credits flag to database
       notes: a.notes || null,
     }))
 
-    console.log('[recordBatchAttendance] Inserting attendance records:', attendanceRecords, 'with studio:', studioId || 'none', `(${geldiBatch.length} geldi + ${gelmediWithNotesBatch.length} gelmedi with notes)`)
+    console.log('[recordBatchAttendance] Inserting attendance records:', attendanceRecords, 'with studio:', studioId || 'none', `(${geldiBatch.length} geldi + ${gelmediWithNotesBatch.length} gelmedi)`)
     const { error: insertError } = await (supabase.from('attendances') as any).insert(attendanceRecords)
 
     if (insertError && (insertError as any)?.code !== '23505') {

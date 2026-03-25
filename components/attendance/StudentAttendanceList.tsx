@@ -300,20 +300,27 @@ export function StudentAttendanceList({
     setError('')
     setSuccessMessage('')
 
-    // Filter records to only include checked students
-    const checkedRecords = attendanceState.filter((a) => checkedStudentIds.has(a.studentId))
-    const presentRecords = checkedRecords.filter((a) => a.status === 'geldi')
-    const absentWithNotesRecords = checkedRecords.filter((a) => a.status === 'gelmedi' && a.notes)
-    const allRecordsToSave = [...presentRecords, ...absentWithNotesRecords]
-    
-    console.log('[StudentAttendanceList] Present records:', presentRecords)
-    console.log('[StudentAttendanceList] Absent with notes records:', absentWithNotesRecords)
+    // Verify that ALL students with credits have been marked (status is required)
+    const unmarkedStudents = studentsWithCredits.filter((student) => {
+      const record = attendanceState.find((a) => a.studentId === student.id)
+      return !record || record.status === 'none'
+    })
 
-    if (allRecordsToSave.length === 0) {
-      console.log('[StudentAttendanceList] No records to save')
-      setError('Please mark at least one checked student as "Geldi" or add notes for absent students to save')
+    if (unmarkedStudents.length > 0) {
+      const names = unmarkedStudents.map(s => `${s.first_name} ${s.last_name}`).join(', ')
+      setError(`All students must be marked. Not marked: ${names}`)
       return
     }
+
+    // Include all marked records (both geldi and gelmedi)
+    const allRecordsToSave = attendanceState.filter((a) => a.status !== 'none')
+    
+    const presentRecords = allRecordsToSave.filter((a) => a.status === 'geldi')
+    const absentRecords = allRecordsToSave.filter((a) => a.status === 'gelmedi')
+
+    console.log('[StudentAttendanceList] Present records:', presentRecords)
+    console.log('[StudentAttendanceList] Absent records:', absentRecords)
+    console.log('[StudentAttendanceList] Total records to save:', allRecordsToSave.length)
 
     setSavingBatch(true)
     console.log('[StudentAttendanceList] Starting batch save...')
@@ -348,14 +355,14 @@ export function StudentAttendanceList({
         setError(result.error)
       } else if (result.success) {
         console.log('[StudentAttendanceList] Success! Recorded:', result.data.recordedCount)
-        const markedCount = presentRecords.length
-        const notesCount = absentWithNotesRecords.length
+        const presentCount = presentRecords.length
+        const absentCount = absentRecords.length
         let message = '✅ Attendance saved! '
-        if (markedCount > 0) {
-          message += `${markedCount} student${markedCount !== 1 ? 's' : ''} marked present. `
+        if (presentCount > 0) {
+          message += `${presentCount} student${presentCount !== 1 ? 's' : ''} marked present. `
         }
-        if (notesCount > 0) {
-          message += `${notesCount} absence note${notesCount !== 1 ? 's' : ''} recorded.`
+        if (absentCount > 0) {
+          message += `${absentCount} student${absentCount !== 1 ? 's' : ''} marked absent.`
         }
         setSuccessMessage(message)
         setAttendanceState([])
@@ -393,16 +400,16 @@ export function StudentAttendanceList({
   const totalStudents = availableStudents.length
   const markedCount = recordedAttendances.length
   
-  // Count how many are marked present in current state
+  // Count all marked records (both present and absent)
   const pendingPresent = attendanceState.filter((a) => a.status === 'geldi').length
-  const pendingAbsentWithNotes = attendanceState.filter((a) => a.status === 'gelmedi' && a.notes).length
-  const totalPendingRecords = pendingPresent + pendingAbsentWithNotes
+  const pendingAbsent = attendanceState.filter((a) => a.status === 'gelmedi').length
+  const totalPendingRecords = pendingPresent + pendingAbsent
   
   // Debug render
   console.log('[StudentAttendanceList] Render state:', {
     studentsWithCredits: studentsWithCredits.length,
     pendingPresent,
-    pendingAbsentWithNotes,
+    pendingAbsent,
     attendanceState,
     availableStudents: availableStudents.length,
     recordedAttendances: recordedAttendances.length,

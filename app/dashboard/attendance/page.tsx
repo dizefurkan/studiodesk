@@ -316,7 +316,7 @@ export default async function AttendancePage({
       courses.map(async (course: any) => {
         const historyResult = await getCourseAttendanceHistory(course.id)
         const attendanceRecords = historyResult.data || []
-        const totalAttendance = attendanceRecords.reduce((sum, record) => sum + record.attendance_count, 0)
+        const totalAttendance = attendanceRecords.reduce((sum: number, record: any) => sum + record.attendance_count, 0)
         return {
           ...course,
           totalAttendance,
