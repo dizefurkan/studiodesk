@@ -773,3 +773,38 @@ USING (
     )
   )
 );
+
+CREATE POLICY "Users can insert session_instructors"
+ON session_instructors FOR INSERT
+WITH CHECK (
+  session_id IN (
+    SELECT id FROM course_sessions
+    WHERE course_id IN (
+      SELECT id FROM courses
+      WHERE branch_id IN (
+        SELECT id FROM branches
+        WHERE organization_id IN (
+          SELECT organization_id FROM organization_users
+          WHERE user_id = auth.uid()
+        )
+      )
+    )
+  )
+);
+
+CREATE POLICY "Users can delete session_instructors"
+ON session_instructors FOR DELETE
+USING (
+  session_id IN (
+    SELECT id FROM course_sessions
+    WHERE course_id IN (
+      SELECT id FROM courses
+      WHERE branch_id IN (
+        SELECT id FROM branches
+        WHERE organization_id IN (
+          SELECT organization_id FROM organization_users WHERE user_id = auth.uid()
+        )
+      )
+    )
+  )
+);
