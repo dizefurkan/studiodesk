@@ -100,11 +100,10 @@ export async function getInstructorMonthlyStats(instructorId: string) {
     const totalEarnings = ((earningsData || []) as any[]).reduce((sum, e) => sum + Number(e.amount), 0)
     const earningCount = earningsData?.length || 0
 
-    // Get attendance count for this month
-    // Method: Get all sessions where instructor is assigned, then count attendances
+    // Get sessions for this month where instructor is assigned
     const { data: instructorSessions, error: sessionsError } = await (adminSupabase
       .from('session_instructors') as any)
-      .select('session_id')
+      .select('session_id, course_sessions(id, session_date)')
       .eq('instructor_id', instructorId)
 
     if (sessionsError) {
@@ -112,13 +111,22 @@ export async function getInstructorMonthlyStats(instructorId: string) {
       return { error: 'Failed to fetch sessions' }
     }
 
+    const monthSessions = (instructorSessions || []).filter((si: any) => {
+      const sessionDate = si.course_sessions?.session_date
+      return sessionDate && sessionDate >= startOfMonth && sessionDate <= endOfMonth
+    })
+
+    const sessionCount = monthSessions.length
+    const sessionIds = monthSessions.map((si: any) => si.session_id)
+
+    // Get attendance details for those sessions
+    let attendanceDetails: any[] = []
     let attendanceCount = 0
-    const sessionIds = (instructorSessions || []).map((si: any) => si.session_id)
-    
+
     if (sessionIds.length > 0) {
       const { data: attendanceData, error: attendanceError } = await (adminSupabase
         .from('attendances') as any)
-        .select('id, created_at')
+        .select('id, student_id, is_present, notes, created_at, students(first_name, last_name)')
         .in('session_id', sessionIds)
         .gte('created_at', startOfMonth)
         .lte('created_at', endOfMonth)
@@ -128,14 +136,17 @@ export async function getInstructorMonthlyStats(instructorId: string) {
         return { error: 'Failed to fetch attendance' }
       }
 
-      attendanceCount = attendanceData?.length || 0
+      attendanceDetails = attendanceData || []
+      attendanceCount = attendanceDetails.length
     }
 
     return {
       data: {
         totalEarnings,
         earningCount,
+        sessionCount,
         attendanceCount,
+        attendanceDetails,
         monthStart: startOfMonth,
         monthEnd: endOfMonth,
       }

@@ -187,12 +187,14 @@ export async function recordAttendance(sessionId: string, studentId: string, stu
 
             // Only record if not already recorded
             if (!existingEarning && ratio > 0) {
+              // Note: This appears to be legacy code - instructor earnings should be calculated
+              // with package price. Keeping for backward compatibility.
               await (supabase
                 .from('instructor_earnings') as any)
                 .insert({
                   instructor_id: ci.instructor_id,
                   session_id: sessionId,
-                  amount: ratio,
+                  amount: (ratio / 100),  // Convert percentage to decimal
                 })
             }
           }
@@ -464,9 +466,10 @@ export async function recordBatchAttendance(
 
             const ratio = rateData?.ratio_per_class || 0
 
-            // Calculate amount: ratio × package_price
-            const calculatedAmount = ratio * packagePrice
-            console.log(`[recordBatchAttendance] Calculating earnings: ${ratio} (ratio) × ₺${packagePrice} (price) = ₺${calculatedAmount}`)
+            // Calculate amount: (ratio / 100) × package_price
+            // Ratio is stored as percentage (e.g., 15.00 for 15%)
+            const calculatedAmount = (ratio / 100) * packagePrice
+            console.log(`[recordBatchAttendance] Calculating earnings: ${ratio}% × ₺${packagePrice} = ₺${calculatedAmount.toFixed(2)}`)
 
             // Check if earnings already recorded for this instructor and session
             const { data: existingEarning } = await (supabase

@@ -120,11 +120,11 @@ export default async function InstructorDetailPage({ params }: InstructorDetailP
               <Card className="border-[#E5E7EB] p-6 bg-linear-to-br from-purple-50 to-purple-100">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">This Month Attendances</p>
+                    <p className="text-sm text-gray-600 mb-1">This Month Sessions</p>
                     <p className="text-3xl font-bold text-purple-700">
-                      {stats?.attendanceCount || 0}
+                      {stats?.sessionCount || 0}
                     </p>
-                    <p className="text-xs text-gray-600 mt-2">students marked</p>
+                    <p className="text-xs text-gray-600 mt-2">{stats?.attendanceCount || 0} students marked</p>
                   </div>
                   <BookOpen className="text-purple-600" size={28} />
                 </div>
@@ -163,6 +163,55 @@ export default async function InstructorDetailPage({ params }: InstructorDetailP
               <div className="border-t border-[#E5E7EB] pt-8 text-center text-gray-500">
                 <BookOpen size={48} className="mx-auto mb-4 opacity-50" />
                 <p className="text-lg">Not assigned to any courses yet</p>
+              </div>
+            )}
+
+            {/* Monthly Attendance Details Table */}
+            {stats?.attendanceDetails && stats.attendanceDetails.length > 0 && (
+              <div className="border-t border-[#E5E7EB] pt-8">
+                <h2 className="text-2xl font-bold text-[#111827] mb-4">This Month Attendance Details</h2>
+                <Card className="border-[#E5E7EB] overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 border-b border-[#E5E7EB]">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-gray-700 font-medium">Student Name</th>
+                          <th className="px-4 py-3 text-left text-gray-700 font-medium">Status</th>
+                          <th className="px-4 py-3 text-left text-gray-700 font-medium">Date</th>
+                          <th className="px-4 py-3 text-left text-gray-700 font-medium">Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {stats.attendanceDetails.map((attendance: any, idx: number) => (
+                          <tr key={idx} className="border-b border-[#E5E7EB] hover:bg-gray-50">
+                            <td className="px-4 py-3 text-[#111827] font-medium">
+                              {attendance.students?.first_name} {attendance.students?.last_name}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                attendance.is_present 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {attendance.is_present ? '✓ Present' : '✗ Absent'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-gray-600">
+                              {new Date(attendance.created_at).toLocaleDateString('tr-TR', { 
+                                year: 'numeric', 
+                                month: '2-digit', 
+                                day: '2-digit' 
+                              })}
+                            </td>
+                            <td className="px-4 py-3 text-gray-600">
+                              {attendance.notes || '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
               </div>
             )}
           </div>

@@ -44,17 +44,33 @@ export async function getCourseAttendanceHistory(courseId: string) {
       return { error: 'Failed to fetch attendances' }
     }
 
-    // Combine sessions with their attendance counts
+    // Get instructors for these sessions
+    const { data: sessionInstructors, error: instructorsError } = await (supabase
+      .from('session_instructors') as any)
+      .select('session_id, instructor:instructors(id, first_name, last_name)')
+      .in('session_id', sessionIds)
+
+    if (instructorsError) {
+      console.error('Error fetching session instructors:', instructorsError)
+      // Don't fail - instructors are optional
+    }
+
+    // Combine sessions with their attendance counts and instructors
     const formattedSessions = sessions.map((session: any) => {
       const sessionAttendances = (attendances || []).filter(
         (a: any) => a.session_id === session.id
       )
       const presentCount = sessionAttendances.filter((a: any) => a.is_present).length
+      const instructors = (sessionInstructors || []).filter(
+        (si: any) => si.session_id === session.id
+      ).map((si: any) => si.instructor)
+
       return {
         id: session.id,
         session_date: session.session_date,
         attendance_count: presentCount,  // Count of students who were present
         attendances: sessionAttendances,  // All attendance records (present and absent)
+        instructors: instructors,  // Instructors for this session
       }
     })
 

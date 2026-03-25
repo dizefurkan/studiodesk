@@ -123,6 +123,11 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                         {record.attendances?.length > 0 && record.attendances[0]?.studios?.name && 
                           ` • Studio: ${record.attendances[0].studios.name}`}
                       </p>
+                      {record.instructors && record.instructors.length > 0 && (
+                        <p className="text-sm text-[#4F46E5] mt-1 font-medium">
+                          Instructor: {record.instructors.map((i: any) => `${i.first_name} ${i.last_name}`).join(', ')}
+                        </p>
+                      )}
                     </div>
                     <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full ml-4">
                       {record.attendance_count}/{record.attendances?.length || 0}
