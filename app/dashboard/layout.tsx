@@ -23,20 +23,20 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex h-screen bg-[#F9FAFB]">
-      {/* Sidebar */}
-      <aside className="hidden md:block w-64 bg-white border-r border-[#E5E7EB]">
+      {/* Sidebar - Hidden on mobile, visible on md+ */}
+      <aside className="hidden md:block w-64 bg-white border-r border-[#E5E7EB] overflow-y-auto">
         <Sidebar />
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden w-full">
         {/* Top Bar */}
-        <header className="bg-white border-b border-[#E5E7EB] h-16">
+        <header className="bg-white border-b border-[#E5E7EB] h-14 md:h-16">
           <TopBar />
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-auto p-6">
+        {/* Page Content - Responsive padding */}
+        <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 lg:p-8">
           {children}
         </main>
       </div>

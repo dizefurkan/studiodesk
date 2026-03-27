@@ -129,12 +129,12 @@ export function Sidebar() {
   return (
     <>
       {/* Mobile Menu Button */}
-      <div className="hidden md:hidden fixed top-4 left-4 z-50">
+      <div className="md:hidden fixed top-3 left-3 z-50">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setIsOpen(!isOpen)}
-          className="text-[#111827]"
+          className="text-[#111827] h-10 w-10"
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </Button>
@@ -149,20 +149,20 @@ export function Sidebar() {
         )}
       >
         {/* Logo Section */}
-        <div className="h-16 border-b border-[#E5E7EB] flex items-center px-6 gap-3">
+        <div className="h-14 md:h-16 border-b border-[#E5E7EB] flex items-center px-3 md:px-6 gap-2 md:gap-3">
           <div className="w-8 h-8 rounded-lg bg-[#4F46E5] flex items-center justify-center shrink-0">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
             </svg>
           </div>
-          <div className="flex-1">
-            <h1 className="text-lg font-semibold text-[#111827]">StudioDesk</h1>
-            <p className="text-xs text-[#9CA3AF]">Studio Management</p>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base md:text-lg font-semibold text-[#111827] truncate">StudioDesk</h1>
+            <p className="text-xs text-[#9CA3AF] truncate">Studio Management</p>
           </div>
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 overflow-y-auto px-3 py-6 space-y-3">
+        <nav className="flex-1 overflow-y-auto px-2 md:px-3 py-4 md:py-6 space-y-2 md:space-y-3">
           {menuItems.map((item, idx) => {
             // Dashboard - single item
             if (!item.category) {
@@ -253,11 +253,11 @@ export function Sidebar() {
         </nav>
 
         {/* Bottom Section */}
-        <div className="border-t border-[#E5E7EB] p-4 space-y-3">
-          <div className="px-4 py-3 bg-[#F3F4F6] rounded-lg">
+        <div className="border-t border-[#E5E7EB] p-2 md:p-4 space-y-2 md:space-y-3">
+          <div className="px-3 md:px-4 py-2 md:py-3 bg-[#F3F4F6] rounded-lg">
             <p className="text-xs font-semibold text-[#111827] mb-1">Quick Tip</p>
             <p className="text-xs text-[#6B7280]">
-              Keep your student and instructor information up to date.
+              Keep your information up to date.
             </p>
           </div>
         </div>

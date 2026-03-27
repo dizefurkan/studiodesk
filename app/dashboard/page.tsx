@@ -89,27 +89,27 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-4 md:space-y-6 lg:space-y-8">
+      {/* Header - Responsive typography */}
       <div>
-        <h1 className="text-3xl font-bold text-[#111827]">Welcome to your Studio</h1>
-        <p className="text-gray-600 mt-1">Here's what's happening today</p>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">Welcome to your Studio</h1>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">Here's what's happening today</p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stats Grid - Responsive columns */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
-            <Card key={stat.label} className="border-[#E5E7EB]">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-                    <p className="text-3xl font-bold text-[#111827]">{stat.value}</p>
+            <Card key={stat.label} className="border-[#E5E7EB] hover:shadow-md transition-shadow">
+              <CardContent className="pt-4 md:pt-6">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm text-gray-600 mb-1 truncate">{stat.label}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-[#111827] break-words">{stat.value}</p>
                   </div>
-                  <div className={`p-3 bg-gray-100 rounded-lg ${stat.color}`}>
-                    <Icon className="w-6 h-6" />
+                  <div className={`p-2 md:p-3 bg-gray-100 rounded-lg ${stat.color} flex-shrink-0`}>
+                    <Icon className="w-5 h-5 md:w-6 md:h-6" />
                   </div>
                 </div>
               </CardContent>
@@ -118,13 +118,13 @@ export default async function DashboardPage() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
         {/* Quick Actions */}
         <div className="lg:col-span-1">
           <Card className="border-[#E5E7EB]">
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Common tasks</CardDescription>
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="text-lg sm:text-xl">Quick Actions</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Common tasks</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {quickActions.map((action) => {
@@ -133,13 +133,13 @@ export default async function DashboardPage() {
                   <Link key={action.label} href={action.href}>
                     <Button
                       variant="outline"
-                      className="w-full justify-between border-[#E5E7EB] text-[#111827] hover:bg-gray-50"
+                      className="w-full justify-between border-[#E5E7EB] text-[#111827] hover:bg-gray-50 text-sm md:text-base h-9 md:h-10"
                     >
-                      <span className="flex items-center gap-2">
-                        <Icon className="w-4 h-4" />
-                        {action.label}
+                      <span className="flex items-center gap-2 min-w-0">
+                        <Icon className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate">{action.label}</span>
                       </span>
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-4 h-4 flex-shrink-0" />
                     </Button>
                   </Link>
                 )
@@ -151,12 +151,12 @@ export default async function DashboardPage() {
         {/* Getting Started Checklist */}
         <div className="lg:col-span-2">
           <Card className="border-[#E5E7EB]">
-            <CardHeader>
-              <CardTitle>Getting Started</CardTitle>
-              <CardDescription>Complete these steps to set up your studio</CardDescription>
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="text-lg sm:text-xl\">Getting Started</CardTitle>
+              <CardDescription className="text-xs sm:text-sm\">Set up your studio</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3\">
                 {gettingStarted.map((item) => (
                   <Link key={item.title} href={item.href}>
                     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-[#E5E7EB] transition-colors">

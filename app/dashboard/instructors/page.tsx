@@ -24,15 +24,15 @@ export default async function InstructorsPage({
   console.log('[InstructorsPage] Instructors length:', instructors.length)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#111827]">Instructors</h1>
-          <p className="text-gray-600 mt-1">Manage your dance instructors</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">Instructors</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">Manage your dance instructors</p>
         </div>
         <Link href="/dashboard/instructors/new">
-          <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
+          <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm md:text-base h-9 md:h-10">
             <Plus size={20} className="mr-2" />
             Add Instructor
           </Button>
@@ -42,7 +42,7 @@ export default async function InstructorsPage({
       {/* Content */}
       {instructors.length === 0 ? (
         <Card className="border-[#E5E7EB]">
-          <div className="p-12 text-center">
+          <div className="p-6 sm:p-8 md:p-12 text-center">
             <UserCheck className="mx-auto text-[#9CA3AF] mb-4" size={48} />
             <h3 className="text-lg font-semibold text-[#111827] mb-1">No instructors yet</h3>
             <p className="text-gray-600 mb-6">Get started by adding your first instructor</p>
@@ -55,22 +55,22 @@ export default async function InstructorsPage({
           </div>
         </Card>
       ) : (
-        <Card className="border-[#E5E7EB] overflow-hidden">
-          <div className="overflow-x-auto">
+        <Card className="border-[#E5E7EB] overflow-hidden p-0">
+          <div className="overflow-x-auto text-xs sm:text-sm">
             <table className="w-full">
               <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Name</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Email</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Phone</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Joined</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-[#111827]">Actions</th>
+                  <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left font-semibold text-[#111827]">Name</th>
+                  <th className="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left font-semibold text-[#111827]">Email</th>
+                  <th className="hidden md:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left font-semibold text-[#111827]">Phone</th>
+                  <th className="hidden lg:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left font-semibold text-[#111827]">Joined</th>
+                  <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-right font-semibold text-[#111827]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E7EB]">
                 {instructors.map((instructor) => (
                   <tr key={instructor.id} className="hover:bg-[#F9FAFB] transition-colors">
-                    <td className="px-6 py-4">
+                    <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4">
                       <Link
                         href={`/dashboard/instructors/${instructor.id}`}
                         className="font-medium text-[#111827] hover:text-[#4F46E5]"
@@ -78,12 +78,12 @@ export default async function InstructorsPage({
                         {instructor.first_name} {instructor.last_name}
                       </Link>
                     </td>
-                    <td className="px-6 py-4 text-gray-600">{instructor.email}</td>
-                    <td className="px-6 py-4 text-gray-600">{instructor.phone || '-'}</td>
-                    <td className="px-6 py-4 text-gray-600">
+                    <td className="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-gray-600 truncate">{instructor.email}</td>
+                    <td className="hidden md:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-gray-600">{instructor.phone || '-'}</td>
+                    <td className="hidden lg:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-gray-600">
                       {new Date(instructor.created_at!).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 text-right space-x-2 flex justify-end">
+                    <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-right space-x-2 flex justify-end">
                       <Link href={`/dashboard/instructors/${instructor.id}/edit`}>
                         <Button
                           variant="ghost"

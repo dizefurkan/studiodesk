@@ -120,14 +120,14 @@ export function InstructorRateForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-xs sm:text-sm text-red-700">{error}</p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4">
         <div>
           <label className="block text-sm font-medium text-[#374151] mb-2">
             Instructor *
@@ -202,20 +202,20 @@ export function InstructorRateForm({
         </div>
       </div>
 
-      <div className="flex gap-2 justify-end">
+      <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end">
         <Button
           type="button"
           variant="outline"
           onClick={handleCancel}
           disabled={loading}
-          className="border-[#D1D5DB]"
+          className="border-[#D1D5DB] text-sm md:text-base h-9 md:h-10"
         >
           Cancel
         </Button>
         <Button
           type="submit"
           disabled={loading}
-          className="bg-[#4F46E5] hover:bg-[#4338CA] text-white"
+          className="bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm md:text-base h-9 md:h-10"
         >
           {loading ? 'Saving...' : initialRate ? 'Update Rate' : 'Add Rate'}
         </Button>

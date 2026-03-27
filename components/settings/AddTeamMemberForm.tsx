@@ -117,21 +117,21 @@ export function AddTeamMemberForm({
   // Password Modal
   if (passwordModal) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full animate-in">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-4">
+        <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8 max-w-md w-full animate-in">
           {/* Header */}
-          <div className="text-center mb-6">
-            <div className="inline-flex p-3 bg-green-100 rounded-lg mb-3">
-              <Check className="text-green-600" size={24} />
+          <div className="text-center mb-4 sm:mb-6">
+            <div className="inline-flex p-2 sm:p-3 bg-green-100 rounded-lg mb-2 sm:mb-3">
+              <Check className="text-green-600" size={20} />
             </div>
-            <h2 className="text-2xl font-bold text-[#111827]">User Created!</h2>
-            <p className="text-gray-600 text-sm mt-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#111827]">User Created!</h2>
+            <p className="text-gray-600 text-xs sm:text-sm mt-1">
               Share these credentials with the new team member
             </p>
           </div>
 
           {/* Credentials */}
-          <div className="space-y-4 mb-6">
+          <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
             {/* Email */}
             <div>
               <label className="text-xs font-semibold text-gray-600 uppercase block mb-2">
@@ -241,17 +241,17 @@ export function AddTeamMemberForm({
           Invite Team Member
         </Button>
       ) : (
-        <div className="border-2 border-[#4F46E5] rounded-lg p-6 bg-linear-to-br from-[#F9FAFB] to-white">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="border-2 border-[#4F46E5] rounded-lg p-3 sm:p-4 md:p-6 bg-linear-to-br from-[#F9FAFB] to-white">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
             <div className="bg-[#4F46E5] p-2 rounded-lg">
-              <Mail size={18} className="text-white" />
+              <Mail size={16} className="text-white sm:w-5 sm:h-5" />
             </div>
-            <h4 className="font-semibold text-[#111827]">Invite New Team Member</h4>
+            <h4 className="font-semibold text-sm sm:text-base text-[#111827]">Invite New Team Member</h4>
           </div>
 
           {message && (
             <div
-              className={`mb-4 p-3 rounded-lg text-sm font-medium ${
+              className={`mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg text-xs sm:text-sm font-medium ${
                 message.type === 'success'
                   ? 'bg-green-50 text-green-700 border border-green-200'
                   : 'bg-red-50 text-red-700 border border-red-200'
@@ -261,10 +261,10 @@ export function AddTeamMemberForm({
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* Email Input */}
             <div>
-              <label className="block text-sm font-medium text-[#111827] mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-[#111827] mb-1 sm:mb-2">
                 Email Address
               </label>
               <input
@@ -272,7 +272,7 @@ export function AddTeamMemberForm({
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value.toLowerCase())}
                 placeholder="user@company.com"
-                className="w-full px-4 py-3 border border-[#E5E7EB] rounded-lg text-sm text-[#111827] placeholder-[#9CA3AF] bg-white focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#E5E7EB] rounded-lg text-xs sm:text-sm text-[#111827] placeholder-[#9CA3AF] bg-white focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all"
               />
               <p className="text-xs text-gray-500 mt-1">
                 A temporary password will be generated automatically
@@ -281,11 +281,11 @@ export function AddTeamMemberForm({
 
             {/* Role Selector */}
             <div>
-              <label className="block text-sm font-medium text-[#111827] mb-2">Role</label>
+              <label className="block text-xs sm:text-sm font-medium text-[#111827] mb-1 sm:mb-2">Role</label>
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value)}
-                className="w-full px-4 py-3 border border-[#E5E7EB] rounded-lg text-sm text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#E5E7EB] rounded-lg text-xs sm:text-sm text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent transition-all"
               >
                 <option value="staff">Staff</option>
                 <option value="instructor">Instructor</option>
@@ -294,7 +294,7 @@ export function AddTeamMemberForm({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-2 sm:pt-3">
               <Button
                 onClick={handleSendInvite}
                 disabled={loading || !inviteEmail}

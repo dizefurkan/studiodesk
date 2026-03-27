@@ -40,15 +40,15 @@ export default async function StudentsPage({
   const hasActiveFilters = searchQuery || hasCredits || danceTypeId || courseId || branchId
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#111827]">Students</h1>
-          <p className="text-gray-600 mt-1">Manage your studio students</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">Students</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">Manage your studio students</p>
         </div>
         <Link href="/dashboard/students/new">
-          <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
+          <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm md:text-base h-9 md:h-10">
             <Plus size={20} className="mr-2" />
             Add Student
           </Button>
@@ -56,7 +56,7 @@ export default async function StudentsPage({
       </div>
 
       {/* Content - Always show table card with filters */}
-      <Card className="border-[#E5E7EB] p-6">
+      <Card className="border-[#E5E7EB] p-3 sm:p-4 md:p-6">
         {/* Filters Always Visible */}
         <StudentFilters
           danceTypes={danceTypes}
@@ -109,11 +109,11 @@ export default async function StudentsPage({
             </div>
 
             {/* Pagination Controls */}
-            <div className="mt-6 pt-6 border-t border-[#E5E7EB] flex items-center justify-between">
-              <div className="text-sm text-gray-600">
+            <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-[#E5E7EB] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+              <div className="text-xs sm:text-sm text-gray-600 order-2 sm:order-1">
                 Showing {(pagination.page - 1) * pagination.limit + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} students
               </div>
-              <div className="flex gap-2 items-center">
+              <div className="flex flex-wrap gap-1 sm:gap-2 items-center order-1 sm:order-2">
                 <Link 
                   href={`/dashboard/students?q=${searchQuery || ''}&page=${pagination.page - 1}`}
                   className={pagination.hasPrevPage ? '' : 'pointer-events-none opacity-50'}

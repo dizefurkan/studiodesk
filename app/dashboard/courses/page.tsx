@@ -27,14 +27,14 @@ export default async function CoursesPage({
   const branches = branchesResult.data || []
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-3 sm:space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#111827]">Courses</h1>
-          <p className="text-gray-600 mt-1">Manage your dance courses and schedules</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">Courses</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">Manage your dance courses and schedules</p>
         </div>
         <Link href="/dashboard/courses/new">
-          <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
+          <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 text-sm md:text-base h-9 md:h-10">
             <Plus size={20} />
             New Course
           </Button>
@@ -46,7 +46,7 @@ export default async function CoursesPage({
 
       {/* Courses List */}
       {courses.length === 0 ? (
-        <Card className="border-[#E5E7EB] p-12 text-center">
+        <Card className="border-[#E5E7EB] p-6 sm:p-8 md:p-12 text-center">
           <div className="text-gray-500">
             <Clock size={48} className="mx-auto mb-4 opacity-50" />
             <p className="text-lg">No courses found</p>
@@ -54,10 +54,10 @@ export default async function CoursesPage({
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6">
           {courses.map((course) => (
-            <Card key={course.id} className="border-[#E5E7EB] p-6 hover:shadow-lg transition-shadow">
-              <div className="flex justify-between items-start">
+            <Card key={course.id} className="border-[#E5E7EB] p-3 sm:p-4 md:p-6 hover:shadow-lg transition-shadow">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
                 <div className="flex-1">
                   <Link href={`/dashboard/courses/${course.id}`}>
                     <h3 className="text-lg font-semibold text-[#111827] hover:text-[#4F46E5]">{course.name}</h3>

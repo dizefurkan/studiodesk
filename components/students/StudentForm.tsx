@@ -81,22 +81,22 @@ export function StudentForm({ student }: StudentFormProps) {
   }
 
   return (
-    <Card className="border-[#E5E7EB] max-w-2xl">
-      <div className="p-8">
-        <h1 className="text-2xl font-bold text-[#111827] mb-2">
+    <Card className="border-[#E5E7EB] w-full max-w-2xl">
+      <div className="p-3 sm:p-4 md:p-6 lg:p-8">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827] mb-2">
           {student ? 'Edit Student' : 'Add New Student'}
         </h1>
-        <p className="text-gray-600 mb-6">
+        <p className="text-sm sm:text-base text-gray-600 mb-4 md:mb-6">
           {student ? 'Update student information' : 'Add a new student to your studio'}
         </p>
 
         {generalError && (
-          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">{generalError}</div>
+          <div className="mb-4 md:mb-6 p-3 md:p-4 bg-red-50 text-red-600 rounded-lg border border-red-200 text-sm">{generalError}</div>
         )}
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-2 gap-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-6">
               <FormField
                 control={form.control}
                 name="firstName"
@@ -173,11 +173,11 @@ export function StudentForm({ student }: StudentFormProps) {
               )}
             />
 
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-4 md:pt-6">
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white"
+                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
                 {isLoading ? 'Saving...' : student ? 'Update Student' : 'Create Student'}
               </Button>
@@ -186,7 +186,7 @@ export function StudentForm({ student }: StudentFormProps) {
                 variant="outline"
                 onClick={() => router.back()}
                 disabled={isLoading}
-                className="border-[#E5E7EB]"
+                className="border-[#E5E7EB] w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
                 Cancel
               </Button>

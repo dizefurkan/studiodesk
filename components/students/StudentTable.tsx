@@ -70,9 +70,9 @@ export function StudentTable({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 md:space-y-4">
       {/* Toolbar: Column Settings */}
-      <div className="flex justify-end">
+      <div className="flex justify-end text-xs md:text-sm">
         <StudentColumnSettings
           columns={columns}
           onToggle={toggleColumn}
@@ -80,7 +80,8 @@ export function StudentTable({
         />
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
             <tr>
@@ -200,6 +201,88 @@ export function StudentTable({
           </tbody>
         </table>
       </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden grid grid-cols-1 gap-3 sm:gap-4">
+        {students.map((student) => (
+          <div key={student.id} className="bg-white border border-[#E5E7EB] rounded-lg p-3 sm:p-4 hover:shadow transition-shadow">
+            {/* Header with name and actions */}
+            <div className="flex justify-between items-start mb-3 gap-2">
+              <Link href={`/dashboard/students/${student.id}`}>
+                <h3 className="font-semibold text-sm text-[#111827] hover:text-[#4F46E5]">
+                  {student.first_name} {student.last_name}
+                </h3>
+              </Link>
+              {columns.actions && (
+                <div className="flex gap-1">
+                  <Link href={`/dashboard/students/${student.id}/edit`}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-[#4F46E5] hover:bg-[#EEF2FF] h-8 w-8"
+                    >
+                      <Edit2 size={14} />
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 hover:bg-red-50 h-8 w-8"
+                    title="Delete"
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Details Grid */}
+            <div className="space-y-2 text-xs sm:text-sm">
+              {columns.email && student.email && (
+                <div>
+                  <p className="text-[#9CA3AF] font-medium">Email</p>
+                  <p className="text-[#111827]">{student.email}</p>
+                </div>
+              )}
+              {columns.phone && student.phone && (
+                <div>
+                  <p className="text-[#9CA3AF] font-medium">Phone</p>
+                  <a href={`tel:${student.phone}`} className="text-[#4F46E5] hover:underline">
+                    {student.phone}
+                  </a>
+                </div>
+              )}
+              {columns.credits && (
+                <div>
+                  <p className="text-[#9CA3AF] font-medium">Credits</p>
+                  <StudentPopover
+                    type="credits"
+                    credits={student.totalRemainingCredits}
+                    packageDetails={student.packageDetails}
+                    filteredDanceTypeId={filteredDanceTypeId}
+                  />
+                </div>
+              )}
+              {columns.courses && (
+                <div>
+                  <p className="text-[#9CA3AF] font-medium">Courses</p>
+                  <StudentPopover
+                    type="courses"
+                    courses={getCoursesForStudent(student)}
+                  />
+                </div>
+              )}
+              {columns.joined && (
+                <div>
+                  <p className="text-[#9CA3AF] font-medium">Joined</p>
+                  <p className="text-[#111827]">{new Date(student.created_at).toLocaleDateString()}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
+
