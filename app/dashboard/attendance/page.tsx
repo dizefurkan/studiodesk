@@ -13,6 +13,23 @@ import { v4 as uuidv4 } from 'uuid'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
+// Format date for display (e.g., "30 May 2025 Monday")
+function formatDateDisplay(dateString: string): string {
+  const date = new Date(dateString + 'T00:00:00Z')
+  const dayIndex = date.getUTCDay()
+  const day = date.getUTCDate()
+  const month = date.getUTCMonth()
+  const year = date.getUTCFullYear()
+
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ]
+
+  return `${day} ${monthNames[month]} ${year} ${dayNames[dayIndex]}`
+}
+
 export default async function AttendancePage({
   searchParams,
 }: {
@@ -317,9 +334,11 @@ export default async function AttendancePage({
         const historyResult = await getCourseAttendanceHistory(course.id)
         const attendanceRecords = historyResult.data || []
         const totalAttendance = attendanceRecords.reduce((sum: number, record: any) => sum + record.attendance_count, 0)
+        const mostRecentDate = attendanceRecords.length > 0 ? attendanceRecords[0].session_date : null
         return {
           ...course,
           totalAttendance,
+          mostRecentDate,
         }
       })
     )
@@ -349,12 +368,15 @@ export default async function AttendancePage({
                       <h3 className="font-semibold text-[#4F46E5] hover:underline">{course.name}</h3>
                       <p className="text-sm text-gray-600">
                         {course.branches?.name} • {course.dance_types?.name}
-                        {course.totalAttendance > 0 && (
-                          <span className="ml-4 inline-block px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                            {course.totalAttendance} attendee{course.totalAttendance !== 1 ? 's' : ''}
-                          </span>
-                        )}
                       </p>
+                      {course.totalAttendance > 0 && (
+                        <div className="mt-2 inline-block px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                          {course.mostRecentDate && (
+                            <span>{formatDateDisplay(course.mostRecentDate)} - </span>
+                          )}
+                          Total {course.totalAttendance} Attendance{course.totalAttendance !== 1 ? 's' : ''}
+                        </div>
+                      )}
                     </div>
                   </Link>
                   <Link href={`/dashboard/attendance?course=${course.id}`}>
