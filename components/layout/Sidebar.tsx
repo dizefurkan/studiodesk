@@ -3,9 +3,10 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { useSidebar } from '@/lib/context/SidebarContext'
 import { cn } from '@/lib/utils/cn'
 import {
-  LayoutDashboard,
+  Home,
   Users,
   UserCheck,
   MapPin,
@@ -17,8 +18,6 @@ import {
   DollarSign,
   TrendingUp,
   Settings,
-  Menu,
-  X,
   ChevronDown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -26,7 +25,7 @@ import { Button } from '@/components/ui/button'
 const menuItems = [
   {
     label: 'Dashboard',
-    icon: LayoutDashboard,
+    icon: Home,
     href: '/dashboard',
     category: false,
   },
@@ -118,7 +117,7 @@ const menuItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(true)
+  const { isOpen, toggleSidebar } = useSidebar()
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     'Core Operations': true,
     'Instructor Management': false,
@@ -126,25 +125,20 @@ export function Sidebar() {
     'Settings': false,
   })
 
+  const handleNavClick = () => {
+    // Close sidebar on mobile when user navigates
+    if (isOpen && window.innerWidth < 768) {
+      toggleSidebar()
+    }
+  }
+
   return (
     <>
-      {/* Mobile Menu Button */}
-      <div className="md:hidden fixed top-3 left-3 z-50">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsOpen(!isOpen)}
-          className="text-[#111827] h-10 w-10"
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </Button>
-      </div>
-
       {/* Sidebar */}
       <aside
         className={cn(
-          'bg-white border-r border-[#E5E7EB] transition-all duration-300 flex flex-col',
-          isOpen ? 'w-64' : 'w-0 md:w-64',
+          'w-64 bg-white border-r border-[#E5E7EB] transition-transform duration-300 flex flex-col overflow-hidden transform',
+          isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
           'fixed md:relative h-full z-40'
         )}
       >
@@ -167,7 +161,8 @@ export function Sidebar() {
             // Dashboard - single item
             if (!item.category) {
               const Icon = item.icon as any
-              const isActive = pathname === item.href || pathname.startsWith((item.href || '') + '/')
+              // Dashboard only active on exact path
+              const isActive = pathname === item.href
 
               return (
                 <Link
@@ -179,7 +174,7 @@ export function Sidebar() {
                       ? 'bg-[#4F46E5] text-white'
                       : 'text-[#6B7280] hover:bg-[#F3F4F6]'
                   )}
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleNavClick}
                 >
                   <Icon size={20} className="shrink-0" />
                   <span>{item.label}</span>
@@ -238,7 +233,7 @@ export function Sidebar() {
                               ? 'bg-[#4F46E5] text-white'
                               : 'text-[#6B7280] hover:bg-[#F3F4F6]'
                           )}
-                          onClick={() => setIsOpen(false)}
+                          onClick={handleNavClick}
                         >
                           <SubIcon size={18} className="shrink-0" />
                           <span>{subitem.label}</span>
@@ -267,7 +262,7 @@ export function Sidebar() {
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 md:hidden z-30"
-          onClick={() => setIsOpen(false)}
+          onClick={toggleSidebar}
         />
       )}
     </>

@@ -4,6 +4,7 @@ import { getOrganizationIdFromCookie } from '@/lib/auth/getCurrentUser'
 import { getCurrentUserProfile } from '@/lib/auth/getCurrentUser'
 import { getInitials } from '@/lib/utils/format'
 import { UserMenu } from './UserMenu'
+import { TopBarClient } from './TopBarClient'
 import { Bell, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,8 +20,8 @@ export async function TopBar() {
   const userName = (userProfile as any)?.full_name || user?.email || 'User'
   const userInitials = getInitials(userName)
 
-  return (
-    <header className="h-14 md:h-16 border-b border-[#E5E7EB] bg-white flex items-center justify-between px-3 sm:px-4 md:px-6 lg:px-8 gap-2 md:gap-4">
+  const content = (
+    <>
       {/* Left Section - Search - Hide on very small screens */}
       <div className="hidden sm:flex flex-1 max-w-xs md:max-w-md lg:max-w-xl">
         <div className="relative w-full">
@@ -60,6 +61,12 @@ export async function TopBar() {
           initials={userInitials}
         />
       </div>
+    </>
+  )
+
+  return (
+    <header className="h-14 md:h-16 border-b border-[#E5E7EB] bg-white flex items-center px-3 sm:px-4 md:px-6 lg:px-8 gap-2 md:gap-4">
+      <TopBarClient>{content}</TopBarClient>
     </header>
   )
 }

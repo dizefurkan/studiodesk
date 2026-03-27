@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
+import { SidebarProvider } from '@/lib/context/SidebarContext'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 
@@ -22,11 +23,10 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-[#F9FAFB]">
-      {/* Sidebar - Hidden on mobile, visible on md+ */}
-      <aside className="hidden md:block w-64 bg-white border-r border-[#E5E7EB] overflow-y-auto">
+    <SidebarProvider>
+      <div className="flex h-screen bg-[#F9FAFB]">
+        {/* Sidebar - Always rendered, handles responsive visibility internally */}
         <Sidebar />
-      </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden w-full">
@@ -41,5 +41,6 @@ export default async function DashboardLayout({
         </main>
       </div>
     </div>
+    </SidebarProvider>
   )
 }
