@@ -115,7 +115,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
             <div className="space-y-2">
               {attendanceHistory.map((record: any) => (
                 <details key={record.id} className="border border-[#E5E7EB] rounded-lg hover:border-[#4F46E5] transition-colors group">
-                  <summary className="p-4 cursor-pointer hover:bg-gray-50 transition-colors flex justify-between items-center">
+                  <summary className="p-4 cursor-pointer hover:bg-gray-50 transition-colors flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                     <div className="flex-1">
                       <p className="font-medium text-[#111827]">{record.session_date}</p>
                       <p className="text-sm text-gray-600 mt-1">
@@ -129,9 +129,14 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                         </p>
                       )}
                     </div>
-                    <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full ml-4">
-                      {record.attendance_count}/{record.attendances?.length || 0}
-                    </span>
+                    <div className="flex items-center gap-3 self-start md:self-center md:ml-4">
+                      <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                        {record.attendance_count}/{record.attendances?.length || 0}
+                      </span>
+                      <Link href={`/dashboard/attendance/${record.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline">
+                        View Details →
+                      </Link>
+                    </div>
                   </summary>
                   <div className="px-4 pb-4 border-t border-[#E5E7EB] pt-4 bg-gray-50">
                     <p className="text-sm font-semibold text-[#111827] mb-3">Attendees:</p>

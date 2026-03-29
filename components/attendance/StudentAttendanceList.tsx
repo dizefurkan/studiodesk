@@ -368,10 +368,19 @@ export function StudentAttendanceList({
         }
         setSuccessMessage(message)
         setAttendanceState([])
-        // Force hard page refresh to reload today's attendance from database
-        setTimeout(() => {
-          window.location.reload()
-        }, 1500)
+        
+        // Navigate to attendance details page
+        const sessionId = result.data?.sessionId
+        if (sessionId) {
+          setTimeout(() => {
+            router.push(`/dashboard/attendance/${sessionId}`)
+          }, 1500)
+        } else {
+          // Fallback to page reload if sessionId not returned
+          setTimeout(() => {
+            window.location.reload()
+          }, 1500)
+        }
       }
     } catch (err) {
       console.error('[StudentAttendanceList] Unexpected error:', err)

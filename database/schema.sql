@@ -236,7 +236,8 @@ CREATE TABLE IF NOT EXISTS course_sessions (
   course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
   session_date DATE NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT unique_course_session_date UNIQUE(course_id, session_date)
 );
 
 CREATE INDEX idx_course_sessions_course_id ON course_sessions(course_id);

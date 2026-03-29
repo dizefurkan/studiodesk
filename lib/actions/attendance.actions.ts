@@ -260,11 +260,68 @@ export async function recordBatchAttendance(
   instructorIds?: string[] | null,
   attendanceDate?: string,
 ) {
+  /**
+   * Records attendance for multiple students in a batch.
+   * 
+   * @param courseId - ID of the course
+   * @param sessionId - Temporary session ID (will be replaced with database session ID)
+   * @param attendanceData - Array of attendance records (status: 'geldi', 'gelmedi', or 'none')
+   * @param studioId - Optional studio where attendance was recorded
+   * @param instructorIds - Optional override instructor IDs for session
+   * @param attendanceDate - Date for attendance in ISO format (YYYY-MM-DD)
+   *                         If not provided, uses current date.
+   *                         IMPORTANT: Dates are treated as local dates in the organization's timezone.
+   *                         Ensure client and server use the same timezone convention.
+   * 
+   * Process:
+   * 1. Validates date format (YYYY-MM-DD)
+   * 2. Checks for existing course_sessions matching (course_id, session_date)
+   * 3. Creates session on-demand if it doesn't exist (using admin client)
+   * 4. Batch inserts all attendance records (both 'geldi' and 'gelmedi')
+   * 5. Deducts credits for records where deductCredits=true
+   * 6. Creates instructor earnings for the session
+   * 
+   * Returns:
+   * - { success: true, data: { recordedCount, absenceNotesCount, skippedCount } }
+   * - { error: string } if operation fails
+   * 
+   * Thread Safety: Race condition possible between check and create of session.
+   *                Database UNIQUE constraint now prevents creation of duplicates.
+   */
+
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
   try {
     const supabase = await createServerSupabaseClient()
+
+    // Validate attendance date format if provided
+    if (attendanceDate) {
+      // Check ISO date format (YYYY-MM-DD)
+      const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/
+      if (!dateFormatRegex.test(attendanceDate)) {
+        console.error('[recordBatchAttendance] Invalid date format:', attendanceDate)
+        return { error: 'Invalid date format. Expected YYYY-MM-DD' }
+      }
+      
+      // Validate it's a valid date
+      const dateObj = new Date(attendanceDate + 'T00:00:00Z')
+      if (isNaN(dateObj.getTime())) {
+        console.error('[recordBatchAttendance] Invalid date value:', attendanceDate)
+        return { error: 'Invalid date value' }
+      }
+      
+      // Warn if date is far in the past or future (optional safeguard)
+      const now = new Date()
+      const attendanceDay = new Date(attendanceDate + 'T00:00:00Z')
+      const daysAgo = Math.floor((now.getTime() - attendanceDay.getTime()) / (1000 * 60 * 60 * 24))
+      if (daysAgo > 365) {
+        console.warn('[recordBatchAttendance] Attendance date is more than a year in the past:', attendanceDate)
+      }
+      if (daysAgo < -30) {
+        console.warn('[recordBatchAttendance] Attendance date is more than 30 days in the future:', attendanceDate)
+      }
+    }
 
     // ✨ NEW: Ensure session exists (create on-demand if needed)
     // Check if a session already exists for this course on the specified date
@@ -516,6 +573,7 @@ export async function recordBatchAttendance(
     return {
       success: true,
       data: { 
+        sessionId: actualSessionId,
         recordedCount: geldiBatch.length, 
         absenceNotesCount: gelmediWithNotesBatch.length,
         skippedCount: attendanceData.length - allBatchRecords.length 
