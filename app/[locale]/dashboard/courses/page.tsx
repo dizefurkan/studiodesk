@@ -1,5 +1,6 @@
 import { getCourses } from '@/lib/actions/courses.actions'
 import { getBranches } from '@/lib/actions/branches.actions'
+import { getDanceTypes } from '@/lib/actions/dance-types.actions'
 import { getTranslations } from 'next-intl/server'
 import { BranchFilter } from '@/components/courses/BranchFilter'
 import { DeleteCourseButton } from '@/components/courses/DeleteCourseButton'
@@ -17,14 +18,17 @@ export default async function CoursesPage({
   const params = await searchParams
   const branchId = typeof params.branch === 'string' ? params.branch : undefined
   const searchQuery = typeof params.q === 'string' ? params.q : undefined
+  const danceTypeId = typeof params.danceType === 'string' ? params.danceType : undefined
 
-  const [coursesResult, branchesResult] = await Promise.all([
-    getCourses(branchId, searchQuery),
+  const [coursesResult, branchesResult, danceTypesResult] = await Promise.all([
+    getCourses(branchId, searchQuery, danceTypeId),
     getBranches(),
+    getDanceTypes(),
   ])
 
   const courses = coursesResult.data || []
   const branches = branchesResult.data || []
+  const danceTypes = danceTypesResult.data || []
 
   return (
     <div className="space-y-3 sm:space-y-4 md:space-y-6">
@@ -42,7 +46,7 @@ export default async function CoursesPage({
       </div>
 
       {/* Filters */}
-      <BranchFilter branchId={branchId} branches={branches} searchQuery={searchQuery} />
+      <BranchFilter branchId={branchId} branches={branches} searchQuery={searchQuery} danceTypeId={danceTypeId} danceTypes={danceTypes} />
 
       {/* Courses List */}
       {courses.length === 0 ? (

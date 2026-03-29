@@ -29,7 +29,7 @@ interface UpdateCourseInput {
   studentIds?: string[]
 }
 
-export async function getCourses(branchId?: string, searchQuery?: string) {
+export async function getCourses(branchId?: string, searchQuery?: string, danceTypeId?: string) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -42,6 +42,10 @@ export async function getCourses(branchId?: string, searchQuery?: string) {
 
     if (branchId) {
       query = query.eq('branch_id', branchId)
+    }
+
+    if (danceTypeId) {
+      query = query.eq('dance_type_id', danceTypeId)
     }
 
     if (searchQuery) {

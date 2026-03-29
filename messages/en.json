@@ -277,6 +277,7 @@
     "duplicateCourseWarning": "A course for this dance type already exists on this day.",
     "coursesOnThisDay": "Courses on this day",
     "viewCoursesOnThisDay": "View courses on this day",
+    "searchCourse": "Search course...",
     "time": "Time"
   },
   "attendance": {

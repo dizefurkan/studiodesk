@@ -270,6 +270,7 @@
     "duplicateCourseWarning": "Bu dans türü için aynı gün zaten bir kurs mevcut.",
     "coursesOnThisDay": "Bu gün ki kurslar",
     "viewCoursesOnThisDay": "Bu gün ki kursları görüntüle",
+    "searchCourse": "Kurs ara...",
     "time": "Saat"
   },
   "attendance": {
