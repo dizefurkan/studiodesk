@@ -30,30 +30,30 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   const attendanceHistory = historyResult.data || []
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-8">
-      <div className="max-w-4xl">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-4 sm:p-6 md:p-8">
+      <div className="max-w-4xl mx-auto">
         <Link href="/dashboard/courses" className="text-[#4F46E5] hover:underline mb-6 inline-block">
           ← Back to Courses
         </Link>
 
         <Card className="border-[#E5E7EB]">
-          <div className="p-8">
-            <div className="flex justify-between items-start mb-8">
-              <div>
-                <h1 className="text-3xl font-bold text-[#111827] mb-2">{course.name}</h1>
-                <p className="text-gray-600">
+          <div className="p-4 sm:p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 md:gap-8 mb-8">
+              <div className="flex-1">
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] mb-2">{course.name}</h1>
+                <p className="text-gray-600 text-sm sm:text-base">
                   {course.branches?.name} • {course.dance_types?.name}
                 </p>
               </div>
-              <div className="flex gap-2">
-                <Link href={`/dashboard/attendance?course=${course.id}`}>
-                  <Button className="bg-green-600 hover:bg-green-700 text-white gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Link href={`/dashboard/attendance?course=${course.id}`} className="w-full sm:w-auto">
+                  <Button className="bg-green-600 hover:bg-green-700 text-white gap-2 w-full sm:w-auto">
                     <CheckCircle size={18} />
                     Mark Attendance
                   </Button>
                 </Link>
-                <Link href={`/dashboard/courses/${course.id}/edit`}>
-                  <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
+                <Link href={`/dashboard/courses/${course.id}/edit`} className="w-full sm:w-auto">
+                  <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 w-full sm:w-auto">
                     <Edit2 size={18} />
                     Edit
                   </Button>

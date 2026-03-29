@@ -1,0 +1,139 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { Card } from '@/components/ui/card'
+import { Check, X } from 'lucide-react'
+import Link from 'next/link'
+import { getInstructorAttendanceHistory } from '@/lib/actions/instructor-detail.actions'
+
+interface InstructorAttendanceHistoryProps {
+  instructorId: string
+  showCourseInfo?: boolean
+  showInstructors?: boolean
+}
+
+export function InstructorAttendanceHistory({ 
+  instructorId, 
+  showCourseInfo = false,
+  showInstructors = false 
+}: InstructorAttendanceHistoryProps) {
+  const [sessions, setSessions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const result = await getInstructorAttendanceHistory(instructorId)
+        if (result.data) {
+          setSessions(result.data)
+        }
+      } catch (error) {
+        console.error('Error loading instructor attendance history:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadHistory()
+  }, [instructorId])
+
+  if (loading) {
+    return (
+      <div className="border-t border-[#E5E7EB] pt-8">
+        <h2 className="text-2xl font-bold text-[#111827] mb-4">Attendance History</h2>
+        <Card className="border-[#E5E7EB] p-6 text-center text-gray-500">
+          Loading...
+        </Card>
+      </div>
+    )
+  }
+
+  if (!sessions || sessions.length === 0) {
+    return (
+      <div className="border-t border-[#E5E7EB] pt-8">
+        <h2 className="text-2xl font-bold text-[#111827] mb-4">Attendance History</h2>
+        <Card className="border-[#E5E7EB] p-6 text-center text-gray-500">
+          No attendance records
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className="border-t border-[#E5E7EB] pt-8">
+      <h2 className="text-2xl font-bold text-[#111827] mb-4">Attendance History</h2>
+
+      <div className="space-y-2">
+        {sessions.map((session) => {
+          const presentCount = session.attendance.filter((r: any) => r.is_present).length
+          
+          return (
+            <details key={session.sessionId} className="border border-[#E5E7EB] rounded-lg hover:border-[#4F46E5] transition-colors group">
+              <summary className="p-4 cursor-pointer hover:bg-gray-50 transition-colors flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <div className="flex-1">
+                  <div className="flex flex-col gap-1">
+                    <p className="font-medium text-[#111827]">
+                      {new Date(session.session_date).toLocaleDateString('tr-TR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        weekday: 'long',
+                      })}
+                    </p>
+                    {showCourseInfo && (
+                      <>
+                        <p className="text-sm text-gray-700 font-semibold">📚 {session.course_name}</p>
+                        {session.dance_type && (
+                          <p className="text-sm text-gray-600">💃 {session.dance_type}</p>
+                        )}
+                      </>
+                    )}
+                    {showInstructors && session.instructors && session.instructors.length > 0 && (
+                      <p className="text-sm text-gray-600">
+                        👥 {session.instructors.map((inst: any) => inst.name).join(', ')}
+                      </p>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600 mt-2">
+                    {presentCount} present (out of {session.attendance.length} total)
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 self-start md:self-center md:ml-4">
+                  <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                    {presentCount}/{session.attendance.length}
+                  </span>
+                  <Link href={`/dashboard/attendance/${session.sessionId}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline">
+                    View Details →
+                  </Link>
+                </div>
+              </summary>
+              <div className="px-4 pb-4 border-t border-[#E5E7EB] pt-4 bg-gray-50">
+                <p className="text-sm font-semibold text-[#111827] mb-3">Attendance:</p>
+                <div className="space-y-2">
+                  {session.attendance.map((att: any, idx: number) => (
+                    <div key={idx} className="flex items-center gap-3 text-sm">
+                      <span className={`font-bold ${att.is_present ? 'text-green-600' : 'text-red-600'}`}>
+                        {att.is_present ? '✓' : '✗'}
+                      </span>
+                      <Link href={`/dashboard/students/${att.students?.id}`} className="text-[#4F46E5] hover:underline font-medium flex-1">
+                        {att.students?.first_name} {att.students?.last_name}
+                      </Link>
+                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                        att.is_present
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {att.is_present ? 'Present' : 'Absent'}
+                      </span>
+                      {att.notes && <span className="text-gray-600">/{att.notes}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </details>
+          )
+        })}
+      </div>
+    </div>
+  )
+}

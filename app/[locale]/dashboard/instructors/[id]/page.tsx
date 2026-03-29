@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Edit2, Mail, Phone, BookOpen, DollarSign, Calendar } from 'lucide-react'
+import { InstructorAttendanceHistory } from '@/components/instructors/InstructorAttendanceHistory'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -36,24 +37,24 @@ export default async function InstructorDetailPage({ params }: InstructorDetailP
   const totalStats = totalEarningsResult.data
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-8">
-      <div className="max-w-6xl">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-4 sm:p-6 md:p-8">
+      <div className="max-w-6xl mx-auto">
         <Link href="/dashboard/instructors" className="text-[#4F46E5] hover:underline mb-6 inline-block">
           ← Back to Instructors
         </Link>
 
         <Card className="border-[#E5E7EB]">
-          <div className="p-8">
-            <div className="flex justify-between items-start mb-8">
+          <div className="p-4 sm:p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 md:gap-8 mb-8">
               <div>
-                <h1 className="text-3xl font-bold text-[#111827] mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] mb-2">
                   {instructor.first_name} {instructor.last_name}
                 </h1>
                 <p className="text-gray-600">Instructor Profile</p>
               </div>
-              <div className="flex gap-2">
-                <Link href={`/dashboard/instructors/${instructor.id}/edit`}>
-                  <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Link href={`/dashboard/instructors/${instructor.id}/edit`} className="w-full sm:w-auto">
+                  <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 w-full sm:w-auto">
                     <Edit2 size={18} />
                     Edit
                   </Button>
@@ -76,7 +77,12 @@ export default async function InstructorDetailPage({ params }: InstructorDetailP
                   <Phone className="text-[#4F46E5]" size={20} />
                   <div>
                     <p className="text-sm text-gray-600">Phone</p>
-                    <p className="text-lg font-medium text-[#111827]">{instructor.phone}</p>
+                    <a
+                      href={`tel:${instructor.phone}`}
+                      className="text-lg font-medium text-[#4F46E5] hover:underline"
+                    >
+                      {instructor.phone}
+                    </a>
                   </div>
                 </div>
               )}
@@ -166,54 +172,12 @@ export default async function InstructorDetailPage({ params }: InstructorDetailP
               </div>
             )}
 
-            {/* Monthly Attendance Details Table */}
-            {stats?.attendanceDetails && stats.attendanceDetails.length > 0 && (
-              <div className="border-t border-[#E5E7EB] pt-8">
-                <h2 className="text-2xl font-bold text-[#111827] mb-4">This Month Attendance Details</h2>
-                <Card className="border-[#E5E7EB] overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-50 border-b border-[#E5E7EB]">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-gray-700 font-medium">Student Name</th>
-                          <th className="px-4 py-3 text-left text-gray-700 font-medium">Status</th>
-                          <th className="px-4 py-3 text-left text-gray-700 font-medium">Date</th>
-                          <th className="px-4 py-3 text-left text-gray-700 font-medium">Notes</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {stats.attendanceDetails.map((attendance: any, idx: number) => (
-                          <tr key={idx} className="border-b border-[#E5E7EB] hover:bg-gray-50">
-                            <td className="px-4 py-3 text-[#111827] font-medium">
-                              {attendance.students?.first_name} {attendance.students?.last_name}
-                            </td>
-                            <td className="px-4 py-3">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                attendance.is_present 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
-                                {attendance.is_present ? '✓ Present' : '✗ Absent'}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-gray-600">
-                              {new Date(attendance.created_at).toLocaleDateString('tr-TR', { 
-                                year: 'numeric', 
-                                month: '2-digit', 
-                                day: '2-digit' 
-                              })}
-                            </td>
-                            <td className="px-4 py-3 text-gray-600">
-                              {attendance.notes || '-'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </Card>
-              </div>
-            )}
+            {/* Attendance History */}
+            <InstructorAttendanceHistory 
+              instructorId={id} 
+              showCourseInfo={true}
+              showInstructors={true}
+            />
           </div>
         </Card>
       </div>

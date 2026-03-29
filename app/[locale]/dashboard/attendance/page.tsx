@@ -362,7 +362,7 @@ export default async function AttendancePage({
           <div className="space-y-4">
             {coursesWithAttendance.map((course: any) => (
               <Card key={course.id} className="border-[#E5E7EB] p-4 hover:border-[#4F46E5] transition-colors">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                   <Link href={`/dashboard/courses/${course.id}`} className="flex-1">
                     <div className="cursor-pointer">
                       <h3 className="font-semibold text-[#4F46E5] hover:underline">{course.name}</h3>
@@ -379,8 +379,8 @@ export default async function AttendancePage({
                       )}
                     </div>
                   </Link>
-                  <Link href={`/dashboard/attendance?course=${course.id}`}>
-                    <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
+                  <Link href={`/dashboard/attendance?course=${course.id}`} className="w-full md:w-auto">
+                    <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 w-full md:w-auto">
                       <CheckCircle size={16} />
                       Mark Attendance
                     </Button>

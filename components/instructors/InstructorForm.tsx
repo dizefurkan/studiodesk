@@ -80,8 +80,8 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
   }
 
   return (
-    <Card className="border-[#E5E7EB] max-w-2xl">
-      <div className="p-3 sm:p-4 md:p-6 lg:p-8">
+    <Card className="border-[#E5E7EB]">
+      <div className="p-4 sm:p-6 md:p-8">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827] mb-2">
           {instructor ? 'Edit Instructor' : 'Add New Instructor'}
         </h1>

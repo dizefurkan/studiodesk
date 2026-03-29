@@ -34,9 +34,10 @@ interface CourseStudent {
 interface CourseStudentsSectionProps {
   courseId: string
   danceTypeId: string
+  onStudentsLoaded?: (count: number) => void
 }
 
-export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsSectionProps) {
+export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded }: CourseStudentsSectionProps) {
   const t = useTranslations()
   const [students, setStudents] = useState<CourseStudent[]>([])
   const [loading, setLoading] = useState(false)
@@ -74,7 +75,10 @@ export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsS
     setIsLoading(true)
     try {
       const result = await getCourseStudents(courseId)
-      if (result.data) setStudents(result.data)
+      if (result.data) {
+        setStudents(result.data)
+        onStudentsLoaded?.(result.data.length)
+      }
     } catch (error) {
       console.error('Error loading students:', error)
     } finally {

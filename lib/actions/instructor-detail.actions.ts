@@ -202,3 +202,168 @@ export async function getInstructorTotalEarnings(instructorId: string) {
     return { error: 'An unexpected error occurred' }
   }
 }
+
+export async function getInstructorAttendanceHistory(instructorId: string) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
+  try {
+    const adminSupabase = createAdminClient()
+
+    // Verify instructor belongs to organization
+    const { data: instructor, error: instructorError } = await (adminSupabase
+      .from('instructors') as any)
+      .select('organization_id')
+      .eq('id', instructorId)
+      .single()
+
+    if (instructorError || !instructor || instructor.organization_id !== organization.id) {
+      return { error: 'Instructor not found or access denied' }
+    }
+
+    // Get all session IDs where instructor is assigned
+    const { data: sessionInstructorLinks, error: linksError } = await (adminSupabase
+      .from('session_instructors') as any)
+      .select('session_id')
+      .eq('instructor_id', instructorId)
+
+    if (linksError) {
+      console.error('Error fetching session links:', linksError)
+      return { error: 'Failed to fetch sessions' }
+    }
+
+    const sessionIds = (sessionInstructorLinks || [])
+      .map((si: any) => si.session_id)
+      .filter((id: string) => id)
+
+    if (sessionIds.length === 0) {
+      return { data: [] }
+    }
+
+    // Get session details
+    const { data: sessionDetails, error: sessionDetailsError } = await (adminSupabase
+      .from('course_sessions') as any)
+      .select('id, session_date, course_id')
+      .in('id', sessionIds)
+
+    if (sessionDetailsError) {
+      console.error('Error fetching session details:', sessionDetailsError)
+      return { error: 'Failed to fetch session details' }
+    }
+
+    // Get unique course IDs
+    const courseIds = (sessionDetails || [])
+      .filter((s: any) => s.course_id)
+      .map((s: any) => s.course_id)
+      .filter((id: string, idx: number, arr: string[]) => arr.indexOf(id) === idx)
+
+    if (sessionIds.length === 0) {
+      return { data: [] }
+    }
+
+    // Get course details
+    let coursesMap = new Map()
+    if (courseIds.length > 0) {
+      const { data: courses, error: coursesError } = await (adminSupabase
+        .from('courses') as any)
+        .select(`
+          id,
+          name,
+          dance_types(name)
+        `)
+        .in('id', courseIds)
+
+      if (!coursesError && courses) {
+        courses.forEach((course: any) => {
+          coursesMap.set(course.id, course)
+        })
+      }
+    }
+
+    // Get attendance details for all sessions
+    const { data: attendanceData, error: attendanceError } = await (adminSupabase
+      .from('attendances') as any)
+      .select(`
+        id,
+        session_id,
+        student_id,
+        is_present,
+        notes,
+        created_at,
+        students(id, first_name, last_name)
+      `)
+      .in('session_id', sessionIds)
+
+    if (attendanceError) {
+      console.error('Error fetching attendance:', attendanceError)
+      return { error: 'Failed to fetch attendance' }
+    }
+
+    // Get other instructors for each session
+    const { data: allSessionInstructors, error: instructorsError } = await (adminSupabase
+      .from('session_instructors') as any)
+      .select(`
+        session_id,
+        instructor_id,
+        instructors(id, first_name, last_name)
+      `)
+      .in('session_id', sessionIds)
+
+    if (instructorsError) {
+      console.error('Error fetching session instructors:', instructorsError)
+      return { error: 'Failed to fetch instructors' }
+    }
+
+    // Combine data by session
+    const sessionsMap = new Map()
+    
+    sessionDetails.forEach((session: any) => {
+      const sessionId = session.id
+      const course = coursesMap.get(session.course_id)
+      
+      if (!sessionsMap.has(sessionId)) {
+        sessionsMap.set(sessionId, {
+          sessionId,
+          session_date: session.session_date,
+          course_name: course?.name,
+          dance_type: course?.dance_types?.name,
+          course_id: session.course_id,
+          instructors: [],
+          attendance: [],
+        })
+      }
+    })
+
+    // Add instructors to sessions
+    allSessionInstructors?.forEach((si: any) => {
+      const session = sessionsMap.get(si.session_id)
+      if (session && si.instructors) {
+        session.instructors.push({
+          id: si.instructors.id,
+          name: `${si.instructors.first_name} ${si.instructors.last_name}`,
+        })
+      }
+    })
+
+    // Add attendance to sessions
+    attendanceData?.forEach((att: any) => {
+      const session = sessionsMap.get(att.session_id)
+      if (session) {
+        session.attendance.push(att)
+      }
+    })
+
+    // Convert map to array and sort by date descending
+    const result = Array.from(sessionsMap.values()).sort((a, b) => 
+      new Date(b.session_date).getTime() - new Date(a.session_date).getTime()
+    )
+
+    return { data: result }
+  } catch (error) {
+    console.error('Unexpected error in getInstructorAttendanceHistory:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
