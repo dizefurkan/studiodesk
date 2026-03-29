@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Edit2, Mail, Phone, BookOpen, DollarSign, Calendar } from 'lucide-react'
 import { InstructorAttendanceHistory } from '@/components/instructors/InstructorAttendanceHistory'
+import { formatTime } from '@/lib/utils/formatTime'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -150,7 +151,7 @@ export default async function InstructorDetailPage({ params }: InstructorDetailP
                           <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-600">
                             <span className="flex items-center gap-1">📚 {course.dance_types?.name}</span>
                             <span className="flex items-center gap-1">🏢 {course.branches?.name}</span>
-                            <span className="flex items-center gap-1">⏰ {DAYS[course.day_of_week]} {course.start_time} - {course.end_time}</span>
+                            <span className="flex items-center gap-1">⏰ {DAYS[course.day_of_week]} {formatTime(course.start_time)} - {formatTime(course.end_time)}</span>
                           </div>
                         </div>
                         <Link href={`/dashboard/courses/${course.id}`}>

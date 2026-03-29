@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { Clock, Users, Edit2, BookOpen, CheckCircle } from 'lucide-react'
+import { formatTime } from '@/lib/utils/formatTime'
 
 interface CourseDetailPageProps {
   params: {
@@ -66,7 +67,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                 <p className="text-sm text-gray-600 mb-2">{t('courses.schedule')}</p>
                 <div className="flex items-center gap-2 text-lg font-medium text-[#111827]">
                   <Clock size={20} className="text-[#4F46E5]" />
-                  {t(`data.days.${['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][course.day_of_week]}`)} {course.start_time} - {course.end_time}
+                  {t(`data.days.${['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][course.day_of_week]}`)} {formatTime(course.start_time)} - {formatTime(course.end_time)}
                 </div>
               </div>
             </div>

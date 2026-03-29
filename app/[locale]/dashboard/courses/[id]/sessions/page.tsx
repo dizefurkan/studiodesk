@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Calendar, Clock, BookOpen } from 'lucide-react'
+import { formatTime } from '@/lib/utils/formatTime'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -54,7 +55,7 @@ export default async function SessionsPage({ params }: SessionsPageProps) {
             <div className="flex items-center gap-2">
               <Clock size={18} className="text-[#4F46E5]" />
               <span className="font-medium text-[#111827]">
-                {DAYS[course.day_of_week]} {course.start_time} - {course.end_time}
+                {DAYS[course.day_of_week]} {formatTime(course.start_time)} - {formatTime(course.end_time)}
               </span>
             </div>
           </div>
@@ -88,7 +89,7 @@ export default async function SessionsPage({ params }: SessionsPageProps) {
                     <div>
                       <p className="font-medium text-[#111827]">{session.session_date}</p>
                       <p className="text-sm text-gray-600">
-                        {DAYS[new Date(session.session_date).getDay()]} • {course.start_time}
+                        {DAYS[new Date(session.session_date).getDay()]} • {formatTime(course.start_time)}
                       </p>
                     </div>
                   </div>

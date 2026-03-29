@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Plus, Edit2, Clock, Users, BookOpen, User } from 'lucide-react'
+import { formatTime } from '@/lib/utils/formatTime'
 
 export default async function CoursesPage({
   searchParams,
@@ -73,7 +74,7 @@ export default async function CoursesPage({
                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-4 text-sm">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Clock size={16} />
-                      {t(`data.days.${['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][course.day_of_week]}`)} {course.start_time} - {course.end_time}
+                      {t(`data.days.${['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][course.day_of_week]}`)} {formatTime(course.start_time)} - {formatTime(course.end_time)}
                     </div>
                     
                     <div className="flex items-center gap-2 text-gray-600">

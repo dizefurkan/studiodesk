@@ -278,7 +278,8 @@
     "coursesOnThisDay": "Courses on this day",
     "viewCoursesOnThisDay": "View courses on this day",
     "searchCourse": "Search course...",
-    "time": "Time"
+    "time": "Time",
+    "selectDayViewClasses": "In month view, click on a day box to see the classes scheduled for that day"
   },
   "attendance": {
     "title": "Attendance",

@@ -271,7 +271,8 @@
     "coursesOnThisDay": "Bu gün ki kurslar",
     "viewCoursesOnThisDay": "Bu gün ki kursları görüntüle",
     "searchCourse": "Kurs ara...",
-    "time": "Saat"
+    "time": "Saat",
+    "selectDayViewClasses": "Ay görünümünde, günün kurslarını görmek için gün kutusuna tıklayın"
   },
   "attendance": {
     "title": "Yoklama",

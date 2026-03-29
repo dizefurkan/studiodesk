@@ -16,6 +16,7 @@ import { getDanceTypes } from '@/lib/actions/dance-types.actions'
 import { getInstructorsForDanceType } from '@/lib/actions/instructors.actions'
 import { getAvailableStudentsForCourse } from '@/lib/actions/course-students.actions'
 import { InstructorSelectionModal } from './InstructorSelectionModal'
+import { formatTime } from '@/lib/utils/formatTime'
 import type { Database } from '@/lib/types/database.types'
 
 type Course = Database['public']['Tables']['courses']['Row']
@@ -423,7 +424,7 @@ export function CourseForm({ course }: CourseFormProps) {
                         <div key={c.id} className="p-3 border border-[#E5E7EB] rounded-lg bg-gray-50">
                           <div className="flex justify-between items-start gap-2 mb-2">
                             <p className="font-semibold text-sm text-[#111827]">{c.name}</p>
-                            <p className="text-sm font-bold text-[#4F46E5] whitespace-nowrap">{c.start_time?.substring(0, 5)}</p>
+                            <p className="text-sm font-bold text-[#4F46E5] whitespace-nowrap">{formatTime(c.start_time)}</p>
                           </div>
                           <p className="text-xs text-[#374151]">{danceTypes.find(d => d.id === c.dance_type_id)?.name}</p>
                         </div>
