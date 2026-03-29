@@ -268,7 +268,12 @@
     "addStudents": "Add Students",
     "addStudentsTitle": "Add Students to Course",
     "credits": "Credits",
-    "viewMode": "View"
+    "viewMode": "View",
+    "students": "Student",
+    "instructors": "Instructor",
+    "attendanceRecords": "Attendance",
+    "noCourses": "No courses found",
+    "createFirstCourse": "Create your first course to get started"
   },
   "attendance": {
     "title": "Attendance",

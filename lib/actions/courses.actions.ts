@@ -37,7 +37,7 @@ export async function getCourses(branchId?: string, searchQuery?: string) {
     const admin = createAdminClient()
     let query = (admin as any)
       .from('courses')
-      .select('*, branches(name), dance_types(name)')
+      .select('*, branches(name), dance_types(name), course_instructors(instructor_id, instructors(id, first_name, last_name))')
       .order('created_at', { ascending: false })
 
     if (branchId) {
@@ -55,7 +55,41 @@ export async function getCourses(branchId?: string, searchQuery?: string) {
       return { error: 'Failed to fetch courses' }
     }
 
-    return { data: data as (Course & { branches: { name: string } | null; dance_types: { name: string } | null })[] }
+    // Fetch student counts and attendance counts for each course
+    const coursesWithStats = await Promise.all(
+      (data as any[]).map(async (course) => {
+        // Get student count
+        const { count: studentCount } = await (admin as any)
+          .from('course_students')
+          .select('*', { count: 'exact', head: true })
+          .eq('course_id', course.id)
+
+        // Get attendance count
+        const { data: sessions } = await (admin as any)
+          .from('course_sessions')
+          .select('id')
+          .eq('course_id', course.id)
+
+        let attendanceCount = 0
+        if (sessions && sessions.length > 0) {
+          const sessionIds = sessions.map((s: any) => s.id)
+          const { count } = await (admin as any)
+            .from('attendances')
+            .select('*', { count: 'exact', head: true })
+            .in('session_id', sessionIds)
+          attendanceCount = count || 0
+        }
+
+        return {
+          ...course,
+          studentCount: studentCount || 0,
+          instructorCount: course.course_instructors?.length || 0,
+          attendanceCount,
+        }
+      })
+    )
+
+    return { data: coursesWithStats }
   } catch (error) {
     console.error('Unexpected error:', error)
     return { error: 'An unexpected error occurred' }

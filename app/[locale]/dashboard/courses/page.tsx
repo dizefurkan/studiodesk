@@ -6,9 +6,7 @@ import { DeleteCourseButton } from '@/components/courses/DeleteCourseButton'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Plus, Edit2, Clock, Users } from 'lucide-react'
-
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+import { Plus, Edit2, Clock, Users, BookOpen, User } from 'lucide-react'
 
 export default async function CoursesPage({
   searchParams,
@@ -51,13 +49,13 @@ export default async function CoursesPage({
         <Card className="border-[#E5E7EB] p-6 sm:p-8 md:p-12 text-center">
           <div className="text-gray-500">
             <Clock size={48} className="mx-auto mb-4 opacity-50" />
-            <p className="text-lg">No courses found</p>
-            <p className="text-sm mt-1">Create your first course to get started</p>
+            <p className="text-lg">{t('courses.noCourses')}</p>
+            <p className="text-sm mt-1">{t('courses.createFirstCourse')}</p>
           </div>
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6">
-          {courses.map((course) => (
+          {courses.map((course: any) => (
             <Card key={course.id} className="border-[#E5E7EB] p-3 sm:p-4 md:p-6 hover:shadow-lg transition-shadow">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
                 <div className="flex-1">
@@ -68,10 +66,27 @@ export default async function CoursesPage({
                     {course.branches?.name} • {course.dance_types?.name}
                   </p>
 
-                  <div className="flex gap-6 mt-4 text-sm">
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-4 text-sm">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Clock size={16} />
-                      {DAYS[course.day_of_week]} {course.start_time} - {course.end_time}
+                      {t(`data.days.${['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][course.day_of_week]}`)} {course.start_time} - {course.end_time}
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Users size={16} />
+                      {course.studentCount || 0} {t('courses.students')}
+                    </div>
+
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <User size={16} />
+                      <span>{course.course_instructors && course.course_instructors.length > 0 
+                        ? course.course_instructors.map((ci: any) => `${ci.instructors?.first_name} ${ci.instructors?.last_name}`).join(', ')
+                        : t('courses.noInstructors')}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <BookOpen size={16} />
+                      {course.attendanceCount || 0} {t('courses.attendanceRecords')}
                     </div>
                   </div>
                 </div>

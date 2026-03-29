@@ -261,7 +261,12 @@
     "addStudents": "Öğrenci Ekle",
     "addStudentsTitle": "Kursa Öğrenci Ekle",
     "credits": "Kredi",
-    "viewMode": "Görünüm"
+    "viewMode": "Görünüm",
+    "students": "Öğrenci",
+    "instructors": "Eğitmen",
+    "attendanceRecords": "Yoklama",
+    "noCourses": "Kurs bulunamadı",
+    "createFirstCourse": "Başlangıç yapmak için ilk kursunuzu oluşturun"
   },
   "attendance": {
     "title": "Yoklama",
