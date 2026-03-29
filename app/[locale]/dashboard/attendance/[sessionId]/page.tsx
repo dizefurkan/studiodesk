@@ -60,6 +60,7 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
   const presentCount = attendances.filter((a: any) => a.is_present).length
   const absentCount = attendances.filter((a: any) => !a.is_present).length
   const instructors = session.session_instructors?.map((si: any) => si.instructor) || []
+  const studio = attendances.find((a: any) => a.studio?.name)?.studio
 
   // Format date for display
   const sessionDate = new Date(session.session_date + 'T00:00:00Z')
@@ -85,6 +86,9 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
         <div>
           <h1 className="text-2xl font-bold text-[#111827]">{session.course?.name}</h1>
           <p className="text-sm text-gray-600 mt-1">{session.course?.branch?.name}</p>
+          {studio?.name && (
+            <p className="text-sm text-gray-600 mt-1">Stüdyo: {studio.name}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
@@ -170,9 +174,6 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
                   </p>
                   {attendance.notes && (
                     <p className="text-xs text-gray-600 mt-1">{attendance.notes}</p>
-                  )}
-                  {attendance.studio?.name && (
-                    <p className="text-xs text-gray-500 mt-1">Stüdyo: {attendance.studio.name}</p>
                   )}
                 </div>
 
