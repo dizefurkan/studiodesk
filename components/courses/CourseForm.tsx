@@ -15,6 +15,7 @@ import { getBranches } from '@/lib/actions/branches.actions'
 import { getDanceTypes } from '@/lib/actions/dance-types.actions'
 import { getInstructorsForDanceType } from '@/lib/actions/instructors.actions'
 import { getAvailableStudentsForCourse } from '@/lib/actions/course-students.actions'
+import { InstructorSelectionModal } from './InstructorSelectionModal'
 import type { Database } from '@/lib/types/database.types'
 
 type Course = Database['public']['Tables']['courses']['Row']
@@ -72,6 +73,7 @@ export function CourseForm({ course }: CourseFormProps) {
   const [coursesOnDay, setCoursesOnDay] = useState<Course[] | null>(null)
   const [showCoursesModal, setShowCoursesModal] = useState(false)
   const [loadingCoursesOnDay, setLoadingCoursesOnDay] = useState(false)
+  const [showInstructorModal, setShowInstructorModal] = useState(false)
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseSchema),
@@ -316,64 +318,34 @@ export function CourseForm({ course }: CourseFormProps) {
 
             {/* Show Instructors section ONLY after dance type is selected */}
             {form.watch('danceTypeId') && (
-              <FormField
-                control={form.control}
-                name="instructorIds"
-                render={({ field }) => {
-                  const danceTypeId = form.watch('danceTypeId')
+              <div>
+                <label className="text-sm font-medium text-[#111827] block mb-2">
+                  {t('courses.instructors')} (for {danceTypes.find(d => d.id === form.watch('danceTypeId'))?.name})
+                </label>
 
-                  return (
-                    <FormItem>
-                      <FormLabel>{t('courses.instructors')} (for {danceTypes.find(d => d.id === danceTypeId)?.name})</FormLabel>
-
-                      {loadingInstructors ? (
-                        <div className="p-4 border border-[#E5E7EB] rounded-lg bg-gray-50 text-gray-600 text-sm">
-                          Loading instructors...
-                        </div>
-                      ) : instructors.length === 0 ? (
-                        <div className="p-4 border border-[#E5E7EB] rounded-lg bg-amber-50 text-amber-700 text-sm">
-                          ⚠️ No instructors with rates for this dance type. Please set up instructor rates first.
-                        </div>
-                      ) : (
-                        <div className="space-y-2 border border-[#E5E7EB] rounded-lg p-4 max-h-50 overflow-y-auto">
-                          {instructors.map((instructor) => {
-                            const pricePerClass = instructor.instructor_rates?.[0]?.ratio_per_class
-
-                            return (
-                              <label
-                                key={instructor.id}
-                                className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-50 transition-colors"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={field.value?.includes(instructor.id) || false}
-                                  onChange={(e) => {
-                                    const value = field.value || []
-                                    if (e.target.checked) {
-                                      field.onChange([...value, instructor.id])
-                                    } else {
-                                      field.onChange(value.filter((id) => id !== instructor.id))
-                                    }
-                                  }}
-                                  disabled={isLoading}
-                                  className="w-4 h-4 rounded border-[#E5E7EB]"
-                                />
-                                <span className="text-sm text-[#111827] flex-1">
-                                  {instructor.first_name} {instructor.last_name}
-                                </span>
-                                <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded">
-                                  ₺{pricePerClass}/session
-                                </span>
-                              </label>
-                            )
-                          })}
-                        </div>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )
-                }}
-              />
+                {loadingInstructors ? (
+                  <div className="p-4 border border-[#E5E7EB] rounded-lg bg-gray-50 text-gray-600 text-sm">
+                    Loading instructors...
+                  </div>
+                ) : instructors.length === 0 ? (
+                  <div className="p-4 border border-[#E5E7EB] rounded-lg bg-amber-50 text-amber-700 text-sm">
+                    ⚠️ No instructors with rates for this dance type. Please set up instructor rates first.
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => setShowInstructorModal(true)}
+                    variant="outline"
+                    className="w-full border-[#E5E7EB] text-left"
+                  >
+                    <span className="flex-1 text-left">
+                      {form.watch('instructorIds') && form.watch('instructorIds')!.length > 0
+                        ? `${form.watch('instructorIds')!.length} instructor(s) selected`
+                        : 'Select instructors...'}
+                    </span>
+                  </Button>
+                )}
+              </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
@@ -470,6 +442,16 @@ export function CourseForm({ course }: CourseFormProps) {
                 </div>
               </div>
             )}
+
+            {/* Instructor Selection Modal */}
+            <InstructorSelectionModal
+              instructors={instructors}
+              selectedIds={form.watch('instructorIds') || []}
+              isOpen={showInstructorModal}
+              onOpenChange={setShowInstructorModal}
+              onSelect={(instructorIds) => form.setValue('instructorIds', instructorIds)}
+              danceTypeName={danceTypes.find(d => d.id === form.watch('danceTypeId'))?.name}
+            />
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-4 md:pt-6">
               <Button
