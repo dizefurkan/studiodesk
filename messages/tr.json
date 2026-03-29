@@ -62,7 +62,12 @@
     "deleteStudentConfirm": "Bu öğrenci silinsin mi?",
     "deleteBranchConfirm": "Bu şube silinsin mi?",
     "deletePackageConfirm": "Bu paket silinsin mi?",
-    "deleteDanceTypeConfirm": "Bu dans türü silinsin mi?"
+    "deleteDanceTypeConfirm": "Bu dans türü silinsin mi?",
+    "backToCourses": "Kurslara Dön",
+    "viewDetails": "Detayları Gör",
+    "instructor": "Eğitmen",
+    "studio": "Stüdyo",
+    "attendees": "Katılımcılar"
   },
   "table": {
     "studentName": "Öğrenci Adı",
@@ -246,7 +251,13 @@
     "cancel": "İptal",
     "onlyActivePackages": "(Bu dans türü için aktif paketlere sahip öğrenciler gösterilir)",
     "noStudentsAvailable": "Bu dans türü için kullanılabilir öğrenci yok",
-    "actions": "İşlemler"
+    "actions": "İşlemler",
+    "schedule": "Ders Zamanı",
+    "assignedInstructors": "Atanmış Eğitmenler",
+    "attendanceHistory": "Yoklama Geçmişi",
+    "noAttendanceRecords": "Henüz yoklama kaydı yok",
+    "startMarkingAttendance": "Geçmişi oluşturmak için yoklama almaya başlayın",
+    "enrolledStudents": "Kaydolmuş Öğrenciler"
   },
   "attendance": {
     "title": "Yoklama",

@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { Clock, Users, Edit2, BookOpen, CheckCircle } from 'lucide-react'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -17,6 +18,7 @@ interface CourseDetailPageProps {
 
 export default async function CourseDetailPage({ params }: CourseDetailPageProps) {
   const { id } = await params
+  const t = await getTranslations()
   const result = await getCourse(id)
 
   if (result.error) {
@@ -33,7 +35,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
     <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-4 sm:p-6 md:p-8">
       <div className="max-w-4xl mx-auto">
         <Link href="/dashboard/courses" className="text-[#4F46E5] hover:underline mb-6 inline-block">
-          ← Back to Courses
+          ← {t('common.backToCourses')}
         </Link>
 
         <Card className="border-[#E5E7EB]">
@@ -49,13 +51,13 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                 <Link href={`/dashboard/attendance?course=${course.id}`} className="w-full sm:w-auto">
                   <Button className="bg-green-600 hover:bg-green-700 text-white gap-2 w-full sm:w-auto">
                     <CheckCircle size={18} />
-                    Mark Attendance
+                    {t('courses.markAttendance')}
                   </Button>
                 </Link>
                 <Link href={`/dashboard/courses/${course.id}/edit`} className="w-full sm:w-auto">
                   <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 w-full sm:w-auto">
                     <Edit2 size={18} />
-                    Edit
+                    {t('common.edit')}
                   </Button>
                 </Link>
               </div>
@@ -63,7 +65,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
 
             <div className="grid grid-cols-1 gap-6 border-t border-[#E5E7EB] pt-8">
               <div>
-                <p className="text-sm text-gray-600 mb-2">Schedule</p>
+                <p className="text-sm text-gray-600 mb-2">{t('courses.schedule')}</p>
                 <div className="flex items-center gap-2 text-lg font-medium text-[#111827]">
                   <Clock size={20} className="text-[#4F46E5]" />
                   {DAYS[course.day_of_week]} {course.start_time} - {course.end_time}
@@ -73,7 +75,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
 
             {course.course_instructors && course.course_instructors.length > 0 && (
               <div className="mt-8 pt-8 border-t border-[#E5E7EB]">
-                <p className="text-sm text-gray-600 mb-4">Assigned Instructors</p>
+                <p className="text-sm text-gray-600 mb-4">{t('courses.assignedInstructors')}</p>
                 <div className="flex gap-2 flex-wrap">
                   {course.course_instructors.map((ci: any) => {
                     const instructor = ci.instructors
@@ -101,14 +103,14 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
 
         {/* Attendance History */}
         <div className="mt-8">
-          <h2 className="text-2xl font-bold text-[#111827] mb-4">Attendance History</h2>
+          <h2 className="text-2xl font-bold text-[#111827] mb-4">{t('courses.attendanceHistory')}</h2>
 
         {attendanceHistory.length === 0 ? (
             <Card className="border-[#E5E7EB] p-12 text-center">
               <div className="text-gray-500">
                 <BookOpen size={48} className="mx-auto mb-4 opacity-50" />
-                <p className="text-lg">No attendance records yet</p>
-                <p className="text-sm mt-1">Start marking attendance to build history</p>
+                <p className="text-lg">{t('courses.noAttendanceRecords')}</p>
+                <p className="text-sm mt-1">{t('courses.startMarkingAttendance')}</p>
               </div>
             </Card>
           ) : (
@@ -121,11 +123,11 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                       <p className="text-sm text-gray-600 mt-1">
                         {record.attendance_count} present (out of {record.attendances?.length || 0} total)
                         {record.attendances?.length > 0 && record.attendances[0]?.studios?.name && 
-                          ` • Studio: ${record.attendances[0].studios.name}`}
+                          ` • ${t('common.studio')}: ${record.attendances[0].studios.name}`}
                       </p>
                       {record.instructors && record.instructors.length > 0 && (
                         <p className="text-sm text-[#4F46E5] mt-1 font-medium">
-                          Instructor: {record.instructors.map((i: any) => `${i.first_name} ${i.last_name}`).join(', ')}
+                          {t('common.instructor')}: {record.instructors.map((i: any) => `${i.first_name} ${i.last_name}`).join(', ')}
                         </p>
                       )}
                     </div>
@@ -134,12 +136,12 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                         {record.attendance_count}/{record.attendances?.length || 0}
                       </span>
                       <Link href={`/dashboard/attendance/${record.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline">
-                        View Details →
+                        {t('common.viewDetails')} →
                       </Link>
                     </div>
                   </summary>
                   <div className="px-4 pb-4 border-t border-[#E5E7EB] pt-4 bg-gray-50">
-                    <p className="text-sm font-semibold text-[#111827] mb-3">Attendees:</p>
+                    <p className="text-sm font-semibold text-[#111827] mb-3">{t('common.attendees')}:</p>
                     <div className="space-y-2">
                       {record.attendances && record.attendances.length > 0 ? (
                         record.attendances.map((att: any, idx: number) => (
@@ -154,7 +156,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                           </div>
                         ))
                       ) : (
-                        <p className="text-sm text-gray-500">No attendance records</p>
+                        <p className="text-sm text-gray-500">{t('attendance.noAttendance')}</p>
                       )}
                     </div>
                   </div>

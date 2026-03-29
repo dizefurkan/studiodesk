@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { CourseStudentsSection } from './CourseStudentsSection'
 import { AddStudentDialog } from './AddStudentDialog'
 import { Users } from 'lucide-react'
@@ -11,6 +12,7 @@ interface CourseStudentsContainerProps {
 }
 
 export function CourseStudentsContainer({ courseId, danceTypeId }: CourseStudentsContainerProps) {
+  const t = useTranslations()
   const refreshKey = useRef(0)
   const [studentCount, setStudentCount] = useState(0)
 
@@ -26,7 +28,7 @@ export function CourseStudentsContainer({ courseId, danceTypeId }: CourseStudent
         <div className="flex items-center gap-2">
           <Users size={20} className="text-[#4F46E5]" />
           <h2 className="text-2xl font-bold text-[#111827]">
-            Enrolled Students
+            {t('courses.enrolledStudents')}
             {studentCount > 0 && <span className="text-lg font-normal text-gray-600 ml-2">({studentCount})</span>}
           </h2>
         </div>

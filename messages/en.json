@@ -69,7 +69,12 @@
     "deleteStudentConfirm": "Delete this student?",
     "deleteBranchConfirm": "Delete this branch?",
     "deletePackageConfirm": "Delete this package?",
-    "deleteDanceTypeConfirm": "Delete this dance type?"
+    "deleteDanceTypeConfirm": "Delete this dance type?",
+    "backToCourses": "Back to Courses",
+    "viewDetails": "View Details",
+    "instructor": "Instructor",
+    "studio": "Studio",
+    "attendees": "Attendees"
   },
   "table": {
     "studentName": "Student Name",
@@ -253,7 +258,13 @@
     "cancel": "Cancel",
     "onlyActivePackages": "(Only students with active packages for this dance type are shown)",
     "noStudentsAvailable": "No students with active packages available for this dance type",
-    "actions": "Actions"
+    "actions": "Actions",
+    "schedule": "Course Schedule",
+    "assignedInstructors": "Assigned Instructors",
+    "attendanceHistory": "Attendance History",
+    "noAttendanceRecords": "No attendance records yet",
+    "startMarkingAttendance": "Start marking attendance to build history",
+    "enrolledStudents": "Enrolled Students"
   },
   "attendance": {
     "title": "Attendance",
