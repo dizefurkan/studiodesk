@@ -3,13 +3,16 @@ import { getOrganization } from '@/lib/auth/getOrganization'
 import { getOrganizationIdFromCookie } from '@/lib/auth/getCurrentUser'
 import { getCurrentUserProfile } from '@/lib/auth/getCurrentUser'
 import { getInitials } from '@/lib/utils/format'
+import { getTranslations } from 'next-intl/server'
 import { UserMenu } from './UserMenu'
 import { TopBarClient } from './TopBarClient'
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
 import { Bell, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 export async function TopBar() {
+  const t = await getTranslations()
   const user = await getCurrentUser()
   const userProfile = await getCurrentUserProfile()
   const organization = await getOrganization()
@@ -28,7 +31,7 @@ export async function TopBar() {
           <Search className="absolute left-3 top-2.5 text-[#9CA3AF]" size={16} />
           <Input
             type="search"
-            placeholder="Search..."
+            placeholder={t('common.search')}
             className="pl-9 text-sm bg-[#F9FAFB] border-[#E5E7EB]"
           />
         </div>
@@ -36,10 +39,13 @@ export async function TopBar() {
 
       {/* Right Section - Notifications & User Menu */}
       <div className="flex items-center gap-2 md:gap-4 ml-auto">
+        {/* Language Switcher */}
+        <LanguageSwitcher />
+
         {/* Organization Name - Hide on mobile and tablet */}
         {organization && (
           <div className="hidden lg:block text-sm">
-            <p className="text-[#9CA3AF] text-xs uppercase tracking-wider">Organization</p>
+            <p className="text-[#9CA3AF] text-xs uppercase tracking-wider">{t('settings.organization')}</p>
             <p className="font-semibold text-[#111827] truncate">{organization.name}</p>
           </div>
         )}

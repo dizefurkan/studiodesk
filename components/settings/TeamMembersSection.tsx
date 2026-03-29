@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Users, Trash2, UserPlus, Key, Copy, Check } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { AddTeamMemberForm } from './AddTeamMemberForm'
 import { removeTeamMember, updateTeamMemberRole, resetTeamMemberPassword } from '@/lib/actions/organization.actions'
 import { ROLE_LABELS } from '@/lib/constants/roles'
@@ -25,6 +26,7 @@ export function TeamMembersSection({
   canManageTeam,
   organization,
 }: TeamMembersSectionProps) {
+  const t = useTranslations()
   const [isAddingTeamMember, setIsAddingTeamMember] = useState(false)
   const [passwordModal, setPasswordModal] = useState<PasswordModalData | null>(null)
   const [copiedPassword, setCopiedPassword] = useState(false)
@@ -214,7 +216,7 @@ export function TeamMembersSection({
                           onClick={() => {
                             if (
                               confirm(
-                                `Are you sure you want to remove ${member.profiles?.full_name}?`,
+                                t('common.deleteConfirm'),
                               )
                             ) {
                               removeTeamMember(member.id)

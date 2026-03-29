@@ -1,9 +1,12 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { BookOpen, Users, TrendingUp, BarChart3, Shield, Zap } from 'lucide-react'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const t = await getTranslations()
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#111827] via-[#1F2937] to-[#4F46E5]">
       {/* Navigation */}
@@ -20,12 +23,12 @@ export default function HomePage() {
           <div className="flex items-center gap-4">
             <Link href="/login">
               <Button variant="ghost" className="text-white hover:text-white">
-                Sign In
+                {t('auth.signIn')}
               </Button>
             </Link>
             <Link href="/register">
               <Button className="bg-[#4F46E5] hover:bg-[#4338CA]">
-                Get Started
+                {t('auth.getStarted')}
               </Button>
             </Link>
           </div>
@@ -39,17 +42,17 @@ export default function HomePage() {
           <span className="block text-[#4F46E5]">Like Never Before</span>
         </h2>
         <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-          All-in-one platform for managing students, instructors, courses, attendance, and payments. Built for modern dance studios.
+          {t('pages.home.description')}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/register">
             <Button size="lg" className="bg-[#4F46E5] hover:bg-[#4338CA] text-white px-8">
-              Start Free Trial
+              {t('auth.startFreeTrial')}
             </Button>
           </Link>
           <Link href="#features">
             <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 px-8">
-              Learn More
+              {t('auth.learnMore')}
             </Button>
           </Link>
         </div>
@@ -59,7 +62,7 @@ export default function HomePage() {
       <section id="features" className="bg-white/5 backdrop-blur-md py-20">
         <div className="max-w-6xl mx-auto px-6">
           <h3 className="text-3xl font-bold text-white text-center mb-4">
-            Powerful Features
+            {t('pages.home.subtitle')}
           </h3>
           <p className="text-gray-300 text-center mb-16 max-w-2xl mx-auto">
             Everything you need to run a successful dance studio
@@ -69,23 +72,23 @@ export default function HomePage() {
             {[
               {
                 icon: Users,
-                title: 'Student Management',
-                description: 'Track students, manage credits, and monitor progress',
+                title: t('pages.home.studentManagement'),
+                description: t('pages.home.studentManagementDesc'),
               },
               {
                 icon: BookOpen,
-                title: 'Course Scheduling',
-                description: 'Create courses, manage schedules, and track sessions',
+                title: t('pages.home.courseManagement'),
+                description: t('pages.home.courseManagementDesc'),
               },
               {
                 icon: TrendingUp,
-                title: 'Instructor Earnings',
-                description: 'Automatic earnings calculation based on sessions',
+                title: t('pages.home.instructorManagement'),
+                description: t('pages.home.instructorManagementDesc'),
               },
               {
                 icon: BarChart3,
-                title: 'Revenue Tracking',
-                description: 'Monitor income, expenses, and financial reports',
+                title: t('pages.home.reporting'),
+                description: t('pages.home.reportingDesc'),
               },
               {
                 icon: Shield,

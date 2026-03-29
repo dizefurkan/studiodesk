@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Search, RotateCcw } from 'lucide-react'
@@ -27,6 +28,7 @@ export function StudentFilters({
   branchId,
   courseId,
 }: StudentFiltersProps) {
+  const t = useTranslations()
   const router = useRouter()
   const [search, setSearch] = useState(searchQuery)
 
@@ -69,7 +71,7 @@ export function StudentFilters({
         />
         <input
           type="text"
-          placeholder="Search by name or email..."
+          placeholder={t('common.searchStudent')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => {
@@ -84,7 +86,7 @@ export function StudentFilters({
       <div className="flex flex-1 md:flex-initial gap-2 md:gap-2 flex-wrap md:flex-nowrap items-center">
         {/* Dance Type Filter */}
         <SelectDropdown
-          placeholder="Dance Type"
+          placeholder={t('filters.danceType')}
           value={danceTypeId || ''}
           onChange={(value) => {
             router.push(
@@ -99,7 +101,7 @@ export function StudentFilters({
           }}
           ariaLabel="Filter by dance type"
           options={[
-            { value: '', label: 'Dance Type' },
+            { value: '', label: t('filters.danceType') },
             ...danceTypes.map((dt) => ({ 
               value: dt.id, 
               label: `${dt.name} (${dt.studentCount || 0})` 
@@ -109,7 +111,7 @@ export function StudentFilters({
 
         {/* Branch Filter */}
         <SelectDropdown
-          placeholder="Branch"
+          placeholder={t('filters.branch')}
           value={branchId || ''}
           onChange={(value) => {
             router.push(
@@ -124,7 +126,7 @@ export function StudentFilters({
           }}
           ariaLabel="Filter by branch"
           options={[
-            { value: '', label: 'Branch' },
+            { value: '', label: t('filters.branch') },
             ...branches.map((b) => ({ 
               value: b.id, 
               label: `${b.name} (${b.studentCount || 0})` 
@@ -134,7 +136,7 @@ export function StudentFilters({
 
         {/* Course Filter */}
         <SelectDropdown
-          placeholder="Course"
+          placeholder={t('filters.course')}
           value={courseId || ''}
           onChange={(value) => {
             router.push(
@@ -149,7 +151,7 @@ export function StudentFilters({
           }}
           ariaLabel="Filter by course"
           options={[
-            { value: '', label: 'Course' },
+            { value: '', label: t('filters.course') },
             ...courses.map((c) => ({ 
               value: c.id, 
               label: `${c.name} (${c.studentCount || 0})` 

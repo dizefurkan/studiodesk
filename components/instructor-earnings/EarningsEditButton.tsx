@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { updateInstructorEarnings, deleteInstructorEarnings } from '@/lib/actions/instructor-earnings.actions'
 import { Button } from '@/components/ui/button'
 import { Edit2, Trash2, X, Check } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface EarningsEditButtonProps {
   earningsId: string
@@ -12,6 +13,7 @@ interface EarningsEditButtonProps {
 }
 
 export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: EarningsEditButtonProps) {
+  const t = useTranslations()
   const [isEditing, setIsEditing] = useState(false)
   const [amount, setAmount] = useState(currentAmount.toString())
   const [isLoading, setIsLoading] = useState(false)
@@ -57,7 +59,7 @@ export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: Earn
   }
 
   const handleDelete = async () => {
-    if (!window.confirm('Bu ödeme kaydını silmek istediğinize emin misiniz?')) {
+    if (!window.confirm(t('common.deleteConfirm'))) {
       return
     }
 

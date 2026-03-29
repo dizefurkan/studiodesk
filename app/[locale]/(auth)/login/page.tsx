@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +11,7 @@ import { login } from '@/lib/actions/auth.actions'
 import { Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
+  const t = useTranslations()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string>('')
@@ -51,7 +53,7 @@ export default function LoginPage() {
         router.push('/dashboard')
       }
     } catch (err) {
-      setError('An error occurred. Please try again.')
+      setError(t('errors.serverError'))
       setLoading(false)
     }
   }
@@ -59,8 +61,8 @@ export default function LoginPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-[#111827] mb-2">Welcome Back</h2>
-        <p className="text-gray-600">Sign in to your StudioDesk account</p>
+        <h2 className="text-2xl font-bold text-[#111827] mb-2">{t('auth.login')}</h2>
+        <p className="text-gray-600">{t('auth.noAccount')}</p>
       </div>
 
       {error && (
@@ -71,7 +73,7 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="email" className="text-[#111827]">Email Address</Label>
+          <Label htmlFor="email" className="text-[#111827]">{t('auth.emailAddress')}</Label>
           <Input
             id="email"
             type="email"
@@ -86,7 +88,7 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <Label htmlFor="password" className="text-[#111827]">Password</Label>
+          <Label htmlFor="password" className="text-[#111827]">{t('auth.password')}</Label>
           <Input
             id="password"
             type="password"
@@ -111,7 +113,7 @@ export default function LoginPage() {
             className="w-4 h-4 rounded border-gray-300"
           />
           <label htmlFor="rememberMe" className="text-sm text-gray-600 cursor-pointer">
-            Remember me
+            {t('auth.rememberMe')}
           </label>
         </div>
 
@@ -123,10 +125,10 @@ export default function LoginPage() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Signing in...
+              {t('common.loading')}
             </>
           ) : (
-            'Sign In'
+            t('auth.signIn')
           )}
         </Button>
       </form>
@@ -136,13 +138,13 @@ export default function LoginPage() {
           <div className="w-full border-t border-gray-300" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-600">New to StudioDesk?</span>
+          <span className="px-2 bg-white text-gray-600">{t('auth.noAccount')}</span>
         </div>
       </div>
 
       <Link href="/register">
         <Button variant="outline" className="w-full border-[#4F46E5] text-[#4F46E5] hover:bg-[#4F46E5]/5">
-          Create an Account
+          {t('auth.register')}
         </Button>
       </Link>
     </div>

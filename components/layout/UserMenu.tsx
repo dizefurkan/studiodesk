@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { logout } from '@/lib/actions/auth.actions'
 import { Button } from '@/components/ui/button'
 import { LogOut, Settings, User } from 'lucide-react'
@@ -14,6 +15,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ userName, userEmail, userRole, initials }: UserMenuProps) {
+  const t = useTranslations()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -65,11 +67,11 @@ export function UserMenu({ userName, userEmail, userRole, initials }: UserMenuPr
           <div className="p-2">
             <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#F3F4F6] text-sm text-[#111827] transition-colors">
               <User size={16} />
-              <span>Profile Settings</span>
+              <span>{t('auth.register')}</span>
             </button>
             <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#F3F4F6] text-sm text-[#111827] transition-colors">
               <Settings size={16} />
-              <span>Account Settings</span>
+              <span>{t('settings.general')}</span>
             </button>
           </div>
 
@@ -80,7 +82,7 @@ export function UserMenu({ userName, userEmail, userRole, initials }: UserMenuPr
               className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 text-sm text-red-600 font-medium transition-colors"
             >
               <LogOut size={16} />
-              <span>Sign Out</span>
+              <span>{t('auth.logout')}</span>
             </button>
           </div>
         </div>

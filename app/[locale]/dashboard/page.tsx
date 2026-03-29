@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Users, BookOpen, Calendar, TrendingUp, ArrowRight, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
@@ -8,7 +9,13 @@ import { getOrganization } from '@/lib/auth/getOrganization'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils/format'
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const t = await getTranslations()
   const organization = await getOrganization()
   
   // Fetch students
@@ -68,32 +75,32 @@ export default async function DashboardPage() {
   }
   
   const stats = [
-    { label: 'Total Students', value: totalStudents.toString(), icon: Users, color: 'text-blue-600' },
-    { label: 'Active Courses', value: activeCourses.toString(), icon: BookOpen, color: 'text-purple-600' },
-    { label: 'This Month Sessions', value: sessionCount.toString(), icon: Calendar, color: 'text-green-600' },
-    { label: 'Revenue', value: formatCurrency(revenue, organization?.currency || 'TRY'), icon: TrendingUp, color: 'text-orange-600' },
+    { label: t('dashboard.activeStudents'), value: totalStudents.toString(), icon: Users, color: 'text-blue-600' },
+    { label: t('dashboard.activeCourses'), value: activeCourses.toString(), icon: BookOpen, color: 'text-purple-600' },
+    { label: t('dashboard.thisMonthSessions'), value: sessionCount.toString(), icon: Calendar, color: 'text-green-600' },
+    { label: t('dashboard.revenue'), value: formatCurrency(revenue, organization?.currency || 'TRY'), icon: TrendingUp, color: 'text-orange-600' },
   ]
 
   const quickActions = [
-    { label: 'Add Student', href: '/dashboard/students/new', icon: Users },
-    { label: 'Create Course', href: '/dashboard/courses/new', icon: BookOpen },
-    { label: 'View Calendar', href: '/dashboard/calendar', icon: Calendar },
-    { label: 'Manage Branches', href: '/dashboard/branches', icon: AlertCircle },
+    { label: t('common.add') + ' ' + t('dashboard.students'), href: '/dashboard/students/new', icon: Users },
+    { label: t('dashboard.createCourse'), href: '/dashboard/courses/new', icon: BookOpen },
+    { label: t('dashboard.viewCalendar'), href: '/dashboard/calendar', icon: Calendar },
+    { label: t('dashboard.manageBranches'), href: '/dashboard/branches', icon: AlertCircle },
   ]
 
   const gettingStarted = [
-    { title: 'Set up instructors', completed: false, href: '/dashboard/instructors' },
-    { title: 'Add dance types', completed: false, href: '/dashboard/dance-types' },
-    { title: 'Create course packages', completed: false, href: '/dashboard/packages' },
-    { title: 'Configure payment methods', completed: false, href: '/dashboard/settings' },
+    { title: t('dashboard.setupInstructors'), completed: false, href: '/dashboard/instructors' },
+    { title: t('dashboard.setupDanceTypes'), completed: false, href: '/dashboard/dance-types' },
+    { title: t('dashboard.setupPackages'), completed: false, href: '/dashboard/packages' },
+    { title: t('dashboard.setupPayment'), completed: false, href: '/dashboard/settings' },
   ]
 
   return (
     <div className="space-y-4 md:space-y-6 lg:space-y-8">
       {/* Header - Responsive typography */}
       <div>
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">Welcome to your Studio</h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">Here's what's happening today</p>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">{t('dashboard.welcome')}</h1>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">{t('dashboard.todaysOverview')}</p>
       </div>
 
       {/* Stats Grid - Responsive columns */}
@@ -123,8 +130,8 @@ export default async function DashboardPage() {
         <div className="lg:col-span-1">
           <Card className="border-[#E5E7EB]">
             <CardHeader className="pb-3 md:pb-6">
-              <CardTitle className="text-lg sm:text-xl">Quick Actions</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">Common tasks</CardDescription>
+              <CardTitle className="text-lg sm:text-xl">{t('dashboard.quickActions')}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">{t('dashboard.commonTasks')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {quickActions.map((action) => {
@@ -152,8 +159,8 @@ export default async function DashboardPage() {
         <div className="lg:col-span-2">
           <Card className="border-[#E5E7EB]">
             <CardHeader className="pb-3 md:pb-6">
-              <CardTitle className="text-lg sm:text-xl\">Getting Started</CardTitle>
-              <CardDescription className="text-xs sm:text-sm\">Set up your studio</CardDescription>
+              <CardTitle className="text-lg sm:text-xl">{t('dashboard.gettingStarted')}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">{t('dashboard.setupYourStudio')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2 md:space-y-3\">

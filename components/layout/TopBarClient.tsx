@@ -1,6 +1,7 @@
 'use client'
 
 import { useSidebar } from '@/lib/context/SidebarContext'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Menu, X } from 'lucide-react'
 
@@ -9,6 +10,7 @@ interface TopBarClientProps {
 }
 
 export function TopBarClient({ children }: TopBarClientProps) {
+  const t = useTranslations()
   const { isOpen, toggleSidebar } = useSidebar()
 
   return (
@@ -20,7 +22,7 @@ export function TopBarClient({ children }: TopBarClientProps) {
           size="icon"
           onClick={toggleSidebar}
           className="text-[#111827] h-8 w-8 hover:bg-[#F3F4F6]"
-          title="Toggle sidebar"
+          title={t('dashboard.toggleMenu')}
         >
           {isOpen ? <X size={20} /> : <Menu size={20} />}
         </Button>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Trash2, Users } from 'lucide-react'
 import { getCourseStudents, removeStudentFromCourse } from '@/lib/actions/course-students.actions'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
 interface CourseStudent {
@@ -36,6 +37,7 @@ interface CourseStudentsSectionProps {
 }
 
 export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsSectionProps) {
+  const t = useTranslations()
   const [students, setStudents] = useState<CourseStudent[]>([])
   const [loading, setLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -58,7 +60,7 @@ export function CourseStudentsSection({ courseId, danceTypeId }: CourseStudentsS
   }, [courseId])
 
   const handleRemoveStudent = async (studentId: string) => {
-    if (!confirm('Remove this student from the course?')) return
+    if (!confirm(t('common.deleteStudentConfirm'))) return
 
     setLoading(true)
     try {

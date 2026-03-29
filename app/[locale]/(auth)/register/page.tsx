@@ -2,11 +2,13 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, Mail } from 'lucide-react'
 
 export default function RegisterPage() {
+  const t = useTranslations()
   const router = useRouter()
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export default function RegisterPage() {
 
         {/* Heading */}
         <h2 className="text-2xl font-bold text-[#111827] text-center mb-3">
-          Signup Disabled
+          {t('auth.register')}
         </h2>
 
         {/* Message */}
@@ -55,7 +57,7 @@ export default function RegisterPage() {
             onClick={() => router.push('/login')}
             className="w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white"
           >
-            Go to Login
+            {t('auth.login')}
           </Button>
         </div>
 

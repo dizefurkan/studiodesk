@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Trash2, Save, AlertCircle, Calendar, Search } from 'lucide-react'
 import { recordBatchAttendance, removeAttendance } from '@/lib/actions/attendance.actions'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { InstructorSelector } from './InstructorSelector'
 import { InstructorDropdown } from './InstructorDropdown'
 import { StudioDropdown } from './StudioDropdown'
@@ -90,6 +91,7 @@ export function StudentAttendanceList({
   onDateChange,
 }: StudentAttendanceListProps) {
   const router = useRouter()
+  const t = useTranslations()
   const [attendanceState, setAttendanceState] = useState<AttendanceState[]>([])
   const [savingBatch, setSavingBatch] = useState(false)
   const [error, setError] = useState<string>('')
@@ -380,7 +382,7 @@ export function StudentAttendanceList({
   }
 
   const handleRemoveAttendance = async (attendanceId: string, studentPackageId: string) => {
-    if (!confirm('Remove this attendance record?')) return
+    if (!confirm(t('common.deleteConfirm'))) return
 
     setError('')
 
@@ -580,12 +582,12 @@ export function StudentAttendanceList({
                       title={checkedStudentIds.size === studentsWithCredits.length ? 'Uncheck all' : 'Check all'}
                     />
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Student Name</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Credits</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Status</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Deduct Credits</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Notes</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-[#111827]">Actions</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">{t('table.studentName')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">{t('table.credits')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">{t('table.status')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">{t('table.deductCredits')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">{t('table.notes')}</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-[#111827]">{t('table.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E7EB]">

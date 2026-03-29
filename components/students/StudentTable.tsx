@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { StudentColumnSettings } from './StudentColumnSettings'
@@ -54,9 +55,10 @@ export function StudentTable({
   courses = [],
   filteredDanceTypeId,
 }: StudentTableProps) {
+  const t = useTranslations()
   const { columns, toggleColumn, resetColumns, isLoaded } = useStudentColumns()
 
-  if (!isLoaded) return <div>Loading...</div>
+  if (!isLoaded) return <div>{t('common.loading')}</div>
 
   // Extract unique courses
   const getCoursesForStudent = (student: Student) => {
@@ -87,37 +89,37 @@ export function StudentTable({
             <tr>
               {columns.name && (
                 <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">
-                  Name
+                  {t('table.name')}
                 </th>
               )}
               {columns.email && (
                 <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">
-                  Email
+                  {t('table.email')}
                 </th>
               )}
               {columns.phone && (
                 <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">
-                  Phone
+                  {t('table.phone')}
                 </th>
               )}
               {columns.credits && (
                 <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">
-                  Credits
+                  {t('table.credits')}
                 </th>
               )}
               {columns.courses && (
                 <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">
-                  Courses
+                  {t('table.courses')}
                 </th>
               )}
               {columns.joined && (
                 <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">
-                  Joined
+                  {t('table.joined')}
                 </th>
               )}
               {columns.actions && (
                 <th className="px-6 py-4 text-right text-sm font-semibold text-[#111827]">
-                  Actions
+                  {t('table.actions')}
                 </th>
               )}
             </tr>
@@ -240,13 +242,13 @@ export function StudentTable({
             <div className="space-y-2 text-xs sm:text-sm">
               {columns.email && student.email && (
                 <div>
-                  <p className="text-[#9CA3AF] font-medium">Email</p>
+                  <p className="text-[#9CA3AF] font-medium">{t('table.email')}</p>
                   <p className="text-[#111827]">{student.email}</p>
                 </div>
               )}
               {columns.phone && student.phone && (
                 <div>
-                  <p className="text-[#9CA3AF] font-medium">Phone</p>
+                  <p className="text-[#9CA3AF] font-medium">{t('table.phone')}</p>
                   <a href={`tel:${student.phone}`} className="text-[#4F46E5] hover:underline">
                     {student.phone}
                   </a>
@@ -254,7 +256,7 @@ export function StudentTable({
               )}
               {columns.credits && (
                 <div>
-                  <p className="text-[#9CA3AF] font-medium">Credits</p>
+                  <p className="text-[#9CA3AF] font-medium">{t('table.credits')}</p>
                   <StudentPopover
                     type="credits"
                     credits={student.totalRemainingCredits}
@@ -265,7 +267,7 @@ export function StudentTable({
               )}
               {columns.courses && (
                 <div>
-                  <p className="text-[#9CA3AF] font-medium">Courses</p>
+                  <p className="text-[#9CA3AF] font-medium">{t('table.courses')}</p>
                   <StudentPopover
                     type="courses"
                     courses={getCoursesForStudent(student)}
@@ -274,7 +276,7 @@ export function StudentTable({
               )}
               {columns.joined && (
                 <div>
-                  <p className="text-[#9CA3AF] font-medium">Joined</p>
+                  <p className="text-[#9CA3AF] font-medium">{t('table.joined')}</p>
                   <p className="text-[#111827]">{new Date(student.created_at).toLocaleDateString()}</p>
                 </div>
               )}

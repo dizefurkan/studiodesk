@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,7 @@ interface PackagesPageContentProps {
 }
 
 export function PackagesPageContent({ currency }: PackagesPageContentProps) {
+  const t = useTranslations()
   const [packages, setPackages] = useState<Package[]>([])
   const [filteredPackages, setFilteredPackages] = useState<Package[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -75,13 +77,13 @@ export function PackagesPageContent({ currency }: PackagesPageContentProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#111827]">Packages</h1>
-          <p className="text-gray-600 mt-1">Manage course packages</p>
+          <h1 className="text-3xl font-bold text-[#111827]">{t('packages.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('packages.description')}</p>
         </div>
         <Link href="/dashboard/packages/new">
           <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
             <Plus size={20} className="mr-2" />
-            Add Package
+            {t('packages.addNew')}
           </Button>
         </Link>
       </div>

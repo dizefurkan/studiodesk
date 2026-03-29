@@ -1,4 +1,5 @@
 import { getStudentsWithStats, getStudentFilterOptions } from '@/lib/actions/students.actions'
+import { getTranslations } from 'next-intl/server'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StudentFilters } from '@/components/students/StudentFilters'
@@ -14,6 +15,7 @@ export default async function StudentsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  const t = await getTranslations()
   const params = await searchParams
   const searchQuery = typeof params.q === 'string' ? params.q : undefined
   const page = typeof params.page === 'string' ? parseInt(params.page, 10) : 1
@@ -44,13 +46,13 @@ export default async function StudentsPage({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">Students</h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">Manage your studio students</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">{t('students.title')}</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">{t('students.description')}</p>
         </div>
         <Link href="/dashboard/students/new">
           <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm md:text-base h-9 md:h-10">
             <Plus size={20} className="mr-2" />
-            Add Student
+            {t('students.addNew')}
           </Button>
         </Link>
       </div>
@@ -75,22 +77,22 @@ export default async function StudentsPage({
             <Users className="mx-auto text-[#9CA3AF] mb-4" size={48} />
             {hasActiveFilters ? (
               <>
-                <h3 className="text-lg font-semibold text-[#111827] mb-1">No students found</h3>
+                <h3 className="text-lg font-semibold text-[#111827] mb-1">{t('students.noStudents')}</h3>
                 <p className="text-gray-600 mb-6">No students match the selected filters. Try adjusting your search criteria.</p>
                 <Link href="/dashboard/students">
                   <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
-                    Clear Filters
+                    {t('common.filter')}
                   </Button>
                 </Link>
               </>
             ) : (
               <>
-                <h3 className="text-lg font-semibold text-[#111827] mb-1">No students yet</h3>
+                <h3 className="text-lg font-semibold text-[#111827] mb-1">{t('students.noStudents')}</h3>
                 <p className="text-gray-600 mb-6">Get started by adding your first student</p>
                 <Link href="/dashboard/students/new">
                   <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
                     <Plus size={20} className="mr-2" />
-                    Add First Student
+                    {t('students.addNew')}
                   </Button>
                 </Link>
               </>

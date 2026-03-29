@@ -1,4 +1,5 @@
 import { getBranches } from '@/lib/actions/branches.actions'
+import { getTranslations } from 'next-intl/server'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -12,6 +13,7 @@ export default async function BranchesPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  const t = await getTranslations()
   const params = await searchParams
   const searchQuery = typeof params.q === 'string' ? params.q : undefined
 

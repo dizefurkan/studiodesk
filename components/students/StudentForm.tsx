@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -29,6 +30,7 @@ interface StudentFormProps {
 }
 
 export function StudentForm({ student }: StudentFormProps) {
+  const t = useTranslations()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [generalError, setGeneralError] = useState<string | null>(null)
@@ -84,10 +86,10 @@ export function StudentForm({ student }: StudentFormProps) {
     <Card className="border-[#E5E7EB] w-full max-w-2xl">
       <div className="p-3 sm:p-4 md:p-6 lg:p-8">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827] mb-2">
-          {student ? 'Edit Student' : 'Add New Student'}
+          {student ? t('students.editStudent') : t('students.addNew')}
         </h1>
         <p className="text-sm sm:text-base text-gray-600 mb-4 md:mb-6">
-          {student ? 'Update student information' : 'Add a new student to your studio'}
+          {student ? t('students.updateInformationMessage') : t('students.addNewStudentMessage')}
         </p>
 
         {generalError && (
@@ -102,7 +104,7 @@ export function StudentForm({ student }: StudentFormProps) {
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>First Name</FormLabel>
+                    <FormLabel>{t('auth.firstName')}</FormLabel>
                     <FormControl>
                       <Input placeholder="John" disabled={isLoading} {...field} />
                     </FormControl>
@@ -115,7 +117,7 @@ export function StudentForm({ student }: StudentFormProps) {
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Last Name</FormLabel>
+                    <FormLabel>{t('auth.lastName')}</FormLabel>
                     <FormControl>
                       <Input placeholder="Doe" disabled={isLoading} {...field} />
                     </FormControl>
@@ -130,7 +132,7 @@ export function StudentForm({ student }: StudentFormProps) {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel>{t('auth.email')}</FormLabel>
                   <FormControl>
                     <Input placeholder="john@example.com" type="email" disabled={isLoading} {...field} />
                   </FormControl>
@@ -144,7 +146,7 @@ export function StudentForm({ student }: StudentFormProps) {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone (Optional)</FormLabel>
+                  <FormLabel>{t('students.phone')}</FormLabel>
                   <FormControl>
                     <Input placeholder="+55 11 99999-9999" disabled={isLoading} {...field} />
                   </FormControl>
@@ -179,7 +181,7 @@ export function StudentForm({ student }: StudentFormProps) {
                 disabled={isLoading}
                 className="bg-[#4F46E5] hover:bg-[#4338CA] text-white w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                {isLoading ? 'Saving...' : student ? 'Update Student' : 'Create Student'}
+                {isLoading ? t('common.saving') : student ? t('students.updateStudent') : t('students.createStudent')}
               </Button>
               <Button
                 type="button"
@@ -188,7 +190,7 @@ export function StudentForm({ student }: StudentFormProps) {
                 disabled={isLoading}
                 className="border-[#E5E7EB] w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </form>

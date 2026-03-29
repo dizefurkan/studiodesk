@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { useSidebar } from '@/lib/context/SidebarContext'
 import { cn } from '@/lib/utils/cn'
 import {
@@ -20,109 +21,110 @@ import {
   Settings,
   ChevronDown,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-
-const menuItems = [
-  {
-    label: 'Dashboard',
-    icon: Home,
-    href: '/dashboard',
-    category: false,
-  },
-  {
-    label: 'Core Operations',
-    category: true,
-    items: [
-      {
-        label: 'Students',
-        icon: Users,
-        href: '/dashboard/students',
-      },
-      {
-        label: 'Courses',
-        icon: BookOpen,
-        href: '/dashboard/courses',
-      },
-      {
-        label: 'Attendance',
-        icon: ClipboardCheck,
-        href: '/dashboard/attendance',
-      },
-      {
-        label: 'Calendar',
-        icon: Calendar,
-        href: '/dashboard/calendar',
-      },
-    ],
-  },
-  {
-    label: 'Instructor Management',
-    category: true,
-    items: [
-      {
-        label: 'Instructors',
-        icon: UserCheck,
-        href: '/dashboard/instructors',
-      },
-      {
-        label: 'Instructor Rates',
-        icon: DollarSign,
-        href: '/dashboard/instructor-rates',
-      },
-      {
-        label: 'Instructor Earnings',
-        icon: TrendingUp,
-        href: '/dashboard/instructor-earnings',
-      },
-    ],
-  },
-  {
-    label: 'Financial',
-    category: true,
-    items: [
-      {
-        label: 'Packages',
-        icon: Package,
-        href: '/dashboard/packages',
-      },
-      {
-        label: 'Cash Register',
-        icon: DollarSign,
-        href: '/dashboard/cash-register',
-      },
-    ],
-  },
-  {
-    label: 'Settings',
-    category: true,
-    items: [
-      {
-        label: 'Branches',
-        icon: MapPin,
-        href: '/dashboard/branches',
-      },
-      {
-        label: 'Dance Types',
-        icon: Music2,
-        href: '/dashboard/dance-types',
-      },
-      {
-        label: 'System Settings',
-        icon: Settings,
-        href: '/dashboard/settings',
-      },
-    ],
-  },
-]
 
 export function Sidebar() {
+  const t = useTranslations()
   const pathname = usePathname()
   const { isOpen, toggleSidebar } = useSidebar()
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
-    'Core Operations': true,
-    'Instructor Management': false,
-    'Financial': false,
-    'Settings': false,
+  
+  const menuItems = [
+    {
+      label: t('dashboard.title'),
+      icon: Home,
+      href: '/dashboard',
+      category: false,
+    },
+    {
+      label: t('dashboard.coreOperations'),
+      category: true,
+      items: [
+        {
+          label: t('dashboard.students'),
+          icon: Users,
+          href: '/dashboard/students',
+        },
+        {
+          label: t('dashboard.courses'),
+          icon: BookOpen,
+          href: '/dashboard/courses',
+        },
+        {
+          label: t('dashboard.attendance'),
+          icon: ClipboardCheck,
+          href: '/dashboard/attendance',
+        },
+        {
+          label: t('dashboard.calendar'),
+          icon: Calendar,
+          href: '/dashboard/calendar',
+        },
+      ],
+    },
+    {
+      label: t('dashboard.instructorManagement'),
+      category: true,
+      items: [
+        {
+          label: t('dashboard.instructors'),
+          icon: UserCheck,
+          href: '/dashboard/instructors',
+        },
+        {
+          label: t('dashboard.instructorRates'),
+          icon: DollarSign,
+          href: '/dashboard/instructor-rates',
+        },
+        {
+          label: t('dashboard.instructorEarnings'),
+          icon: TrendingUp,
+          href: '/dashboard/instructor-earnings',
+        },
+      ],
+    },
+    {
+      label: t('dashboard.financial'),
+      category: true,
+      items: [
+        {
+          label: t('dashboard.packages'),
+          icon: Package,
+          href: '/dashboard/packages',
+        },
+        {
+          label: t('dashboard.cashRegister'),
+          icon: DollarSign,
+          href: '/dashboard/cash-register',
+        },
+      ],
+    },
+    {
+      label: t('dashboard.settings'),
+      category: true,
+      items: [
+        {
+          label: t('dashboard.branches'),
+          icon: MapPin,
+          href: '/dashboard/branches',
+        },
+        {
+          label: t('dashboard.danceTypes'),
+          icon: Music2,
+          href: '/dashboard/dance-types',
+        },
+        {
+          label: t('dashboard.settings'),
+          icon: Settings,
+          href: '/dashboard/settings',
+        },
+      ],
+    },
+  ]
+
+  const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({
+    1: true,   // Core Operations
+    2: false,  // Instructor Management
+    3: false,  // Financial
+    4: false,  // Settings
   })
 
   const handleNavClick = () => {
@@ -183,11 +185,12 @@ export function Sidebar() {
             }
 
             // Category with subitems
-            const isExpanded = expandedCategories[item.label]
+            const categoryIdx = idx
+            const isExpanded = expandedCategories[categoryIdx]
             const toggleCategory = () => {
               setExpandedCategories((prev) => ({
                 ...prev,
-                [item.label]: !prev[item.label],
+                [categoryIdx]: !prev[categoryIdx],
               }))
             }
 
@@ -250,9 +253,9 @@ export function Sidebar() {
         {/* Bottom Section */}
         <div className="border-t border-[#E5E7EB] p-2 md:p-4 space-y-2 md:space-y-3">
           <div className="px-3 md:px-4 py-2 md:py-3 bg-[#F3F4F6] rounded-lg">
-            <p className="text-xs font-semibold text-[#111827] mb-1">Quick Tip</p>
+            <p className="text-xs font-semibold text-[#111827] mb-1">{t('dashboard.quickTip')}</p>
             <p className="text-xs text-[#6B7280]">
-              Keep your information up to date.
+              {t('dashboard.keepInfoUpdated')}
             </p>
           </div>
         </div>

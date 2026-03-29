@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -60,6 +61,7 @@ interface InstructorWithRates {
 
 export function CourseForm({ course }: CourseFormProps) {
   const router = useRouter()
+  const t = useTranslations()
   const [isLoading, setIsLoading] = useState(false)
   const [branches, setBranches] = useState<Branch[]>([])
   const [danceTypes, setDanceTypes] = useState<DanceType[]>([])
@@ -186,10 +188,10 @@ export function CourseForm({ course }: CourseFormProps) {
     <Card className="border-[#E5E7EB] max-w-4xl">
       <div className="p-3 sm:p-4 md:p-6 lg:p-8">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827] mb-2">
-          {course ? 'Edit Course' : 'Create New Course'}
+          {course ? t('courses.editCourse') : t('courses.createNewCourse')}
         </h1>
         <p className="text-sm sm:text-base text-gray-600 mb-4 md:mb-6">
-          {course ? 'Update course details' : 'Set up a new recurring course with schedule and instructors'}
+          {course ? t('courses.updateCourseDetails') : t('courses.setupNewCourse')}
         </p>
 
         {generalError && (
@@ -203,7 +205,7 @@ export function CourseForm({ course }: CourseFormProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Course Name</FormLabel>
+                  <FormLabel>{t('courses.name')}</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., Advanced Ballet" disabled={isLoading} {...field} />
                   </FormControl>
@@ -218,14 +220,14 @@ export function CourseForm({ course }: CourseFormProps) {
                 name="branchId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Branch</FormLabel>
+                    <FormLabel>{t('courses.branch')}</FormLabel>
                     <FormControl>
                       <select
                         disabled={isLoading || !!course}
                         className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
                         {...field}
                       >
-                        <option value="">Select a branch</option>
+                        <option value="">{t('courses.selectBranch')}</option>
                         {branches.map((branch) => (
                           <option key={branch.id} value={branch.id}>
                             {branch.name}
@@ -243,14 +245,14 @@ export function CourseForm({ course }: CourseFormProps) {
                 name="danceTypeId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Dance Type</FormLabel>
+                    <FormLabel>{t('courses.danceType')}</FormLabel>
                     <FormControl>
                       <select
                         disabled={isLoading || !!course}
                         className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
                         {...field}
                       >
-                        <option value="">Select a dance type</option>
+                        <option value="">{t('courses.selectDanceType')}</option>
                         {danceTypes.map((type) => (
                           <option key={type.id} value={type.id}>
                             {type.name}
@@ -274,7 +276,7 @@ export function CourseForm({ course }: CourseFormProps) {
 
                   return (
                     <FormItem>
-                      <FormLabel>Instructors (for {danceTypes.find(d => d.id === danceTypeId)?.name})</FormLabel>
+                      <FormLabel>{t('courses.instructors')} (for {danceTypes.find(d => d.id === danceTypeId)?.name})</FormLabel>
 
                       {loadingInstructors ? (
                         <div className="p-4 border border-[#E5E7EB] rounded-lg bg-gray-50 text-gray-600 text-sm">
@@ -332,7 +334,7 @@ export function CourseForm({ course }: CourseFormProps) {
                 name="dayOfWeek"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Day of Week</FormLabel>
+                    <FormLabel>{t('courses.dayOfWeek')}</FormLabel>
                     <FormControl>
                       <select
                         disabled={isLoading}
@@ -356,7 +358,7 @@ export function CourseForm({ course }: CourseFormProps) {
                 name="startTime"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Start Time</FormLabel>
+                    <FormLabel>{t('courses.startTime')}</FormLabel>
                     <FormControl>
                       <Input type="time" disabled={isLoading} {...field} />
                     </FormControl>
@@ -370,7 +372,7 @@ export function CourseForm({ course }: CourseFormProps) {
                 name="endTime"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>End Time</FormLabel>
+                    <FormLabel>{t('courses.endTime')}</FormLabel>
                     <FormControl>
                       <Input type="time" disabled={isLoading} {...field} />
                     </FormControl>
@@ -385,10 +387,10 @@ export function CourseForm({ course }: CourseFormProps) {
               name="studentIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Students (Only students with active packages for this dance type are shown)</FormLabel>
+                  <FormLabel>{t('courses.students')} {t('courses.onlyActivePackages')}</FormLabel>
                   {availableStudents.length === 0 ? (
                     <div className="p-4 border border-[#E5E7EB] rounded-lg bg-gray-50 text-gray-600 text-sm">
-                      No students with active packages available for this dance type
+                      {t('courses.noStudentsAvailable')}
                     </div>
                   ) : (
                     <div className="space-y-2 border border-[#E5E7EB] rounded-lg p-4 max-h-50 overflow-y-auto">
@@ -426,7 +428,7 @@ export function CourseForm({ course }: CourseFormProps) {
                 disabled={isLoading}
                 className="bg-[#4F46E5] hover:bg-[#4338CA] text-white w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                {isLoading ? 'Saving...' : course ? 'Update Course' : 'Create Course'}
+                {isLoading ? t('common.saving') : course ? t('courses.updateCourse') : t('courses.createCourse')}
               </Button>
               <Button
                 type="button"
@@ -435,7 +437,7 @@ export function CourseForm({ course }: CourseFormProps) {
                 disabled={isLoading}
                 className="border-[#E5E7EB] w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </form>

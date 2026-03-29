@@ -3,20 +3,23 @@
 import { Button } from '@/components/ui/button'
 import { Trash2 } from 'lucide-react'
 import { deleteCourse } from '@/lib/actions/courses.actions'
+import { useTranslations } from 'next-intl'
 
 interface DeleteCourseButtonProps {
   courseId: string
 }
 
 export function DeleteCourseButton({ courseId }: DeleteCourseButtonProps) {
+  const t = useTranslations()
+
   const handleDelete = async () => {
-    if (confirm('Delete this course?')) {
+    if (confirm(t('common.deleteCourseConfirm'))) {
       try {
         await deleteCourse(courseId)
         window.location.reload()
       } catch (error) {
         console.error('Error deleting course:', error)
-        alert('Failed to delete course')
+        alert(t('common.deleteConfirm'))
       }
     }
   }

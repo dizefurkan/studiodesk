@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Trash2, Plus, ChevronDown, ChevronUp } from 'lucide-react'
 import { deleteInstructorRate } from '@/lib/actions/instructor-rates.actions'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 interface InstructorRate {
   id: string
@@ -41,6 +42,7 @@ export function InstructorRatesTable({
   onRatesChange
 }: InstructorRatesTableProps) {
   const router = useRouter()
+  const t = useTranslations()
   const [loading, setLoading] = useState(false)
   const [expandedInstructors, setExpandedInstructors] = useState<Set<string>>(new Set())
 
@@ -67,7 +69,7 @@ export function InstructorRatesTable({
   }, [rates])
 
   const handleDelete = async (rateId: string) => {
-    if (!confirm('Delete this rate?')) return
+    if (!confirm(t('common.deleteRateConfirm'))) return
 
     setLoading(true)
     try {

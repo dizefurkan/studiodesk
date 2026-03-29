@@ -3,20 +3,23 @@
 import { Button } from '@/components/ui/button'
 import { Trash2 } from 'lucide-react'
 import { deleteTransaction } from '@/lib/actions/cash-register.actions'
+import { useTranslations } from 'next-intl'
 
 interface DeleteTransactionButtonProps {
   transactionId: string
 }
 
 export function DeleteTransactionButton({ transactionId }: DeleteTransactionButtonProps) {
+  const t = useTranslations()
+
   const handleDelete = async () => {
-    if (confirm('Delete this transaction?')) {
+    if (confirm(t('common.deleteTransactionConfirm'))) {
       try {
         await deleteTransaction(transactionId)
         window.location.reload()
       } catch (error) {
         console.error('Error deleting transaction:', error)
-        alert('Failed to delete transaction')
+        alert(t('common.deleteConfirm'))
       }
     }
   }

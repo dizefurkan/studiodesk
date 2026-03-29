@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { X, Search } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface Instructor {
   id: string
@@ -41,6 +42,7 @@ export function InstructorSelector({
   onSave,
   onClose,
 }: InstructorSelectorProps) {
+  const t = useTranslations()
   const [tempSelectedId, setTempSelectedId] = useState<string>(selectedReplacementId || '')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [currentPage, setCurrentPage] = useState<number>(1)
@@ -140,9 +142,9 @@ export function InstructorSelector({
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-[#E5E7EB]">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Select</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Instructor Name</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">Rate Status</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">{t('table.select')}</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">{t('table.instructorName')}</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">{t('table.rateStatus')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E5E7EB]">
