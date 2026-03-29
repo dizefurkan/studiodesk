@@ -20,8 +20,11 @@ export default async function InstructorsPage({
 
   const result = await getInstructors(searchQuery)
   console.log('[InstructorsPage] Result from getInstructors:', result)
-  console.log('[InstructorsPage] Result.error:', result.error)
-  console.log('[InstructorsPage] Result.data:', result.data)
+  
+  if (result.error) {
+    console.error('[InstructorsPage] Error fetching instructors:', result.error, result.details)
+  }
+  
   const instructors = result.data || []
   console.log('[InstructorsPage] Instructors to render:', instructors)
   console.log('[InstructorsPage] Instructors length:', instructors.length)
