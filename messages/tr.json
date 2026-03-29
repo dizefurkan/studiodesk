@@ -266,7 +266,11 @@
     "instructors": "Eğitmen",
     "attendanceRecords": "Yoklama",
     "noCourses": "Kurs bulunamadı",
-    "createFirstCourse": "Başlangıç yapmak için ilk kursunuzu oluşturun"
+    "createFirstCourse": "Başlangıç yapmak için ilk kursunuzu oluşturun",
+    "duplicateCourseWarning": "Bu dans türü için aynı gün zaten bir kurs mevcut.",
+    "coursesOnThisDay": "Bu gün ki kurslar",
+    "viewCoursesOnThisDay": "Bu gün ki kursları görüntüle",
+    "time": "Saat"
   },
   "attendance": {
     "title": "Yoklama",

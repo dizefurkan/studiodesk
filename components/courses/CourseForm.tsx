@@ -69,7 +69,9 @@ export function CourseForm({ course }: CourseFormProps) {
   const [availableStudents, setAvailableStudents] = useState<Student[]>([])
   const [generalError, setGeneralError] = useState<string | null>(null)
   const [loadingInstructors, setLoadingInstructors] = useState(false)
-  const [duplicateCourseWarning, setDuplicateCourseWarning] = useState<string | null>(null)
+  const [coursesOnDay, setCoursesOnDay] = useState<Course[] | null>(null)
+  const [showCoursesModal, setShowCoursesModal] = useState(false)
+  const [loadingCoursesOnDay, setLoadingCoursesOnDay] = useState(false)
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseSchema),
@@ -154,34 +156,34 @@ export function CourseForm({ course }: CourseFormProps) {
     loadStudents()
   }, [form.watch('danceTypeId')])
 
-  // Check for duplicate course times (only when creating a new course)
+  // Load courses on selected day (only when creating a new course)
   useEffect(() => {
     if (course) return // Skip check when editing
 
-    const checkForDuplicates = async () => {
+    const loadCoursesOnDay = async () => {
       const branchId = form.getValues('branchId')
       const danceTypeId = form.getValues('danceTypeId')
       const dayOfWeek = form.getValues('dayOfWeek')
-      const startTime = form.getValues('startTime')
 
-      if (!branchId || !danceTypeId || startTime === '') {
-        setDuplicateCourseWarning(null)
+      if (!branchId || !danceTypeId) {
+        setCoursesOnDay(null)
         return
       }
 
-      const result = await checkDuplicateCourseTime(branchId, danceTypeId, dayOfWeek, startTime)
-      if (result.isDuplicate && result.data && result.data.length > 0) {
-        setDuplicateCourseWarning(
-          `A course for this dance type already exists at ${result.data[0].start_time} on this day and branch. Are you sure you want to create this course?`
-        )
+      setLoadingCoursesOnDay(true)
+      const result = await checkDuplicateCourseTime(branchId, danceTypeId, dayOfWeek)
+      setLoadingCoursesOnDay(false)
+      
+      if (result.data && result.data.length > 0) {
+        setCoursesOnDay(result.data)
       } else {
-        setDuplicateCourseWarning(null)
+        setCoursesOnDay(null)
       }
     }
 
-    const timer = setTimeout(checkForDuplicates, 500)
+    const timer = setTimeout(loadCoursesOnDay, 500)
     return () => clearTimeout(timer)
-  }, [form.watch('branchId'), form.watch('danceTypeId'), form.watch('dayOfWeek'), form.watch('startTime'), course])
+  }, [form.watch('branchId'), form.watch('danceTypeId'), form.watch('dayOfWeek'), course])
 
   async function onSubmit(data: CourseFormValues) {
     setIsLoading(true)
@@ -395,6 +397,16 @@ export function CourseForm({ course }: CourseFormProps) {
                       </select>
                     </FormControl>
                     <FormMessage />
+                    {!loadingCoursesOnDay && coursesOnDay && coursesOnDay.length > 0 && (
+                      <Button
+                        type="button"
+                        variant="link"
+                        onClick={() => setShowCoursesModal(true)}
+                        className="mt-2 text-[#4F46E5] text-xs md:text-sm p-0 h-auto"
+                      >
+                        {t('courses.viewCoursesOnThisDay')} ({coursesOnDay.length})
+                      </Button>
+                    )}
                   </FormItem>
                 )}
               />
@@ -406,7 +418,7 @@ export function CourseForm({ course }: CourseFormProps) {
                   <FormItem>
                     <FormLabel>{t('courses.startTime')}</FormLabel>
                     <FormControl>
-                      <Input type="time" disabled={isLoading} {...field} />
+                      <Input type="time" step={60} disabled={isLoading} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -420,7 +432,7 @@ export function CourseForm({ course }: CourseFormProps) {
                   <FormItem>
                     <FormLabel>{t('courses.endTime')}</FormLabel>
                     <FormControl>
-                      <Input type="time" disabled={isLoading} {...field} />
+                      <Input type="time" step={60} disabled={isLoading} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -428,12 +440,33 @@ export function CourseForm({ course }: CourseFormProps) {
               />
             </div>
 
-            {duplicateCourseWarning && !course && (
-              <div className="p-4 bg-amber-50 text-amber-700 rounded-lg border border-amber-200 flex items-start gap-3">
-                <span className="text-lg">⚠️</span>
-                <div>
-                  <p className="font-semibold text-sm">{duplicateCourseWarning}</p>
-                  <p className="text-xs mt-1">You can still create this course if you have multiple instructors or locations.</p>
+            {/* Courses on this day modal */}
+            {showCoursesModal && (
+              <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+                <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+                  <h2 className="text-lg font-bold mb-4 text-[#111827]">{t('courses.coursesOnThisDay')}</h2>
+                  {coursesOnDay && coursesOnDay.length > 0 ? (
+                    <div className="space-y-3">
+                      {coursesOnDay.map((c) => (
+                        <div key={c.id} className="p-3 border border-[#E5E7EB] rounded-lg bg-gray-50">
+                          <div className="flex justify-between items-start gap-2 mb-2">
+                            <p className="font-semibold text-sm text-[#111827]">{c.name}</p>
+                            <p className="text-sm font-bold text-[#4F46E5] whitespace-nowrap">{c.start_time?.substring(0, 5)}</p>
+                          </div>
+                          <p className="text-xs text-[#374151]">{danceTypes.find(d => d.id === c.dance_type_id)?.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-[#6B7280] text-sm">{t('common.empty')}</p>
+                  )}
+                  <Button
+                    type="button"
+                    onClick={() => setShowCoursesModal(false)}
+                    className="mt-4 w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm"
+                  >
+                    {t('common.close')}
+                  </Button>
                 </div>
               </div>
             )}

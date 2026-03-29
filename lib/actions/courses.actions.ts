@@ -124,7 +124,6 @@ export async function checkDuplicateCourseTime(
   branchId: string,
   danceTypeId: string,
   dayOfWeek: number,
-  startTime: string,
   excludeCourseId?: string
 ) {
   const user = await getCurrentUser()
@@ -134,11 +133,10 @@ export async function checkDuplicateCourseTime(
     const admin = createAdminClient()
     let query = (admin as any)
       .from('courses')
-      .select('id, name, start_time, end_time')
+      .select('id, name, start_time, end_time, dance_type_id')
       .eq('branch_id', branchId)
       .eq('dance_type_id', danceTypeId)
       .eq('day_of_week', dayOfWeek)
-      .eq('start_time', startTime)
 
     if (excludeCourseId) {
       query = query.neq('id', excludeCourseId)
@@ -148,7 +146,7 @@ export async function checkDuplicateCourseTime(
 
     if (error) {
       console.error('Error checking duplicate courses:', error)
-      return { error: 'Failed to check course times' }
+      return { error: 'Failed to check courses on this day' }
     }
 
     return { data: data || [], isDuplicate: (data?.length || 0) > 0 }
@@ -180,17 +178,16 @@ export async function createCourse(input: CreateCourseInput) {
       return { error: 'Invalid branch' }
     }
 
-    // Check for duplicate course at the same time
+    // Check for duplicate course on the same day
     const duplicate = await checkDuplicateCourseTime(
       input.branchId,
       input.danceTypeId,
-      input.dayOfWeek,
-      input.startTime
+      input.dayOfWeek
     )
 
     if (duplicate.isDuplicate) {
       return { 
-        error: 'A course for this dance type already exists at this time on this day for this branch' 
+        error: 'A course for this dance type already exists on this day for this branch' 
       }
     }
 
