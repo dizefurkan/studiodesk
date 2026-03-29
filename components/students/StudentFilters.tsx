@@ -10,7 +10,7 @@ import { SelectDropdown } from '@/components/ui/select-dropdown'
 interface StudentFiltersProps {
   danceTypes: Array<{ id: string; name: string; studentCount?: number }>
   branches: Array<{ id: string; name: string; studentCount?: number }>
-  courses: Array<{ id: string; name: string; studentCount?: number }>
+  courses: Array<{ id: string; name: string; branch_id?: string; dance_type_id?: string; studentCount?: number }>
   searchQuery?: string
   hasCredits?: boolean
   danceTypeId?: string
@@ -61,6 +61,54 @@ export function StudentFilters({
 
   const hasActiveFilters = hasCredits || danceTypeId || courseId || branchId || search
 
+  // Compute filtered dance types based on selected branch
+  const filteredDanceTypes = danceTypes.filter(dt => {
+    // If course is already selected, show all dance types (but field will be disabled)
+    // If branch is selected, only show dance types that have courses in that branch
+    if (branchId) {
+      const hasCoursesInBranch = courses.some(c => c.branch_id === branchId && c.dance_type_id === dt.id)
+      // Only include if it has courses in selected branch and has students (if filters are active)
+      return hasCoursesInBranch && (!hasActiveFilters || dt.studentCount! > 0)
+    }
+    // If no branch selected, only show dance types with students when filters are active, or show all otherwise
+    return !hasActiveFilters || dt.studentCount! > 0
+  })
+
+  // Compute filtered branches based on selected dance type
+  const filteredBranches = branches.filter(b => {
+    // If dance type is selected, only show branches that have courses in that dance type
+    if (danceTypeId) {
+      const hasCoursesWithDanceType = courses.some(c => c.branch_id === b.id && c.dance_type_id === danceTypeId)
+      // Only include if it has courses with selected dance type and has students (if filters are active)
+      return hasCoursesWithDanceType && (!hasActiveFilters || b.studentCount! > 0)
+    }
+    // If no dance type selected, only show branches with students when filters are active, or show all otherwise
+    return !hasActiveFilters || b.studentCount! > 0
+  })
+
+  // Compute filtered courses based on selected branch and/or dance type
+  const filteredCourses = courses.filter(c => {
+    // If branch is selected, only show courses from that branch
+    if (branchId && c.branch_id !== branchId) return false
+    
+    // If dance type is selected, only show courses of that dance type
+    if (danceTypeId && c.dance_type_id !== danceTypeId) return false
+    
+    // If any filter is active, hide courses with 0 students
+    if (hasActiveFilters && (!c.studentCount || c.studentCount === 0)) return false
+    
+    return true
+  })
+
+  // Get the selected course's branch and dance type (for display when locked)
+  const selectedCourse = courseId ? courses.find(c => c.id === courseId) : null
+  const courseBranchId = selectedCourse?.branch_id
+  const courseDanceTypeId = selectedCourse?.dance_type_id
+
+  // Get locked branch and dance type names for display
+  const lockedBranch = courseBranchId ? branches.find(b => b.id === courseBranchId)?.name : null
+  const lockedDanceType = courseDanceTypeId ? danceTypes.find(dt => dt.id === courseDanceTypeId)?.name : null
+
   return (
     <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
       <div className="relative flex-1 md:flex-initial md:w-64 h-10 flex items-center">
@@ -84,67 +132,91 @@ export function StudentFilters({
 
       {/* Filters Container */}
       <div className="flex flex-1 md:flex-initial gap-2 md:gap-2 flex-wrap md:flex-nowrap items-center">
-        {/* Dance Type Filter */}
-        <SelectDropdown
-          placeholder={t('filters.danceType')}
-          value={danceTypeId || ''}
-          onChange={(value) => {
-            router.push(
-              buildUrl({
-                search,
-                hasCredits: hasCredits ? true : null,
-                danceType: value || null,
-                branch: branchId,
-                course: courseId,
-              })
-            )
-          }}
-          ariaLabel="Filter by dance type"
-          options={[
-            { value: '', label: t('filters.danceType') },
-            ...danceTypes.map((dt) => ({ 
-              value: dt.id, 
-              label: `${dt.name} (${dt.studentCount || 0})` 
-            })),
-          ]}
-        />
+        {/* Dance Type Filter - Locked if course is selected */}
+        {courseId && lockedDanceType ? (
+          <div className="px-3 h-10 border border-[#E5E7EB] rounded-lg bg-gray-50 flex items-center text-sm text-gray-600 whitespace-nowrap">
+            <span className="font-medium">{lockedDanceType}</span>
+          </div>
+        ) : (
+          <SelectDropdown
+            placeholder={t('filters.danceType')}
+            value={danceTypeId || ''}
+            onChange={(value) => {
+              // When dance type changes, clear the course filter if selected course doesn't match new dance type
+              const newDanceTypeId = value || null
+              const shouldClearCourse = courseId && newDanceTypeId && 
+                !courses.some(c => c.id === courseId && c.dance_type_id === newDanceTypeId)
+              
+              router.push(
+                buildUrl({
+                  search,
+                  hasCredits: hasCredits ? true : null,
+                  danceType: newDanceTypeId,
+                  branch: branchId,
+                  course: shouldClearCourse ? null : courseId,
+                })
+              )
+            }}
+            ariaLabel="Filter by dance type"
+            options={[
+              { value: '', label: t('filters.danceType') },
+              ...filteredDanceTypes.map((dt) => ({ 
+                value: dt.id, 
+                label: `${dt.name} (${dt.studentCount || 0})` 
+              })),
+            ]}
+          />
+        )}
 
-        {/* Branch Filter */}
-        <SelectDropdown
-          placeholder={t('filters.branch')}
-          value={branchId || ''}
-          onChange={(value) => {
-            router.push(
-              buildUrl({
-                search,
-                hasCredits: hasCredits ? true : null,
-                danceType: danceTypeId,
-                branch: value || null,
-                course: courseId,
-              })
-            )
-          }}
-          ariaLabel="Filter by branch"
-          options={[
-            { value: '', label: t('filters.branch') },
-            ...branches.map((b) => ({ 
-              value: b.id, 
-              label: `${b.name} (${b.studentCount || 0})` 
-            })),
-          ]}
-        />
+        {/* Branch Filter - Locked if course is selected */}
+        {courseId && lockedBranch ? (
+          <div className="px-3 h-10 border border-[#E5E7EB] rounded-lg bg-gray-50 flex items-center text-sm text-gray-600 whitespace-nowrap">
+            <span className="font-medium">{lockedBranch}</span>
+          </div>
+        ) : (
+          <SelectDropdown
+            placeholder={t('filters.branch')}
+            value={branchId || ''}
+            onChange={(value) => {
+              // When branch changes, clear the course filter if selected course doesn't match new branch
+              const newBranchId = value || null
+              const shouldClearCourse = courseId && newBranchId && 
+                !courses.some(c => c.id === courseId && c.branch_id === newBranchId)
+              
+              router.push(
+                buildUrl({
+                  search,
+                  hasCredits: hasCredits ? true : null,
+                  danceType: danceTypeId,
+                  branch: newBranchId,
+                  course: shouldClearCourse ? null : courseId,
+                })
+              )
+            }}
+            ariaLabel="Filter by branch"
+            options={[
+              { value: '', label: t('filters.branch') },
+              ...filteredBranches.map((b) => ({ 
+                value: b.id, 
+                label: `${b.name} (${b.studentCount || 0})` 
+              })),
+            ]}
+          />
+        )}
 
         {/* Course Filter */}
         <SelectDropdown
           placeholder={t('filters.course')}
           value={courseId || ''}
           onChange={(value) => {
+            // When selecting a course, clear branch and danceType filters
+            // because the course already defines them
             router.push(
               buildUrl({
                 search,
                 hasCredits: hasCredits ? true : null,
-                danceType: danceTypeId,
-                branch: branchId,
+                danceType: null,
+                branch: null,
                 course: value || null,
               })
             )
@@ -152,7 +224,7 @@ export function StudentFilters({
           ariaLabel="Filter by course"
           options={[
             { value: '', label: t('filters.course') },
-            ...courses.map((c) => ({ 
+            ...filteredCourses.map((c) => ({ 
               value: c.id, 
               label: `${c.name} (${c.studentCount || 0})` 
             })),

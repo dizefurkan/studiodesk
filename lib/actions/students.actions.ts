@@ -367,7 +367,7 @@ export async function getStudentFilterOptions() {
     // Get courses list via branches (courses table has no organization_id, only branch_id)
     const { data: coursesData } = await (adminSupabase
       .from('courses') as any)
-      .select('id, name, branch_id')
+      .select('id, name, branch_id, dance_type_id')
       .in('branch_id', (branchesList || [])?.map((b: any) => b.id) || [])
       .order('name')
 
