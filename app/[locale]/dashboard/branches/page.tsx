@@ -3,8 +3,9 @@ import { getTranslations } from 'next-intl/server'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { MapPin, Plus, Edit2, Trash2 } from 'lucide-react'
+import { MapPin, Plus } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
+import { BranchesPageClient } from './branches-client'
 
 type Branch = Database['public']['Tables']['branches']['Row']
 
@@ -57,62 +58,7 @@ export default async function BranchesPage({
           </div>
         </Card>
       ) : (
-        <Card className="border-[#E5E7EB] overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Name</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Address</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Phone</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-[#111827]">Created</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-[#111827]">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E5E7EB]">
-                {branches.map((branch) => (
-                  <tr key={branch.id} className="hover:bg-[#F9FAFB] transition-colors">
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/dashboard/branches/${branch.id}`}
-                        className="font-medium text-[#111827] hover:text-[#4F46E5]"
-                      >
-                        {branch.name}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">{branch.address || '-'}</td>
-                    <td className="px-6 py-4 text-gray-600">{branch.phone || '-'}</td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {new Date(branch.created_at!).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-2 flex justify-end">
-                      <Link href={`/dashboard/branches/${branch.id}/edit`}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-[#4F46E5] hover:bg-[#EEF2FF]"
-                        >
-                          <Edit2 size={16} />
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-600 hover:bg-red-50"
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="p-4 text-sm text-gray-600 border-t border-[#E5E7EB]">
-            Showing {branches.length} branches
-          </div>
-        </Card>
+        <BranchesPageClient branches={branches} />
       )}
     </div>
   )
