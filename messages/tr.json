@@ -257,7 +257,11 @@
     "attendanceHistory": "Yoklama Geçmişi",
     "noAttendanceRecords": "Henüz yoklama kaydı yok",
     "startMarkingAttendance": "Geçmişi oluşturmak için yoklama almaya başlayın",
-    "enrolledStudents": "Kaydolmuş Öğrenciler"
+    "enrolledStudents": "Kaydolmuş Öğrenciler",
+    "addStudents": "Öğrenci Ekle",
+    "addStudentsTitle": "Kursa Öğrenci Ekle",
+    "credits": "Kredi",
+    "viewMode": "Görünüm"
   },
   "attendance": {
     "title": "Yoklama",
@@ -276,7 +280,10 @@
     "moveToHistory": "Tamamlandı",
     "noAttendance": "Yoklama kaydı bulunamadı",
     "recordUpdated": "Yoklama başarıyla kaydedildi",
-    "removeAttendance": "Yoklamayı Kaldır"
+    "removeAttendance": "Yoklamayı Kaldır",
+    "presentOutOf": "müsait",
+    "outOf": "/",
+    "total": "toplam"
   },
   "packages": {
     "title": "Paketler",

@@ -133,7 +133,7 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
       {/* Mobile View Toggle */}
       {students.length > 0 && (
         <div className="md:hidden flex gap-2 items-center p-3 sm:p-4 border-b border-[#E5E7EB] bg-[#F9FAFB]">
-          <span className="text-[#6B7280] font-medium text-xs">View:</span>
+          <span className="text-[#6B7280] font-medium text-xs">{t('courses.viewMode')}:</span>
           <div className="flex gap-1 bg-white p-1 rounded-lg border border-[#E5E7EB]">
             <Button
               variant={mobileViewMode === 'single' ? 'default' : 'ghost'}
@@ -179,7 +179,7 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
               <thead className="bg-gray-50 border-b border-[#E5E7EB]">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Student Name</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Credits</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">{t('courses.credits')}</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Joined</th>
                   <th className="px-6 py-3 text-right text-sm font-semibold text-[#111827]">Action</th>
                 </tr>
@@ -241,7 +241,7 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 whitespace-nowrap">
-                        {getStudentCredits(enrollment.students.student_packages)} credits
+                        {getStudentCredits(enrollment.students.student_packages)} {t('courses.credits')}
                       </span>
                       <button
                         onClick={(e) => {
@@ -285,11 +285,7 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
 
                     <div className="space-y-2 text-xs sm:text-sm">
                       <div>
-                        <p className="text-[#9CA3AF] font-medium">Phone</p>
-                        <p className="text-[#111827]">{enrollment.students.phone || '-'}</p>
-                      </div>
-                      <div>
-                        <p className="text-[#9CA3AF] font-medium">Credits</p>
+                        <p className="text-[#9CA3AF] font-medium">{t('courses.credits')}</p>
                         <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
                           {getStudentCredits(enrollment.students.student_packages)}
                         </span>

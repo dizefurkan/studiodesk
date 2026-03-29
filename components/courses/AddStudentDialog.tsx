@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
@@ -32,6 +33,7 @@ interface AddStudentDialogProps {
 }
 
 export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [], onStudentsAdded }: AddStudentDialogProps) {
+  const t = useTranslations()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [students, setStudents] = useState<Student[]>([])
@@ -159,7 +161,7 @@ export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [
         className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2"
       >
         <Plus size={16} />
-        Add Students
+        {t('courses.addStudents')}
       </Button>
 
       {isOpen && (
@@ -168,7 +170,7 @@ export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [
             {/* Header */}
             <div className="p-6 border-b border-[#E5E7EB] flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-bold text-[#111827]">Add Students to Course</h2>
+                <h2 className="text-xl font-bold text-[#111827]">{t('courses.addStudentsTitle')}</h2>
                 <p className="text-sm text-gray-600 mt-1">
                   {hasPackageCount} student{hasPackageCount !== 1 ? 's' : ''} with active packages for this dance type
                 </p>

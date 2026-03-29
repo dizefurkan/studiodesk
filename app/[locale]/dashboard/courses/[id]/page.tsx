@@ -8,8 +8,6 @@ import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { Clock, Users, Edit2, BookOpen, CheckCircle } from 'lucide-react'
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-
 interface CourseDetailPageProps {
   params: {
     id: string
@@ -68,7 +66,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                 <p className="text-sm text-gray-600 mb-2">{t('courses.schedule')}</p>
                 <div className="flex items-center gap-2 text-lg font-medium text-[#111827]">
                   <Clock size={20} className="text-[#4F46E5]" />
-                  {DAYS[course.day_of_week]} {course.start_time} - {course.end_time}
+                  {t(`data.days.${['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][course.day_of_week]}`)} {course.start_time} - {course.end_time}
                 </div>
               </div>
             </div>
@@ -121,7 +119,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                     <div className="flex-1">
                       <p className="font-medium text-[#111827]">{record.session_date}</p>
                       <p className="text-sm text-gray-600 mt-1">
-                        {record.attendance_count} present (out of {record.attendances?.length || 0} total)
+                        {record.attendance_count} {t('attendance.presentOutOf')} ({t('attendance.outOf')} {record.attendances?.length || 0} {t('attendance.total')})
                         {record.attendances?.length > 0 && record.attendances[0]?.studios?.name && 
                           ` • ${t('common.studio')}: ${record.attendances[0].studios.name}`}
                       </p>

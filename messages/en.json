@@ -264,7 +264,11 @@
     "attendanceHistory": "Attendance History",
     "noAttendanceRecords": "No attendance records yet",
     "startMarkingAttendance": "Start marking attendance to build history",
-    "enrolledStudents": "Enrolled Students"
+    "enrolledStudents": "Enrolled Students",
+    "addStudents": "Add Students",
+    "addStudentsTitle": "Add Students to Course",
+    "credits": "Credits",
+    "viewMode": "View"
   },
   "attendance": {
     "title": "Attendance",
