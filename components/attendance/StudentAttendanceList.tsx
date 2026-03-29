@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -106,6 +106,13 @@ export function StudentAttendanceList({
   const [selectedDate, setSelectedDate] = useState<string>(
     propSelectedDate || today
   )
+
+  // Sync propSelectedDate changes to local state
+  useEffect(() => {
+    if (propSelectedDate) {
+      setSelectedDate(propSelectedDate)
+    }
+  }, [propSelectedDate])
 
   // Helper: format date display (Today or X days after DATE DAYNAME)
   const formatDateDisplay = (date: string) => {

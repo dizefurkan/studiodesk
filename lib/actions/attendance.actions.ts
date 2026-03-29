@@ -383,6 +383,18 @@ export async function recordBatchAttendance(
       // Session already exists for this course on this date
       actualSessionId = existingSession.id
       console.log('[recordBatchAttendance] Session already exists:', actualSessionId)
+      
+      // Check if attendance records already exist for this session
+      const { data: existingAttendance, error: attendanceCheckError } = await (supabase
+        .from('attendances') as any)
+        .select('id', { count: 'exact', head: true })
+        .eq('session_id', actualSessionId)
+        .limit(1)
+      
+      if (!attendanceCheckError && existingAttendance && existingAttendance.length > 0) {
+        console.warn('[recordBatchAttendance] Attendance already recorded for this session/date')
+        return { error: 'Yoklama bu tarih için zaten alınmış. Lütfen başka bir tarih seçiniz.' }
+      }
     }
 
     // Filter to "geldi" and "gelmedi" records to process (save all records, not just those with notes)

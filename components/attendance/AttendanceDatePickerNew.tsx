@@ -88,6 +88,11 @@ const AttendanceDatePicker = React.forwardRef<
 
     const markedDatesSet = new Set(markedDates)
 
+    const isDateDisabled = (date: Date) => {
+      const dateStr = format(date, "yyyy-MM-dd")
+      return markedDatesSet.has(dateStr)
+    }
+
     return (
       <Popover>
         <PopoverTrigger asChild>
@@ -110,6 +115,7 @@ const AttendanceDatePicker = React.forwardRef<
             mode="single"
             selected={selectedDate}
             onSelect={handleSelectDate}
+            disabled={isDateDisabled}
             markedDates={markedDatesSet}
             initialFocus
           />
