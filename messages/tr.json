@@ -181,6 +181,7 @@
   },
   "instructors": {
     "title": "Eğitmenler",
+    "description": "Eğitmenlerinizi yönetin ve kazançlarını izleyin",
     "addNew": "Yeni Eğitmen Ekle",
     "editInstructor": "Eğitmeni Düzenle",
     "deleteInstructor": "Eğitmeni Sil",

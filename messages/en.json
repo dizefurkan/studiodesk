@@ -188,6 +188,7 @@
   },
   "instructors": {
     "title": "Instructors",
+    "description": "Manage your instructors and track their earnings",
     "addNew": "Add New Instructor",
     "editInstructor": "Edit Instructor",
     "deleteInstructor": "Delete Instructor",
