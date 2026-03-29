@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useSidebar } from '@/lib/context/SidebarContext'
 import { cn } from '@/lib/utils/cn'
 import {
@@ -25,7 +25,14 @@ import {
 export function Sidebar() {
   const t = useTranslations()
   const pathname = usePathname()
+  const locale = useLocale()
   const { isOpen, toggleSidebar } = useSidebar()
+  
+  // Remove locale prefix from pathname for route matching
+  // e.g., "/tr/dashboard/students" → "/dashboard/students"
+  const pathWithoutLocale = pathname.startsWith(`/${locale}/`)
+    ? pathname.slice(locale.length + 1)
+    : pathname
   
   const menuItems = [
     {
@@ -163,8 +170,8 @@ export function Sidebar() {
             // Dashboard - single item
             if (!item.category) {
               const Icon = item.icon as any
-              // Dashboard only active on exact path
-              const isActive = pathname === item.href
+            // Dashboard only active on exact path
+              const isActive = pathWithoutLocale === item.href
 
               return (
                 <Link
@@ -196,7 +203,7 @@ export function Sidebar() {
 
             // Check if any subitem is active
             const hasActiveChild = item.items?.some(
-              (subitem: any) => pathname === subitem.href || pathname.startsWith(subitem.href + '/')
+              (subitem: any) => pathWithoutLocale === subitem.href || pathWithoutLocale.startsWith(subitem.href + '/')
             )
 
             return (
@@ -224,7 +231,7 @@ export function Sidebar() {
                     {item.items?.map((subitem: any) => {
                       const SubIcon = subitem.icon
                       const isSubActive =
-                        pathname === subitem.href || pathname.startsWith(subitem.href + '/')
+                        pathWithoutLocale === subitem.href || pathWithoutLocale.startsWith(subitem.href + '/')
 
                       return (
                         <Link
