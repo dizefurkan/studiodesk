@@ -12,7 +12,7 @@ interface AttendanceDetailPageProps {
 }
 
 export default async function AttendanceDetailPage({ params }: AttendanceDetailPageProps) {
-  const { sessionId } = await params
+  const { sessionId, locale } = await params
   const t = await getTranslations()
   
   const user = await getCurrentUser()
@@ -84,7 +84,12 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
       {/* Session Info Card */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#111827]">{session.course?.name}</h1>
+          <Link 
+            href={`/${locale}/dashboard/courses/${session.course?.id}`}
+            className="text-2xl font-bold text-[#4F46E5] hover:underline block"
+          >
+            {session.course?.name}
+          </Link>
           <p className="text-sm text-gray-600 mt-1">{session.course?.branch?.name}</p>
           {studio?.name && (
             <p className="text-sm text-gray-600 mt-1">Stüdyo: {studio.name}</p>
@@ -157,7 +162,7 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
                 }`}
               >
                 <div
-                  className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                  className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
                     attendance.is_present ? 'bg-green-200' : 'bg-red-200'
                   }`}
                 >
@@ -169,9 +174,12 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
                 </div>
 
                 <div className="flex-1">
-                  <p className="font-semibold text-[#111827]">
+                  <Link 
+                    href={`/${locale}/dashboard/students/${attendance.student?.id}`}
+                    className="font-semibold text-[#4F46E5] hover:underline"
+                  >
                     {attendance.student?.first_name} {attendance.student?.last_name}
-                  </p>
+                  </Link>
                   {attendance.notes && (
                     <p className="text-xs text-gray-600 mt-1">{attendance.notes}</p>
                   )}
