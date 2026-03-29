@@ -179,7 +179,6 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
               <thead className="bg-gray-50 border-b border-[#E5E7EB]">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Student Name</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Phone</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Credits</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">Joined</th>
                   <th className="px-6 py-3 text-right text-sm font-semibold text-[#111827]">Action</th>
@@ -198,7 +197,6 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
                         {enrollment.students.first_name} {enrollment.students.last_name}
                       </Link>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{enrollment.students.phone || '-'}</td>
                     <td className="px-6 py-4 text-sm">
                       <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
                         {getStudentCredits(enrollment.students.student_packages)}
@@ -231,59 +229,33 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
               if (mobileViewMode === 'single') {
                 // Single Row Mode
                 return (
-                  <div
+                  <Link
                     key={enrollment.id}
-                    className="bg-white border border-[#E5E7EB] rounded-lg p-3 sm:p-4 hover:shadow transition-shadow"
+                    href={`/dashboard/students/${enrollment.students.id}`}
+                    className="bg-white border border-[#E5E7EB] rounded-lg p-3 sm:p-4 hover:shadow hover:border-[#4F46E5] transition-all cursor-pointer flex justify-between items-center gap-3 group"
                   >
-                    <div className="flex justify-between items-center gap-2">
-                      <div className="flex-1 min-w-0">
-                        <Link
-                          href={`/dashboard/students/${enrollment.students.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-semibold text-sm text-[#111827] hover:text-[#4F46E5] block truncate"
-                        >
-                          {enrollment.students.first_name} {enrollment.students.last_name}
-                        </Link>
-                        <p className="text-xs text-[#9CA3AF] truncate">{enrollment.students.phone || '-'}</p>
-                      </div>
-                      <div className="flex gap-1 shrink-0">
-                        <button
-                          onClick={() => handleRemoveStudent(enrollment.student_id)}
-                          disabled={loading}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 h-8 w-8 px-0"
-                          title="Remove student"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-[#6B7280] hover:bg-[#F3F4F6] h-8 w-8 px-0"
-                          onClick={() => handleToggleRow(enrollment.id)}
-                          title="View details"
-                        >
-                          <ChevronDown size={14} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                        </Button>
-                      </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-[#111827] group-hover:text-[#4F46E5]">
+                        {enrollment.students.first_name} {enrollment.students.last_name}
+                      </p>
                     </div>
-
-                    {/* Expanded Details on Toggle */}
-                    {isExpanded && (
-                      <div className="mt-3 pt-3 border-t border-[#E5E7EB] space-y-2 text-xs sm:text-sm">
-                        <div>
-                          <p className="text-[#9CA3AF] font-medium">Credits</p>
-                          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                            {getStudentCredits(enrollment.students.student_packages)}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="text-[#9CA3AF] font-medium">Joined</p>
-                          <p className="text-[#111827]">{new Date(enrollment.joined_at).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 whitespace-nowrap">
+                        {getStudentCredits(enrollment.students.student_packages)} credits
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handleRemoveStudent(enrollment.student_id)
+                        }}
+                        disabled={loading}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 h-8 w-8 px-0"
+                        title="Remove student"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </Link>
                 )
               } else {
                 // Expanded Row Mode
