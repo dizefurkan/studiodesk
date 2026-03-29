@@ -221,7 +221,7 @@ export type Database = {
           instructor_id: string
           branch_id: string
           dance_type_id: string
-          price_per_class: number
+          ratio_per_class: number
           created_at: string
           updated_at: string
         }
@@ -230,7 +230,7 @@ export type Database = {
           instructor_id: string
           branch_id: string
           dance_type_id: string
-          price_per_class: number
+          ratio_per_class: number
           created_at?: string
           updated_at?: string
         }
@@ -239,7 +239,7 @@ export type Database = {
           instructor_id?: string
           branch_id?: string
           dance_type_id?: string
-          price_per_class?: number
+          ratio_per_class?: number
           created_at?: string
           updated_at?: string
         }

@@ -12,7 +12,7 @@ interface Instructor {
   last_name: string
   instructor_rates?: Array<{
     id: string
-    price_per_class: number
+    ratio_per_class: number
     branch_id: string
     dance_type_id: string
   }>

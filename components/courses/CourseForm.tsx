@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { createCourse, updateCourse } from '@/lib/actions/courses.actions'
+import { createCourse, updateCourse, checkDuplicateCourseTime } from '@/lib/actions/courses.actions'
 import { getBranches } from '@/lib/actions/branches.actions'
 import { getDanceTypes } from '@/lib/actions/dance-types.actions'
 import { getInstructorsForDanceType } from '@/lib/actions/instructors.actions'
@@ -53,7 +53,7 @@ interface InstructorWithRates {
   last_name: string
   instructor_rates?: Array<{
     id: string
-    price_per_class: number
+    ratio_per_class: number
     branch_id: string
     dance_type_id: string
   }>
@@ -69,6 +69,7 @@ export function CourseForm({ course }: CourseFormProps) {
   const [availableStudents, setAvailableStudents] = useState<Student[]>([])
   const [generalError, setGeneralError] = useState<string | null>(null)
   const [loadingInstructors, setLoadingInstructors] = useState(false)
+  const [duplicateCourseWarning, setDuplicateCourseWarning] = useState<string | null>(null)
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseSchema),
@@ -106,6 +107,7 @@ export function CourseForm({ course }: CourseFormProps) {
     if (!danceTypeId) {
       setInstructors([])
       setLoadingInstructors(false)
+      setGeneralError(null)
       return
     }
 
@@ -113,9 +115,17 @@ export function CourseForm({ course }: CourseFormProps) {
       setLoadingInstructors(true)
       try {
         const result = await getInstructorsForDanceType(danceTypeId)
-        setInstructors(result.data || [])
+        if (result.error) {
+          console.error('[Instructors] Backend error:', result.error)
+          setGeneralError(`Failed to load instructors: ${result.error}`)
+          setInstructors([])
+        } else {
+          console.log('[Instructors] Loaded:', result.data?.length || 0, 'instructors for dance type', danceTypeId)
+          setInstructors(result.data || [])
+        }
       } catch (error) {
-        console.error('Error loading instructors:', error)
+        console.error('[Instructors] Exception:', error)
+        setGeneralError('An error occurred while loading instructors')
         setInstructors([])
       } finally {
         setLoadingInstructors(false)
@@ -144,6 +154,35 @@ export function CourseForm({ course }: CourseFormProps) {
     loadStudents()
   }, [form.watch('danceTypeId')])
 
+  // Check for duplicate course times (only when creating a new course)
+  useEffect(() => {
+    if (course) return // Skip check when editing
+
+    const checkForDuplicates = async () => {
+      const branchId = form.getValues('branchId')
+      const danceTypeId = form.getValues('danceTypeId')
+      const dayOfWeek = form.getValues('dayOfWeek')
+      const startTime = form.getValues('startTime')
+
+      if (!branchId || !danceTypeId || startTime === '') {
+        setDuplicateCourseWarning(null)
+        return
+      }
+
+      const result = await checkDuplicateCourseTime(branchId, danceTypeId, dayOfWeek, startTime)
+      if (result.isDuplicate && result.data && result.data.length > 0) {
+        setDuplicateCourseWarning(
+          `A course for this dance type already exists at ${result.data[0].start_time} on this day and branch. Are you sure you want to create this course?`
+        )
+      } else {
+        setDuplicateCourseWarning(null)
+      }
+    }
+
+    const timer = setTimeout(checkForDuplicates, 500)
+    return () => clearTimeout(timer)
+  }, [form.watch('branchId'), form.watch('danceTypeId'), form.watch('dayOfWeek'), form.watch('startTime'), course])
+
   async function onSubmit(data: CourseFormValues) {
     setIsLoading(true)
     setGeneralError(null)
@@ -166,7 +205,8 @@ export function CourseForm({ course }: CourseFormProps) {
             startTime: data.startTime,
             endTime: data.endTime,
             instructorIds: data.instructorIds,
-            studentIds: data.studentIds,
+            // Don't pass studentIds when creating - students should be added via AddStudentDialog
+            studentIds: [],
           })
 
       if (result.error) {
@@ -193,6 +233,12 @@ export function CourseForm({ course }: CourseFormProps) {
         <p className="text-sm sm:text-base text-gray-600 mb-4 md:mb-6">
           {course ? t('courses.updateCourseDetails') : t('courses.setupNewCourse')}
         </p>
+
+        {!course && (
+          <div className="mb-6 p-4 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 text-sm">
+            💡 Students will be added after the course is created using the "Add Students" button on the course detail page.
+          </div>
+        )}
 
         {generalError && (
           <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">{generalError}</div>
@@ -289,7 +335,7 @@ export function CourseForm({ course }: CourseFormProps) {
                       ) : (
                         <div className="space-y-2 border border-[#E5E7EB] rounded-lg p-4 max-h-50 overflow-y-auto">
                           {instructors.map((instructor) => {
-                            const pricePerClass = instructor.instructor_rates?.[0]?.price_per_class
+                            const pricePerClass = instructor.instructor_rates?.[0]?.ratio_per_class
 
                             return (
                               <label
@@ -382,45 +428,15 @@ export function CourseForm({ course }: CourseFormProps) {
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="studentIds"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('courses.students')} {t('courses.onlyActivePackages')}</FormLabel>
-                  {availableStudents.length === 0 ? (
-                    <div className="p-4 border border-[#E5E7EB] rounded-lg bg-gray-50 text-gray-600 text-sm">
-                      {t('courses.noStudentsAvailable')}
-                    </div>
-                  ) : (
-                    <div className="space-y-2 border border-[#E5E7EB] rounded-lg p-4 max-h-50 overflow-y-auto">
-                      {availableStudents.map((student) => (
-                        <label key={student.id} className="flex items-center gap-3 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={field.value?.includes(student.id) || false}
-                            onChange={(e) => {
-                              const value = field.value || []
-                              if (e.target.checked) {
-                                field.onChange([...value, student.id])
-                              } else {
-                                field.onChange(value.filter((id) => id !== student.id))
-                              }
-                            }}
-                            disabled={isLoading}
-                            className="w-4 h-4 rounded border-[#E5E7EB]"
-                          />
-                          <span className="text-sm text-[#111827]">
-                            {student.first_name} {student.last_name}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {duplicateCourseWarning && !course && (
+              <div className="p-4 bg-amber-50 text-amber-700 rounded-lg border border-amber-200 flex items-start gap-3">
+                <span className="text-lg">⚠️</span>
+                <div>
+                  <p className="font-semibold text-sm">{duplicateCourseWarning}</p>
+                  <p className="text-xs mt-1">You can still create this course if you have multiple instructors or locations.</p>
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-4 md:pt-6">
               <Button

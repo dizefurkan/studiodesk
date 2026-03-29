@@ -19,37 +19,59 @@ export async function getInstructorsForDanceType(danceTypeId?: string) {
     // Use admin client to bypass RLS
     const admin = createAdminClient()
     
-    if (danceTypeId) {
-      // If danceTypeId provided, filter by those with rates for this dance type
-      const query = (admin as any)
-        .from('instructors')
-        .select(`
-          *,
-          instructor_rates!inner(
-            id,
-            price_per_class,
-            branch_id,
-            dance_type_id
-          )
-        `)
-        .eq('organization_id', organization.id)
-        .eq('instructor_rates.dance_type_id', danceTypeId)
-        .order('created_at', { ascending: false })
-
-      const { data, error } = await query
-
-      if (error) {
-        console.error('Error fetching instructors:', error)
-        return { error: 'Failed to fetch instructors' }
-      }
-
-      return { data: data as any[] }
-    } else {
-      // If no danceTypeId, return empty
+    if (!danceTypeId) {
       return { data: [] }
     }
+
+    console.log('[getInstructorsForDanceType] Fetching for dance_type_id:', danceTypeId, 'org_id:', organization.id)
+
+    // First, fetch instructor_rates for this dance type
+    const { data: rates, error: ratesError } = await (admin as any)
+      .from('instructor_rates')
+      .select('instructor_id, ratio_per_class, branch_id, dance_type_id')
+      .eq('dance_type_id', danceTypeId)
+
+    if (ratesError) {
+      console.error('[getInstructorsForDanceType] Error fetching rates:', ratesError)
+      return { error: 'Failed to fetch instructor rates' }
+    }
+
+    console.log('[getInstructorsForDanceType] Found rates:', rates?.length || 0)
+
+    if (!rates || rates.length === 0) {
+      console.log('[getInstructorsForDanceType] No rates found for this dance type')
+      return { data: [] }
+    }
+
+    // Get unique instructor IDs from rates
+    const instructorIds = [...new Set(rates.map((r: any) => r.instructor_id))]
+    console.log('[getInstructorsForDanceType] Unique instructors:', instructorIds.length)
+
+    // Fetch the instructors with their rates
+    const { data: instructors, error: instructorsError } = await (admin as any)
+      .from('instructors')
+      .select(`
+        *,
+        instructor_rates(
+          id,
+          ratio_per_class,
+          branch_id,
+          dance_type_id
+        )
+      `)
+      .eq('organization_id', organization.id)
+      .in('id', instructorIds)
+      .order('created_at', { ascending: false })
+
+    if (instructorsError) {
+      console.error('[getInstructorsForDanceType] Error fetching instructors:', instructorsError)
+      return { error: 'Failed to fetch instructors' }
+    }
+
+    console.log('[getInstructorsForDanceType] Returning', instructors?.length || 0, 'instructors')
+    return { data: instructors as any[] }
   } catch (error) {
-    console.error('Unexpected error:', error)
+    console.error('[getInstructorsForDanceType] Unexpected error:', error)
     return { error: 'An unexpected error occurred' }
   }
 }

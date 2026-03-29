@@ -120,6 +120,44 @@ export async function getCourse(id: string) {
   }
 }
 
+export async function checkDuplicateCourseTime(
+  branchId: string,
+  danceTypeId: string,
+  dayOfWeek: number,
+  startTime: string,
+  excludeCourseId?: string
+) {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  try {
+    const admin = createAdminClient()
+    let query = (admin as any)
+      .from('courses')
+      .select('id, name, start_time, end_time')
+      .eq('branch_id', branchId)
+      .eq('dance_type_id', danceTypeId)
+      .eq('day_of_week', dayOfWeek)
+      .eq('start_time', startTime)
+
+    if (excludeCourseId) {
+      query = query.neq('id', excludeCourseId)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Error checking duplicate courses:', error)
+      return { error: 'Failed to check course times' }
+    }
+
+    return { data: data || [], isDuplicate: (data?.length || 0) > 0 }
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
 export async function createCourse(input: CreateCourseInput) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
@@ -140,6 +178,20 @@ export async function createCourse(input: CreateCourseInput) {
 
     if (branchError || !branch) {
       return { error: 'Invalid branch' }
+    }
+
+    // Check for duplicate course at the same time
+    const duplicate = await checkDuplicateCourseTime(
+      input.branchId,
+      input.danceTypeId,
+      input.dayOfWeek,
+      input.startTime
+    )
+
+    if (duplicate.isDuplicate) {
+      return { 
+        error: 'A course for this dance type already exists at this time on this day for this branch' 
+      }
     }
 
     const { data: course, error: courseError } = await (supabase
@@ -170,15 +222,8 @@ export async function createCourse(input: CreateCourseInput) {
       await (supabase.from('course_instructors') as any).insert(instructorAssignments)
     }
 
-    // Add students if provided
-    if (input.studentIds && input.studentIds.length > 0) {
-      const studentAssignments = input.studentIds.map((studentId) => ({
-        course_id: course.id,
-        student_id: studentId,
-      }))
-
-      await (supabase.from('course_students') as any).insert(studentAssignments)
-    }
+    // Note: students should NOT be added during course creation
+    // They should be added through the AddStudentDialog after creation
 
     return { success: true, data: course }
   } catch (error) {
