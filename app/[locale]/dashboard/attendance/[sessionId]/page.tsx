@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import Link from 'next/link'
 import { ArrowLeft, Users, Check, X, User } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
+import { Card } from '@/components/ui/card'
 
 interface AttendanceDetailPageProps {
   params: Promise<{
@@ -72,31 +73,29 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
   })
 
   return (
-    <div className="space-y-6 p-6 md:p-0">
-      {/* Header */}
-      <div>
-        <Link href="/dashboard/attendance" className="text-[#4F46E5] hover:underline text-sm inline-flex items-center gap-1">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-4 sm:p-6 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        <Link href="/dashboard/attendance" className="text-[#4F46E5] hover:underline text-sm inline-flex items-center gap-1 mb-6">
           <ArrowLeft className="w-4 h-4" />
           Yoklamalara Dön
         </Link>
-      </div>
 
-      {/* Session Info Card */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
-        <div>
-          <Link 
-            href={`/${locale}/dashboard/courses/${session.course?.id}`}
-            className="text-2xl font-bold text-[#4F46E5] hover:underline block"
-          >
-            {session.course?.name}
-          </Link>
-          <p className="text-sm text-gray-600 mt-1">{session.course?.branch?.name}</p>
-          {studio?.name && (
-            <p className="text-sm text-gray-600 mt-1">Stüdyo: {studio.name}</p>
-          )}
-        </div>
+        <Card className="border-[#E5E7EB]">
+          <div className="p-4 sm:p-6 md:p-8 space-y-4">
+            <div>
+              <Link 
+                href={`/${locale}/dashboard/courses/${session.course?.id}`}
+                className="text-2xl font-bold text-[#4F46E5] hover:underline block"
+              >
+                {session.course?.name}
+              </Link>
+              <p className="text-sm text-gray-600 mt-1">{session.course?.branch?.name}</p>
+              {studio?.name && (
+                <p className="text-sm text-gray-600 mt-1">Stüdyo: {studio.name}</p>
+              )}
+            </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-wide">Tarih</p>
             <p className="text-sm font-semibold text-[#111827] mt-1">{formattedDate}</p>
@@ -124,36 +123,35 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
           </div>
         </div>
 
-        {/* Instructors */}
-        {instructors.length > 0 && (
-          <div className="pt-4 border-t border-gray-200">
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Öğretmenler</p>
-            <div className="flex flex-wrap gap-2">
-              {instructors.map((instructor: any) => (
-                <span
-                  key={instructor.id}
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                >
-                  {instructor.first_name} {instructor.last_name}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+            {/* Instructors */}
+            {instructors.length > 0 && (
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Öğretmenler</p>
+                <div className="flex flex-wrap gap-2">
+                  {instructors.map((instructor: any) => (
+                    <span
+                      key={instructor.id}
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                    >
+                      {instructor.first_name} {instructor.last_name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
-      {/* Attendance Records */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-[#111827]">Yoklama Kayıtları</h2>
+            {/* Attendance Records */}
+            <div className="pt-4 border-t border-gray-200 space-y-3">
+              <h2 className="text-lg font-semibold text-[#111827]">Yoklama Kayıtları</h2>
 
-        {attendances.length === 0 ? (
-          <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-600">
-            Bu oturum için yoklama kaydı yok
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {attendances.map((attendance: any) => (
-              <div
+              {attendances.length === 0 ? (
+                <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-600">
+                  Bu oturum için yoklama kaydı yok
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {attendances.map((attendance: any) => (
+                    <div
                 key={attendance.id}
                 className={`flex items-center gap-4 p-4 rounded-lg border ${
                   attendance.is_present
@@ -191,9 +189,12 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
                   </p>
                 </div>
               </div>
-            ))}
+                    ))}
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        </Card>
       </div>
     </div>
   )
