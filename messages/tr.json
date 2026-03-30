@@ -90,6 +90,7 @@
     "register": "Kayıt Ol",
     "logout": "Çıkış Yap",
     "email": "E-posta",
+    "emailAddress": "E-posta Adresi",
     "password": "Şifre",
     "confirmPassword": "Şifreyi Onayla",
     "firstName": "Ad",

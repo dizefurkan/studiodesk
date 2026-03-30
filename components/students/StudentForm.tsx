@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { createStudent, updateStudent } from '@/lib/actions/students.actions'
+import { Textarea } from '@/components/ui/textarea'
 import type { Database } from '@/lib/types/database.types'
 
 type Student = Database['public']['Tables']['students']['Row']
@@ -176,10 +177,9 @@ export function StudentForm({ student }: StudentFormProps) {
                 <FormItem>
                   <FormLabel>Notes (Optional)</FormLabel>
                   <FormControl>
-                    <textarea
+                    <Textarea
                       placeholder="Add any notes about the student..."
                       disabled={isLoading}
-                      className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
                       rows={4}
                       {...field}
                     />

@@ -97,6 +97,7 @@
     "register": "Register",
     "logout": "Logout",
     "email": "Email",
+    "emailAddress": "Email Address",
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "firstName": "First Name",
