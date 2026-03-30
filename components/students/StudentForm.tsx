@@ -15,7 +15,8 @@ import type { Database } from '@/lib/types/database.types'
 
 type Student = Database['public']['Tables']['students']['Row']
 
-const studentSchema = z.object({
+// Fallback schema for type inference
+const studentSchemaFallback = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
@@ -23,7 +24,18 @@ const studentSchema = z.object({
   notes: z.string().optional(),
 })
 
-type StudentFormValues = z.infer<typeof studentSchema>
+type StudentFormValues = z.infer<typeof studentSchemaFallback>
+
+// Schema factory that uses translations
+function createStudentSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    firstName: z.string().min(2, t('validation.firstNameMinLength')),
+    lastName: z.string().min(2, t('validation.lastNameMinLength')),
+    email: z.string().email(t('validation.invalidEmail')),
+    phone: z.string().optional(),
+    notes: z.string().optional(),
+  })
+}
 
 interface StudentFormProps {
   student?: Student
@@ -34,6 +46,8 @@ export function StudentForm({ student }: StudentFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [generalError, setGeneralError] = useState<string | null>(null)
+
+  const studentSchema = createStudentSchema(t)
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(studentSchema),

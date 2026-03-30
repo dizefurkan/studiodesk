@@ -457,7 +457,9 @@
     "minLength": "En az {min} karakter olmalıdır",
     "maxLength": "En fazla {max} karakter olabilir",
     "min": "En az {min} olmalıdır",
-    "max": "En fazla {max} olabilir"
+    "max": "En fazla {max} olabilir",
+    "firstNameMinLength": "Ad en az 2 karakter olmalıdır",
+    "lastNameMinLength": "Soyadı en az 2 karakter olmalıdır"
   },
   "errors": {
     "notFound": "Kaynak bulunamadı",

@@ -461,7 +461,9 @@
     "minLength": "Must be at least {min} characters",
     "maxLength": "Must be no more than {max} characters",
     "min": "Must be at least {min}",
-    "max": "Must be no more than {max}"
+    "max": "Must be no more than {max}",
+    "firstNameMinLength": "First name must be at least 2 characters",
+    "lastNameMinLength": "Last name must be at least 2 characters"
   },
   "errors": {
     "notFound": "Resource not found",

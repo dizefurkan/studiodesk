@@ -15,14 +15,25 @@ import type { Database } from '@/lib/types/database.types'
 
 type Instructor = Database['public']['Tables']['instructors']['Row']
 
-const instructorSchema = z.object({
+// Fallback schema for type inference
+const instructorSchemaFallback = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   phone: z.string().optional(),
 })
 
-type InstructorFormValues = z.infer<typeof instructorSchema>
+type InstructorFormValues = z.infer<typeof instructorSchemaFallback>
+
+// Schema factory that uses translations
+function createInstructorSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    firstName: z.string().min(2, t('validation.firstNameMinLength')),
+    lastName: z.string().min(2, t('validation.lastNameMinLength')),
+    email: z.string().email(t('validation.invalidEmail')),
+    phone: z.string().optional(),
+  })
+}
 
 interface InstructorFormProps {
   instructor?: Instructor
@@ -33,6 +44,8 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [generalError, setGeneralError] = useState<string | null>(null)
+
+  const instructorSchema = createInstructorSchema(t)
 
   const form = useForm<InstructorFormValues>({
     resolver: zodResolver(instructorSchema),
