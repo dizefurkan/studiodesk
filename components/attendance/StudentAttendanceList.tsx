@@ -488,14 +488,14 @@ export function StudentAttendanceList({
             </Card>
           )}
 
-          <h3 className="text-lg font-semibold text-[#111827]">Mark Attendance ({studentsWithCredits.length} students)</h3>
+          <h3 className="text-lg font-semibold text-[#111827]">{t('attendance.markAttendance')} ({studentsWithCredits.length} {t('attendance.enrolled')})</h3>
           
           {/* Studio & Instructor Selection */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {studios && studios.length > 0 && (
               <div>
                 <label className="block text-xs font-semibold text-[#6B7280] mb-2 uppercase tracking-wide">
-                  Studio (Optional)
+                  {t('attendance.studioOptional')}
                 </label>
                 <StudioDropdown
                   studios={studios}

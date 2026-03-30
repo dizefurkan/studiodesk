@@ -195,23 +195,23 @@ function CalendarPage({
               className="border-[#E5E7EB] text-sm"
               onClick={goToPrevMonth}
             >
-              Previous
+              {t('calendar.previous')}
             </Button>
             <Button
               className="bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm"
               onClick={goToToday}
             >
-            Today
-          </Button>
-          <Button
-            variant="outline"
-            className="border-[#E5E7EB] text-sm"
-            onClick={goToNextMonth}
-          >
-            Next
-          </Button>
+              {t('calendar.today')}
+            </Button>
+            <Button
+              variant="outline"
+              className="border-[#E5E7EB] text-sm"
+              onClick={goToNextMonth}
+            >
+              {t('calendar.next')}
+            </Button>
+          </div>
         </div>
-      </div>
 
       {/* Calendar Grid */}
       <div className="overflow-x-auto">
@@ -276,7 +276,7 @@ function CalendarPage({
                           </PopoverTrigger>
                           <PopoverContent className="w-80">
                             <div className="space-y-3">
-                              <h4 className="font-bold text-[#111827] text-sm">{dayCoursesForDay.length} Classes on Day {day}</h4>
+                              <h4 className="font-bold text-[#111827] text-sm">{dayCoursesForDay.length} {t('calendar.classesOnDay')} {day}</h4>
                               {dayCoursesForDay.map((course: any) => (
                                 <div
                                   key={course.id}
@@ -308,7 +308,7 @@ function CalendarPage({
                           onClick={() => setExpandedDay(dayKey)}
                           className="text-xs text-[#4F46E5] font-semibold mt-1 hover:text-[#4338CA] transition-colors"
                         >
-                          +{remainingCount} more
+                          +{remainingCount} {t('calendar.moreClasses')}
                         </button>
                       )}
                       {isExpanded && remainingCount > 0 && (
@@ -316,7 +316,7 @@ function CalendarPage({
                           onClick={() => setExpandedDay(null)}
                           className="text-xs text-[#4F46E5] font-semibold mt-1 hover:text-[#4338CA] transition-colors"
                         >
-                          Show less
+                          {t('calendar.showLess')}
                         </button>
                       )}
                     </div>
@@ -348,20 +348,20 @@ function CalendarPage({
               className="border-[#E5E7EB] text-sm"
               onClick={goToPrevWeek}
             >
-              Previous
+              {t('calendar.previous')}
             </Button>
             <Button
               className="bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm"
               onClick={goToToday}
             >
-              Today
+              {t('calendar.today')}
             </Button>
             <Button
               variant="outline"
               className="border-[#E5E7EB] text-sm"
               onClick={goToNextWeek}
             >
-              Next
+              {t('calendar.next')}
             </Button>
           </div>
         </div>
@@ -395,7 +395,7 @@ function CalendarPage({
                       </Link>
                     ))}
                     {dayCoursesCount === 0 && (
-                      <p className="text-xs text-[#D1D5DB] text-center py-2">No classes</p>
+                      <p className="text-xs text-[#D1D5DB] text-center py-2">{t('calendar.noClasses')}</p>
                     )}
                   </div>
                 </div>
@@ -424,7 +424,7 @@ function CalendarPage({
             <h3 className="text-lg font-bold text-[#111827] mb-3">{dayFormatted}</h3>
             {dayCoursesForDay.length === 0 ? (
               <Card className="border-[#E5E7EB] p-4 text-center text-gray-500">
-                <p className="text-sm">No classes scheduled</p>
+                <p className="text-sm">{t('calendar.noClassesScheduled')}</p>
               </Card>
             ) : (
               <div className="space-y-3">
@@ -451,14 +451,14 @@ function CalendarPage({
                             </div>
                             <div className="flex items-center gap-1 text-gray-600">
                               <Users size={14} />
-                              {course.instructorCount || 0} instructor(s)
+                              {course.instructorCount || 0} {t('calendar.instructors')}
                             </div>
                           </div>
                         </div>
                         <Link href={`/dashboard/attendance?course=${course.id}`}>
                           <Button className="bg-green-600 hover:bg-green-700 text-white gap-2 shrink-0 w-full md:w-auto">
                             <CheckCircle size={16} />
-                            Attendance
+                            {t('calendar.attendance')}
                           </Button>
                         </Link>
                       </div>
@@ -475,8 +475,8 @@ function CalendarPage({
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-[#111827]">Calendar</h1>
-          <p className="text-gray-600 mt-1 text-sm md:text-base">View your class schedule and sessions</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-[#111827]">{t('calendar.title')}</h1>
+          <p className="text-gray-600 mt-1 text-sm md:text-base">{t('calendar.description')}</p>
         </div>
       </div>
 
@@ -492,7 +492,7 @@ function CalendarPage({
           variant={viewMode === 'month' ? 'default' : 'outline'}
         >
           <Grid3x3 size={16} />
-          <span className="hidden sm:inline">Month</span>
+          <span className="hidden sm:inline">{t('calendar.month')}</span>
         </Button>
         <Button
           onClick={() => setViewMode('week')}
@@ -504,7 +504,7 @@ function CalendarPage({
           variant={viewMode === 'week' ? 'default' : 'outline'}
         >
           <Calendar size={16} />
-          <span className="hidden sm:inline">Week</span>
+          <span className="hidden sm:inline">{t('calendar.week')}</span>
         </Button>
         <Button
           onClick={() => setViewMode('agenda')}
@@ -516,7 +516,7 @@ function CalendarPage({
           variant={viewMode === 'agenda' ? 'default' : 'outline'}
         >
           <List size={16} />
-          <span className="hidden sm:inline">Agenda</span>
+          <span className="hidden sm:inline">{t('calendar.agenda')}</span>
         </Button>
       </div>
 
@@ -525,7 +525,7 @@ function CalendarPage({
         <Card className="border-[#E5E7EB] p-12 text-center">
           <div className="text-gray-500">
             <Calendar size={48} className="mx-auto mb-4 opacity-50 animate-pulse" />
-            <p className="text-lg">Loading calendar...</p>
+            <p className="text-lg">{t('calendar.loading')}</p>
           </div>
         </Card>
       )}
@@ -544,8 +544,8 @@ function CalendarPage({
         <Card className="border-[#E5E7EB] p-12 text-center">
           <div className="text-gray-500">
             <Calendar size={48} className="mx-auto mb-4 opacity-50" />
-            <p className="text-lg">No courses scheduled</p>
-            <p className="text-sm mt-1">Create courses to display them on the calendar</p>
+            <p className="text-lg">{t('calendar.noCoursesScheduled')}</p>
+            <p className="text-sm mt-1">{t('calendar.createCoursesMessage')}</p>
           </div>
         </Card>
       )}

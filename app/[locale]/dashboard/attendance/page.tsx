@@ -10,6 +10,7 @@ import { AttendancePageWrapper } from '@/components/attendance/AttendancePageWra
 import Link from 'next/link'
 import { Calendar, Users, CheckCircle } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
+import { getTranslations } from 'next-intl/server'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -35,6 +36,7 @@ export default async function AttendancePage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  const t = await getTranslations()
   const params = await searchParams
   const sessionId = typeof params.session === 'string' ? params.session : undefined
   const courseId = typeof params.course === 'string' ? params.course : undefined
@@ -131,10 +133,10 @@ export default async function AttendancePage({
       <div className="space-y-6">
         <div>
           <Link href="/dashboard/attendance" className="text-[#4F46E5] hover:underline mb-4 inline-block">
-            ← Back to Sessions
+            ← {t('attendance.backToSessions')}
           </Link>
-          <h1 className="text-3xl font-bold text-[#111827]">Mark Attendance</h1>
-          <p className="text-gray-600 mt-1">Record attendance for this session and deduct credits</p>
+          <h1 className="text-3xl font-bold text-[#111827]">{t('attendance.markAttendance')}</h1>
+          <p className="text-gray-600 mt-1">{t('attendance.recordDescription')}</p>
         </div>
 
         <Card className="border-[#E5E7EB] p-6 bg-blue-50">
@@ -142,8 +144,8 @@ export default async function AttendancePage({
             <div className="flex items-center gap-3">
               <Calendar className="text-[#4F46E5]" size={24} />
               <div>
-                <p className="font-medium text-[#111827]">Session: {sessionId}</p>
-                <p className="text-sm text-gray-600">{attendances.length} marked • {availableStudents.length} available</p>
+                <p className="font-medium text-[#111827]">{t('attendance.session')}: {sessionId}</p>
+                <p className="text-sm text-gray-600">{attendances.length} {t('attendance.marked')} • {availableStudents.length} {t('attendance.available')}</p>
               </div>
             </div>
           </div>
@@ -151,7 +153,7 @@ export default async function AttendancePage({
 
         {studios.length > 0 && (
           <Card className="border-[#E5E7EB] p-4">
-            <p className="text-sm text-gray-600 mb-2">Available Studios: {studios.map((s: any) => s.name).join(', ')}</p>
+            <p className="text-sm text-gray-600 mb-2">{t('attendance.availableStudios')}: {studios.map((s: any) => s.name).join(', ')}</p>
           </Card>
         )}
 
@@ -346,16 +348,16 @@ export default async function AttendancePage({
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-[#111827]">Attendance</h1>
-          <p className="text-gray-600 mt-1">Mark student attendance and manage class sessions</p>
+          <h1 className="text-3xl font-bold text-[#111827]">{t('attendance.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('attendance.pageDescription')}</p>
         </div>
 
         {courses.length === 0 ? (
           <Card className="border-[#E5E7EB] p-12 text-center">
             <div className="text-gray-500">
               <Calendar size={48} className="mx-auto mb-4 opacity-50" />
-              <p className="text-lg">No courses found</p>
-              <p className="text-sm mt-1">Create courses and schedule sessions to start tracking attendance</p>
+              <p className="text-lg">{t('attendance.noCoursesFound')}</p>
+              <p className="text-sm mt-1">{t('attendance.noCoursesMessage')}</p>
             </div>
           </Card>
         ) : (
@@ -374,7 +376,7 @@ export default async function AttendancePage({
                           {course.mostRecentDate && (
                             <span>{formatDateDisplay(course.mostRecentDate)} - </span>
                           )}
-                          Total {course.totalAttendance} Attendance{course.totalAttendance !== 1 ? 's' : ''}
+                          {t('attendance.totalAttendance')} {course.totalAttendance}
                         </div>
                       )}
                     </div>
@@ -382,7 +384,7 @@ export default async function AttendancePage({
                   <Link href={`/dashboard/attendance?course=${course.id}`} className="w-full md:w-auto">
                     <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 w-full md:w-auto">
                       <CheckCircle size={16} />
-                      Mark Attendance
+                      {t('attendance.markAttendance')}
                     </Button>
                   </Link>
                 </div>

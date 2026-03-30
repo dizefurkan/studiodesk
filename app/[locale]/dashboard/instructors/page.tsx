@@ -37,7 +37,7 @@ export default async function InstructorsPage({
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">{t('instructors.title')}</h1>
           <p className="text-sm sm:text-base text-gray-600 mt-1">{t('instructors.description')}</p>
         </div>
-        <Link href="/dashboard/instructors/new">
+        <Link className='inline-block w-max' href="/dashboard/instructors/new">
           <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm md:text-base h-9 md:h-10">
             <Plus size={20} className="mr-2" />
             {t('instructors.addNew')}
