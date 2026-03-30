@@ -374,7 +374,16 @@
     "packageUpdated": "Package updated successfully",
     "packageDeleted": "Package deleted successfully",
     "updateInformationMessage": "Update package information",
-    "addNewPackageMessage": "Create a new credit package for students"
+    "addNewPackageMessage": "Create a new credit package for students",
+    "placeholderPackageName": "e.g., 10 Classes Package, Monthly Unlimited",
+    "placeholderSelectDanceType": "Select a dance type",
+    "placeholderTotalCredits": "e.g., 10",
+    "placeholderPrice": "e.g., 99.99",
+    "saving": "Saving...",
+    "validationPackageNameMin": "Package name must be at least 2 characters",
+    "validationSelectDanceType": "Please select a dance type",
+    "validationTotalCreditsMin": "Total credits must be at least 1",
+    "validationPriceInvalid": "Price must be a valid number"
   },
   "branches": {
     "title": "Branches",

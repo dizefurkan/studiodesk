@@ -370,7 +370,16 @@
     "packageUpdated": "Paket başarıyla güncellendi",
     "packageDeleted": "Paket başarıyla silindi",
     "updateInformationMessage": "Paket bilgilerini güncelleyin",
-    "addNewPackageMessage": "Öğrenciler için yeni bir kredi paketi oluşturun"
+    "addNewPackageMessage": "Öğrenciler için yeni bir kredi paketi oluşturun",
+    "placeholderPackageName": "Örn. 10 Ders Paketi, Aylık Sınırsız",
+    "placeholderSelectDanceType": "Bir dans türü seçin",
+    "placeholderTotalCredits": "Örn. 10",
+    "placeholderPrice": "Örn. 99.99",
+    "saving": "Kaydediliyor...",
+    "validationPackageNameMin": "Paket adı en az 2 karakter olmalıdır",
+    "validationSelectDanceType": "Lütfen bir dans türü seçin",
+    "validationTotalCreditsMin": "Toplam krediler en az 1 olmalıdır",
+    "validationPriceInvalid": "Fiyat geçerli bir sayı olmalıdır"
   },
   "branches": {
     "title": "Şubeler",

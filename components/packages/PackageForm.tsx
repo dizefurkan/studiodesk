@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -16,24 +17,25 @@ import type { Database } from '@/lib/types/database.types'
 type Package = Database['public']['Tables']['packages']['Row']
 type DanceType = Database['public']['Tables']['dance_types']['Row']
 
-const packageSchema = z.object({
-  name: z.string().min(2, 'Package name must be at least 2 characters'),
-  danceTypeId: z.string().min(1, 'Please select a dance type'),
-  totalCredits: z.coerce.number().min(1, 'Total credits must be at least 1'),
-  price: z.coerce.number().min(0, 'Price must be a valid number'),
-})
-
-type PackageFormValues = z.infer<typeof packageSchema>
-
 interface PackageFormProps {
   package?: Package
 }
 
 export function PackageForm({ package: pkgProp }: PackageFormProps) {
+  const t = useTranslations()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [danceTypes, setDanceTypes] = useState<DanceType[]>([])
   const [generalError, setGeneralError] = useState<string | null>(null)
+
+  const packageSchema = z.object({
+    name: z.string().min(2, t('packages.validationPackageNameMin')),
+    danceTypeId: z.string().min(1, t('packages.validationSelectDanceType')),
+    totalCredits: z.coerce.number().min(1, t('packages.validationTotalCreditsMin')),
+    price: z.coerce.number().min(0, t('packages.validationPriceInvalid')),
+  })
+
+  type PackageFormValues = z.infer<typeof packageSchema>
 
   const form = useForm<PackageFormValues>({
     resolver: zodResolver(packageSchema),
@@ -83,7 +85,7 @@ export function PackageForm({ package: pkgProp }: PackageFormProps) {
       }
     } catch (error) {
       console.error('Form error:', error)
-      setGeneralError('An unexpected error occurred')
+      setGeneralError(t('common.error'))
     } finally {
       setIsLoading(false)
     }
@@ -93,10 +95,10 @@ export function PackageForm({ package: pkgProp }: PackageFormProps) {
     <Card className="border-[#E5E7EB] max-w-2xl">
       <div className="p-3 sm:p-4 md:p-6 lg:p-8">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827] mb-2">
-          {pkgProp ? 'Edit Package' : 'Add New Package'}
+          {pkgProp ? t('packages.editPackage') : t('packages.addNew')}
         </h1>
         <p className="text-sm sm:text-base text-gray-600 mb-4 md:mb-6">
-          {pkgProp ? 'Update package information' : 'Create a new credit package for students'}
+          {pkgProp ? t('packages.updateInformationMessage') : t('packages.addNewPackageMessage')}
         </p>
 
         {generalError && (
@@ -110,10 +112,10 @@ export function PackageForm({ package: pkgProp }: PackageFormProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Package Name</FormLabel>
+                  <FormLabel>{t('packages.name')}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g., 10 Classes Package, Monthly Unlimited"
+                      placeholder={t('packages.placeholderPackageName')}
                       disabled={isLoading}
                       {...field}
                     />
@@ -128,14 +130,14 @@ export function PackageForm({ package: pkgProp }: PackageFormProps) {
               name="danceTypeId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Dance Type</FormLabel>
+                  <FormLabel>{t('packages.danceType')}</FormLabel>
                   <FormControl>
                     <select
                       disabled={isLoading}
                       className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
                       {...field}
                     >
-                      <option value="">Select a dance type</option>
+                      <option value="">{t('packages.placeholderSelectDanceType')}</option>
                       {danceTypes.map((type) => (
                         <option key={type.id} value={type.id}>
                           {type.name}
@@ -154,11 +156,11 @@ export function PackageForm({ package: pkgProp }: PackageFormProps) {
                 name="totalCredits"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Total Credits</FormLabel>
+                    <FormLabel>{t('packages.credits')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="e.g., 10"
+                        placeholder={t('packages.placeholderTotalCredits')}
                         disabled={isLoading}
                         {...field}
                       />
@@ -173,12 +175,12 @@ export function PackageForm({ package: pkgProp }: PackageFormProps) {
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price</FormLabel>
+                    <FormLabel>{t('packages.price')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         step="0.01"
-                        placeholder="e.g., 99.99"
+                        placeholder={t('packages.placeholderPrice')}
                         disabled={isLoading}
                         {...field}
                       />
@@ -195,7 +197,7 @@ export function PackageForm({ package: pkgProp }: PackageFormProps) {
                 disabled={isLoading}
                 className="bg-[#4F46E5] hover:bg-[#4338CA] text-white w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                {isLoading ? 'Saving...' : pkgProp ? 'Update Package' : 'Create Package'}
+                {isLoading ? t('packages.saving') : pkgProp ? t('packages.updatePackage') : t('packages.createPackage')}
               </Button>
               <Button
                 type="button"
@@ -204,7 +206,7 @@ export function PackageForm({ package: pkgProp }: PackageFormProps) {
                 disabled={isLoading}
                 className="border-[#E5E7EB] w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </form>
