@@ -276,7 +276,7 @@ function CalendarPage({
                           </PopoverTrigger>
                           <PopoverContent className="w-80">
                             <div className="space-y-3">
-                              <h4 className="font-bold text-[#111827] text-sm">{dayCoursesForDay.length} {t('calendar.classesOnDay')} {day}</h4>
+                              <h4 className="font-bold text-[#111827] text-sm">{t('calendar.classesOnDay', { count: dayCoursesForDay.length, date: day })}</h4>
                               {dayCoursesForDay.map((course: any) => (
                                 <div
                                   key={course.id}

@@ -368,10 +368,10 @@ export function StudentAttendanceList({
         const absentCount = absentRecords.length
         let message = '✅ Attendance saved! '
         if (presentCount > 0) {
-          message += `${presentCount} student${presentCount !== 1 ? 's' : ''} marked present. `
+          message += t('attendance.presentMarked', { count: presentCount }) + ' '
         }
         if (absentCount > 0) {
-          message += `${absentCount} student${absentCount !== 1 ? 's' : ''} marked absent.`
+          message += t('attendance.absentMarked', { count: absentCount })
         }
         setSuccessMessage(message)
         setAttendanceState([])
@@ -460,7 +460,7 @@ export function StudentAttendanceList({
                 <Calendar className="text-[#4F46E5] mt-0.5" size={18} />
                 <div>
                   <p className="text-sm font-medium text-[#111827]">Attendance History (Last 30 days)</p>
-                  <p className="text-xs text-gray-600 mt-1">{lastMonthAttendances.length} session(s) recorded</p>
+                  <p className="text-xs text-gray-600 mt-1">{t('attendance.sessionsRecorded', { count: lastMonthAttendances.length })}</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -476,7 +476,7 @@ export function StudentAttendanceList({
                         ? 'bg-[#4F46E5] text-white'
                         : 'bg-white border border-[#E5E7EB] text-[#111827] hover:border-[#4F46E5]'
                     }`}
-                    title={`${record.attendance_count} students`}
+                    title={t('attendance.attendanceCount', { count: record.attendance_count })}
                   >
                     {new Date(record.session_date).toLocaleDateString('tr-TR', {
                       day: '2-digit',

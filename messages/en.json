@@ -162,6 +162,8 @@
   },
   "students": {
     "title": "Students",
+    "activeCourses": "Active Courses ({count})",
+    "completedCourses": "Completed ({count})",
     "description": "Manage your studio students",
     "addNew": "Add New Student",
     "editStudent": "Edit Student",
@@ -220,6 +222,9 @@
   },
   "courses": {
     "title": "Courses",
+    "enrolledCourses": "{total} course{total, plural, one {} other {s}} • {active} active • {completed} completed",
+    "instructorsSelected": "{count} instructor{count, plural, one {} other {s}} selected",
+    "coursesOnDay": "({count})",
     "description": "Manage your dance courses and schedules",
     "addNew": "Add New Course",
     "editCourse": "Edit Course",
@@ -315,7 +320,11 @@
     "recordUpdated": "Attendance recorded successfully",
     "removeAttendance": "Remove Attendance",
     "back": "Back",
-    "backToSessions": "Back to Sessions"
+    "backToSessions": "Back to Sessions",
+    "presentMarked": "{count} student{count, plural, one {} other {s}} marked present",
+    "absentMarked": "{count} student{count, plural, one {} other {s}} marked absent",
+    "sessionsRecorded": "{count} session{count, plural, one {} other {s}} recorded",
+    "attendanceCount": "{count} student{count, plural, one {} other {s}}"
   },
   "calendar": {
     "title": "Calendar",
@@ -329,7 +338,7 @@
     "loading": "Loading calendar...",
     "noCoursesScheduled": "No courses scheduled",
     "createCoursesMessage": "Create courses to display them on the calendar",
-    "classesOnDay": "Classes on Day",
+    "classesOnDay": "{count} classes on day {date}",
     "noClasses": "No classes",
     "noClassesScheduled": "No classes scheduled",
     "branch": "Branch",

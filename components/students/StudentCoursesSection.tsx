@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -29,6 +30,7 @@ interface StudentCoursesSectionProps {
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps) {
+  const t = useTranslations()
   const [activeCourses, setActiveCourses] = useState<CourseWithStats[]>([])
   const [completedCourses, setCompletedCourses] = useState<CourseWithStats[]>([])
   const [selectedTab, setSelectedTab] = useState<'active' | 'completed'>('active')
@@ -107,8 +109,7 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
             Enrolled Courses
           </h3>
           <p className="text-sm text-gray-600 mt-1">
-            {totalCourses} course{totalCourses !== 1 ? 's' : ''} • {activeCourses.length} active •{' '}
-            {completedCourses.length} completed
+            {t('students.enrolledCourses', { total: totalCourses, active: activeCourses.length, completed: completedCourses.length })}
           </p>
         </div>
 
@@ -122,7 +123,7 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
                 : 'border-transparent text-gray-600 hover:text-[#111827]'
             }`}
           >
-            Active Courses ({activeCourses.length})
+            {t('students.activeCourses', { count: activeCourses.length })}
           </button>
           <button
             onClick={() => setSelectedTab('completed')}
@@ -132,7 +133,7 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
                 : 'border-transparent text-gray-600 hover:text-[#111827]'
             }`}
           >
-            Completed ({completedCourses.length})
+            {t('students.completedCourses', { count: completedCourses.length })}
           </button>
         </div>
 

@@ -155,6 +155,8 @@
   },
   "students": {
     "title": "Öğrenciler",
+    "activeCourses": "Aktif Kurslar ({count})",
+    "completedCourses": "Tamamlandı ({count})",
     "description": "Stüdyonuzun öğrencilerini yönetin",
     "addNew": "Yeni Öğrenci Ekle",
     "editStudent": "Öğrenciyi Düzenle",
@@ -213,6 +215,9 @@
   },
   "courses": {
     "title": "Kurslar",
+    "enrolledCourses": "{total} kurs • {active} aktif • {completed} tamamlandı",
+    "instructorsSelected": "{count} eğitmen seçildi",
+    "coursesOnDay": "({count})",
     "description": "Dans kurslarınızı ve zamanlamalarını yönetin",
     "addNew": "Yeni Kurs Ekle",
     "editCourse": "Kursu Düzenle",
@@ -311,7 +316,11 @@
     "backToSessions": "Oturumlara Geri Dön",
     "presentOutOf": "müsait",
     "outOf": "/",
-    "total": "toplam"
+    "total": "toplam",
+    "presentMarked": "{count} öğrenci başarıyla işaretlendi",
+    "absentMarked": "{count} öğrenci devamsız işaretlendi",
+    "sessionsRecorded": "{count} oturum kaydedildi",
+    "attendanceCount": "{count} öğrenci"
   },
   "calendar": {
     "title": "Takvim",
@@ -325,7 +334,7 @@
     "loading": "Takvim yükleniyor...",
     "noCoursesScheduled": "Planlanan kurs yok",
     "createCoursesMessage": "Kursu takvimde görüntülemek için oluşturun",
-    "classesOnDay": "Gün İçindeki Sınıflar",
+    "classesOnDay": "{date} tarihi için {count} sınıf",
     "noClasses": "Sınıf yok",
     "noClassesScheduled": "Planlanan sınıf yok",
     "branch": "Şube",

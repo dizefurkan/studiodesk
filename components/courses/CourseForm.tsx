@@ -341,7 +341,7 @@ export function CourseForm({ course }: CourseFormProps) {
                   >
                     <span className="flex-1 text-left">
                       {form.watch('instructorIds') && form.watch('instructorIds')!.length > 0
-                        ? `${form.watch('instructorIds')!.length} instructor(s) selected`
+                        ? t('courses.instructorsSelected', { count: form.watch('instructorIds')!.length })
                         : 'Select instructors...'}
                     </span>
                   </Button>
@@ -377,7 +377,7 @@ export function CourseForm({ course }: CourseFormProps) {
                         onClick={() => setShowCoursesModal(true)}
                         className="mt-2 text-[#4F46E5] text-xs md:text-sm p-0 h-auto"
                       >
-                        {t('courses.viewCoursesOnThisDay')} ({coursesOnDay.length})
+                        {t('courses.viewCoursesOnThisDay')} {t('courses.coursesOnDay', { count: coursesOnDay.length })}
                       </Button>
                     )}
                   </FormItem>
