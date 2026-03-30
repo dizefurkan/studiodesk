@@ -291,79 +291,26 @@ export function StudentFilters({
       </div>
 
       {/* Mobile Layout */}
-      <div className="md:hidden space-y-3">
-        {/* Search Bar */}
-        <SearchInput
-          placeholder={t('common.searchStudent')}
-          value={search}
-          onChange={handleSearchChange}
-          debounceMs={300}
-          ariaLabel="Search students by name or email"
-        />
+      <div className="md:hidden">
+        {/* Search + Filter Button */}
+        <div className="flex gap-2 items-center">
+          <SearchInput
+            placeholder={t('common.searchStudent')}
+            value={search}
+            onChange={handleSearchChange}
+            debounceMs={300}
+            ariaLabel="Search students by name or email"
+          />
 
-        {/* Filter Button + View + Columns + Reset Buttons */}
-        <div className="flex gap-2">
+          {/* Filter Button - Icon Only */}
           <Button
             onClick={() => setDrawerOpen(true)}
-            className="flex-1 bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm h-10"
+            className="bg-[#4F46E5] hover:bg-[#4338CA] text-white h-10 w-10 p-0 flex-shrink-0"
             aria-label="Open filters drawer"
+            title="Open filters"
           >
-            <SlidersHorizontal size={16} className="mr-2" />
-            Filters
+            <SlidersHorizontal size={18} />
           </Button>
-
-          {/* Mobile View Toggle */}
-          <div className="flex gap-1 bg-[#F3F4F6] p-1 rounded-lg">
-            <Button
-              variant={viewMode === 'single' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onViewModeChange?.('single')}
-              className={`h-7 px-2 ${
-                viewMode === 'single'
-                  ? 'bg-[#4F46E5] text-white'
-                  : 'text-[#6B7280] hover:bg-white'
-              }`}
-              title="Single row view"
-              aria-label="Single row view"
-            >
-              <List size={14} />
-            </Button>
-            <Button
-              variant={viewMode === 'expanded' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onViewModeChange?.('expanded')}
-              className={`h-7 px-2 ${
-                viewMode === 'expanded'
-                  ? 'bg-[#4F46E5] text-white'
-                  : 'text-[#6B7280] hover:bg-white'
-              }`}
-              title="Expanded view"
-              aria-label="Expanded view"
-            >
-              <Maximize2 size={14} />
-            </Button>
-          </div>
-
-          {/* Columns Button */}
-          {columns && onColumnsToggle && onColumnsReset && (
-            <StudentColumnSettings
-              columns={columns}
-              onToggle={onColumnsToggle}
-              onReset={onColumnsReset}
-            />
-          )}
-
-          {hasActiveFilters && (
-            <Button
-              onClick={handleReset}
-              variant="outline"
-              className="border-[#E5E7EB] text-gray-600 hover:bg-gray-50 text-sm px-2 h-10"
-              aria-label="Clear all filters"
-              title="Clear all filters"
-            >
-              <RotateCcw size={16} />
-            </Button>
-          )}
         </div>
       </div>
 
@@ -506,6 +453,62 @@ export function StudentFilters({
             />
             <span className="text-sm font-medium text-[#111827]">Credits</span>
           </label>
+
+          {/* Divider */}
+          <div className="border-t border-[#E5E7EB] pt-4"></div>
+
+          {/* View Toggle */}
+          <div>
+            <label className="block text-sm font-medium text-[#111827] mb-2">View</label>
+            <div className="flex gap-1 bg-[#F3F4F6] p-1 rounded-lg">
+              <Button
+                variant={viewMode === 'single' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => onViewModeChange?.('single')}
+                className={`flex-1 h-8 text-xs ${
+                  viewMode === 'single'
+                    ? 'bg-[#4F46E5] text-white'
+                    : 'text-[#6B7280] hover:bg-white'
+                }`}
+                title="Single row view"
+                aria-label="Single row view"
+              >
+                <List size={14} className="mr-1" />
+                Single
+              </Button>
+              <Button
+                variant={viewMode === 'expanded' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => onViewModeChange?.('expanded')}
+                className={`flex-1 h-8 text-xs ${
+                  viewMode === 'expanded'
+                    ? 'bg-[#4F46E5] text-white'
+                    : 'text-[#6B7280] hover:bg-white'
+                }`}
+                title="Expanded view"
+                aria-label="Expanded view"
+              >
+                <Maximize2 size={14} className="mr-1" />
+                Expanded
+              </Button>
+            </div>
+          </div>
+
+          {/* Reset Button */}
+          {hasActiveFilters && (
+            <div>
+              <Button
+                onClick={handleReset}
+                variant="outline"
+                className="w-full border-[#E5E7EB] text-gray-600 hover:bg-gray-50 text-sm"
+                aria-label="Clear all filters"
+                title="Clear all filters"
+              >
+                <RotateCcw size={16} className="mr-2" />
+                Reset All
+              </Button>
+            </div>
+          )}
         </div>
       </Drawer>
     </>
