@@ -207,11 +207,17 @@
     "createdAt": "Oluşturuldu",
     "actions": "İşlemler",
     "noInstructors": "Eğitmen bulunamadı",
+    "getStarted": "İlk eğitmeninizi ekleyerek başlayın",
     "instructorAdded": "Eğitmen başarıyla eklendi",
     "instructorUpdated": "Eğitmen başarıyla güncellendi",
     "instructorDeleted": "Eğitmen başarıyla silindi",
     "updateInformationMessage": "Eğitmen bilgilerini güncelleyin",
-    "addNewInstructorMessage": "Stüdyonuza yeni bir eğitmen ekleyin"
+    "addNewInstructorMessage": "Stüdyonuza yeni bir eğitmen ekleyin",
+    "coursesAssigned": "Atanan Kurslar",
+    "courseCount": "{count} kurs",
+    "danceTypesAssigned": "Dans Tipleri",
+    "danceTypeCount": "{count} tip",
+    "branchesAssigned": "Şubeler"
   },
   "courses": {
     "title": "Kurslar",

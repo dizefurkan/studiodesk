@@ -214,11 +214,17 @@
     "createdAt": "Created",
     "actions": "Actions",
     "noInstructors": "No instructors found",
+    "getStarted": "Get started by adding your first instructor",
     "instructorAdded": "Instructor added successfully",
     "instructorUpdated": "Instructor updated successfully",
     "instructorDeleted": "Instructor deleted successfully",
     "updateInformationMessage": "Update instructor information",
-    "addNewInstructorMessage": "Add a new instructor to your studio"
+    "addNewInstructorMessage": "Add a new instructor to your studio",
+    "coursesAssigned": "Assigned Courses",
+    "courseCount": "{count} course{count, plural, one {} other {s}}",
+    "danceTypesAssigned": "Dance Types",
+    "danceTypeCount": "{count} type{count, plural, one {} other {s}}",
+    "branchesAssigned": "Branches"
   },
   "courses": {
     "title": "Courses",

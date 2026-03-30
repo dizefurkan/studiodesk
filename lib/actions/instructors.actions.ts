@@ -83,11 +83,17 @@ export async function getInstructorsForDanceType(danceTypeId?: string) {
   }
 }
 
-export async function getInstructors(searchQuery?: string) {
+export async function getInstructors(
+  searchQuery?: string,
+  filters?: {
+    danceTypeId?: string
+    branchId?: string
+  }
+) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      console.warn('[getInstructors] User not authenticated')
+      console.warn('[getInstructors] User not authenticated - user is null')
       return { error: 'Not authenticated' }
     }
 
@@ -101,7 +107,18 @@ export async function getInstructors(searchQuery?: string) {
     
     let query = (admin as any)
       .from('instructors')
-      .select('*')
+      .select(`
+        id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        created_at,
+        updated_at,
+        branch_instructors(branch_id, branches(id, name)),
+        course_instructors(course_id, courses(id, name)),
+        instructor_rates(dance_type_id, branch_id, dance_types(id, name))
+      `)
       .eq('organization_id', organization.id)
       .order('created_at', { ascending: false })
 
@@ -118,7 +135,31 @@ export async function getInstructors(searchQuery?: string) {
       return { error: 'Failed to fetch instructors', details: error }
     }
 
-    return { data: data as any[] }
+    // Enrich data with computed stats
+    let enrichedData = (data as any[]).map((instructor) => ({
+      ...instructor,
+      branchCount: instructor.branch_instructors?.length || 0,
+      courseCount: instructor.course_instructors?.length || 0,
+      danceTypeCount: instructor.instructor_rates?.length || 0,
+      branches: instructor.branch_instructors?.filter((bi: any) => bi.branches).map((bi: any) => bi.branches) || [],
+      courses: instructor.course_instructors?.filter((ci: any) => ci.courses).map((ci: any) => ci.courses) || [],
+      danceTypes: instructor.instructor_rates?.filter((ir: any) => ir.dance_types).map((ir: any) => ir.dance_types) || [],
+    }))
+
+    // Apply client-side filters
+    if (filters?.danceTypeId) {
+      enrichedData = enrichedData.filter((instructor: any) =>
+        instructor.danceTypes.some((dt: any) => dt.id === filters.danceTypeId)
+      )
+    }
+
+    if (filters?.branchId) {
+      enrichedData = enrichedData.filter((instructor: any) =>
+        instructor.branches.some((b: any) => b.id === filters.branchId)
+      )
+    }
+
+    return { data: enrichedData }
   } catch (error) {
     console.error('[getInstructors] Unexpected error:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
@@ -300,5 +341,40 @@ export async function deleteInstructor(id: string) {
     console.error('[deleteInstructor] Unexpected error:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
     return { error: 'An unexpected error occurred', details: errorMessage }
+  }
+}
+
+export async function getInstructorFilterOptions() {
+  const user = await getCurrentUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
+  try {
+    const adminSupabase = createAdminClient()
+
+    // Get dance types list
+    const { data: danceTypesData } = await (adminSupabase
+      .from('dance_types') as any)
+      .select('id, name')
+      .eq('organization_id', organization.id)
+      .order('name')
+
+    const danceTypes = (danceTypesData || []) as Array<{ id: string; name: string }>
+
+    // Get branches list
+    const { data: branchesData } = await (adminSupabase
+      .from('branches') as any)
+      .select('id, name')
+      .eq('organization_id', organization.id)
+      .order('name')
+
+    const branches = (branchesData || []) as Array<{ id: string; name: string }>
+
+    return { danceTypes, branches }
+  } catch (error) {
+    console.error('[getInstructorFilterOptions] Unexpected error:', error)
+    return { error: 'Failed to fetch filter options', danceTypes: [], branches: [] }
   }
 }

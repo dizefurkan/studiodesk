@@ -8,9 +8,17 @@ export async function getCurrentUser(): Promise<User | null> {
     const supabase = await createServerSupabaseClient()
     const {
       data: { user },
+      error,
     } = await supabase.auth.getUser()
+    
+    if (error) {
+      console.error('[getCurrentUser] Auth error:', error)
+      return null
+    }
+    
     return user || null
-  } catch {
+  } catch (err) {
+    console.error('[getCurrentUser] Exception:', err instanceof Error ? err.message : err)
     return null
   }
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -44,6 +44,8 @@ export function StudentFilters({
 }: StudentFiltersProps) {
   const t = useTranslations()
   const router = useRouter()
+  const pathname = usePathname()
+  const locale = pathname.split('/')[1]
   const [search, setSearch] = useState(searchQuery || '')
   const [drawerOpen, setDrawerOpen] = useState(false)
 
@@ -54,7 +56,7 @@ export function StudentFilters({
     if (filters.danceType && typeof filters.danceType === 'string') params.set('danceType', filters.danceType)
     if (filters.branch && typeof filters.branch === 'string') params.set('branch', filters.branch)
     if (filters.course && typeof filters.course === 'string') params.set('course', filters.course)
-    return `/dashboard/students?${params.toString()}`
+    return `/${locale}/dashboard/students?${params.toString()}`
   }
 
   const handleSearchChange = (newSearch: string) => {
