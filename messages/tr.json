@@ -352,6 +352,7 @@
   },
   "packages": {
     "title": "Paketler",
+    "description": "Dans kurslarınız için kredi paketlerini yönetin",
     "addNew": "Yeni Paket Ekle",
     "editPackage": "Paketi Düzenle",
     "deletePackage": "Paketi Sil",

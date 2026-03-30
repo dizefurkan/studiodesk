@@ -356,6 +356,7 @@
   },
   "packages": {
     "title": "Packages",
+    "description": "Manage credit packages for your dance courses",
     "addNew": "Add New Package",
     "editPackage": "Edit Package",
     "deletePackage": "Delete Package",
