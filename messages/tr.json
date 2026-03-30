@@ -371,6 +371,8 @@
     "descriptionMakeupSessions": "Eğitmenlerin kaçırılan dersler için telafi oturumları planlamasını sağla"
   },
   "filters": {
+    "title": "Filtreler",
+    "description": "Aramanızı iyileştirin",
     "danceType": "Dans Türü",
     "branch": "Şube",
     "course": "Kurs",

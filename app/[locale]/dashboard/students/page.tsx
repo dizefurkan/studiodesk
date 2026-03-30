@@ -2,8 +2,7 @@ import { getStudentsWithStats, getStudentFilterOptions } from '@/lib/actions/stu
 import { getTranslations } from 'next-intl/server'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { StudentFilters } from '@/components/students/StudentFilters'
-import { StudentTable } from '@/components/students/StudentTable'
+import { StudentTableWrapper } from '@/components/students/StudentTableWrapper'
 import Link from 'next/link'
 import { Users, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
@@ -59,8 +58,9 @@ export default async function StudentsPage({
 
       {/* Content - Always show table card with filters */}
       <Card className="border-[#E5E7EB] p-3 sm:p-4 md:p-6">
-        {/* Filters Always Visible */}
-        <StudentFilters
+        {/* Filters and Table - Managed by Client Wrapper */}
+        <StudentTableWrapper
+          students={students}
           danceTypes={danceTypes}
           branches={branches}
           courses={courses}
@@ -69,10 +69,11 @@ export default async function StudentsPage({
           danceTypeId={danceTypeId}
           branchId={branchId}
           courseId={courseId}
+          filteredDanceTypeId={danceTypeId}
         />
 
-        {/* Table or Empty State */}
-        {students.length === 0 ? (
+        {/* Empty State */}
+        {students.length === 0 && (
           <div className="p-12 text-center mt-8">
             <Users className="mx-auto text-[#9CA3AF] mb-4" size={48} />
             {hasActiveFilters ? (
@@ -98,73 +99,63 @@ export default async function StudentsPage({
               </>
             )}
           </div>
-        ) : (
-          <>
-            <div className="mt-6 border-t border-[#E5E7EB] pt-6">
-              <StudentTable
-                students={students}
-                danceTypes={danceTypes}
-                branches={branches}
-                courses={courses}
-                filteredDanceTypeId={danceTypeId}
-              />
-            </div>
+        )}
 
-            {/* Pagination Controls */}
-            <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-[#E5E7EB] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-              <div className="text-xs sm:text-sm text-gray-600 order-2 sm:order-1">
-                Showing {(pagination.page - 1) * pagination.limit + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} students
-              </div>
-              <div className="flex flex-wrap gap-1 sm:gap-2 items-center order-1 sm:order-2">
-                <Link 
-                  href={`/dashboard/students?q=${searchQuery || ''}&page=${pagination.page - 1}`}
-                  className={pagination.hasPrevPage ? '' : 'pointer-events-none opacity-50'}
+        {/* Pagination Controls */}
+        {students.length > 0 && (
+          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-[#E5E7EB] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div className="text-xs sm:text-sm text-gray-600 order-2 sm:order-1">
+              Showing {(pagination.page - 1) * pagination.limit + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} students
+            </div>
+            <div className="flex flex-wrap gap-1 sm:gap-2 items-center order-1 sm:order-2">
+              <Link 
+                href={`/dashboard/students?q=${searchQuery || ''}&page=${pagination.page - 1}`}
+                className={pagination.hasPrevPage ? '' : 'pointer-events-none opacity-50'}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-[#E5E7EB]"
+                  disabled={!pagination.hasPrevPage}
                 >
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-[#E5E7EB]"
-                    disabled={!pagination.hasPrevPage}
+                  <ChevronLeft size={16} className="mr-1" />
+                  Previous
+                </Button>
+              </Link>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((p) => (
+                  <Link 
+                    key={p}
+                    href={`/dashboard/students?q=${searchQuery || ''}&page=${p}`}
                   >
-                    <ChevronLeft size={16} className="mr-1" />
-                    Previous
-                  </Button>
-                </Link>
-                
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((p) => (
-                    <Link 
-                      key={p}
-                      href={`/dashboard/students?q=${searchQuery || ''}&page=${p}`}
+                    <Button
+                      variant={p === pagination.page ? 'default' : 'outline'}
+                      size="sm"
+                      className={p === pagination.page ? 'bg-[#4F46E5] text-white' : 'border-[#E5E7EB]'}
                     >
-                      <Button
-                        variant={p === pagination.page ? 'default' : 'outline'}
-                        size="sm"
-                        className={p === pagination.page ? 'bg-[#4F46E5] text-white' : 'border-[#E5E7EB]'}
-                      >
-                        {p}
-                      </Button>
-                    </Link>
-                  ))}
-                </div>
-
-                <Link 
-                  href={`/dashboard/students?q=${searchQuery || ''}&page=${pagination.page + 1}`}
-                  className={pagination.hasNextPage ? '' : 'pointer-events-none opacity-50'}
-                >
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-[#E5E7EB]"
-                    disabled={!pagination.hasNextPage}
-                  >
-                    Next
-                    <ChevronRight size={16} className="ml-1" />
-                  </Button>
-                </Link>
+                      {p}
+                    </Button>
+                  </Link>
+                ))}
               </div>
+
+              <Link 
+                href={`/dashboard/students?q=${searchQuery || ''}&page=${pagination.page + 1}`}
+                className={pagination.hasNextPage ? '' : 'pointer-events-none opacity-50'}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-[#E5E7EB]"
+                  disabled={!pagination.hasNextPage}
+                >
+                  Next
+                  <ChevronRight size={16} className="ml-1" />
+                </Button>
+              </Link>
             </div>
-          </>
+          </div>
         )}
       </Card>
     </div>

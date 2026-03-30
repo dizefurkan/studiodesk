@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { StudentColumnSettings } from './StudentColumnSettings'
 import { StudentPopover } from './StudentPopover'
 import { useStudentColumns } from '@/hooks/useStudentColumns'
-import { Edit2, Trash2, List, Maximize2, ChevronDown } from 'lucide-react'
+import { Edit2, Trash2, ChevronDown } from 'lucide-react'
 
 interface Student {
   id: string
@@ -45,6 +44,7 @@ interface StudentTableProps {
   branches?: Array<{ id: string; name: string }>
   courses?: Array<{ id: string; name: string }>
   filteredDanceTypeId?: string
+  mobileViewMode?: 'single' | 'expanded'
 }
 
 export function StudentTable({ 
@@ -54,25 +54,11 @@ export function StudentTable({
   branches = [],
   courses = [],
   filteredDanceTypeId,
+  mobileViewMode = 'expanded',
 }: StudentTableProps) {
   const t = useTranslations()
-  const { columns, toggleColumn, resetColumns, isLoaded } = useStudentColumns()
-  const [mobileViewMode, setMobileViewMode] = useState<'single' | 'expanded'>('expanded')
+  const { columns, isLoaded } = useStudentColumns()
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
-
-  // Load mobile view preference from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('studentTableMobileView')
-    if (saved === 'single' || saved === 'expanded') {
-      setMobileViewMode(saved)
-    }
-  }, [])
-
-  // Save mobile view preference to localStorage
-  const handleToggleMobileView = (mode: 'single' | 'expanded') => {
-    setMobileViewMode(mode)
-    localStorage.setItem('studentTableMobileView', mode)
-  }
 
   const handleToggleRow = (studentId: string) => {
     setExpandedRows((prev) => {
@@ -101,51 +87,6 @@ export function StudentTable({
 
   return (
     <div className="space-y-3 md:space-y-4">
-      {/* Toolbar: View Toggle (Mobile) + Column Settings */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-        {/* Mobile View Toggle - Only visible on mobile */}
-        <div className="md:hidden flex gap-2 items-center text-xs">
-          <span className="text-[#6B7280] font-medium">View:</span>
-          <div className="flex gap-1 bg-[#F3F4F6] p-1 rounded-lg">
-            <Button
-              variant={mobileViewMode === 'single' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => handleToggleMobileView('single')}
-              className={`h-7 px-2 ${
-                mobileViewMode === 'single'
-                  ? 'bg-[#4F46E5] text-white'
-                  : 'text-[#6B7280] hover:bg-white'
-              }`}
-              title="Single row view"
-            >
-              <List size={14} />
-            </Button>
-            <Button
-              variant={mobileViewMode === 'expanded' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => handleToggleMobileView('expanded')}
-              className={`h-7 px-2 ${
-                mobileViewMode === 'expanded'
-                  ? 'bg-[#4F46E5] text-white'
-                  : 'text-[#6B7280] hover:bg-white'
-              }`}
-              title="Expanded view"
-            >
-              <Maximize2 size={14} />
-            </Button>
-          </div>
-        </div>
-
-        {/* Column Settings */}
-        <div className="flex justify-end text-xs md:text-sm md:flex-auto">
-          <StudentColumnSettings
-            columns={columns}
-            onToggle={toggleColumn}
-            onReset={resetColumns}
-          />
-        </div>
-      </div>
-
       {/* Desktop Table View */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full">

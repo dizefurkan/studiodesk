@@ -375,6 +375,8 @@
     "descriptionMakeupSessions": "Allow instructors to schedule makeup sessions for missed classes"
   },
   "filters": {
+    "title": "Filters",
+    "description": "Refine your search",
     "danceType": "Dance Type",
     "branch": "Branch",
     "course": "Course",
