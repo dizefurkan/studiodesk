@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useEffect, useState, useCallback } from 'react'
 import { getInstructorRates, getInstructorsAndBranchesAndDanceTypes, getInstructorRate } from '@/lib/actions/instructor-rates.actions'
 import { InstructorRatesTable } from '@/components/instructor-rates/InstructorRatesTable'
 import { InstructorSelectionDrawer } from '@/components/instructor-rates/InstructorSelectionDrawer'
@@ -11,27 +10,30 @@ import Link from 'next/link'
 import { DollarSign } from 'lucide-react'
 
 export default function InstructorRatesPage() {
-  const searchParams = useSearchParams()
   const [rates, setRates] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [editLoading, setEditLoading] = useState(false)
   const [drawerData, setDrawerData] = useState<any>(null)
   const [editingRate, setEditingRate] = useState<any>(null)
+  
+  // Local state instead of useSearchParams (avoid extra dependency triggers)
+  const [modalType, setModalType] = useState<string | null>(null)
+  const [editId, setEditId] = useState<string | null>(null)
+  const [selectedInstructor, setSelectedInstructor] = useState<string | null>(null)
 
-  const modalType = searchParams?.get('modal')
-  const editId = searchParams?.get('id')
-  const selectedInstructor = searchParams?.get('instructor')
-
-  // Load rates and drawer data
+  // Load rates and drawer data - fetch once on mount
   useEffect(() => {
+    let isMounted = true
+
     async function loadData() {
       setLoading(true)
       const [ratesResult, drawerDataResult] = await Promise.all([
         getInstructorRates(),
         getInstructorsAndBranchesAndDanceTypes()
       ])
-      console.log('Rates result:', ratesResult)
-      console.log('Drawer data result:', drawerDataResult)
+      
+      if (!isMounted) return
+      
       if (ratesResult.error) {
         console.error('Error fetching rates:', ratesResult.error)
       }
@@ -42,28 +44,51 @@ export default function InstructorRatesPage() {
       setDrawerData(drawerDataResult.data)
       setLoading(false)
     }
+    
     loadData()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   // Load editing rate if in edit mode
   useEffect(() => {
     if (modalType === 'edit' && editId) {
       setEditLoading(true)
+      
+      let isMounted = true
+      
       async function loadEditingRate() {
         const result = await getInstructorRate(editId as string)
-        setEditingRate(result.data)
-        setEditLoading(false)
+        if (isMounted) {
+          setEditingRate(result.data)
+          setEditLoading(false)
+        }
       }
+      
       loadEditingRate()
+
+      return () => {
+        isMounted = false
+      }
     } else {
       setEditingRate(null)
       setEditLoading(false)
     }
   }, [modalType, editId])
 
-  const handleCloseDrawer = () => {
-    window.history.pushState({}, '', '/dashboard/instructor-rates')
-  }
+  // Refresh rates after they're modified (instead of full page reload)
+  const handleRatesChange = useCallback(async () => {
+    const ratesResult = await getInstructorRates()
+    setRates(ratesResult.data || [])
+  }, [])
+
+  const handleCloseDrawer = useCallback(() => {
+    setModalType(null)
+    setEditId(null)
+    setSelectedInstructor(null)
+  }, [])
 
   const isSelectionDrawerOpen = modalType === 'new' && !selectedInstructor
   const isFormDrawerOpen = (modalType === 'new' && selectedInstructor) || modalType === 'edit'
@@ -98,10 +123,10 @@ export default function InstructorRatesPage() {
         </div>
       </Card>
 
-      <InstructorRatesTable rates={rates} onRatesChange={() => location.reload()} />
+      <InstructorRatesTable rates={rates} onRatesChange={handleRatesChange} />
 
       {/* Instructor Selection Drawer (for 'new' modal without instructor selected) */}
-      {!loading && drawerData && isSelectionDrawerOpen && (
+      {!loading && drawerData && modalType === 'new' && !selectedInstructor && (
         <InstructorSelectionDrawer
           instructors={drawerData.instructors || []}
           isOpen={true}
@@ -110,7 +135,7 @@ export default function InstructorRatesPage() {
       )}
 
       {/* Rate Form Drawer (for 'new' with instructor selected, or 'edit' mode) */}
-      {!loading && drawerData && isFormDrawerOpen && !editLoading && (
+      {!loading && drawerData && ((modalType === 'new' && selectedInstructor) || modalType === 'edit') && !editLoading && (
         <AddInstructorRateDrawer
           instructors={drawerData.instructors || []}
           branches={drawerData.branches || []}
