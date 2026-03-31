@@ -3,6 +3,87 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { createAdminClient } from '@/lib/supabase/admin'
+
+// ========================================
+// LOGGING UTILITY - NON-BREAKING
+// ========================================
+
+export type HistoryAction = 'CREATE' | 'UPDATE' | 'DELETE'
+export type HistoryEntity =
+  | 'student'
+  | 'instructor'
+  | 'course'
+  | 'package'
+  | 'branch'
+  | 'dance_type'
+  | 'attendance'
+  | 'course_student'
+  | 'instructor_rate'
+  | 'cash_register'
+  | 'studio'
+  | 'invitation'
+  | 'organization_settings'
+
+interface HistoryLogData {
+  before?: Record<string, any> // Previous values (for UPDATE/DELETE)
+  after?: Record<string, any> // New values (for CREATE/UPDATE)
+  changes?: Record<string, { before: any; after: any }> // Only changed fields (for UPDATE)
+  [key: string]: any // Allow additional metadata
+}
+
+/**
+ * Logs an operation to history_logs table
+ * Designed to be non-blocking - continues even if logging fails
+ */
+export async function logOperation(
+  action: HistoryAction,
+  entity: HistoryEntity,
+  entityId: string,
+  data?: HistoryLogData,
+  organizationId?: string
+) {
+  try {
+    // Get current user and organization if not provided
+    const user = await getCurrentUser()
+    if (!user) {
+      console.warn('[logOperation] User not authenticated, skipping log')
+      return
+    }
+
+    const org = organizationId ? null : await getOrganization()
+    const finalOrgId = organizationId || org?.id
+    if (!finalOrgId) {
+      console.warn('[logOperation] No organization found, skipping log')
+      return
+    }
+
+    // Use admin client to bypass RLS
+    const admin = createAdminClient()
+
+    const { error } = await (admin.from('history_logs') as any).insert({
+      organization_id: finalOrgId,
+      user_id: user.id,
+      action,
+      entity,
+      entity_id: entityId,
+      data: data || null,
+      created_at: new Date().toISOString(),
+    })
+
+    if (error) {
+      console.error(`[logOperation] Error logging ${action} on ${entity}:`, error)
+      // Don't throw - this is non-critical
+    }
+  } catch (error) {
+    // Silently catch - logs shouldn't break operations
+    console.error('[logOperation] Unexpected error:', error)
+  }
+}
+
+// ========================================
+// EXISTING HISTORY QUERIES
+// ========================================
 
 export async function getStudentAttendanceHistory(studentId: string) {
   const user = await getCurrentUser()

@@ -4,6 +4,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { logOperation } from '@/lib/actions/history.actions'
+import { getChanges } from '@/lib/utils/history-utils'
 import type { Database } from '@/lib/types/database.types'
 
 type Package = Database['public']['Tables']['packages']['Row']
@@ -102,6 +104,16 @@ export async function createPackage(input: CreatePackageInput) {
       return { error: 'Failed to create package' }
     }
 
+    // Log the create operation
+    void logOperation('CREATE', 'package', (data as any).id, {
+      after: {
+        name: (data as any).name,
+        danceTypeId: (data as any).dance_type_id,
+        totalCredits: (data as any).total_credits,
+        price: (data as any).price,
+      }
+    }, organization.id)
+
     return { data: data as Package, success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
@@ -126,14 +138,15 @@ export async function updatePackage(id: string, input: UpdatePackageInput) {
   try {
     const supabase = await createServerSupabaseClient()
 
-    const { data: pkg } = await supabase
+    // Fetch before state for logging
+    const { data: beforePackage } = await supabase
       .from('packages')
-      .select('id')
+      .select('id, name, dance_type_id, total_credits, price')
       .eq('id', id)
       .eq('organization_id', organization.id)
       .single()
 
-    if (!pkg) {
+    if (!beforePackage) {
       return { error: 'Package not found or does not belong to your organization' }
     }
 
@@ -161,6 +174,26 @@ export async function updatePackage(id: string, input: UpdatePackageInput) {
       return { error: 'Failed to update package' }
     }
 
+    // Log the update operation
+    const beforeObj = {
+      name: (beforePackage as any).name,
+      danceTypeId: (beforePackage as any).dance_type_id,
+      totalCredits: (beforePackage as any).total_credits,
+      price: (beforePackage as any).price,
+    }
+    const afterObj = {
+      name: (data as any).name,
+      danceTypeId: (data as any).dance_type_id,
+      totalCredits: (data as any).total_credits,
+      price: (data as any).price,
+    }
+    const changes = getChanges(beforeObj, afterObj)
+    void logOperation('UPDATE', 'package', id, {
+      before: beforeObj,
+      after: afterObj,
+      changes,
+    }, organization.id)
+
     return { data: data as Package, success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
@@ -178,6 +211,18 @@ export async function deletePackage(id: string) {
   try {
     const supabase = await createServerSupabaseClient()
 
+    // Fetch before state for logging
+    const { data: beforePackage } = await supabase
+      .from('packages')
+      .select('id, name, dance_type_id, total_credits, price')
+      .eq('id', id)
+      .eq('organization_id', organization.id)
+      .single()
+
+    if (!beforePackage) {
+      return { error: 'Package not found or does not belong to your organization' }
+    }
+
     const { error } = await supabase
       .from('packages')
       .delete()
@@ -188,6 +233,17 @@ export async function deletePackage(id: string) {
       console.error('Error deleting package:', error)
       return { error: 'Failed to delete package' }
     }
+
+    // Log the delete operation
+    const beforeObj = {
+      name: (beforePackage as any).name,
+      danceTypeId: (beforePackage as any).dance_type_id,
+      totalCredits: (beforePackage as any).total_credits,
+      price: (beforePackage as any).price,
+    }
+    void logOperation('DELETE', 'package', id, {
+      before: beforeObj,
+    }, organization.id)
 
     return { success: true }
   } catch (error) {

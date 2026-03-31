@@ -4,25 +4,61 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { logOperation } from '@/lib/actions/history.actions'
 import type { Database } from '@/lib/types/database.types'
 
 type Attendance = Database['public']['Tables']['attendances']['Row']
+type CourseSession = Database['public']['Tables']['course_sessions']['Row']
+type Course = Database['public']['Tables']['courses']['Row']
+type Student = Database['public']['Tables']['students']['Row']
+type StudentPackage = Database['public']['Tables']['student_packages']['Row']
+type CourseInstructor = Database['public']['Tables']['course_instructors']['Row']
+type SessionInstructor = Database['public']['Tables']['session_instructors']['Row']
+type Instructor = Database['public']['Tables']['instructors']['Row']
+type InstructorRate = Database['public']['Tables']['instructor_rates']['Row']
+type InstructorEarning = Database['public']['Tables']['instructor_earnings']['Row']
+type Package = Database['public']['Tables']['packages']['Row']
 
-export async function getSessionAttendances(sessionId: string) {
+// Query result types with relationships
+type AttendanceWithRelations = Attendance & {
+  students: { first_name: string | null; last_name: string | null } | null
+  student_packages: { remaining_credits: number } | null
+}
+
+// Type-safe return where students is guaranteed to be present
+type AttendanceWithStudent = AttendanceWithRelations & {
+  students: NonNullable<AttendanceWithRelations['students']>
+}
+
+export async function getSessionAttendances(
+  sessionId: string
+): Promise<{ data?: AttendanceWithStudent[]; error?: string }> {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
   try {
     const supabase = await createServerSupabaseClient()
-    const { data, error } = await supabase
+    const result = await supabase
       .from('attendances')
       .select('*, students(first_name, last_name), student_packages(remaining_credits)')
       .eq('session_id', sessionId)
+      .overrideTypes<AttendanceWithRelations[]>()
+
+    const { data: allAttendances, error } = result as {
+      data: AttendanceWithRelations[] | null
+      error: any
+    }
 
     if (error) {
       console.error('Error fetching attendances:', error)
       return { error: 'Failed to fetch attendances' }
     }
+
+    // ✅ Filter to only include records with valid student relationship
+    const data = (allAttendances || []).filter(
+      (a): a is AttendanceWithRelations & { students: NonNullable<AttendanceWithRelations['students']> } =>
+        !!a.students
+    )
 
     return { data }
   } catch (error) {
@@ -31,7 +67,9 @@ export async function getSessionAttendances(sessionId: string) {
   }
 }
 
-export async function getSessionStudents(sessionId: string) {
+export async function getSessionStudents(
+  sessionId: string
+): Promise<{ data?: Student[]; error?: string }> {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -39,22 +77,34 @@ export async function getSessionStudents(sessionId: string) {
     const supabase = await createServerSupabaseClient()
 
     // Get course from session
-    const { data: session, error: sessionError } = await (supabase
-      .from('course_sessions') as any)
+    const sessionResult = await supabase
+      .from('course_sessions')
       .select('course_id')
       .eq('id', sessionId)
       .single()
+      .overrideTypes<CourseSession>()
+
+    const { data: session, error: sessionError } = sessionResult as {
+      data: CourseSession | null
+      error: any
+    }
 
     if (sessionError || !session) {
       return { error: 'Session not found' }
     }
 
     // Get course info
-    const { data: courseData, error: courseError } = await (supabase
-      .from('courses') as any)
+    const courseResult = await supabase
+      .from('courses')
       .select('dance_type_id')
       .eq('id', session.course_id)
       .single()
+      .overrideTypes<Course>()
+
+    const { data: courseData, error: courseError } = courseResult as {
+      data: Course | null
+      error: any
+    }
 
     if (courseError || !courseData) {
       return { error: 'Course not found' }
@@ -62,8 +112,18 @@ export async function getSessionStudents(sessionId: string) {
 
     // Use admin client to fetch students enrolled in this course with packages
     const adminSupabase = createAdminClient()
-    const { data: courseStudents, error: studentsError } = await (adminSupabase
-      .from('course_students') as any)
+    
+    type CourseStudentWithDetails = {
+      student_id: string
+      students: Student & {
+        student_packages: (StudentPackage & {
+          package: { dance_type_id: string } | null
+        })[] | null
+      } | null
+    }
+
+    const studentsResult = await adminSupabase
+      .from('course_students')
       .select(
         `student_id, 
          students(
@@ -75,6 +135,12 @@ export async function getSessionStudents(sessionId: string) {
          )`,
       )
       .eq('course_id', session.course_id)
+      .overrideTypes<CourseStudentWithDetails[]>()
+
+    const { data: courseStudents, error: studentsError } = studentsResult as {
+      data: CourseStudentWithDetails[] | null
+      error: any
+    }
 
     if (studentsError) {
       console.error('Error fetching enrolled students:', {
@@ -85,12 +151,13 @@ export async function getSessionStudents(sessionId: string) {
       return { error: 'Failed to fetch students' }
     }
 
-    // Extract students with their packages for this dance type (including those with 0 credits or no matching packages)
+    // Extract students with their packages for this dance type
     const filteredStudents = (courseStudents || [])
-      .map((cs: any) => ({
+      .filter((cs): cs is CourseStudentWithDetails & { students: NonNullable<CourseStudentWithDetails['students']> } => !!cs.students)
+      .map((cs) => ({
         ...cs.students,
         student_packages: (cs.students.student_packages || [])
-          .filter((sp: any) => sp.package?.dance_type_id === courseData.dance_type_id),
+          .filter((sp) => sp.package?.dance_type_id === courseData.dance_type_id),
       }))
 
     return { data: filteredStudents }
@@ -104,98 +171,128 @@ export async function getSessionStudents(sessionId: string) {
   }
 }
 
-export async function recordAttendance(sessionId: string, studentId: string, studentPackageId: string, studioId?: string | null) {
+export async function recordAttendance(
+  sessionId: string,
+  studentId: string,
+  studentPackageId: string,
+  studioId?: string | null,
+): Promise<{ success?: boolean; data?: Attendance; error?: string }> {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
   try {
     const supabase = await createServerSupabaseClient()
 
-    // Record attendance
-    const { data, error } = await (supabase
-      .from('attendances') as any)
+    // Record attendance - .overrideTypes() ensures proper return type
+    const result = await supabase
+      .from('attendances')
       .insert({
         session_id: sessionId,
         student_id: studentId,
         student_package_id: studentPackageId,
         studio_id: studioId || null,
-      })
+      } as any)
       .select()
       .single()
+      .overrideTypes<Attendance>()
+    
+    const { data, error } = result as { data: Attendance | null; error: any }
 
     if (error) {
       console.error('Error recording attendance:', error)
       return { error: 'Failed to record attendance' }
     }
 
-    // Deduct credit from student_package
-    const { data: pkg } = await (supabase
-      .from('student_packages') as any)
-      .select('remaining_credits')
-      .eq('id', studentPackageId)
-      .single()
-
-    if (pkg && pkg.remaining_credits > 0) {
-      await (supabase
-        .from('student_packages') as any)
-        .update({ remaining_credits: pkg.remaining_credits - 1 })
-        .eq('id', studentPackageId)
+    if (!data) {
+      return { error: 'Failed to record attendance' }
     }
 
+    // ✅ Now data is properly typed as Attendance - no casting needed!
+    // Log the attendance record creation
+    const organization = await getOrganization()
+    if (organization) {
+      void logOperation('CREATE', 'attendance', data.id, {
+        after: {
+          sessionId: data.session_id,
+          studentId: data.student_id,
+          studentPackageId: data.student_package_id,
+          studioId: data.studio_id,  // ✅ TypeScript knows this exists!
+        }
+      }, organization.id)
+    }
+
+    // Deduct credit from student_package
+    
+    const { data: pkg } = await supabase
+      .from('student_packages')
+      .select('remaining_credits')
+      .eq('id', studentPackageId)
+      .maybeSingle()
+      .overrideTypes<StudentPackage>() as any
+
     // Get session and course info for instructor earnings
-    const { data: sessionData } = await (supabase
-      .from('course_sessions') as any)
+    const { data: sessionData } = await supabase
+      .from('course_sessions')
       .select('course_id')
       .eq('id', sessionId)
-      .single()
+      .maybeSingle()
+      .overrideTypes<CourseSession>() as any
 
     if (sessionData) {
-      // Get instructors for this course
-      const { data: courseInstructors } = await (supabase
-        .from('course_instructors') as any)
+      // Get instructors for this course - Direct select without complex joins
+      const { data: courseInstructors } = await supabase
+        .from('course_instructors')
         .select('instructor_id')
         .eq('course_id', sessionData.course_id)
+        .overrideTypes<{ instructor_id: string }[]>() as any
 
       if (courseInstructors && courseInstructors.length > 0) {
         // Get course details for rate calculation
-        const { data: courseData } = await (supabase
-          .from('courses') as any)
+        const { data: courseData } = await supabase
+          .from('courses')
           .select('branch_id, dance_type_id')
           .eq('id', sessionData.course_id)
-          .single()
+          .maybeSingle()
+          .overrideTypes<Course>() as any
 
         if (courseData) {
           // Calculate earnings for each instructor
           for (const ci of courseInstructors) {
-            const { data: rateData } = await (supabase
-              .from('instructor_rates') as any)
+            // Get rate - using direct filter since we need multiple conditions
+            const { data: rateData } = await supabase
+              .from('instructor_rates')
               .select('ratio_per_class')
               .eq('instructor_id', ci.instructor_id)
               .eq('branch_id', courseData.branch_id)
               .eq('dance_type_id', courseData.dance_type_id)
-              .single()
+              .maybeSingle()
+              .overrideTypes<InstructorRate>() as any
 
             const ratio = rateData?.ratio_per_class || 0
 
             // Check if earnings already recorded for this instructor and session
-            const { data: existingEarning } = await (supabase
-              .from('instructor_earnings') as any)
+            const { data: existingEarning } = await supabase
+              .from('instructor_earnings')
               .select('id')
               .eq('instructor_id', ci.instructor_id)
               .eq('session_id', sessionId)
-              .single()
+              .maybeSingle()
+              .overrideTypes<{ id: string }>() as any
 
             // Only record if not already recorded
             if (!existingEarning && ratio > 0) {
               // Note: This appears to be legacy code - instructor earnings should be calculated
               // with package price. Keeping for backward compatibility.
-              await (supabase
-                .from('instructor_earnings') as any)
+              await supabase
+                .from('instructor_earnings')
                 .insert({
                   instructor_id: ci.instructor_id,
                   session_id: sessionId,
                   amount: (ratio / 100),  // Convert percentage to decimal
-                })
+                } as any)
+                .select()
+                .single()
+                .overrideTypes<InstructorEarning>() as any
             }
           }
         }
@@ -209,25 +306,40 @@ export async function recordAttendance(sessionId: string, studentId: string, stu
   }
 }
 
-export async function removeAttendance(attendanceId: string, studentPackageId: string) {
+export async function removeAttendance(
+  attendanceId: string,
+  studentPackageId: string,
+): Promise<{ success?: boolean; error?: string }> {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
 
   try {
     const supabase = await createServerSupabaseClient()
 
+    // Fetch before state for logging
+    const { data: beforeAttendance } = await supabase
+      .from('attendances')
+      .select('id, session_id, student_id, student_package_id, studio_id')
+      .eq('id', attendanceId)
+      .maybeSingle()
+      .overrideTypes<Attendance>() as any
+
     // Get the current credit count
-    const { data: pkg } = await (supabase
-      .from('student_packages') as any)
+    const { data: pkg } = await supabase
+      .from('student_packages')
       .select('remaining_credits')
       .eq('id', studentPackageId)
-      .single()
+      .maybeSingle()
+      .overrideTypes<StudentPackage>() as any
 
     // Restore credit
     if (pkg) {
-      await (supabase
-        .from('student_packages') as any)
-        .update({ remaining_credits: pkg.remaining_credits + 1 })
+      const updateData = { remaining_credits: pkg.remaining_credits + 1 }
+      await (supabase as any)
+        .from('student_packages')
+        .update(updateData)
         .eq('id', studentPackageId)
     }
 
@@ -237,6 +349,18 @@ export async function removeAttendance(attendanceId: string, studentPackageId: s
     if (error) {
       console.error('Error removing attendance:', error)
       return { error: 'Failed to remove attendance' }
+    }
+
+    // Log the attendance record deletion
+    if (organization && beforeAttendance) {
+      void logOperation('DELETE', 'attendance', attendanceId, {
+        before: {
+          sessionId: beforeAttendance.session_id,
+          studentId: beforeAttendance.student_id,
+          studentPackageId: beforeAttendance.student_package_id,
+          studioId: beforeAttendance.studio_id,
+        }
+      }, organization.id)
     }
 
     return { success: true }
@@ -259,7 +383,11 @@ export async function recordBatchAttendance(
   studioId?: string | null,
   instructorIds?: string[] | null,
   attendanceDate?: string,
-) {
+): Promise<{
+  success?: boolean
+  data?: { sessionId: string; recordedCount: number; absenceNotesCount: number; skippedCount: number }
+  error?: string
+}> {
   /**
    * Records attendance for multiple students in a batch.
    * 
@@ -328,12 +456,13 @@ export async function recordBatchAttendance(
     const checkDate = attendanceDate || new Date().toISOString().split('T')[0]
     console.log('[recordBatchAttendance] Checking for session:', { courseId, checkDate })
     
-    const { data: existingSession } = await (supabase
-      .from('course_sessions') as any)
+    const { data: existingSession } = await supabase
+      .from('course_sessions')
       .select('id')
       .eq('course_id', courseId)
       .eq('session_date', checkDate)
       .single()
+      .overrideTypes<CourseSession>() as any
 
     let actualSessionId = sessionId
     
@@ -345,21 +474,24 @@ export async function recordBatchAttendance(
       const { createAdminClient } = await import('@/lib/supabase/admin')
       const adminClient = createAdminClient()
       
-      const { data: createdSession, error: createError } = await (adminClient
-        .from('course_sessions') as any)
+      const result = await adminClient
+        .from('course_sessions')
         .insert({ 
           course_id: courseId,
           session_date: today 
-        })
+        } as any)
         .select()
         .single()
+        .overrideTypes<CourseSession>()
+      
+      const { data: createdSession, error: createError } = result as { data: CourseSession | null; error: any }
 
-      if (createError) {
+      if (createError || !createdSession) {
         console.error('[recordBatchAttendance] Failed to create session:', createError)
         return { error: 'Failed to create session for attendance' }
       }
       
-      actualSessionId = createdSession?.id
+      actualSessionId = createdSession.id
       console.log('[recordBatchAttendance] Session created successfully:', actualSessionId)
 
       // If instructor(s) are specified, insert into session_instructors table
@@ -369,9 +501,11 @@ export async function recordBatchAttendance(
           instructor_id: id
         }))
         
-        const { error: siError } = await (supabase
-          .from('session_instructors') as any)
-          .insert(sessionInstructorRecords)
+        const { error: siError } = await supabase
+          .from('session_instructors')
+          .insert(sessionInstructorRecords as any)
+          .select()
+          .overrideTypes<{ session_id: string; instructor_id: string }[]>() as any
         
         if (siError) {
           console.error('[recordBatchAttendance] Failed to insert session instructors:', siError)
@@ -385,8 +519,8 @@ export async function recordBatchAttendance(
       console.log('[recordBatchAttendance] Session already exists:', actualSessionId)
       
       // Check if attendance records already exist for this session
-      const { data: existingAttendance, error: attendanceCheckError } = await (supabase
-        .from('attendances') as any)
+      const { data: existingAttendance, error: attendanceCheckError } = await supabase
+        .from('attendances')
         .select('id', { count: 'exact', head: true })
         .eq('session_id', actualSessionId)
         .limit(1)
@@ -402,7 +536,15 @@ export async function recordBatchAttendance(
     const gelmediWithNotesBatch = attendanceData.filter((a) => a.status === 'gelmedi')
 
     if (geldiBatch.length === 0 && gelmediWithNotesBatch.length === 0) {
-      return { success: true, data: { recordedCount: 0, skippedCount: attendanceData.length } }
+      return {
+        success: true,
+        data: {
+          sessionId: actualSessionId,
+          recordedCount: 0,
+          absenceNotesCount: 0,
+          skippedCount: attendanceData.length,
+        },
+      }
     }
 
     // Validate that all records have studentPackageId
@@ -425,7 +567,11 @@ export async function recordBatchAttendance(
     }))
 
     console.log('[recordBatchAttendance] Inserting attendance records:', attendanceRecords, 'with studio:', studioId || 'none', `(${geldiBatch.length} geldi + ${gelmediWithNotesBatch.length} gelmedi)`)
-    const { error: insertError } = await (supabase.from('attendances') as any).insert(attendanceRecords)
+    const { error: insertError } = await supabase
+      .from('attendances')
+      .insert(attendanceRecords as any)
+      .select()
+      .overrideTypes<Attendance[]>() as any
 
     if (insertError && (insertError as any)?.code !== '23505') {
       // 23505 = unique violation (already marked), which is ok
@@ -440,15 +586,16 @@ export async function recordBatchAttendance(
     const creditDeductionResults = []
     
     for (const record of recordsToDeductCredits) {
-      const { data: pkg } = await (supabase
-        .from('student_packages') as any)
+      const { data: pkg } = await supabase
+        .from('student_packages')
         .select('remaining_credits')
         .eq('id', record.studentPackageId)
-        .single()
+        .maybeSingle()
+        .overrideTypes<StudentPackage>() as any
 
       if (pkg && pkg.remaining_credits > 0) {
-        const { error: updateError } = await (supabase
-          .from('student_packages') as any)
+        const { error: updateError } = await (supabase as any)
+          .from('student_packages')
           .update({ remaining_credits: pkg.remaining_credits - 1 })
           .eq('id', record.studentPackageId)
         
@@ -472,18 +619,20 @@ export async function recordBatchAttendance(
 
     // Get session and course info for instructor earnings
     console.log(`[recordBatchAttendance] Creating instructor earnings for session: ${actualSessionId}`)
-    const { data: sessionData } = await (supabase
-      .from('course_sessions') as any)
+    const { data: sessionData } = await supabase
+      .from('course_sessions')
       .select('course_id')
       .eq('id', actualSessionId)
-      .single()
+      .maybeSingle()
+      .overrideTypes<CourseSession>() as any
 
     if (sessionData) {
       // First check if session_instructors table has a specific instructor for this session
-      const { data: sessionInstructors } = await (supabase
-        .from('session_instructors') as any)
+      const { data: sessionInstructors } = await supabase
+        .from('session_instructors')
         .select('instructor_id')
         .eq('session_id', actualSessionId)
+        .overrideTypes<{ instructor_id: string }[]>() as any
 
       let instructorsToProcess: any[] = []
       
@@ -493,10 +642,11 @@ export async function recordBatchAttendance(
         console.log(`[recordBatchAttendance] Found ${instructorsToProcess.length} specific instructor(s) for this session`)
       } else {
         // Fall back to course instructors if no session-specific instructor set
-        const { data: courseInstructors } = await (supabase
-          .from('course_instructors') as any)
+        const { data: courseInstructors } = await supabase
+          .from('course_instructors')
           .select('instructor_id')
           .eq('course_id', sessionData.course_id)
+          .overrideTypes<{ instructor_id: string }[]>() as any
         
         instructorsToProcess = courseInstructors || []
         console.log(`[recordBatchAttendance] No session-specific instructor; using ${instructorsToProcess.length} course instructor(s)`)
@@ -504,19 +654,20 @@ export async function recordBatchAttendance(
 
       if (instructorsToProcess && instructorsToProcess.length > 0) {
         // Get course details for rate calculation
-        const { data: courseData } = await (supabase
-          .from('courses') as any)
+        const { data: courseData } = await supabase
+          .from('courses')
           .select('branch_id, dance_type_id')
           .eq('id', sessionData.course_id)
           .single()
+          .overrideTypes<Course>() as any
 
         if (courseData) {
           // Get package price for this dance type
-          const { data: packageData } = await (supabase
-            .from('packages') as any)
+          const { data: packageData } = await supabase
+            .from('packages')
             .select('price')
             .eq('dance_type_id', courseData.dance_type_id)
-            .single()
+            .single() as { data: Package; error: null }
 
           const packagePrice = packageData?.price || 0
           console.log(`[recordBatchAttendance] Package price for dance type: ₺${packagePrice}`)
@@ -525,38 +676,41 @@ export async function recordBatchAttendance(
           
           // Calculate earnings for each instructor (only once per session)
           for (const ci of instructorsToProcess) {
-            const { data: rateData } = await (supabase
-              .from('instructor_rates') as any)
+            const { data: rateData } = await supabase
+              .from('instructor_rates')
               .select('ratio_per_class')
               .eq('instructor_id', ci.instructor_id)
               .eq('branch_id', courseData.branch_id)
               .eq('dance_type_id', courseData.dance_type_id)
-              .single()
+            .maybeSingle()
+            .overrideTypes<InstructorRate>() as any
 
             const ratio = rateData?.ratio_per_class || 0
-
-            // Calculate amount: (ratio / 100) × package_price
-            // Ratio is stored as percentage (e.g., 15.00 for 15%)
             const calculatedAmount = (ratio / 100) * packagePrice
+            
             console.log(`[recordBatchAttendance] Calculating earnings: ${ratio}% × ₺${packagePrice} = ₺${calculatedAmount.toFixed(2)}`)
 
             // Check if earnings already recorded for this instructor and session
-            const { data: existingEarning } = await (supabase
-              .from('instructor_earnings') as any)
+            const { data: existingEarning } = await supabase
+              .from('instructor_earnings')
               .select('id')
               .eq('instructor_id', ci.instructor_id)
               .eq('session_id', actualSessionId)
-              .single()
+              .maybeSingle()
+              .overrideTypes<{ id: string }>() as any
 
             // Only record if not already recorded
-            if (!existingEarning) {
-              const { error: earningsError } = await (supabase
-                .from('instructor_earnings') as any)
+            if (!existingEarning && ratio > 0) {
+              const { error: earningsError } = await supabase
+                .from('instructor_earnings')
                 .insert({
                   instructor_id: ci.instructor_id,
                   session_id: actualSessionId,
                   amount: calculatedAmount,
-                })
+                } as any)
+                .select()
+                .single()
+                .overrideTypes<InstructorEarning>() as any
               
               if (!earningsError) {
                 earningsCreated.push({
@@ -597,11 +751,17 @@ export async function recordBatchAttendance(
   }
 }
 
+// Type for attendance reports
+type AttendanceReport = Attendance & {
+  students: { first_name: string | null; last_name: string | null } | null
+  course_sessions: { session_date: string } | null
+}
+
 export async function getAttendanceReports(
   studentId?: string,
   dateFrom?: string,
   dateTo?: string,
-) {
+): Promise<{ data?: AttendanceReport[]; error?: string }> {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -629,14 +789,15 @@ export async function getAttendanceReports(
       query = query.lte('created_at', dateTo)
     }
 
-    const { data, error } = await query
+    const result = await query.overrideTypes<AttendanceReport[]>()
+    const { data, error } = result as { data: AttendanceReport[] | null; error: any }
 
     if (error) {
       console.error('Error fetching attendance reports:', error)
       return { error: 'Failed to fetch reports' }
     }
 
-    return { data }
+    return { data: data || [] }
   } catch (error) {
     console.error('Unexpected error:', error)
     return { error: 'An unexpected error occurred' }

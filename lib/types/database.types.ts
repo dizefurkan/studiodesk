@@ -418,6 +418,7 @@ export type Database = {
           session_id: string
           student_id: string
           student_package_id: string
+          studio_id: string | null
           created_at: string
           updated_at: string
         }
@@ -426,6 +427,7 @@ export type Database = {
           session_id: string
           student_id: string
           student_package_id: string
+          studio_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -434,6 +436,7 @@ export type Database = {
           session_id?: string
           student_id?: string
           student_package_id?: string
+          studio_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -500,28 +503,31 @@ export type Database = {
         Row: {
           id: string
           organization_id: string
+          user_id: string | null
           action: string
           entity: string
           entity_id: string
-          data: Record<string, unknown>
+          data: Record<string, unknown> | null
           created_at: string
         }
         Insert: {
           id?: string
           organization_id: string
+          user_id?: string | null
           action: string
           entity: string
           entity_id: string
-          data: Record<string, unknown>
+          data?: Record<string, unknown> | null
           created_at?: string
         }
         Update: {
           id?: string
           organization_id?: string
+          user_id?: string | null
           action?: string
           entity?: string
           entity_id?: string
-          data?: Record<string, unknown>
+          data?: Record<string, unknown> | null
           created_at?: string
         }
       }

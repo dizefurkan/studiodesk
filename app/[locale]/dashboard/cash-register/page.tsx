@@ -21,19 +21,24 @@ export default async function CashRegisterPage({
   const dateStr = typeof params.date === 'string' ? params.date : new Date().toISOString().split('T')[0]
 
   const organization = await getOrganization()
+  if (!organization) {
+    return <div className="p-8 text-center text-red-600">Organization not found</div>
+  }
+  
   const currency = organization?.currency || 'TRY'
 
-  const [transactionsResult, branchesResult, dailyReportResult, earningsResult] = await Promise.all([
-    dataType === 'earnings' ? { data: [] } : getTransactions(branchId, type),
-    getBranches(),
-    branchId && dataType !== 'earnings' ? getDailyReport(branchId, dateStr) : { success: false, data: null },
-    dataType === 'transactions' ? { data: [] } : getInstructorEarningsByBranch(branchId, dateStr, dateStr),
-  ])
+  try {
+    const [transactionsResult, branchesResult, dailyReportResult, earningsResult] = await Promise.all([
+      dataType === 'earnings' ? { data: [] } : getTransactions(branchId, type),
+      getBranches(),
+      branchId && dataType !== 'earnings' ? getDailyReport(branchId, dateStr) : { success: false, data: null },
+      dataType === 'transactions' ? { data: [] } : getInstructorEarningsByBranch(branchId, dateStr, dateStr),
+    ])
 
-  const transactions = transactionsResult.data || []
-  const branches = branchesResult.data || []
-  const dailyReport = dailyReportResult.success ? dailyReportResult.data : null
-  const earnings = earningsResult.data || []
+    const transactions = transactionsResult?.data || []
+    const branches = branchesResult?.data || []
+    const dailyReport = dailyReportResult?.success ? dailyReportResult.data : null
+    const earnings = earningsResult?.data || []
 
   // Merge transactions and earnings into a single sorted list
   interface CombinedItem {
@@ -191,4 +196,13 @@ export default async function CashRegisterPage({
       )}
     </div>
   )
+  } catch (error) {
+    console.error('Error loading cash register page:', error)
+    return (
+      <div className="p-8 text-center">
+        <p className="text-red-600 font-semibold mb-2">Error loading cash register</p>
+        <p className="text-gray-600 text-sm">Please try refreshing the page</p>
+      </div>
+    )
+  }
 }

@@ -5,11 +5,41 @@ import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { generateTemporaryPassword } from '@/lib/utils/generatePassword'
 import { revalidatePath } from 'next/cache'
+import type { Database } from '@/lib/types/database.types'
+
+type Profile = Database['public']['Tables']['profiles']['Row']
+type OrganizationUser = Database['public']['Tables']['organization_users']['Row']
+type Organization = Database['public']['Tables']['organizations']['Row']
+
+// Invitation type - table not in database schema yet, using generic structure
+interface Invitation {
+  id: string
+  email: string
+  role: string
+  organization_id: string
+  status: 'pending' | 'accepted' | 'expired'
+  token: string
+  expires_at: string
+  created_at?: string
+  accepted_at?: string | null
+}
 
 /**
  * Invite a new team member - creates user immediately with auto-generated password
  */
-export async function sendTeamInvitation(email: string, role: string) {
+export async function sendTeamInvitation(
+  email: string,
+  role: string,
+): Promise<{ 
+  success?: boolean
+  message?: string
+  isExisting?: boolean
+  email?: string
+  role?: string
+  temporaryPassword?: string
+  isNewUser?: boolean
+  error?: string 
+}> {
   const currentUser = await getCurrentUser()
   if (!currentUser) return { error: 'Not authenticated' }
 
@@ -31,33 +61,40 @@ export async function sendTeamInvitation(email: string, role: string) {
     const admin = createAdminClient()
 
     // Check if user already exists with this email
-    const { data: existingUser } = await (admin as any)
+    const existingUserResult = await admin
       .from('profiles')
       .select('id')
       .eq('email', email.toLowerCase())
       .single()
+      .overrideTypes<Profile>() as any
+
+    const { data: existingUser, error: existingUserError } = existingUserResult as { data: Profile | null; error: any }
 
     if (existingUser) {
       // Check if already in organization
-      const { data: orgMember } = await (admin as any)
+      const orgMemberResult = await admin
         .from('organization_users')
         .select('id')
         .eq('user_id', existingUser.id)
         .eq('organization_id', organization.id)
         .single()
+        .overrideTypes<OrganizationUser>() as any
+
+      const { data: orgMember } = orgMemberResult as { data: OrganizationUser | null; error: any }
 
       if (orgMember) {
         return { error: 'User is already a member of this organization' }
       }
 
       // Add existing user to organization
-      const { error: addError } = await (admin as any)
+      const { error: addError } = await admin
         .from('organization_users')
         .insert({
           organization_id: organization.id,
           user_id: existingUser.id,
           role: role,
-        })
+        } as any)
+        .overrideTypes<OrganizationUser>()
 
       if (addError) {
         console.error('Error adding existing user:', addError)
@@ -107,21 +144,25 @@ export async function sendTeamInvitation(email: string, role: string) {
             }
             
             // Check if profile exists
-            const { data: profileExists } = await (admin as any)
+            const profileExistsResult = await admin
               .from('profiles')
               .select('id')
               .eq('id', existingAuthUser.id)
               .single()
+              .overrideTypes<Profile>() as any
+
+            const { data: profileExists } = profileExistsResult as { data: Profile | null; error: any }
             
             // Create profile if it doesn't exist
             if (!profileExists) {
-              const { error: profileError } = await (admin as any)
+              const { error: profileError } = await admin
                 .from('profiles')
                 .insert({
                   id: existingAuthUser.id,
                   email: email.toLowerCase(),
                   full_name: email.split('@')[0],
-                })
+                } as any)
+                .overrideTypes<Profile>()
               
               if (profileError) {
                 console.error('❌ Error creating profile (existing user):', profileError)
@@ -131,25 +172,29 @@ export async function sendTeamInvitation(email: string, role: string) {
             }
             
             // Check if already in organization
-            const { data: orgMember } = await (admin as any)
+            const orgMember2Result = await admin
               .from('organization_users')
               .select('id')
               .eq('user_id', existingAuthUser.id)
               .eq('organization_id', organization.id)
               .single()
+              .overrideTypes<OrganizationUser>() as any
+
+            const { data: orgMember2 } = orgMember2Result as { data: OrganizationUser | null; error: any }
             
-            if (orgMember) {
+            if (orgMember2) {
               return { error: 'User is already a member of this organization' }
             }
             
             // Add to organization
-            const { error: orgError } = await (admin as any)
+            const { error: orgError } = await admin
               .from('organization_users')
               .insert({
                 organization_id: organization.id,
                 user_id: existingAuthUser.id,
                 role: role,
-              })
+              } as any)
+              .overrideTypes<OrganizationUser>()
             
             if (orgError) {
               console.error('Error adding to organization:', orgError)
@@ -178,13 +223,14 @@ export async function sendTeamInvitation(email: string, role: string) {
     }
 
     // Create user profile
-    const { error: profileError } = await (admin as any)
+    const { error: profileError } = await admin
       .from('profiles')
       .insert({
         id: authData.user.id,
         email: email.toLowerCase(),
         full_name: email.split('@')[0],
-      })
+      } as any)
+      .overrideTypes<Profile>()
 
     if (profileError) {
       console.error('❌ Error creating profile (new user):', profileError)
@@ -194,13 +240,14 @@ export async function sendTeamInvitation(email: string, role: string) {
     }
 
     // Add user to organization
-    const { error: orgError } = await (admin as any)
+    const { error: orgError } = await admin
       .from('organization_users')
       .insert({
         organization_id: organization.id,
         user_id: authData.user.id,
         role: role,
-      })
+      } as any)
+      .overrideTypes<OrganizationUser>()
 
     if (orgError) {
       console.error('❌ Error adding to organization:', orgError)
@@ -232,11 +279,13 @@ export async function sendTeamInvitation(email: string, role: string) {
 /**
  * Get invitation by token
  */
-export async function getInvitationByToken(token: string) {
+export async function getInvitationByToken(
+  token: string,
+): Promise<{ data?: Invitation & { organizations: Organization }; error?: string }> {
   try {
     const admin = createAdminClient()
 
-    const { data, error } = await (admin as any)
+    const result = await admin
       .from('invitations')
       .select(
         `
@@ -252,6 +301,9 @@ export async function getInvitationByToken(token: string) {
       .eq('token', token)
       .eq('status', 'pending')
       .single()
+      .overrideTypes<Invitation & { organizations: Organization }>() as any
+
+    const { data, error } = result as { data: (Invitation & { organizations: Organization }) | null; error: any }
 
     if (error || !data) {
       return { error: 'Invitation not found or already accepted' }
@@ -283,17 +335,26 @@ export async function acceptInvitation(
   token: string,
   fullName: string,
   password: string,
-) {
+): Promise<{ 
+  success?: boolean
+  userId?: string
+  organizationId?: string
+  message?: string
+  error?: string 
+}> {
   try {
     const admin = createAdminClient()
 
     // Get invitation
-    const { data: invitation, error: invitationError } = await (admin as any)
+    const invitationResult = await admin
       .from('invitations')
       .select('*')
       .eq('token', token)
       .eq('status', 'pending')
       .single()
+      .overrideTypes<Invitation>() as any
+
+    const { data: invitation, error: invitationError } = invitationResult as { data: Invitation | null; error: any }
 
     if (invitationError || !invitation) {
       return { error: 'Invalid or expired invitation' }
@@ -325,13 +386,14 @@ export async function acceptInvitation(
     }
 
     // Create user profile
-    const { error: profileError } = await (admin as any)
+    const { error: profileError } = await admin
       .from('profiles')
       .insert({
         id: authData.user.id,
         email: invitation.email,
         full_name: fullName,
-      })
+      } as any)
+      .overrideTypes<Profile>()
 
     if (profileError) {
       console.error('Error creating profile:', profileError)
@@ -339,13 +401,14 @@ export async function acceptInvitation(
     }
 
     // Add user to organization
-    const { error: orgError } = await (admin as any)
+    const { error: orgError } = await admin
       .from('organization_users')
       .insert({
         organization_id: invitation.organization_id,
         user_id: authData.user.id,
         role: invitation.role,
-      })
+      } as any)
+      .overrideTypes<OrganizationUser>()
 
     if (orgError) {
       console.error('Error adding to organization:', orgError)
@@ -353,13 +416,16 @@ export async function acceptInvitation(
     }
 
     // Mark invitation as accepted
-    const { error: updateError } = await (admin as any)
-      .from('invitations')
+    const updateResult = await (admin.from('invitations') as any)
       .update({
         status: 'accepted',
         accepted_at: new Date().toISOString(),
       })
       .eq('token', token)
+      .select()
+      .single() as any
+
+    const { error: updateError } = updateResult
 
     if (updateError) {
       console.error('Error updating invitation:', updateError)
@@ -380,7 +446,7 @@ export async function acceptInvitation(
 /**
  * List pending invitations for an organization
  */
-export async function getPendingInvitations() {
+export async function getPendingInvitations(): Promise<{ data?: Invitation[]; error?: string }> {
   const currentUser = await getCurrentUser()
   if (!currentUser) return { error: 'Not authenticated' }
 
@@ -390,12 +456,15 @@ export async function getPendingInvitations() {
   try {
     const admin = createAdminClient()
 
-    const { data, error } = await (admin as any)
+    const result = await admin
       .from('invitations')
       .select('id, email, role, status, created_at, expires_at')
       .eq('organization_id', organization.id)
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
+      .overrideTypes<Invitation[]>()
+
+    const { data, error } = result as { data: Invitation[] | null; error: any }
 
     if (error) {
       console.error('Error fetching invitations:', error)
@@ -412,7 +481,7 @@ export async function getPendingInvitations() {
 /**
  * Cancel/revoke invitation
  */
-export async function revokeInvitation(invitationId: string) {
+export async function revokeInvitation(invitationId: string): Promise<{ success?: boolean; message?: string; error?: string }> {
   const currentUser = await getCurrentUser()
   if (!currentUser) return { error: 'Not authenticated' }
 
@@ -422,11 +491,12 @@ export async function revokeInvitation(invitationId: string) {
   try {
     const admin = createAdminClient()
 
-    const { error } = await (admin as any)
+    const { error } = await admin
       .from('invitations')
       .delete()
       .eq('id', invitationId)
       .eq('organization_id', organization.id)
+      .overrideTypes<Invitation>()
 
     if (error) {
       console.error('Error revoking invitation:', error)

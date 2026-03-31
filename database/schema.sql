@@ -362,6 +362,7 @@ CREATE INDEX idx_cash_transactions_created_at ON cash_transactions(created_at);
 CREATE TABLE IF NOT EXISTS history_logs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   action VARCHAR(255) NOT NULL,
   entity VARCHAR(255) NOT NULL,
   entity_id UUID NOT NULL,
@@ -370,6 +371,7 @@ CREATE TABLE IF NOT EXISTS history_logs (
 );
 
 CREATE INDEX idx_history_logs_org_id ON history_logs(organization_id);
+CREATE INDEX idx_history_logs_user_id ON history_logs(user_id);
 CREATE INDEX idx_history_logs_action ON history_logs(action);
 CREATE INDEX idx_history_logs_entity ON history_logs(entity);
 CREATE INDEX idx_history_logs_created_at ON history_logs(created_at);

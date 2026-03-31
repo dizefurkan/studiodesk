@@ -4,6 +4,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { logOperation } from '@/lib/actions/history.actions'
+import { getChanges } from '@/lib/utils/history-utils'
 import type { Database } from '@/lib/types/database.types'
 
 type Student = Database['public']['Tables']['students']['Row']
@@ -552,6 +554,23 @@ export async function createStudent(input: CreateStudentInput) {
       return { error: 'Failed to create student' }
     }
 
+    // Log operation (non-blocking)
+    void logOperation(
+      'CREATE',
+      'student',
+      (data as any).id,
+      {
+        after: {
+          firstName: (data as any).first_name,
+          lastName: (data as any).last_name,
+          email: (data as any).email,
+          phone: (data as any).phone,
+          notes: (data as any).notes,
+        },
+      },
+      organization.id
+    )
+
     return { data: data as Student, success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
@@ -577,15 +596,15 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
   try {
     const supabase = await createServerSupabaseClient()
 
-    // Verify student belongs to organization
-    const { data: student } = await supabase
+    // Get before state for history log
+    const { data: beforeStudent } = await supabase
       .from('students')
-      .select('id')
+      .select('first_name, last_name, email, phone, notes')
       .eq('id', id)
       .eq('organization_id', organization.id)
       .single()
 
-    if (!student) {
+    if (!beforeStudent) {
       return { error: 'Student not found or does not belong to your organization' }
     }
 
@@ -608,6 +627,35 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
       return { error: 'Failed to update student' }
     }
 
+    // Log operation with before/after and changes (non-blocking)
+    const beforeObj = {
+      firstName: (beforeStudent as any).first_name,
+      lastName: (beforeStudent as any).last_name,
+      email: (beforeStudent as any).email,
+      phone: (beforeStudent as any).phone,
+      notes: (beforeStudent as any).notes,
+    }
+    const afterObj = {
+      firstName: (data as any).first_name,
+      lastName: (data as any).last_name,
+      email: (data as any).email,
+      phone: (data as any).phone,
+      notes: (data as any).notes,
+    }
+    const changes = getChanges(beforeObj, afterObj)
+
+    void logOperation(
+      'UPDATE',
+      'student',
+      id,
+      {
+        before: beforeObj,
+        after: afterObj,
+        changes,
+      },
+      organization.id
+    )
+
     return { data: data as Student, success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
@@ -625,6 +673,18 @@ export async function deleteStudent(id: string) {
   try {
     const supabase = await createServerSupabaseClient()
 
+    // Get before state for history log
+    const { data: beforeStudent } = await supabase
+      .from('students')
+      .select('first_name, last_name, email, phone, notes')
+      .eq('id', id)
+      .eq('organization_id', organization.id)
+      .single()
+
+    if (!beforeStudent) {
+      return { error: 'Student not found or does not belong to your organization' }
+    }
+
     const { error } = await supabase
       .from('students')
       .delete()
@@ -635,6 +695,23 @@ export async function deleteStudent(id: string) {
       console.error('Error deleting student:', error)
       return { error: 'Failed to delete student' }
     }
+
+    // Log operation (non-blocking)
+    void logOperation(
+      'DELETE',
+      'student',
+      id,
+      {
+        before: {
+          firstName: (beforeStudent as any).first_name,
+          lastName: (beforeStudent as any).last_name,
+          email: (beforeStudent as any).email,
+          phone: (beforeStudent as any).phone,
+          notes: (beforeStudent as any).notes,
+        },
+      },
+      organization.id
+    )
 
     return { success: true }
   } catch (error) {

@@ -29,12 +29,12 @@ interface AttendanceRecord {
   is_present?: boolean
   notes?: string | null
   students?: {
-    first_name: string
-    last_name: string
+    first_name: string | null
+    last_name: string | null
   }
   student_packages?: {
     remaining_credits: number
-  }
+  } | null
 }
 
 interface AttendanceHistoryRecord {
@@ -362,7 +362,7 @@ export function StudentAttendanceList({
       if (result.error) {
         console.log('[StudentAttendanceList] Error from recordBatchAttendance:', result.error)
         setError(result.error)
-      } else if (result.success) {
+      } else if (result.success && result.data) {
         console.log('[StudentAttendanceList] Success! Recorded:', result.data.recordedCount)
         const presentCount = presentRecords.length
         const absentCount = absentRecords.length

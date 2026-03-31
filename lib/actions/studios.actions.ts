@@ -2,6 +2,9 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { getOrganization } from '@/lib/auth/getOrganization'
+import { logOperation } from '@/lib/actions/history.actions'
+import { getChanges } from '@/lib/utils/history-utils'
 
 export interface StudioInput {
   name: string
@@ -38,6 +41,9 @@ export async function createStudio(branchId: string, studioData: StudioInput) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
   try {
     const supabase = await createServerSupabaseClient()
 
@@ -62,6 +68,17 @@ export async function createStudio(branchId: string, studioData: StudioInput) {
       return { error: 'Failed to create studio' }
     }
 
+    // Log the create operation
+    void logOperation('CREATE', 'studio', (data as any).id, {
+      after: {
+        name: (data as any).name,
+        description: (data as any).description,
+        capacity: (data as any).capacity,
+        imageUrl: (data as any).image_url,
+        branchId: (data as any).branch_id,
+      }
+    }, organization.id)
+
     return { data }
   } catch (error) {
     console.error('Unexpected error:', error)
@@ -73,8 +90,22 @@ export async function updateStudio(studioId: string, studioData: Partial<StudioI
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
   try {
     const supabase = await createServerSupabaseClient()
+
+    // Fetch before state for logging
+    const { data: beforeStudio } = await (supabase
+      .from('studios') as any)
+      .select('id, name, description, capacity, image_url')
+      .eq('id', studioId)
+      .single()
+
+    if (!beforeStudio) {
+      return { error: 'Studio not found' }
+    }
 
     const updateData: any = {}
     if (studioData.name) updateData.name = studioData.name
@@ -94,6 +125,26 @@ export async function updateStudio(studioId: string, studioData: Partial<StudioI
       return { error: 'Failed to update studio' }
     }
 
+    // Log the update operation
+    const beforeObj = {
+      name: (beforeStudio as any).name,
+      description: (beforeStudio as any).description,
+      capacity: (beforeStudio as any).capacity,
+      imageUrl: (beforeStudio as any).image_url,
+    }
+    const afterObj = {
+      name: (data as any).name,
+      description: (data as any).description,
+      capacity: (data as any).capacity,
+      imageUrl: (data as any).image_url,
+    }
+    const changes = getChanges(beforeObj, afterObj)
+    void logOperation('UPDATE', 'studio', studioId, {
+      before: beforeObj,
+      after: afterObj,
+      changes,
+    }, organization.id)
+
     return { data }
   } catch (error) {
     console.error('Unexpected error:', error)
@@ -105,8 +156,22 @@ export async function deleteStudio(studioId: string) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
   try {
     const supabase = await createServerSupabaseClient()
+
+    // Fetch before state for logging
+    const { data: beforeStudio } = await (supabase
+      .from('studios') as any)
+      .select('id, name, description, capacity, image_url')
+      .eq('id', studioId)
+      .single()
+
+    if (!beforeStudio) {
+      return { error: 'Studio not found' }
+    }
 
     const { error } = await supabase
       .from('studios')
@@ -117,6 +182,17 @@ export async function deleteStudio(studioId: string) {
       console.error('Error deleting studio:', error)
       return { error: 'Failed to delete studio' }
     }
+
+    // Log the delete operation
+    const beforeObj = {
+      name: (beforeStudio as any).name,
+      description: (beforeStudio as any).description,
+      capacity: (beforeStudio as any).capacity,
+      imageUrl: (beforeStudio as any).image_url,
+    }
+    void logOperation('DELETE', 'studio', studioId, {
+      before: beforeObj,
+    }, organization.id)
 
     return { success: true }
   } catch (error) {

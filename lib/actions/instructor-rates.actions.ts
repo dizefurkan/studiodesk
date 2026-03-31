@@ -4,6 +4,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { logOperation } from '@/lib/actions/history.actions'
+import { getChanges } from '@/lib/utils/history-utils'
 
 export async function getInstructorRates(instructorId?: string) {
   const user = await getCurrentUser()
@@ -138,6 +140,16 @@ export async function createInstructorRate(
       return { error: 'Failed to create rate' }
     }
 
+    // Log the create operation
+    void logOperation('CREATE', 'instructor_rate', (data as any).id, {
+      after: {
+        instructorId: (data as any).instructor_id,
+        branchId: (data as any).branch_id,
+        danceTypeId: (data as any).dance_type_id,
+        ratioPerClass: (data as any).ratio_per_class,
+      }
+    }, organization.id)
+
     return { data }
   } catch (error) {
     console.error('Unexpected error in createInstructorRate:', error)
@@ -158,21 +170,21 @@ export async function updateInstructorRate(
   try {
     const adminSupabase = createAdminClient()
 
-    // Verify rate belongs to this organization by checking instructor
-    const { data: rate, error: rateError } = await (adminSupabase
+    // Fetch before state for logging
+    const { data: beforeRate, error: beforeRateError } = await (adminSupabase
       .from('instructor_rates') as any)
-      .select('instructor_id')
+      .select('id, instructor_id, branch_id, dance_type_id, ratio_per_class')
       .eq('id', rateId)
       .single()
 
-    if (rateError || !rate) {
+    if (beforeRateError || !beforeRate) {
       return { error: 'Rate not found' }
     }
 
     const { data: instructor, error: instructorError } = await (adminSupabase
       .from('instructors') as any)
       .select('organization_id')
-      .eq('id', rate.instructor_id)
+      .eq('id', beforeRate.instructor_id)
       .single()
 
     if (instructorError || !instructor || instructor.organization_id !== organization.id) {
@@ -192,6 +204,26 @@ export async function updateInstructorRate(
       return { error: 'Failed to update rate' }
     }
 
+    // Log the update operation
+    const beforeObj = {
+      instructorId: (beforeRate as any).instructor_id,
+      branchId: (beforeRate as any).branch_id,
+      danceTypeId: (beforeRate as any).dance_type_id,
+      ratioPerClass: (beforeRate as any).ratio_per_class,
+    }
+    const afterObj = {
+      instructorId: (data as any).instructor_id,
+      branchId: (data as any).branch_id,
+      danceTypeId: (data as any).dance_type_id,
+      ratioPerClass: (data as any).ratio_per_class,
+    }
+    const changes = getChanges(beforeObj, afterObj)
+    void logOperation('UPDATE', 'instructor_rate', rateId, {
+      before: beforeObj,
+      after: afterObj,
+      changes,
+    }, organization.id)
+
     return { data }
   } catch (error) {
     console.error('Unexpected error in updateInstructorRate:', error)
@@ -209,21 +241,21 @@ export async function deleteInstructorRate(rateId: string) {
   try {
     const adminSupabase = createAdminClient()
 
-    // Verify rate belongs to this organization by checking instructor
-    const { data: rate, error: rateError } = await (adminSupabase
+    // Fetch before state for logging
+    const { data: beforeRate, error: beforeRateError } = await (adminSupabase
       .from('instructor_rates') as any)
-      .select('instructor_id')
+      .select('id, instructor_id, branch_id, dance_type_id, ratio_per_class')
       .eq('id', rateId)
       .single()
 
-    if (rateError || !rate) {
+    if (beforeRateError || !beforeRate) {
       return { error: 'Rate not found' }
     }
 
     const { data: instructor, error: instructorError } = await (adminSupabase
       .from('instructors') as any)
       .select('organization_id')
-      .eq('id', rate.instructor_id)
+      .eq('id', beforeRate.instructor_id)
       .single()
 
     if (instructorError || !instructor || instructor.organization_id !== organization.id) {
@@ -240,6 +272,17 @@ export async function deleteInstructorRate(rateId: string) {
       console.error('Error deleting instructor rate:', error)
       return { error: 'Failed to delete rate' }
     }
+
+    // Log the delete operation
+    const beforeObj = {
+      instructorId: (beforeRate as any).instructor_id,
+      branchId: (beforeRate as any).branch_id,
+      danceTypeId: (beforeRate as any).dance_type_id,
+      ratioPerClass: (beforeRate as any).ratio_per_class,
+    }
+    void logOperation('DELETE', 'instructor_rate', rateId, {
+      before: beforeObj,
+    }, organization.id)
 
     return { success: true }
   } catch (error) {

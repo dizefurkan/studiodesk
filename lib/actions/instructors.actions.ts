@@ -4,6 +4,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { logOperation } from '@/lib/actions/history.actions'
+import { getChanges } from '@/lib/utils/history-utils'
 import type { Database } from '@/lib/types/database.types'
 
 type Instructor = Database['public']['Tables']['instructors']['Row']
@@ -241,6 +243,22 @@ export async function createInstructor(input: CreateInstructorInput) {
       return { error: 'Failed to create instructor' }
     }
 
+    // Log operation (non-blocking)
+    void logOperation(
+      'CREATE',
+      'instructor',
+      (data as any).id,
+      {
+        after: {
+          firstName: (data as any).first_name,
+          lastName: (data as any).last_name,
+          email: (data as any).email,
+          phone: (data as any).phone,
+        },
+      },
+      organization.id
+    )
+
     return { data: data as Instructor, success: true }
   } catch (error) {
     console.error('[createInstructor] Unexpected error:', error)
@@ -272,14 +290,15 @@ export async function updateInstructor(id: string, input: UpdateInstructorInput)
 
     const supabase = await createServerSupabaseClient()
 
-    const { data: instructor } = await supabase
+    // Fetch before state for logging
+    const { data: beforeInstructor } = await supabase
       .from('instructors')
-      .select('id')
+      .select('id, first_name, last_name, email, phone')
       .eq('id', id)
       .eq('organization_id', organization.id)
       .single()
 
-    if (!instructor) {
+    if (!beforeInstructor) {
       return { error: 'Instructor not found or does not belong to your organization' }
     }
 
@@ -300,6 +319,26 @@ export async function updateInstructor(id: string, input: UpdateInstructorInput)
       console.error('[updateInstructor] Supabase error:', error)
       return { error: 'Failed to update instructor' }
     }
+
+    // Log the update operation
+    const beforeObj = {
+      firstName: (beforeInstructor as any).first_name,
+      lastName: (beforeInstructor as any).last_name,
+      email: (beforeInstructor as any).email,
+      phone: (beforeInstructor as any).phone,
+    }
+    const afterObj = {
+      firstName: (data as any).first_name,
+      lastName: (data as any).last_name,
+      email: (data as any).email,
+      phone: (data as any).phone,
+    }
+    const changes = getChanges(beforeObj, afterObj)
+    void logOperation('UPDATE', 'instructor', id, {
+      before: beforeObj,
+      after: afterObj,
+      changes,
+    }, organization.id)
 
     return { data: data as Instructor, success: true }
   } catch (error) {
@@ -325,6 +364,18 @@ export async function deleteInstructor(id: string) {
 
     const supabase = await createServerSupabaseClient()
 
+    // Fetch before state for logging
+    const { data: beforeInstructor } = await supabase
+      .from('instructors')
+      .select('id, first_name, last_name, email, phone')
+      .eq('id', id)
+      .eq('organization_id', organization.id)
+      .single()
+
+    if (!beforeInstructor) {
+      return { error: 'Instructor not found or does not belong to your organization' }
+    }
+
     const { error } = await supabase
       .from('instructors')
       .delete()
@@ -335,6 +386,17 @@ export async function deleteInstructor(id: string) {
       console.error('[deleteInstructor] Supabase error:', error)
       return { error: 'Failed to delete instructor' }
     }
+
+    // Log the delete operation
+    const beforeObj = {
+      firstName: (beforeInstructor as any).first_name,
+      lastName: (beforeInstructor as any).last_name,
+      email: (beforeInstructor as any).email,
+      phone: (beforeInstructor as any).phone,
+    }
+    void logOperation('DELETE', 'instructor', id, {
+      before: beforeObj,
+    }, organization.id)
 
     return { success: true }
   } catch (error) {

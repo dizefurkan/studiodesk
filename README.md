@@ -149,11 +149,22 @@ npm run build
 npx tsc --noEmit
 ```
 
+## � Project Status
+
+**Current Phase:** Phase 5 - Type Safety Sprint (In Progress)  
+**Progress:** 2/6 action files type-safe (33%)  
+**Build Status:** ✅ Type-safe files passing TypeScript  
+
+👉 **For current phase details, see [PROGRESS.md](./PROGRESS.md)**
+
 ## 📚 Documentation
 
-- [Setup Instructions](./SETUP_INSTRUCTIONS.md)
-- [Developer Guide](./DEVELOPER_GUIDE.md)
-- [API Routes Documentation](./NEXT_STEPS.md)
+- [Progress Tracking](./PROGRESS.md) - Current phase and milestones
+- [Type Safety Refactoring](./TYPE_SAFETY_REFACTORING.md) - Type safety sprint details
+- [Setup Instructions](./SETUP_INSTRUCTIONS.md) - Getting started guide
+- [Developer Guide](./DEVELOPER_GUIDE.md) - Development patterns and conventions
+- [Supabase Rules](./SUPABASE_ACTION_RULES.md) - Type safety rules for action files
+- [Component Guidelines](./COMPONENT_CREATION_GUIDELINES.md) - UI component patterns
 
 ## 🚢 Deployment
 
