@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { RotateCcw, SlidersHorizontal, List, Maximize2 } from 'lucide-react'
 import { SelectDropdown } from '@/components/ui/select-dropdown'
@@ -37,15 +37,15 @@ export function InstructorFilters({
   // Extract locale from pathname (e.g., /tr/dashboard/instructors -> tr)
   const locale = pathname.split('/')[1]
 
-  const buildUrl = (filters: Record<string, string | null | undefined>) => {
+  const buildUrl = useCallback((filters: Record<string, string | null | undefined>) => {
     const params = new URLSearchParams()
     if (filters.search && typeof filters.search === 'string') params.set('q', filters.search)
     if (filters.danceType && typeof filters.danceType === 'string') params.set('danceType', filters.danceType)
     if (filters.branch && typeof filters.branch === 'string') params.set('branch', filters.branch)
     return `/${locale}/dashboard/instructors?${params.toString()}`
-  }
+  }, [locale])
 
-  const handleSearchChange = (newSearch: string) => {
+  const handleSearchChange = useCallback((newSearch: string) => {
     setSearch(newSearch)
     router.push(
       buildUrl({
@@ -54,12 +54,32 @@ export function InstructorFilters({
         branch: branchId,
       })
     )
-  }
+  }, [router, buildUrl, danceTypeId, branchId])
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setSearch('')
     router.push('/dashboard/instructors')
-  }
+  }, [router])
+
+  const handleDanceTypeChange = useCallback((value: string) => {
+    router.push(
+      buildUrl({
+        search,
+        danceType: value || null,
+        branch: branchId,
+      })
+    )
+  }, [router, buildUrl, search, branchId])
+
+  const handleBranchChange = useCallback((value: string) => {
+    router.push(
+      buildUrl({
+        search,
+        danceType: danceTypeId,
+        branch: value || null,
+      })
+    )
+  }, [router, buildUrl, search, danceTypeId])
 
   const hasActiveFilters = danceTypeId || branchId || search
 
@@ -83,15 +103,7 @@ export function InstructorFilters({
             <SelectDropdown
               placeholder={t('filters.danceType')}
               value={danceTypeId || ''}
-              onChange={(value) => {
-                router.push(
-                  buildUrl({
-                    search,
-                    danceType: value || null,
-                    branch: branchId,
-                  })
-                )
-              }}
+              onChange={handleDanceTypeChange}
               ariaLabel="Filter by dance type"
               options={[
                 { value: '', label: t('filters.danceType') },
@@ -103,15 +115,7 @@ export function InstructorFilters({
             <SelectDropdown
               placeholder={t('filters.branch')}
               value={branchId || ''}
-              onChange={(value) => {
-                router.push(
-                  buildUrl({
-                    search,
-                    danceType: danceTypeId,
-                    branch: value || null,
-                  })
-                )
-              }}
+              onChange={handleBranchChange}
               ariaLabel="Filter by branch"
               options={[
                 { value: '', label: t('filters.branch') },
@@ -212,16 +216,7 @@ export function InstructorFilters({
             </label>
             <select
               value={danceTypeId || ''}
-              onChange={(e) => {
-                const value = e.target.value
-                router.push(
-                  buildUrl({
-                    search,
-                    danceType: value || null,
-                    branch: branchId,
-                  })
-                )
-              }}
+              onChange={(e) => handleDanceTypeChange(e.target.value)}
               className="w-full px-3 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-0"
             >
               <option value="">{t('filters.danceType')}</option>
@@ -240,16 +235,7 @@ export function InstructorFilters({
             </label>
             <select
               value={branchId || ''}
-              onChange={(e) => {
-                const value = e.target.value
-                router.push(
-                  buildUrl({
-                    search,
-                    danceType: danceTypeId,
-                    branch: value || null,
-                  })
-                )
-              }}
+              onChange={(e) => handleBranchChange(e.target.value)}
               className="w-full px-3 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-0"
             >
               <option value="">{t('filters.branch')}</option>
