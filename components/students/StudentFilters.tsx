@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { RotateCcw, SlidersHorizontal, List, Maximize2 } from 'lucide-react'
 import { SelectDropdown } from '@/components/ui/select-dropdown'
@@ -49,7 +49,7 @@ export function StudentFilters({
   const [search, setSearch] = useState(searchQuery || '')
   const [drawerOpen, setDrawerOpen] = useState(false)
 
-  const buildUrl = (filters: Record<string, string | boolean | null | undefined>) => {
+  const buildUrl = useCallback((filters: Record<string, string | boolean | null | undefined>) => {
     const params = new URLSearchParams()
     if (filters.search && typeof filters.search === 'string') params.set('q', filters.search)
     if (filters.hasCredits && typeof filters.hasCredits === 'boolean') params.set('hasCredits', 'true')
@@ -57,9 +57,9 @@ export function StudentFilters({
     if (filters.branch && typeof filters.branch === 'string') params.set('branch', filters.branch)
     if (filters.course && typeof filters.course === 'string') params.set('course', filters.course)
     return `/${locale}/dashboard/students?${params.toString()}`
-  }
+  }, [locale])
 
-  const handleSearchChange = (newSearch: string) => {
+  const handleSearchChange = useCallback((newSearch: string) => {
     setSearch(newSearch)
     router.push(
       buildUrl({
@@ -70,12 +70,12 @@ export function StudentFilters({
         course: courseId,
       })
     )
-  }
+  }, [router, buildUrl, hasCredits, danceTypeId, branchId, courseId])
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setSearch('')
     router.push('/dashboard/students')
-  }
+  }, [router])
 
   const hasActiveFilters = hasCredits || danceTypeId || courseId || branchId || search
 
@@ -127,6 +127,63 @@ export function StudentFilters({
   const lockedBranch = courseBranchId ? branches.find(b => b.id === courseBranchId)?.name : null
   const lockedDanceType = courseDanceTypeId ? danceTypes.find(dt => dt.id === courseDanceTypeId)?.name : null
 
+  // Memoized handlers
+  const handleDanceTypeChange = useCallback((value: string) => {
+    const newDanceTypeId = value || null
+    const shouldClearCourse = courseId && newDanceTypeId && 
+      !courses.some(c => c.id === courseId && c.dance_type_id === newDanceTypeId)
+    
+    router.push(
+      buildUrl({
+        search,
+        hasCredits: hasCredits ? true : null,
+        danceType: newDanceTypeId,
+        branch: branchId,
+        course: shouldClearCourse ? null : courseId,
+      })
+    )
+  }, [courseId, courses, router, buildUrl, search, hasCredits, branchId])
+
+  const handleBranchChange = useCallback((value: string) => {
+    const newBranchId = value || null
+    const shouldClearCourse = courseId && newBranchId && 
+      !courses.some(c => c.id === courseId && c.branch_id === newBranchId)
+    
+    router.push(
+      buildUrl({
+        search,
+        hasCredits: hasCredits ? true : null,
+        danceType: danceTypeId,
+        branch: newBranchId,
+        course: shouldClearCourse ? null : courseId,
+      })
+    )
+  }, [courseId, courses, router, buildUrl, search, hasCredits, danceTypeId])
+
+  const handleCourseChange = useCallback((value: string) => {
+    router.push(
+      buildUrl({
+        search,
+        hasCredits: hasCredits ? true : null,
+        danceType: null,
+        branch: null,
+        course: value || null,
+      })
+    )
+  }, [router, buildUrl, search, hasCredits])
+
+  const handleCreditsChange = useCallback((checked: boolean) => {
+    router.push(
+      buildUrl({
+        search,
+        hasCredits: checked ? true : null,
+        danceType: danceTypeId,
+        branch: branchId,
+        course: courseId,
+      })
+    )
+  }, [router, buildUrl, search, danceTypeId, branchId, courseId])
+
   return (
     <>
       {/* Desktop Layout */}
@@ -152,22 +209,7 @@ export function StudentFilters({
               <SelectDropdown
                 placeholder={t('filters.danceType')}
                 value={danceTypeId || ''}
-                onChange={(value) => {
-                  // When dance type changes, clear the course filter if selected course doesn't match new dance type
-                  const newDanceTypeId = value || null
-                  const shouldClearCourse = courseId && newDanceTypeId && 
-                    !courses.some(c => c.id === courseId && c.dance_type_id === newDanceTypeId)
-                  
-                  router.push(
-                    buildUrl({
-                      search,
-                      hasCredits: hasCredits ? true : null,
-                      danceType: newDanceTypeId,
-                      branch: branchId,
-                      course: shouldClearCourse ? null : courseId,
-                    })
-                  )
-                }}
+                onChange={handleDanceTypeChange}
                 ariaLabel="Filter by dance type"
                 options={[
                   { value: '', label: t('filters.danceType') },
@@ -188,22 +230,7 @@ export function StudentFilters({
               <SelectDropdown
                 placeholder={t('filters.branch')}
                 value={branchId || ''}
-                onChange={(value) => {
-                  // When branch changes, clear the course filter if selected course doesn't match new branch
-                  const newBranchId = value || null
-                  const shouldClearCourse = courseId && newBranchId && 
-                    !courses.some(c => c.id === courseId && c.branch_id === newBranchId)
-                  
-                  router.push(
-                    buildUrl({
-                      search,
-                      hasCredits: hasCredits ? true : null,
-                      danceType: danceTypeId,
-                      branch: newBranchId,
-                      course: shouldClearCourse ? null : courseId,
-                    })
-                  )
-                }}
+                onChange={handleBranchChange}
                 ariaLabel="Filter by branch"
                 options={[
                   { value: '', label: t('filters.branch') },
@@ -219,19 +246,7 @@ export function StudentFilters({
             <SelectDropdown
               placeholder={t('filters.course')}
               value={courseId || ''}
-              onChange={(value) => {
-                // When selecting a course, clear branch and danceType filters
-                // because the course already defines them
-                router.push(
-                  buildUrl({
-                    search,
-                    hasCredits: hasCredits ? true : null,
-                    danceType: null,
-                    branch: null,
-                    course: value || null,
-                  })
-                )
-              }}
+              onChange={handleCourseChange}
               ariaLabel="Filter by course"
               options={[
                 { value: '', label: t('filters.course') },
@@ -247,17 +262,7 @@ export function StudentFilters({
               <input
                 type="checkbox"
                 checked={hasCredits || false}
-                onChange={(e) => {
-                  router.push(
-                    buildUrl({
-                      search,
-                      hasCredits: e.target.checked ? true : null,
-                      danceType: danceTypeId,
-                      branch: branchId,
-                      course: courseId,
-                    })
-                  )
-                }}
+                onChange={(e) => handleCreditsChange(e.target.checked)}
                 aria-label="Filter for students with credits"
                 className="rounded cursor-pointer accent-[#4F46E5]"
               />
@@ -336,22 +341,7 @@ export function StudentFilters({
             ) : (
               <select
                 value={danceTypeId || ''}
-                onChange={(e) => {
-                  const value = e.target.value
-                  const newDanceTypeId = value || null
-                  const shouldClearCourse = courseId && newDanceTypeId && 
-                    !courses.some(c => c.id === courseId && c.dance_type_id === newDanceTypeId)
-                  
-                  router.push(
-                    buildUrl({
-                      search,
-                      hasCredits: hasCredits ? true : null,
-                      danceType: newDanceTypeId,
-                      branch: branchId,
-                      course: shouldClearCourse ? null : courseId,
-                    })
-                  )
-                }}
+                onChange={(e) => handleDanceTypeChange(e.target.value)}
                 className="w-full px-3 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-0"
               >
                 <option value="">{t('filters.danceType')}</option>
@@ -376,22 +366,7 @@ export function StudentFilters({
             ) : (
               <select
                 value={branchId || ''}
-                onChange={(e) => {
-                  const value = e.target.value
-                  const newBranchId = value || null
-                  const shouldClearCourse = courseId && newBranchId && 
-                    !courses.some(c => c.id === courseId && c.branch_id === newBranchId)
-                  
-                  router.push(
-                    buildUrl({
-                      search,
-                      hasCredits: hasCredits ? true : null,
-                      danceType: danceTypeId,
-                      branch: newBranchId,
-                      course: shouldClearCourse ? null : courseId,
-                    })
-                  )
-                }}
+                onChange={(e) => handleBranchChange(e.target.value)}
                 className="w-full px-3 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-0"
               >
                 <option value="">{t('filters.branch')}</option>
@@ -411,18 +386,7 @@ export function StudentFilters({
             </label>
             <select
               value={courseId || ''}
-              onChange={(e) => {
-                const value = e.target.value
-                router.push(
-                  buildUrl({
-                    search,
-                    hasCredits: hasCredits ? true : null,
-                    danceType: null,
-                    branch: null,
-                    course: value || null,
-                  })
-                )
-              }}
+              onChange={(e) => handleCourseChange(e.target.value)}
               className="w-full px-3 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-0"
             >
               <option value="">{t('filters.course')}</option>
@@ -439,17 +403,7 @@ export function StudentFilters({
             <input
               type="checkbox"
               checked={hasCredits || false}
-              onChange={(e) => {
-                router.push(
-                  buildUrl({
-                    search,
-                    hasCredits: e.target.checked ? true : null,
-                    danceType: danceTypeId,
-                    branch: branchId,
-                    course: courseId,
-                  })
-                )
-              }}
+              onChange={(e) => handleCreditsChange(e.target.checked)}
               aria-label="Filter for students with credits"
               className="rounded cursor-pointer accent-[#4F46E5] w-4 h-4"
             />
