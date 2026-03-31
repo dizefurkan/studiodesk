@@ -412,8 +412,29 @@
     "typeUpdated": "Dans türü başarıyla güncellendi",
     "typeDeleted": "Dans türü başarıyla silindi",
     "addFirstType": "İlk Dans Türünü Ekle"
-  },
-  "settings": {
+  },  "instructorRates": {
+    "title": "Eğitmen Oranları",
+    "description": "Her eğitmenin her sınıf için ne kadar kazandığını belirle",
+    "aboutTitle": "Eğitmen Oranları Hakkında",
+    "aboutDescription": "Her eğitmen için dans türü ve şube kombinasyonuna göre saatlik ücreti belirle. Yoklama alındığında eğitmen otomatik olarak bu ücreti kazanır.",
+    "specificToInstructor": "Oranlar Eğitmen + Şube + Dans Türü kombinasyonuna özgüdür",
+    "earnAutomatically": "Yoklama alındığında, eğitmen otomatik olarak bu ücreti kazanır",
+    "multipleRates": "Aynı eğitmenin farklı şubeler ve dans türleri arasında birden fazla oranı yapılandırılabilir",
+    "addNew": "Yeni Oran Ekle",
+    "editRate": "Oranı Düzenle",
+    "deleteRate": "Oranı Sil",
+    "instructor": "Eğitmen",
+    "branch": "Şube",
+    "danceType": "Dans Türü",
+    "rate": "Oran",
+    "rateAdded": "Oran başarıyla eklendi",
+    "rateUpdated": "Oran başarıyla güncellendi",
+    "rateDeleted": "Oran başarıyla silindi",
+    "noRates": "Oran bulunamadı",
+    "selectInstructor": "Bir eğitmen seçin",
+    "selectBranch": "Bir şube seçin",
+    "selectDanceType": "Bir dans türü seçin"
+  },  "settings": {
     "title": "Ayarlar",
     "general": "Genel Ayarlar",
     "attendance": "Yoklama Ayarları",
