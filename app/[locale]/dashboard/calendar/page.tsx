@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { getCourses, generateCourseSessions, getCourseSessions } from '@/lib/actions/courses.actions'
 import { Card } from '@/components/ui/card'
@@ -29,11 +29,15 @@ function CalendarPage({
   const monthStr = new Date().toISOString().split('T')[0]
   const yearStr = String(new Date().getFullYear())
 
-  // Data fetching
+  // Data fetching with proper cleanup
   useEffect(() => {
+    let isMounted = true
+
     const fetchCourses = async () => {
       try {
         const coursesResult = await getCourses()
+        if (!isMounted) return
+        
         const coursesData = coursesResult.data || []
         setCourses(coursesData)
 
@@ -43,6 +47,8 @@ function CalendarPage({
 
         try {
           for (const course of coursesData) {
+            if (!isMounted) break
+            
             try {
               const sessionsResult = await getCourseSessions(
                 course.id,
@@ -60,14 +66,24 @@ function CalendarPage({
         } catch (error) {
           console.error('Error in auto-generate sessions:', error)
         }
-        setLoading(false)
+        
+        if (isMounted) {
+          setLoading(false)
+        }
       } catch (error) {
         console.error('Error fetching courses:', error)
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchCourses()
+
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   // Helper: Get calendar days for month view
