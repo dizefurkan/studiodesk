@@ -53,6 +53,7 @@ export default async function AttendancePage({
     let danceTypeId = ''
     let attendanceHistory: any[] = []
 
+    
     if (courseId) {
       const courseResult = await getCourse(courseId)
       const branchId = courseResult.data?.branch_id
@@ -317,7 +318,7 @@ export default async function AttendancePage({
       courses.map(async (course: any) => {
         const historyResult = await getCourseAttendanceHistory(course.id)
         const attendanceRecords = historyResult.data || []
-        const totalAttendance = attendanceRecords.reduce((sum: number, record: any) => sum + record.attendance_count, 0)
+        const totalAttendance = attendanceRecords.length // Number of times attendance was taken
         const mostRecentDate = attendanceRecords.length > 0 ? attendanceRecords[0].session_date : null
         return {
           ...course,

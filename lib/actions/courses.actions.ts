@@ -92,22 +92,14 @@ export async function getCourses(
           .select('*', { count: 'exact', head: true })
           .eq('course_id', course.id)
 
-        // Get attendance count
+        // Get attendance count (number of times attendance was taken, not number of records)
         const { data: sessions } = await admin
           .from('course_sessions')
           .select('id')
           .eq('course_id', course.id)
           .overrideTypes<CourseSession[]>()
 
-        let attendanceCount = 0
-        if (sessions && sessions.length > 0) {
-          const sessionIds = sessions.map((s) => s.id)
-          const { count } = await admin
-            .from('attendances')
-            .select('*', { count: 'exact', head: true })
-            .in('session_id', sessionIds)
-          attendanceCount = count || 0
-        }
+        const attendanceCount = sessions?.length || 0
 
         return {
           ...course,
