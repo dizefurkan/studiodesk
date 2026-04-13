@@ -60,7 +60,21 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
   const attendances = session.attendances || []
   const presentCount = attendances.filter((a: any) => a.is_present).length
   const absentCount = attendances.filter((a: any) => !a.is_present).length
-  const instructors = session.session_instructors?.map((si: any) => si.instructor) || []
+  
+  // ✅ Get session-specific instructors, fallback to course instructors
+  let instructors = session.session_instructors?.map((si: any) => si.instructor) || []
+  
+  if (instructors.length === 0 && session.course?.id) {
+    // Fallback: Get course instructors if session has none
+    const { data: courseInstructors } = await (supabase
+      .from('course_instructors') as any)
+      .select('instructor:instructors(id, first_name, last_name)')
+      .eq('course_id', session.course.id)
+      .overrideTypes<{ instructor: any }[]>()
+    
+    instructors = (courseInstructors || []).map((ci: any) => ci.instructor)
+  }
+  
   const studio = attendances.find((a: any) => a.studio?.name)?.studio
 
   // Format date for display

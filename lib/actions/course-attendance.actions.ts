@@ -55,15 +55,32 @@ export async function getCourseAttendanceHistory(courseId: string) {
       // Don't fail - instructors are optional
     }
 
+    // Fallback: Get course instructors if session-specific instructors don't exist
+    const { data: courseInstructors, error: courseInstructorsError } = await (supabase
+      .from('course_instructors') as any)
+      .select('instructor:instructors(id, first_name, last_name)')
+      .eq('course_id', courseId)
+
+    if (courseInstructorsError) {
+      console.error('Error fetching course instructors:', courseInstructorsError)
+      // Don't fail - instructors are optional
+    }
+
     // Combine sessions with their attendance counts and instructors
     const formattedSessions = sessions.map((session: any) => {
       const sessionAttendances = (attendances || []).filter(
         (a: any) => a.session_id === session.id
       )
       const presentCount = sessionAttendances.filter((a: any) => a.is_present).length
-      const instructors = (sessionInstructors || []).filter(
+      
+      // ✅ Use session-specific instructors if available, fallback to course instructors
+      const sessionSpecificInstructors = (sessionInstructors || []).filter(
         (si: any) => si.session_id === session.id
       ).map((si: any) => si.instructor)
+      
+      const instructors = sessionSpecificInstructors.length > 0 
+        ? sessionSpecificInstructors 
+        : (courseInstructors || []).map((ci: any) => ci.instructor)
 
       return {
         id: session.id,
@@ -71,7 +88,7 @@ export async function getCourseAttendanceHistory(courseId: string) {
         attendance_count: presentCount,  // Count of students who were present
         total_attendance: sessionAttendances.length,  // Total attendance records (present + absent)
         attendances: sessionAttendances,  // All attendance records (present and absent)
-        instructors: instructors,  // Instructors for this session
+        instructors: instructors,  // Instructors for this session (session-specific or course default)
       }
     })
 

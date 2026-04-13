@@ -529,6 +529,37 @@ export async function recordBatchAttendance(
         console.warn('[recordBatchAttendance] Attendance already recorded for this session/date')
         return { error: 'Yoklama bu tarih için zaten alınmış. Lütfen başka bir tarih seçiniz.' }
       }
+
+      // ✅ ensureSessionInstructors: Fill session_instructors for existing session
+      // This handles the case where old sessions don't have session_instructors filled
+      const { data: existingSessionInstructors } = await supabase
+        .from('session_instructors')
+        .select('instructor_id')
+        .eq('session_id', actualSessionId)
+
+      const hasSessionInstructors = existingSessionInstructors && existingSessionInstructors.length > 0
+
+      if (!hasSessionInstructors && instructorIds && instructorIds.length > 0) {
+        console.log('[recordBatchAttendance] Filling session_instructors for existing session:', actualSessionId)
+        
+        const sessionInstructorRecords = instructorIds.map(id => ({
+          session_id: actualSessionId,
+          instructor_id: id
+        }))
+        
+        const { error: siError } = await supabase
+          .from('session_instructors')
+          .insert(sessionInstructorRecords as any)
+          .select()
+          .overrideTypes<{ session_id: string; instructor_id: string }[]>() as any
+        
+        if (siError) {
+          console.error('[recordBatchAttendance] Failed to fill session_instructors:', siError)
+          // Don't fail - attendance can still be recorded
+        } else {
+          console.log('[recordBatchAttendance] Session instructors filled:', { actualSessionId, count: instructorIds.length })
+        }
+      }
     }
 
     // Filter to "geldi" and "gelmedi" records to process (save all records, not just those with notes)
@@ -553,6 +584,40 @@ export async function recordBatchAttendance(
     if (invalidRecords.length > 0) {
       console.error('Invalid records - missing studentPackageId:', invalidRecords)
       return { error: 'Some students are missing package data. Please refresh and try again.' }
+    }
+
+    // ✅ VALIDATION: Ensure session or course has at least one instructor assigned
+    const { data: sessionInstructors } = await supabase
+      .from('session_instructors')
+      .select('instructor_id')
+      .eq('session_id', actualSessionId)
+      .overrideTypes<{ instructor_id: string }[]>() as any
+
+    let hasInstructor = sessionInstructors && sessionInstructors.length > 0
+
+    if (!hasInstructor) {
+      // If no session-specific instructor, check course instructors
+      const { data: sessionInfo } = await supabase
+        .from('course_sessions')
+        .select('course_id')
+        .eq('id', actualSessionId)
+        .maybeSingle()
+        .overrideTypes<CourseSession>() as any
+
+      if (sessionInfo) {
+        const { data: courseInstructors } = await supabase
+          .from('course_instructors')
+          .select('instructor_id')
+          .eq('course_id', sessionInfo.course_id)
+          .overrideTypes<{ instructor_id: string }[]>() as any
+
+        hasInstructor = courseInstructors && courseInstructors.length > 0
+      }
+    }
+
+    if (!hasInstructor) {
+      console.error('[recordBatchAttendance] No instructor assigned to session or course')
+      return { error: 'Bu sınıfta eğitmen atanmamış. Lütfen eğitmen atayın.' }
     }
 
     // Batch insert all attendance records (both geldi and gelmedi)
@@ -650,6 +715,28 @@ export async function recordBatchAttendance(
         
         instructorsToProcess = courseInstructors || []
         console.log(`[recordBatchAttendance] No session-specific instructor; using ${instructorsToProcess.length} course instructor(s)`)
+        
+        // ✅ CRITICAL: Fill session_instructors BEFORE creating earnings
+        // This ensures session_instructors is always consistent with instructor earnings
+        if (instructorsToProcess.length > 0) {
+          const sessionInstructorRecords = instructorsToProcess.map(ci => ({
+            session_id: actualSessionId,
+            instructor_id: ci.instructor_id
+          }))
+          
+          const { error: siError } = await supabase
+            .from('session_instructors')
+            .insert(sessionInstructorRecords as any)
+            .select()
+            .overrideTypes<{ session_id: string; instructor_id: string }[]>() as any
+          
+          if (siError) {
+            console.error('[recordBatchAttendance] CRITICAL: Failed to fill session_instructors before earnings:', siError)
+            // This is critical - don't proceed if session_instructors creation fails
+            return { error: 'Eğitmen bilgisi kaydedilemedi. Lütfen tekrar deneyin.' }
+          }
+          console.log('[recordBatchAttendance] Session instructors filled before earnings:', { actualSessionId, count: instructorsToProcess.length })
+        }
       }
 
       if (instructorsToProcess && instructorsToProcess.length > 0) {
