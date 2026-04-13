@@ -304,7 +304,17 @@ export async function getInstructorsAndBranchesAndDanceTypes() {
     const [instructorsResult, branchesResult, danceTypesResult] = await Promise.all([
       (adminSupabase
         .from('instructors') as any)
-        .select('id, first_name, last_name')
+        .select(`
+          id, 
+          first_name, 
+          last_name,
+          instructor_rates(
+            id,
+            ratio_per_class,
+            branch_id,
+            dance_type_id
+          )
+        `)
         .eq('organization_id', organization.id),
       (adminSupabase
         .from('branches') as any)

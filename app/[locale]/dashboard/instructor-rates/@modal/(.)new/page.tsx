@@ -2,18 +2,23 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getInstructorsAndBranchesAndDanceTypes } from '@/lib/actions/instructor-rates.actions'
+import { getInstructorsAndBranchesAndDanceTypes, getInstructorRates } from '@/lib/actions/instructor-rates.actions'
 import { AddInstructorRateDrawer } from '@/components/instructor-rates/AddInstructorRateDrawer'
 
 export default function NewInstructorRatePage() {
   const router = useRouter()
   const [data, setData] = useState<any>(null)
+  const [rates, setRates] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
-      const result = await getInstructorsAndBranchesAndDanceTypes()
-      setData(result.data)
+      const [dataResult, ratesResult] = await Promise.all([
+        getInstructorsAndBranchesAndDanceTypes(),
+        getInstructorRates(),
+      ])
+      setData(dataResult.data)
+      setRates(ratesResult.data || [])
       setLoading(false)
     }
     load()
@@ -35,6 +40,7 @@ export default function NewInstructorRatePage() {
       instructors={data?.instructors || []}
       branches={data?.branches || []}
       danceTypes={data?.danceTypes || []}
+      rates={rates}
       isOpen={true}
       onOpenChange={handleClose}
     />

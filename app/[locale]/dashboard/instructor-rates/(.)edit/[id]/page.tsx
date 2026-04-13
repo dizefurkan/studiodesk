@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getInstructorsAndBranchesAndDanceTypes, getInstructorRate } from '@/lib/actions/instructor-rates.actions'
+import { getInstructorsAndBranchesAndDanceTypes, getInstructorRate, getInstructorRates } from '@/lib/actions/instructor-rates.actions'
 import { AddInstructorRateDrawer } from '@/components/instructor-rates/AddInstructorRateDrawer'
 
 interface EditInstructorRatePageProps {
@@ -14,6 +14,7 @@ export default function EditInstructorRatePage({ params }: EditInstructorRatePag
   const [id, setId] = useState<string>('')
   const [data, setData] = useState<any>(null)
   const [rate, setRate] = useState<any>(null)
+  const [rates, setRates] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -28,12 +29,14 @@ export default function EditInstructorRatePage({ params }: EditInstructorRatePag
     if (!id) return
 
     async function load() {
-      const [dataResult, rateResult] = await Promise.all([
+      const [dataResult, rateResult, ratesResult] = await Promise.all([
         getInstructorsAndBranchesAndDanceTypes(),
         getInstructorRate(id),
+        getInstructorRates(),
       ])
 
       setData(dataResult.data)
+      setRates(ratesResult.data || [])
 
       const rateData = rateResult.data
       if (rateData) {
@@ -54,6 +57,7 @@ export default function EditInstructorRatePage({ params }: EditInstructorRatePag
       instructors={data?.instructors || []}
       branches={data?.branches || []}
       danceTypes={data?.danceTypes || []}
+      rates={rates}
       isOpen={true}
       onOpenChange={() => {}}
       initialRate={rate}

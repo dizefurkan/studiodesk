@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { getInstructorRates, getInstructorsAndBranchesAndDanceTypes, getInstructorRate } from '@/lib/actions/instructor-rates.actions'
 import { InstructorRatesTable } from '@/components/instructor-rates/InstructorRatesTable'
-import { InstructorSelectionDrawer } from '@/components/instructor-rates/InstructorSelectionDrawer'
 import { AddInstructorRateDrawer } from '@/components/instructor-rates/AddInstructorRateDrawer'
 import { Card } from '@/components/ui/card'
 import Link from 'next/link'
@@ -12,16 +12,30 @@ import { DollarSign } from 'lucide-react'
 
 export default function InstructorRatesPage() {
   const t = useTranslations()
+  const searchParams = useSearchParams()
   const [rates, setRates] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [editLoading, setEditLoading] = useState(false)
   const [drawerData, setDrawerData] = useState<any>(null)
   const [editingRate, setEditingRate] = useState<any>(null)
   
-  // Local state instead of useSearchParams (avoid extra dependency triggers)
+  // Local state with URL param initialization
   const [modalType, setModalType] = useState<string | null>(null)
   const [editId, setEditId] = useState<string | null>(null)
   const [selectedInstructor, setSelectedInstructor] = useState<string | null>(null)
+
+  // Initialize modal from URL params
+  useEffect(() => {
+    const modal = searchParams?.get('modal')
+    const editIdParam = searchParams?.get('editId')
+    
+    if (modal) {
+      setModalType(modal)
+    }
+    if (editIdParam) {
+      setEditId(editIdParam)
+    }
+  }, [searchParams])
 
   // Load rates and drawer data - fetch once on mount
   useEffect(() => {
@@ -86,6 +100,28 @@ export default function InstructorRatesPage() {
     setRates(ratesResult.data || [])
   }, [])
 
+  const handleOpenNew = useCallback(() => {
+    setModalType('new')
+    setSelectedInstructor(null)
+    setEditId(null)
+  }, [])
+
+  const handleOpenNewForInstructor = useCallback((instructorId: string) => {
+    setModalType('new')
+    setSelectedInstructor(instructorId)
+    setEditId(null)
+  }, [])
+
+  const handleOpenEdit = useCallback((rateId: string) => {
+    setModalType('edit')
+    setEditId(rateId)
+  }, [])
+
+  const handleSelectInstructor = useCallback((instructorId: string) => {
+    setSelectedInstructor(instructorId)
+    // Form drawer will automatically show because modalType stays 'new' and selectedInstructor is now set
+  }, [])
+
   const handleCloseDrawer = useCallback(() => {
     setModalType(null)
     setEditId(null)
@@ -124,16 +160,12 @@ export default function InstructorRatesPage() {
         </div>
       </Card>
 
-      <InstructorRatesTable rates={rates} onRatesChange={handleRatesChange} />
-
-      {/* Instructor Selection Drawer (for 'new' modal without instructor selected) */}
-      {!loading && drawerData && modalType === 'new' && !selectedInstructor && (
-        <InstructorSelectionDrawer
-          instructors={drawerData.instructors || []}
-          isOpen={true}
-          onOpenChange={handleCloseDrawer}
-        />
-      )}
+      <InstructorRatesTable 
+        rates={rates} 
+        instructors={drawerData?.instructors || []}
+        onRatesChange={handleRatesChange}
+        onOpenNewForInstructor={handleOpenNewForInstructor}
+      />
 
       {/* Rate Form Drawer (for 'new' with instructor selected, or 'edit' mode) */}
       {!loading && drawerData && ((modalType === 'new' && selectedInstructor) || modalType === 'edit') && !editLoading && (
@@ -141,9 +173,15 @@ export default function InstructorRatesPage() {
           instructors={drawerData.instructors || []}
           branches={drawerData.branches || []}
           danceTypes={drawerData.danceTypes || []}
+          rates={rates}
           isOpen={true}
           onOpenChange={handleCloseDrawer}
           initialRate={editingRate}
+          selectedInstructorId={modalType === 'new' && selectedInstructor ? selectedInstructor : undefined}
+          onSuccess={() => {
+            handleCloseDrawer()
+            handleRatesChange()
+          }}
         />
       )}
     </div>

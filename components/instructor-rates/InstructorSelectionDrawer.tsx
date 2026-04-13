@@ -22,12 +22,14 @@ interface InstructorSelectionDrawerProps {
   instructors: Instructor[]
   isOpen: boolean
   onOpenChange: (open: boolean) => void
+  onSelectInstructor?: (instructorId: string) => void
 }
 
 export function InstructorSelectionDrawer({
   instructors,
   isOpen,
   onOpenChange,
+  onSelectInstructor,
 }: InstructorSelectionDrawerProps) {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
@@ -53,12 +55,11 @@ export function InstructorSelectionDrawer({
   }
 
   const handleSelectInstructor = (instructorId: string) => {
-    // Navigate to edit mode with selected instructor
-    router.push(`/dashboard/instructor-rates?modal=edit&instructor=${instructorId}`)
+    onSelectInstructor?.(instructorId)
   }
 
   const handleAddNewRate = (instructorId: string) => {
-    router.push(`/dashboard/instructor-rates?modal=new&instructor=${instructorId}`)
+    onSelectInstructor?.(instructorId)
   }
 
   if (!isOpen && !isClosing) return null

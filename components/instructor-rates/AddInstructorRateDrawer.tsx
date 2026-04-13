@@ -35,18 +35,24 @@ interface AddInstructorRateDrawerProps {
   instructors: Instructor[]
   branches: Branch[]
   danceTypes: DanceType[]
+  rates: InstructorRate[]
   isOpen: boolean
   onOpenChange: (open: boolean) => void
   initialRate?: InstructorRate
+  selectedInstructorId?: string
+  onSuccess?: () => void
 }
 
 export function AddInstructorRateDrawer({
   instructors,
   branches,
   danceTypes,
+  rates,
   isOpen,
   onOpenChange,
   initialRate,
+  selectedInstructorId,
+  onSuccess,
 }: AddInstructorRateDrawerProps) {
   const router = useRouter()
   const [isClosing, setIsClosing] = useState(false)
@@ -74,7 +80,7 @@ export function AddInstructorRateDrawer({
     setIsClosing(true)
     setTimeout(() => {
       onOpenChange(false)
-      window.location.reload()
+      onSuccess?.()
     }, 300)
   }
 
@@ -124,7 +130,9 @@ export function AddInstructorRateDrawer({
             instructors={instructors}
             branches={branches}
             danceTypes={danceTypes}
+            rates={rates}
             initialRate={initialRate}
+            selectedInstructorId={selectedInstructorId}
             onSuccess={handleSuccess}
             onCancel={handleCancel}
           />

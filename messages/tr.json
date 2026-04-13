@@ -430,10 +430,14 @@
     "rateAdded": "Oran başarıyla eklendi",
     "rateUpdated": "Oran başarıyla güncellendi",
     "rateDeleted": "Oran başarıyla silindi",
-    "noRates": "Oran bulunamadı",
+    "noRates": "Henüz eğitmen oranı yapılandırılmadı",
     "selectInstructor": "Bir eğitmen seçin",
     "selectBranch": "Bir şube seçin",
-    "selectDanceType": "Bir dans türü seçin"
+    "selectDanceType": "Bir dans türü seçin",
+    "ratesConfigured": "{count} oran yapılandırıldı",
+    "show": "Göster",
+    "hide": "Gizle",
+    "edit": "Düzenle"
   },  "settings": {
     "title": "Ayarlar",
     "general": "Genel Ayarlar",

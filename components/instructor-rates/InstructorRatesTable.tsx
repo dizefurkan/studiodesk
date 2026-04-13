@@ -3,10 +3,12 @@
 import React, { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Trash2, Plus, ChevronDown, ChevronUp } from 'lucide-react'
+import { Trash2, Plus, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react'
 import { deleteInstructorRate } from '@/lib/actions/instructor-rates.actions'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+
+const ITEMS_PER_PAGE = 10
 
 interface InstructorRate {
   id: string
@@ -28,7 +30,20 @@ interface InstructorRate {
 
 interface InstructorRatesTableProps {
   rates: InstructorRate[]
+  instructors: Array<{
+    id: string
+    first_name: string
+    last_name: string
+    instructor_rates?: Array<{
+      id: string
+      ratio_per_class: number
+      branch_id: string
+      dance_type_id: string
+    }>
+  }>
   onRatesChange?: () => void
+  onOpenEdit?: (rateId: string) => void
+  onOpenNewForInstructor?: (instructorId: string) => void
 }
 
 interface GroupedInstructor {
@@ -39,37 +54,25 @@ interface GroupedInstructor {
 
 export function InstructorRatesTable({
   rates,
-  onRatesChange
+  instructors,
+  onRatesChange,
+  onOpenEdit,
+  onOpenNewForInstructor
 }: InstructorRatesTableProps) {
   const router = useRouter()
   const t = useTranslations()
   const [loading, setLoading] = useState(false)
   const [expandedInstructors, setExpandedInstructors] = useState<Set<string>>(new Set())
+  const [currentPage, setCurrentPage] = useState(1)
 
-  // Group rates by instructor
-  const groupedInstructors = useMemo(() => {
-    const grouped = new Map<string, GroupedInstructor>()
-    
-    rates.forEach((rate) => {
-      const instructorId = rate.instructors.id
-      const instructorName = `${rate.instructors.first_name} ${rate.instructors.last_name}`
-
-      if (!grouped.has(instructorId)) {
-        grouped.set(instructorId, {
-          id: instructorId,
-          name: instructorName,
-          rates: [],
-        })
-      }
-
-      grouped.get(instructorId)!.rates.push(rate)
-    })
-
-    return Array.from(grouped.values())
-  }, [rates])
+  // Calculate pagination
+  const totalPages = instructors ? Math.ceil(instructors.length / ITEMS_PER_PAGE) : 1
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const endIndex = startIndex + ITEMS_PER_PAGE
+  const paginatedInstructors = instructors ? instructors.slice(startIndex, endIndex) : []
 
   const handleDelete = async (rateId: string) => {
-    if (!confirm(t('common.deleteRateConfirm'))) return
+    if (!confirm(t('common.confirm') + '?')) return
 
     setLoading(true)
     try {
@@ -77,7 +80,10 @@ export function InstructorRatesTable({
       if (result.error) {
         alert(result.error)
       } else {
-        router.refresh()
+        // Refresh rates without router.refresh()
+        if (onRatesChange) {
+          await onRatesChange()
+        }
       }
     } catch (err) {
       alert('Failed to delete rate')
@@ -86,14 +92,12 @@ export function InstructorRatesTable({
     }
   }
 
-  const handleOpenDrawer = (rate?: InstructorRate) => {
-    if (rate) {
-      // Edit mode
-      router.push(`/dashboard/instructor-rates?modal=edit&id=${rate.id}`)
-    } else {
-      // New rate mode
-      router.push('/dashboard/instructor-rates?modal=new')
-    }
+  const handleEditRate = (rateId: string) => {
+    onOpenEdit?.(rateId)
+  }
+
+  const handleAddRateForInstructor = (instructorId: string) => {
+    onOpenNewForInstructor?.(instructorId)
   }
 
   const toggleExpand = (instructorId: string) => {
@@ -110,22 +114,11 @@ export function InstructorRatesTable({
 
   return (
     <div className="space-y-4">
-      {/* Add Button */}
-      <div className="flex justify-end">
-        <Button
-          onClick={() => handleOpenDrawer()}
-          className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2"
-        >
-          <Plus size={18} />
-          Add Rate
-        </Button>
-      </div>
-
-      {/* Rates Table */}
-      {rates.length === 0 ? (
+      {/* Datatable */}
+      {(!instructors || instructors.length === 0) && rates.length === 0 ? (
         <Card className="border-[#E5E7EB] p-12 text-center">
-          <p className="text-gray-500">No instructor rates configured yet</p>
-          <p className="text-sm text-gray-400 mt-1">Add rates to calculate instructor earnings</p>
+          <p className="text-gray-500">{t('instructorRates.noRates')}</p>
+          <p className="text-sm text-gray-400 mt-1">{t('instructorRates.description')}</p>
         </Card>
       ) : (
         <Card className="border-[#E5E7EB] overflow-hidden">
@@ -145,57 +138,72 @@ export function InstructorRatesTable({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E7EB]">
-                {groupedInstructors.map((instructor) => {
+                {paginatedInstructors && paginatedInstructors.map((instructor) => {
+                  const instructorRates = rates.filter((rate) => rate.instructors.id === instructor.id)
+                  const rateCount = instructorRates.length
                   const isExpanded = expandedInstructors.has(instructor.id)
-                  const rateCount = instructor.rates.length
 
                   return (
                     <React.Fragment key={instructor.id}>
-                      {/* Main instructor row */}
+                      {/* Main row */}
                       <tr className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 text-sm font-medium text-[#111827]">
-                          {instructor.name}
+                          {instructor.first_name} {instructor.last_name}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
-                          {rateCount} rate{rateCount > 1 ? 's' : ''} configured
+                          {t('instructorRates.ratesConfigured', { count: rateCount })}
                         </td>
                         <td className="px-6 py-4 text-right space-x-2">
-                          <button
-                            onClick={() => toggleExpand(instructor.id)}
-                            className="px-3 py-1 text-sm text-[#4F46E5] hover:bg-blue-50 rounded transition-colors inline-flex items-center gap-1"
+                          {rateCount > 0 && (
+                            <button
+                              onClick={() => toggleExpand(instructor.id)}
+                              className="px-3 py-1 text-sm text-[#4F46E5] hover:bg-blue-50 rounded transition-colors inline-flex items-center gap-1"
+                            >
+                              {isExpanded ? (
+                                <>
+                                  <ChevronUp size={16} />
+                                  {t('instructorRates.hide')}
+                                </>
+                              ) : (
+                                <>
+                                  <ChevronDown size={16} />
+                                  {t('instructorRates.show')}
+                                </>
+                              )}
+                            </button>
+                          )}
+                          <Button
+                            onClick={() => handleAddRateForInstructor(instructor.id)}
+                            size="sm"
+                            variant="outline"
+                            className="border-[#4F46E5] text-[#4F46E5] hover:bg-blue-50"
                           >
-                            {isExpanded ? (
-                              <>
-                                <ChevronUp size={16} />
-                                Hide
-                              </>
-                            ) : (
-                              <>
-                                <ChevronDown size={16} />
-                                Show
-                              </>
-                            )}
-                          </button>
+                            <Plus size={14} className="mr-1" />
+                            {t('instructorRates.addNew')}
+                          </Button>
                         </td>
                       </tr>
 
-                      {/* Expanded rate details */}
-                      {isExpanded &&
-                        instructor.rates.map((rate) => (
+                      {/* Expanded Rates */}
+                      {isExpanded && rateCount > 0 &&
+                        instructorRates.map((rate) => (
                           <tr key={rate.id} className="bg-blue-50/30 hover:bg-blue-50/50 transition-colors">
                             <td className="px-6 py-4 text-sm text-gray-600 pl-12">
-                              {rate.branches.name} • {rate.dance_types.name}
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-[#4F46E5] rounded-full"></div>
+                                <span>{rate.branches.name} • {rate.dance_types.name}</span>
+                              </div>
                             </td>
                             <td className="px-6 py-4 text-sm text-[#111827] font-semibold">
                               {Number(rate.ratio_per_class).toFixed(2)}%
                             </td>
                             <td className="px-6 py-4 text-right space-x-2">
                               <button
-                                onClick={() => handleOpenDrawer(rate)}
+                                onClick={() => handleEditRate(rate.id)}
                                 disabled={loading}
                                 className="px-3 py-1 text-sm text-[#4F46E5] hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
                               >
-                                Edit
+                                {t('instructorRates.edit')}
                               </button>
                               <button
                                 onClick={() => handleDelete(rate.id)}
@@ -214,6 +222,33 @@ export function InstructorRatesTable({
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {instructors && instructors.length > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-between border-t border-[#E5E7EB] px-6 py-4">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </button>
+
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </Card>
       )}
     </div>

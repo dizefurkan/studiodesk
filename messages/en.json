@@ -435,10 +435,14 @@
     "rateAdded": "Rate added successfully",
     "rateUpdated": "Rate updated successfully",
     "rateDeleted": "Rate deleted successfully",
-    "noRates": "No rates found",
+    "noRates": "No instructor rates configured yet",
     "selectInstructor": "Select an instructor",
     "selectBranch": "Select a branch",
-    "selectDanceType": "Select a dance type"
+    "selectDanceType": "Select a dance type",
+    "ratesConfigured": "{count} rate{count, plural, one {} other {s}} configured",
+    "show": "Show",
+    "hide": "Hide",
+    "edit": "Edit"
   },
   "settings": {
     "title": "Settings",

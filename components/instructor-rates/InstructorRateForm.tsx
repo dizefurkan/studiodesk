@@ -33,7 +33,9 @@ interface InstructorRateFormProps {
   instructors: Instructor[]
   branches: Branch[]
   danceTypes: DanceType[]
+  rates: InstructorRate[]
   initialRate?: InstructorRate
+  selectedInstructorId?: string
   onSuccess?: () => void
   onCancel?: () => void
 }
@@ -42,20 +44,22 @@ export function InstructorRateForm({
   instructors,
   branches,
   danceTypes,
+  rates,
   initialRate,
+  selectedInstructorId,
   onSuccess,
   onCancel,
 }: InstructorRateFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string>('')
   const [formData, setFormData] = useState({
-    instructorId: initialRate?.instructors.id || '',
+    instructorId: initialRate?.instructors.id || selectedInstructorId || '',
     branchId: initialRate?.branches.id || '',
     danceTypeId: initialRate?.dance_types.id || '',
     ratio: initialRate?.ratio_per_class.toString() || '',
   })
 
-  // Update form data when initialRate changes (for edit mode)
+  // Update form data when initialRate or selectedInstructorId changes
   useEffect(() => {
     if (initialRate) {
       setFormData({
@@ -64,8 +68,44 @@ export function InstructorRateForm({
         danceTypeId: initialRate.dance_types?.id || '',
         ratio: initialRate.ratio_per_class?.toString() || '',
       })
+    } else if (selectedInstructorId) {
+      setFormData((prev) => ({
+        ...prev,
+        instructorId: selectedInstructorId,
+      }))
     }
-  }, [initialRate])
+  }, [initialRate, selectedInstructorId])
+
+  // Reset dance type when branch changes
+  useEffect(() => {
+    if (!initialRate) {
+      setFormData((prev) => ({
+        ...prev,
+        danceTypeId: '',
+      }))
+    }
+  }, [formData.branchId, initialRate])
+
+  // Get unavailable dance types for the selected instructor + branch
+  const getUnavailableDanceTypeIds = () => {
+    if (!formData.instructorId || !formData.branchId || initialRate) {
+      // When editing, allow all dance types (keep the selected one)
+      return []
+    }
+    
+    return rates
+      .filter(
+        (rate) =>
+          rate.instructors.id === formData.instructorId &&
+          rate.branches.id === formData.branchId
+      )
+      .map((rate) => rate.dance_types.id)
+  }
+
+  const unavailableDanceTypeIds = getUnavailableDanceTypeIds()
+  const availableDanceTypes = danceTypes.filter(
+    (danceType) => !unavailableDanceTypeIds.includes(danceType.id)
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -135,7 +175,7 @@ export function InstructorRateForm({
           <select
             value={formData.instructorId}
             onChange={(e) => setFormData({ ...formData, instructorId: e.target.value })}
-            disabled={!!initialRate}
+            disabled={!!initialRate || !!selectedInstructorId}
             className="w-full border border-[#D1D5DB] rounded px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] disabled:bg-gray-100"
           >
             <option value="">Select instructor</option>
@@ -173,11 +213,11 @@ export function InstructorRateForm({
           <select
             value={formData.danceTypeId}
             onChange={(e) => setFormData({ ...formData, danceTypeId: e.target.value })}
-            disabled={!!initialRate}
-            className="w-full border border-[#D1D5DB] rounded px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] disabled:bg-gray-100"
+            disabled={!!initialRate || !formData.branchId}
+            className="w-full border border-[#D1D5DB] rounded px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] disabled:bg-gray-100 disabled:cursor-not-allowed"
           >
             <option value="">Select dance type</option>
-            {danceTypes.map((danceType) => (
+            {availableDanceTypes.map((danceType) => (
               <option key={danceType.id} value={danceType.id}>
                 {danceType.name}
               </option>
