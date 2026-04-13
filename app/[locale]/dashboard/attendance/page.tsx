@@ -7,29 +7,11 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StudentAttendanceList } from '@/components/attendance/StudentAttendanceList'
 import { AttendancePageWrapper } from '@/components/attendance/AttendancePageWrapper'
+import { formatDateDisplay } from '@/lib/utils/formatting'
 import Link from 'next/link'
 import { Calendar, Users, CheckCircle } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 import { getTranslations } from 'next-intl/server'
-
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-
-// Format date for display (e.g., "30 May 2025 Monday")
-function formatDateDisplay(dateString: string): string {
-  const date = new Date(dateString + 'T00:00:00Z')
-  const dayIndex = date.getUTCDay()
-  const day = date.getUTCDate()
-  const month = date.getUTCMonth()
-  const year = date.getUTCFullYear()
-
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ]
-
-  return `${day} ${monthNames[month]} ${year} ${dayNames[dayIndex]}`
-}
 
 export default async function AttendancePage({
   searchParams,
@@ -374,7 +356,7 @@ export default async function AttendancePage({
                       {course.totalAttendance > 0 && (
                         <div className="mt-2 inline-block px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
                           {course.mostRecentDate && (
-                            <span>{formatDateDisplay(course.mostRecentDate)} - </span>
+                            <span>{formatDateDisplay(course.mostRecentDate, t)} - </span>
                           )}
                           {t('attendance.totalAttendance')} {course.totalAttendance}
                         </div>
