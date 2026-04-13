@@ -69,6 +69,7 @@ export async function getCourseAttendanceHistory(courseId: string) {
         id: session.id,
         session_date: session.session_date,
         attendance_count: presentCount,  // Count of students who were present
+        total_attendance: sessionAttendances.length,  // Total attendance records (present + absent)
         attendances: sessionAttendances,  // All attendance records (present and absent)
         instructors: instructors,  // Instructors for this session
       }
