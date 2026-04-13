@@ -7,9 +7,8 @@ import { getTranslations } from 'next-intl/server'
 import { UserMenu } from './UserMenu'
 import { TopBarClient } from './TopBarClient'
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
-import { Bell, Search } from 'lucide-react'
+import { Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 
 export async function TopBar() {
   const t = await getTranslations()
@@ -25,18 +24,6 @@ export async function TopBar() {
 
   const content = (
     <>
-      {/* Left Section - Search - Hide on very small screens */}
-      <div className="hidden sm:flex flex-1 max-w-xs md:max-w-md lg:max-w-xl">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-2.5 text-[#9CA3AF]" size={16} />
-          <Input
-            type="search"
-            placeholder={t('common.search')}
-            className="pl-9 text-sm bg-[#F9FAFB] border-[#E5E7EB]"
-          />
-        </div>
-      </div>
-
       {/* Right Section - Notifications & User Menu */}
       <div className="flex items-center gap-2 md:gap-4 ml-auto">
         {/* Language Switcher */}
