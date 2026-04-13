@@ -355,7 +355,10 @@
     "presentMarked": "{count} student{count, plural, one {} other {s}} marked present",
     "absentMarked": "{count} student{count, plural, one {} other {s}} marked absent",
     "sessionsRecorded": "{count} session{count, plural, one {} other {s}} recorded",
-    "attendanceCount": "{count} student{count, plural, one {} other {s}}"
+    "attendanceCount": "{count} student{count, plural, one {} other {s}}",
+    "presentOutOf": "present out of",
+    "outOf": "out of",
+    "total": "total"
   },
   "calendar": {
     "title": "Calendar",
