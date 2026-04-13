@@ -46,28 +46,39 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-4 mb-2">
-            <Link href="/dashboard/students">
-              <Button variant="ghost" size="sm" className="text-[#6B7280]">
-                <ArrowLeft size={16} className="mr-2" />
-                Back to Students
-              </Button>
-            </Link>
-          </div>
-          <h1 className="text-3xl font-bold text-[#111827]">
+      {/* Header - Mobile: Stacked, Desktop: Side-by-side */}
+      <div className="space-y-4 md:space-y-0 flex flex-col md:flex-row md:items-start md:justify-between">
+        {/* Left Section - Mobile: Full width */}
+        <div className="min-w-0">
+          {/* Back Button - Mobile: text-only, Desktop: full */}
+          <Link href="/dashboard/students">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-[#6B7280] px-0 md:px-2 -ml-2 md:ml-0"
+            >
+              <ArrowLeft size={16} className="mr-2 shrink-0" />
+              <span className="hidden md:inline">Back to Students</span>
+              <span className="md:hidden">Back</span>
+            </Button>
+          </Link>
+          
+          {/* Student Name - Responsive size */}
+          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mt-3 truncate">
             {student.first_name} {student.last_name}
           </h1>
-          <p className="text-gray-600 mt-1">Student Profile</p>
+          <p className="text-sm md:text-base text-gray-600 mt-1">Student Profile</p>
         </div>
-        <div className="flex gap-2">
-          <StudentPurchaseDialog studentId={id} packages={availablePackages as any} currency={currency} />
-          <Link href={`/dashboard/students/${student.id}/edit`}>
-            <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
-              <Edit2 size={16} className="mr-2" />
-              Edit
+
+        {/* Right Section - Mobile: 2-column grid, Desktop: flex row */}
+        <div className="grid grid-cols-2 md:flex gap-2">
+          <div className="col-span-1">
+            <StudentPurchaseDialog studentId={id} packages={availablePackages as any} currency={currency} />
+          </div>
+          <Link href={`/dashboard/students/${student.id}/edit`} className="col-span-1">
+            <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white w-full md:w-auto">
+              <Edit2 size={16} className="mr-2 shrink-0" />
+              <span className="hidden md:inline">Edit</span>
             </Button>
           </Link>
         </div>
