@@ -420,6 +420,12 @@ export async function recordBatchAttendance(
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
+  // ✅ VALIDATION: Ensure attendanceData is not empty
+  if (!attendanceData || attendanceData.length === 0) {
+    console.error('[recordBatchAttendance] ERROR: attendanceData is empty - rejecting')
+    return { error: 'Yoklama verisi boş. Lütfen en az bir öğrenci seçin.' }
+  }
+
   try {
     const supabase = await createServerSupabaseClient()
 
