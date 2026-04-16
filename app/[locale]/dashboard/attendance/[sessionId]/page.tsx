@@ -66,11 +66,13 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
   
   if (instructors.length === 0 && session.course?.id) {
     // Fallback: Get course instructors if session has none
-    const { data: courseInstructors } = await (supabase
-      .from('course_instructors') as any)
+    const query = supabase
+      .from('course_instructors')
       .select('instructor:instructors(id, first_name, last_name)')
       .eq('course_id', session.course.id)
       .overrideTypes<{ instructor: any }[]>()
+    
+    const { data: courseInstructors } = (await query) as { data: { instructor: any }[] | null }
     
     instructors = (courseInstructors || []).map((ci: any) => ci.instructor)
   }
