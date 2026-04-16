@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
-import { getCourses, generateCourseSessions, getCourseSessions } from '@/lib/actions/courses.actions'
+import { getCourses } from '@/lib/actions/courses.actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
@@ -41,31 +41,9 @@ function CalendarPage({
         const coursesData = coursesResult.data || []
         setCourses(coursesData)
 
-        // Auto-generate sessions
-        const today = new Date()
-        const twoWeeksFromNow = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000)
-
-        try {
-          for (const course of coursesData) {
-            if (!isMounted) break
-            
-            try {
-              const sessionsResult = await getCourseSessions(
-                course.id,
-                today.toISOString().split('T')[0],
-                twoWeeksFromNow.toISOString().split('T')[0],
-              )
-              const existingSessions = sessionsResult.data || []
-              if (existingSessions.length === 0) {
-                await generateCourseSessions(course.id, today, twoWeeksFromNow)
-              }
-            } catch (courseError) {
-              console.error(`Error processing course ${course.id}:`, courseError)
-            }
-          }
-        } catch (error) {
-          console.error('Error in auto-generate sessions:', error)
-        }
+        // ✅ REMOVED: Auto-generate sessions
+        // Sessions should ONLY be created in recordBatchAttendance when user records attendance
+        // DO NOT generate sessions here - prevents creating orphaned empty sessions
         
         if (isMounted) {
           setLoading(false)
