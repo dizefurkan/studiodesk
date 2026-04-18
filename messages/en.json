@@ -273,6 +273,7 @@
     "markAttendance": "Mark Attendance",
     "totalAttendance": "Total Attendance",
     "noCourses": "No courses found",
+    "noInstructors": "No instructors assigned",
     "courseAdded": "Course added successfully",
     "courseUpdated": "Course updated successfully",
     "courseDeleted": "Course deleted successfully",

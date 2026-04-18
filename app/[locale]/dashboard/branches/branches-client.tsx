@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import Link from 'next/link'
 import { Edit2, Trash2, List, Maximize2, ChevronDown } from 'lucide-react'
+import { deleteBranch } from '@/lib/actions/branches.actions'
+import { DeleteConfirmModal } from '@/components/common/DeleteConfirmModal'
 import type { Database } from '@/lib/types/database.types'
 
 type Branch = Database['public']['Tables']['branches']['Row']
@@ -16,6 +18,10 @@ interface BranchesPageClientProps {
 export function BranchesPageClient({ branches }: BranchesPageClientProps) {
   const [mobileViewMode, setMobileViewMode] = useState<'single' | 'expanded'>('expanded')
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const saved = localStorage.getItem('branchesTableMobileView')
@@ -39,6 +45,32 @@ export function BranchesPageClient({ branches }: BranchesPageClientProps) {
       }
       return newSet
     })
+  }
+
+  const handleDeleteClick = (branch: Branch) => {
+    setSelectedBranch(branch)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async (reason?: string) => {
+    if (!selectedBranch) return
+
+    setIsDeleting(true)
+    try {
+      const result = await deleteBranch(selectedBranch.id, reason)
+
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      // Reload page to reflect deletion
+      window.location.reload()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete branch')
+      throw err
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -119,6 +151,7 @@ export function BranchesPageClient({ branches }: BranchesPageClientProps) {
                     size="sm"
                     className="text-red-600 hover:bg-red-50"
                     title="Delete"
+                    onClick={() => handleDeleteClick(branch)}
                   >
                     <Trash2 size={16} />
                   </Button>
@@ -162,6 +195,7 @@ export function BranchesPageClient({ branches }: BranchesPageClientProps) {
                       size="sm"
                       className="text-red-600 hover:bg-red-50 h-8 w-8 px-0"
                       title="Delete"
+                      onClick={() => handleDeleteClick(branch)}
                     >
                       <Trash2 size={14} />
                     </Button>
@@ -216,6 +250,7 @@ export function BranchesPageClient({ branches }: BranchesPageClientProps) {
                       size="sm"
                       className="text-red-600 hover:bg-red-50 h-8 w-8"
                       title="Delete"
+                      onClick={() => handleDeleteClick(branch)}
                     >
                       <Trash2 size={14} />
                     </Button>
@@ -243,6 +278,22 @@ export function BranchesPageClient({ branches }: BranchesPageClientProps) {
           }
         })}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setSelectedBranch(null)
+          setError(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Branch"
+        description="Are you sure?"
+        itemName={selectedBranch?.name}
+        withReason={true}
+        isLoading={isDeleting}
+      />
     </Card>
   )
 }

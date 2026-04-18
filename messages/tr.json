@@ -266,6 +266,7 @@
     "markAttendance": "Yoklama Al",
     "totalAttendance": "Toplam Yoklama",
     "noCourses": "Kurs bulunamadı",
+    "noInstructors": "Atanmış eğitmen yok",
     "courseAdded": "Kurs başarıyla eklendi",
     "courseUpdated": "Kurs başarıyla güncellendi",
     "courseDeleted": "Kurs başarıyla silindi",

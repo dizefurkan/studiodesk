@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import Link from 'next/link'
 import { Edit2, Trash2, List, Maximize2, ChevronDown } from 'lucide-react'
+import { deleteInstructor } from '@/lib/actions/instructors.actions'
+import { DeleteConfirmModal } from '@/components/common/DeleteConfirmModal'
 import type { Database } from '@/lib/types/database.types'
 
 type Instructor = Database['public']['Tables']['instructors']['Row']
@@ -16,6 +18,10 @@ interface InstructorsPageClientProps {
 export function InstructorsPageClient({ instructors }: InstructorsPageClientProps) {
   const [mobileViewMode, setMobileViewMode] = useState<'single' | 'expanded'>('expanded')
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Load mobile view preference
   useEffect(() => {
@@ -40,6 +46,32 @@ export function InstructorsPageClient({ instructors }: InstructorsPageClientProp
       }
       return newSet
     })
+  }
+
+  const handleDeleteClick = (instructor: Instructor) => {
+    setSelectedInstructor(instructor)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async (reason?: string) => {
+    if (!selectedInstructor) return
+
+    setIsDeleting(true)
+    try {
+      const result = await deleteInstructor(selectedInstructor.id, reason)
+
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      // Reload page to reflect deletion
+      window.location.reload()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete instructor')
+      throw err
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -120,6 +152,7 @@ export function InstructorsPageClient({ instructors }: InstructorsPageClientProp
                     size="sm"
                     className="text-red-600 hover:bg-red-50"
                     title="Delete"
+                    onClick={() => handleDeleteClick(instructor)}
                   >
                     <Trash2 size={16} />
                   </Button>
@@ -163,6 +196,7 @@ export function InstructorsPageClient({ instructors }: InstructorsPageClientProp
                       size="sm"
                       className="text-red-600 hover:bg-red-50 h-8 w-8 px-0"
                       title="Delete"
+                      onClick={() => handleDeleteClick(instructor)}
                     >
                       <Trash2 size={14} />
                     </Button>
@@ -217,6 +251,7 @@ export function InstructorsPageClient({ instructors }: InstructorsPageClientProp
                       size="sm"
                       className="text-red-600 hover:bg-red-50 h-8 w-8"
                       title="Delete"
+                      onClick={() => handleDeleteClick(instructor)}
                     >
                       <Trash2 size={14} />
                     </Button>
@@ -244,6 +279,22 @@ export function InstructorsPageClient({ instructors }: InstructorsPageClientProp
           }
         })}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setSelectedInstructor(null)
+          setError(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Instructor"
+        description="Are you sure?"
+        itemName={selectedInstructor ? `${selectedInstructor.first_name} ${selectedInstructor.last_name}` : undefined}
+        withReason={true}
+        isLoading={isDeleting}
+      />
     </Card>
   )
 }

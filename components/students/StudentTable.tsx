@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { StudentPopover } from './StudentPopover'
 import { useStudentColumns } from '@/hooks/useStudentColumns'
 import { Edit2, Trash2, ChevronDown } from 'lucide-react'
+import { deleteStudent } from '@/lib/actions/students.actions'
+import { DeleteConfirmModal } from '@/components/common/DeleteConfirmModal'
 
 interface Student {
   id: string
@@ -59,6 +61,9 @@ export function StudentTable({
   const t = useTranslations()
   const { columns, isLoaded } = useStudentColumns()
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const handleToggleRow = (studentId: string) => {
     setExpandedRows((prev) => {
@@ -70,6 +75,31 @@ export function StudentTable({
       }
       return newSet
     })
+  }
+
+  const handleDeleteClick = (student: Student) => {
+    setSelectedStudent(student)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async (reason?: string) => {
+    if (!selectedStudent) return
+
+    setIsDeleting(true)
+    try {
+      const result = await deleteStudent(selectedStudent.id, reason)
+
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      // Reload page to reflect deletion
+      window.location.reload()
+    } catch (err) {
+      throw err
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   if (!isLoaded) return <div>{t('common.loading')}</div>
@@ -198,6 +228,7 @@ export function StudentTable({
                       size="sm"
                       className="text-red-600 hover:bg-red-50"
                       title="Delete"
+                      onClick={() => handleDeleteClick(student)}
                     >
                       <Trash2 size={16} />
                     </Button>
@@ -249,6 +280,7 @@ export function StudentTable({
                           size="sm"
                           className="text-red-600 hover:bg-red-50 h-8 w-8 px-0"
                           title="Delete"
+                          onClick={() => handleDeleteClick(student)}
                         >
                           <Trash2 size={14} />
                         </Button>
@@ -336,8 +368,7 @@ export function StudentTable({
                         variant="ghost"
                         size="sm"
                         className="text-red-600 hover:bg-red-50 h-8 w-8"
-                        title="Delete"
-                      >
+                        title="Delete"                        onClick={() => handleDeleteClick(student)}                      >
                         <Trash2 size={14} />
                       </Button>
                     </div>
@@ -392,6 +423,21 @@ export function StudentTable({
           }
         })}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setSelectedStudent(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Student"
+        description={t('common.deleteConfirm')}
+        itemName={selectedStudent ? `${selectedStudent.first_name} ${selectedStudent.last_name}` : undefined}
+        withReason={true}
+        isLoading={isDeleting}
+      />
     </div>
   )
 }

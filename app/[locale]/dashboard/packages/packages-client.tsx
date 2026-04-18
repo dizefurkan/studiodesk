@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Plus, Edit2, Trash2, Search, Package as PackageIcon } from 'lucide-react'
 import { getPackages, deletePackage } from '@/lib/actions/packages.actions'
 import { formatCurrency } from '@/lib/utils/format'
+import { DeleteConfirmModal } from '@/components/common/DeleteConfirmModal'
 import type { Database } from '@/lib/types/database.types'
 
 type Package = Database['public']['Tables']['packages']['Row']
@@ -25,6 +26,9 @@ export function PackagesPageContent({ currency }: PackagesPageContentProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     loadPackages()
@@ -56,20 +60,31 @@ export function PackagesPageContent({ currency }: PackagesPageContentProps) {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Are you sure you want to delete this package?')) return
+  const handleDeleteClick = (pkg: Package) => {
+    setSelectedPackage(pkg)
+    setDeleteModalOpen(true)
+  }
 
-    setDeletingId(id)
-    const result = await deletePackage(id)
+  const handleDeleteConfirm = async (reason?: string) => {
+    if (!selectedPackage) return
 
-    if (result.error) {
-      setError(result.error)
-    } else {
-      setPackages(packages.filter((p) => p.id !== id))
-      setFilteredPackages(filteredPackages.filter((p) => p.id !== id))
+    setIsDeleting(true)
+    try {
+      const result = await deletePackage(selectedPackage.id, reason)
+
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      setPackages(packages.filter((p) => p.id !== selectedPackage.id))
+      setFilteredPackages(filteredPackages.filter((p) => p.id !== selectedPackage.id))
+      setDeleteModalOpen(false)
+      setSelectedPackage(null)
+    } catch (err) {
+      throw err
+    } finally {
+      setIsDeleting(false)
     }
-
-    setDeletingId(null)
   }
 
   return (
@@ -170,8 +185,8 @@ export function PackagesPageContent({ currency }: PackagesPageContentProps) {
                     variant="ghost"
                     size="sm"
                     className="text-red-600 hover:bg-red-50 hover:text-red-700 h-8"
-                    onClick={() => handleDelete(pkg.id)}
-                    disabled={deletingId === pkg.id}
+                    onClick={() => handleDeleteClick(pkg)}
+                    disabled={isDeleting}
                   >
                     <Trash2 size={14} />
                   </Button>
@@ -181,6 +196,21 @@ export function PackagesPageContent({ currency }: PackagesPageContentProps) {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setSelectedPackage(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Package"
+        description={t('common.deleteConfirm')}
+        itemName={selectedPackage?.name}
+        withReason={true}
+        isLoading={isDeleting}
+      />
     </div>
   )
 }

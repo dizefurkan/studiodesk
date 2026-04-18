@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Plus, Edit2, Trash2, Search, Music2 } from 'lucide-react'
 import { getDanceTypes, deleteDanceType } from '@/lib/actions/dance-types.actions'
+import { DeleteConfirmModal } from '@/components/common/DeleteConfirmModal'
 import type { Database } from '@/lib/types/database.types'
 
 type DanceType = Database['public']['Tables']['dance_types']['Row']
@@ -20,6 +21,9 @@ export default function DanceTypesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [selectedDanceType, setSelectedDanceType] = useState<DanceType | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     loadDanceTypes()
@@ -53,20 +57,31 @@ export default function DanceTypesPage() {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Are you sure you want to delete this dance type?')) return
+  const handleDeleteClick = (danceType: DanceType) => {
+    setSelectedDanceType(danceType)
+    setDeleteModalOpen(true)
+  }
 
-    setDeletingId(id)
-    const result = await deleteDanceType(id)
+  const handleDeleteConfirm = async (reason?: string) => {
+    if (!selectedDanceType) return
 
-    if (result.error) {
-      setError(result.error)
-    } else {
-      setDanceTypes(danceTypes.filter((dt) => dt.id !== id))
-      setFilteredDanceTypes(filteredDanceTypes.filter((dt) => dt.id !== id))
+    setIsDeleting(true)
+    try {
+      const result = await deleteDanceType(selectedDanceType.id, reason)
+
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      setDanceTypes(danceTypes.filter((dt) => dt.id !== selectedDanceType.id))
+      setFilteredDanceTypes(filteredDanceTypes.filter((dt) => dt.id !== selectedDanceType.id))
+      setDeleteModalOpen(false)
+      setSelectedDanceType(null)
+    } catch (err) {
+      throw err
+    } finally {
+      setIsDeleting(false)
     }
-
-    setDeletingId(null)
   }
 
   return (
@@ -164,8 +179,8 @@ export default function DanceTypesPage() {
                     variant="ghost"
                     size="sm"
                     className="text-red-600 hover:bg-red-50 hover:text-red-700 h-8"
-                    onClick={() => handleDelete(danceType.id)}
-                    disabled={deletingId === danceType.id}
+                    onClick={() => handleDeleteClick(danceType)}
+                    disabled={isDeleting}
                   >
                     <Trash2 size={14} />
                   </Button>
@@ -175,6 +190,21 @@ export default function DanceTypesPage() {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setSelectedDanceType(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Dance Type"
+        description="Are you sure?"
+        itemName={selectedDanceType?.name}
+        withReason={true}
+        isLoading={isDeleting}
+      />
     </div>
   )
 }
