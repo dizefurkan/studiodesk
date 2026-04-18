@@ -131,7 +131,7 @@ export function DataTableFilters({
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2">
               <Settings2 className="h-4 w-4" />
-              {t('common.filter')}
+              {t('filters.title')}
               {activeFilters > 0 && (
                 <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-xs font-semibold text-white">
                   {activeFilters}
