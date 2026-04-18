@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Popover,
   PopoverContent,
@@ -114,22 +115,22 @@ export function InstructorTable({
                   )}
                 </td>
                 <td className="hidden lg:table-cell px-6 py-4 text-gray-600">
-                  <span className="inline-block bg-[#EEF2FF] text-[#4F46E5] px-2 py-1 rounded text-sm font-medium">
+                  <Badge variant="default">
                     {t('instructors.courseCount', { count: instructor.courseCount })}
-                  </span>
+                  </Badge>
                 </td>
                 <td className="hidden lg:table-cell px-6 py-4 text-gray-600">
-                  <span className="inline-block bg-[#F3F4F6] text-[#111827] px-2 py-1 rounded text-sm font-medium">
+                  <Badge variant="secondary">
                     {t('instructors.danceTypeCount', { count: instructor.danceTypeCount })}
-                  </span>
+                  </Badge>
                 </td>
                 <td className="hidden lg:table-cell px-6 py-4 text-gray-600">
                   {instructor.branches && instructor.branches.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
                       {instructor.branches.slice(0, 2).map((branch) => (
-                        <span key={branch.id} className="inline-block bg-[#F0F9FF] text-[#0369A1] px-2 py-1 rounded text-xs font-medium">
+                        <Badge key={branch.id} variant="outline">
                           {branch.name}
-                        </span>
+                        </Badge>
                       ))}
                       {instructor.branches.length > 2 && (
                         <span className="inline-block text-xs text-gray-500">
@@ -239,22 +240,22 @@ export function InstructorTable({
                         <div className="flex flex-wrap gap-1 mt-1">
                           {instructor.courses.length <= 2 ? (
                             instructor.courses.map((course) => (
-                              <span key={course.id} className="inline-block bg-[#EEF2FF] text-[#4F46E5] px-2 py-1 rounded text-xs font-medium">
+                              <Badge key={course.id} variant="default">
                                 {course.name}
-                              </span>
+                              </Badge>
                             ))
                           ) : (
                             <>
                               {instructor.courses.slice(0, 2).map((course) => (
-                                <span key={course.id} className="inline-block bg-[#EEF2FF] text-[#4F46E5] px-2 py-1 rounded text-xs font-medium">
+                                <Badge key={course.id} variant="default">
                                   {course.name}
-                                </span>
+                                </Badge>
                               ))}
                               <Popover>
                                 <PopoverTrigger asChild>
-                                  <button className="inline-block bg-[#F3F4F6] text-[#111827] px-2 py-1 rounded text-xs font-medium hover:bg-[#E5E7EB] transition-colors cursor-pointer">
+                                  <Button variant="secondary" size="sm" className="h-5 text-xs">
                                     +{instructor.courses.length - 2} more
-                                  </button>
+                                  </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-48">
                                   <div className="space-y-1">
@@ -279,22 +280,22 @@ export function InstructorTable({
                         <div className="flex flex-wrap gap-1 mt-1">
                           {instructor.danceTypes.length <= 2 ? (
                             instructor.danceTypes.map((danceType) => (
-                              <span key={danceType.id} className="inline-block bg-[#F3F4F6] text-[#111827] px-2 py-1 rounded text-xs font-medium">
+                              <Badge key={danceType.id} variant="secondary">
                                 {danceType.name}
-                              </span>
+                              </Badge>
                             ))
                           ) : (
                             <>
                               {instructor.danceTypes.slice(0, 2).map((danceType) => (
-                                <span key={danceType.id} className="inline-block bg-[#F3F4F6] text-[#111827] px-2 py-1 rounded text-xs font-medium">
+                                <Badge key={danceType.id} variant="secondary">
                                   {danceType.name}
-                                </span>
+                                </Badge>
                               ))}
                               <Popover>
                                 <PopoverTrigger asChild>
-                                  <button className="inline-block bg-[#FEF3C7] text-[#92400E] px-2 py-1 rounded text-xs font-medium hover:bg-[#FCD34D] transition-colors cursor-pointer">
+                                  <Button variant="ghost" size="sm" className="h-5 text-xs">
                                     +{instructor.danceTypes.length - 2} more
-                                  </button>
+                                  </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-48">
                                   <div className="space-y-1">
@@ -381,22 +382,22 @@ export function InstructorTable({
                       <div className="flex flex-wrap gap-1 mt-1">
                         {instructor.courses.length <= 2 ? (
                           instructor.courses.map((course) => (
-                            <span key={course.id} className="inline-block bg-[#EEF2FF] text-[#4F46E5] px-2 py-1 rounded text-xs font-medium">
+                            <Badge key={course.id} variant="default">
                               {course.name}
-                            </span>
+                            </Badge>
                           ))
                         ) : (
                           <>
                             {instructor.courses.slice(0, 2).map((course) => (
-                              <span key={course.id} className="inline-block bg-[#EEF2FF] text-[#4F46E5] px-2 py-1 rounded text-xs font-medium">
+                              <Badge key={course.id} variant="default">
                                 {course.name}
-                              </span>
+                              </Badge>
                             ))}
                             <Popover>
                               <PopoverTrigger asChild>
-                                <button className="inline-block bg-[#F3F4F6] text-[#111827] px-2 py-1 rounded text-xs font-medium hover:bg-[#E5E7EB] transition-colors cursor-pointer">
+                                <Button variant="secondary" size="sm" className="h-5 text-xs">
                                   +{instructor.courses.length - 2}
-                                </button>
+                                </Button>
                               </PopoverTrigger>
                               <PopoverContent className="w-48">
                                 <div className="space-y-1">
@@ -421,22 +422,22 @@ export function InstructorTable({
                       <div className="flex flex-wrap gap-1 mt-1">
                         {instructor.danceTypes.length <= 2 ? (
                           instructor.danceTypes.map((danceType) => (
-                            <span key={danceType.id} className="inline-block bg-[#F3F4F6] text-[#111827] px-2 py-1 rounded text-xs font-medium">
+                            <Badge key={danceType.id} variant="secondary">
                               {danceType.name}
-                            </span>
+                            </Badge>
                           ))
                         ) : (
                           <>
                             {instructor.danceTypes.slice(0, 2).map((danceType) => (
-                              <span key={danceType.id} className="inline-block bg-[#F3F4F6] text-[#111827] px-2 py-1 rounded text-xs font-medium">
+                              <Badge key={danceType.id} variant="secondary">
                                 {danceType.name}
-                              </span>
+                              </Badge>
                             ))}
                             <Popover>
                               <PopoverTrigger asChild>
-                                <button className="inline-block bg-[#FEF3C7] text-[#92400E] px-2 py-1 rounded text-xs font-medium hover:bg-[#FCD34D] transition-colors cursor-pointer">
+                                <Button variant="ghost" size="sm" className="h-5 text-xs">
                                   +{instructor.danceTypes.length - 2}
-                                </button>
+                                </Button>
                               </PopoverTrigger>
                               <PopoverContent className="w-48">
                                 <div className="space-y-1">
@@ -468,9 +469,9 @@ export function InstructorTable({
                     <p className="text-[#9CA3AF] font-medium text-xs mb-2">{t('instructors.branchesAssigned')}</p>
                     <div className="flex flex-wrap gap-1">
                       {instructor.branches.map((branch) => (
-                        <span key={branch.id} className="inline-block bg-[#F0F9FF] text-[#0369A1] px-2 py-1 rounded text-xs font-medium">
+                        <Badge key={branch.id} variant="outline">
                           {branch.name}
-                        </span>
+                        </Badge>
                       ))}
                     </div>
                   </div>
