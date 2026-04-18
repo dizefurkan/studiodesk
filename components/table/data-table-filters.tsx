@@ -160,7 +160,7 @@ export function DataTableFilters({
           </SheetTrigger>
           <SheetContent side="bottom" className="h-auto rounded-t-lg">
             <SheetHeader>
-              <SheetTitle>{t('common.filter')}</SheetTitle>
+              <SheetTitle>{t('filters.title')}</SheetTitle>
             </SheetHeader>
             <div className="mt-4">
               <MobileFilterContent />
