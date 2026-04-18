@@ -463,7 +463,12 @@
     "ratesConfigured": "{count} oran yapılandırıldı",
     "show": "Göster",
     "hide": "Gizle",
-    "edit": "Düzenle"
+    "edit": "Düzenle",
+    "tableHeaders": {
+      "instructor": "Eğitmen",
+      "rates": "Oranlar",
+      "actions": "İşlemler"
+    }
   },  "settings": {
     "title": "Ayarlar",
     "general": "Genel Ayarlar",

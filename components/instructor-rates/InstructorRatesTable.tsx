@@ -127,13 +127,13 @@ export function InstructorRatesTable({
               <thead className="bg-gray-50 border-b border-[#E5E7EB]">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">
-                    Instructor
+                    {t('instructorRates.tableHeaders.instructor')}
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#111827]">
-                    Rates
+                    {t('instructorRates.tableHeaders.rates')}
                   </th>
                   <th className="px-6 py-3 text-right text-sm font-semibold text-[#111827]">
-                    Actions
+                    {t('instructorRates.tableHeaders.actions')}
                   </th>
                 </tr>
               </thead>

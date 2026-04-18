@@ -164,6 +164,7 @@ export default function InstructorRatesPage() {
         rates={rates} 
         instructors={drawerData?.instructors || []}
         onRatesChange={handleRatesChange}
+        onOpenEdit={handleOpenEdit}
         onOpenNewForInstructor={handleOpenNewForInstructor}
       />
 

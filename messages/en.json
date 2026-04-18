@@ -471,7 +471,12 @@
     "ratesConfigured": "{count} rate{count, plural, one {} other {s}} configured",
     "show": "Show",
     "hide": "Hide",
-    "edit": "Edit"
+    "edit": "Edit",
+    "tableHeaders": {
+      "instructor": "Instructor",
+      "rates": "Rates",
+      "actions": "Actions"
+    }
   },
   "settings": {
     "title": "Settings",
