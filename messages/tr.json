@@ -270,6 +270,8 @@
     "addNew": "Yeni Kurs Ekle",
     "editCourse": "Kursu Düzenle",
     "deleteCourse": "Kursu Sil",
+    "deleteTitle": "Kursu Sil",
+    "deleteDescription": "Bu işlem geri alınamaz. Kurs sistemden kalıcı olarak silinecektir.",
     "name": "Kurs Adı",
     "danceType": "Dans Türü",
     "instructor": "Eğitmen",

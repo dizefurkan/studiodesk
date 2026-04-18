@@ -2,13 +2,11 @@ import { getCourses } from '@/lib/actions/courses.actions'
 import { getBranches } from '@/lib/actions/branches.actions'
 import { getDanceTypes } from '@/lib/actions/dance-types.actions'
 import { getTranslations } from 'next-intl/server'
-import { BranchFilter } from '@/components/courses/BranchFilter'
-import { DeleteCourseButton } from '@/components/courses/DeleteCourseButton'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { CoursesPageClient } from './courses-client'
 import Link from 'next/link'
-import { Plus, Edit2, Clock, Users, BookOpen, User } from 'lucide-react'
-import { formatTime } from '@/lib/utils/formatTime'
+import { Plus, Clock } from 'lucide-react'
 
 export default async function CoursesPage({
   searchParams,
@@ -46,10 +44,7 @@ export default async function CoursesPage({
         </Link>
       </div>
 
-      {/* Filters */}
-      <BranchFilter branchId={branchId} branches={branches} searchQuery={searchQuery} danceTypeId={danceTypeId} danceTypes={danceTypes} />
-
-      {/* Courses List */}
+      {/* Content */}
       {courses.length === 0 ? (
         <Card className="border-[#E5E7EB] p-6 sm:p-8 md:p-12 text-center">
           <div className="text-gray-500">
@@ -59,55 +54,16 @@ export default async function CoursesPage({
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6">
-          {courses.map((course: any) => (
-            <Card key={course.id} className="border-[#E5E7EB] p-3 sm:p-4 md:p-6 hover:shadow-lg transition-shadow">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
-                <div className="flex-1">
-                  <Link href={`/dashboard/courses/${course.id}`}>
-                    <h3 className="text-lg font-semibold text-[#111827] hover:text-[#4F46E5]">{course.name}</h3>
-                  </Link>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {course.branches?.name} • {course.dance_types?.name}
-                  </p>
-
-                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-4 text-sm">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Clock size={16} />
-                      {t(`data.days.${['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][course.day_of_week]}`)} {formatTime(course.start_time)} - {formatTime(course.end_time)}
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Users size={16} />
-                      {course.studentCount || 0} {t('courses.students')}
-                    </div>
-
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <User size={16} />
-                      <span>{course.course_instructors && course.course_instructors.length > 0 
-                        ? course.course_instructors.map((ci: any) => `${ci.instructors?.first_name} ${ci.instructors?.last_name}`).join(', ')
-                        : t('courses.noInstructors')}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <BookOpen size={16} />
-                      {course.attendanceCount || 0} {t('courses.attendanceRecords')}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Link href={`/dashboard/courses/${course.id}/edit`}>
-                    <Button size="sm" variant="outline" className="border-[#E5E7EB]" title="Edit">
-                      <Edit2 size={16} />
-                    </Button>
-                  </Link>
-                  <DeleteCourseButton courseId={course.id} />
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+        <Card className="border-[#E5E7EB] p-3 sm:p-4 md:p-6">
+          <CoursesPageClient
+            courses={courses}
+            branches={branches}
+            danceTypes={danceTypes}
+            searchQuery={searchQuery}
+            branchId={branchId}
+            danceTypeId={danceTypeId}
+          />
+        </Card>
       )}
     </div>
   )

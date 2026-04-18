@@ -275,6 +275,8 @@
     "addNew": "Add New Course",
     "editCourse": "Edit Course",
     "deleteCourse": "Delete Course",
+    "deleteTitle": "Delete Course",
+    "deleteDescription": "This action cannot be undone. The course will be permanently removed from the system.",
     "name": "Course Name",
     "danceType": "Dance Type",
     "instructor": "Instructor",
