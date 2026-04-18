@@ -28,7 +28,7 @@ import {
 import { Calendar, Settings2, X } from 'lucide-react'
 import { format } from 'date-fns'
 
-export type FilterType = 'text' | 'select' | 'dateRange' | 'checkbox' | 'number'
+export type FilterType = 'select' | 'dateRange' | 'checkbox' | 'number'
 
 export interface FilterConfig {
   id: string
@@ -63,18 +63,20 @@ export function DataTableFilters({
 
   // Mobile Filter UI
   const MobileFilterContent = () => (
-    <div className="space-y-4">
-      {filters.map((filter) => (
-        <FilterField
-          key={filter.id}
-          filter={filter}
-          value={values[filter.id]}
-          onChange={(value) => {
-            onFilterChange(filter.id, value)
-          }}
-        />
-      ))}
-      <div className="flex gap-2 pt-4">
+    <div className="space-y-5 pr-4">
+      <div className="space-y-5">
+        {filters.map((filter) => (
+          <FilterField
+            key={filter.id}
+            filter={filter}
+            value={values[filter.id]}
+            onChange={(value) => {
+              onFilterChange(filter.id, value)
+            }}
+          />
+        ))}
+      </div>
+      <div className="flex gap-3 pt-4 border-t">
         <Button
           onClick={() => {
             onClearAll()
@@ -99,26 +101,30 @@ export function DataTableFilters({
 
   // Desktop Filter UI
   const DesktopFilterContent = () => (
-    <div className="w-80 space-y-4 p-4">
-      {filters.map((filter) => (
-        <FilterField
-          key={filter.id}
-          filter={filter}
-          value={values[filter.id]}
-          onChange={(value) => {
-            onFilterChange(filter.id, value)
-          }}
-        />
-      ))}
+    <div className="space-y-5">
+      <div className="space-y-5">
+        {filters.map((filter) => (
+          <FilterField
+            key={filter.id}
+            filter={filter}
+            value={values[filter.id]}
+            onChange={(value) => {
+              onFilterChange(filter.id, value)
+            }}
+          />
+        ))}
+      </div>
       {activeFilters > 0 && (
-        <Button
-          onClick={onClearAll}
-          variant="ghost"
-          size="sm"
-          className="w-full"
-        >
-          {t('common.filter')} ({activeFilters})
-        </Button>
+        <div className="flex gap-2 pt-3 border-t">
+          <Button
+            onClick={onClearAll}
+            variant="ghost"
+            size="sm"
+            className="w-full"
+          >
+            {t('common.filter')} ({activeFilters})
+          </Button>
+        </div>
       )}
     </div>
   )
@@ -139,7 +145,7 @@ export function DataTableFilters({
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="start" className="w-80">
+          <PopoverContent align="start" className="w-72 p-4">
             <DesktopFilterContent />
           </PopoverContent>
         </Popover>
@@ -183,25 +189,12 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
   const t = useTranslations()
 
   switch (filter.type) {
-    case 'text':
-      return (
-        <div className="space-y-2">
-          <Label className="text-xs font-medium">{filter.label}</Label>
-          <Input
-            placeholder={filter.placeholder || t('common.search')}
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
-            className="h-8"
-          />
-        </div>
-      )
-
     case 'select':
       return (
-        <div className="space-y-2">
-          <Label className="text-xs font-medium">{filter.label}</Label>
+        <div className="space-y-2.5">
+          <Label className="text-sm font-semibold text-gray-700">{filter.label}</Label>
           <Select value={value || ''} onValueChange={(val) => onChange(val || undefined)}>
-            <SelectTrigger className="h-8">
+            <SelectTrigger className="h-9 bg-white">
               <SelectValue placeholder={filter.placeholder || t('common.selectOption')} />
             </SelectTrigger>
             <SelectContent>
@@ -217,23 +210,23 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
 
     case 'number':
       return (
-        <div className="space-y-2">
-          <Label className="text-xs font-medium">{filter.label}</Label>
+        <div className="space-y-2.5">
+          <Label className="text-sm font-semibold text-gray-700">{filter.label}</Label>
           <Input
             type="number"
             placeholder={filter.placeholder || t('common.selectOption')}
             value={value || ''}
             onChange={(e) => onChange(e.target.value ? Number(e.target.value) : '')}
-            className="h-8"
+            className="h-9 bg-white"
           />
         </div>
       )
 
     case 'dateRange':
       return (
-        <div className="space-y-2">
-          <Label className="text-xs font-medium">{filter.label}</Label>
-          <div className="space-y-2">
+        <div className="space-y-2.5">
+          <Label className="text-sm font-semibold text-gray-700">{filter.label}</Label>
+          <div className="space-y-2.5">
             <Input
               type="date"
               value={value?.from ? format(value.from, 'yyyy-MM-dd') : ''}
@@ -245,7 +238,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
                     : undefined,
                 })
               }
-              className="h-8"
+              className="h-9 bg-white"
               placeholder="From"
             />
             <Input
@@ -259,7 +252,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
                     : undefined,
                 })
               }
-              className="h-8"
+              className="h-9 bg-white"
               placeholder="To"
             />
           </div>

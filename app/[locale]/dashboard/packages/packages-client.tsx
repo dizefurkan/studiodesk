@@ -43,19 +43,9 @@ export function PackagesPageContent({ currency }: PackagesPageContentProps) {
     }
   }
 
-  const filters: FilterConfig[] = [
-    {
-      id: 'search',
-      label: t('common.search'),
-      type: 'text',
-      placeholder: t('packages.searchPlaceholder') || 'Search packages...',
-    },
-  ]
+  const filters: FilterConfig[] = []
 
-  const filteredPackages = packages.filter((pkg) => {
-    const searchLower = filterValues.search.toLowerCase()
-    return pkg.name?.toLowerCase().includes(searchLower) || false
-  })
+  const filteredPackages = packages
 
 
   const handleDeleteClick = (pkg: Package) => {

@@ -48,14 +48,7 @@ export function BranchesPageClient({ branches, searchQuery }: BranchesPageClient
   }
 
   // Define filters
-  const filters: FilterConfig[] = [
-    {
-      id: 'search',
-      label: t('common.search'),
-      type: 'text',
-      placeholder: t('common.searchBranch'),
-    },
-  ]
+  const filters: FilterConfig[] = []
 
   // Get columns with delete handler
   const columns = getBranchColumns({

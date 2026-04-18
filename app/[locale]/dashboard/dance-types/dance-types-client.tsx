@@ -51,14 +51,7 @@ export function DanceTypesPageClient({
   }
 
   // Define filters
-  const filters: FilterConfig[] = [
-    {
-      id: 'search',
-      label: t('common.search'),
-      type: 'text',
-      placeholder: 'Search dance types...',
-    },
-  ]
+  const filters: FilterConfig[] = []
 
   // Get columns with delete handler
   const columns = getDanceTypeColumns({

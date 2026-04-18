@@ -73,12 +73,6 @@ export function StudentTableWrapper({
   // Define filters
   const filters: FilterConfig[] = [
     {
-      id: 'search',
-      label: t('common.search'),
-      type: 'text',
-      placeholder: t('common.searchStudent'),
-    },
-    {
       id: 'danceType',
       label: t('students.danceType'),
       type: 'select',

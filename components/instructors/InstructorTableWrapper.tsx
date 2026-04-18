@@ -63,12 +63,6 @@ export function InstructorTableWrapper({
   // Define filters
   const filters: FilterConfig[] = [
     {
-      id: 'search',
-      label: t('common.search'),
-      type: 'text',
-      placeholder: t('common.searchInstructor'),
-    },
-    {
       id: 'danceType',
       label: t('instructors.danceType'),
       type: 'select',

@@ -63,12 +63,6 @@ export function CoursesPageClient({
   // Define filters
   const filters: FilterConfig[] = [
     {
-      id: 'search',
-      label: t('common.search'),
-      type: 'text',
-      placeholder: t('common.searchCourse'),
-    },
-    {
       id: 'branch',
       label: t('courses.branch'),
       type: 'select',
