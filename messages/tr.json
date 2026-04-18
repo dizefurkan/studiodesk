@@ -430,6 +430,8 @@
     "addNew": "Yeni Şube Ekle",
     "editBranch": "Şubeyi Düzenle",
     "deleteBranch": "Şubeyi Sil",
+    "deleteTitle": "Şubeyi Sil",
+    "deleteDescription": "Bu işlem geri alınamaz. Şube sistemden kalıcı olarak silinecektir.",
     "name": "Şube Adı",
     "address": "Adres",
     "phone": "Telefon",

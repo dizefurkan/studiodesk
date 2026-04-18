@@ -58,7 +58,7 @@ export default async function BranchesPage({
           </div>
         </Card>
       ) : (
-        <BranchesPageClient branches={branches} />
+        <BranchesPageClient branches={branches} searchQuery={searchQuery} />
       )}
     </div>
   )

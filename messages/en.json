@@ -435,6 +435,8 @@
     "addNew": "Add New Branch",
     "editBranch": "Edit Branch",
     "deleteBranch": "Delete Branch",
+    "deleteTitle": "Delete Branch",
+    "deleteDescription": "This action cannot be undone. The branch will be permanently removed from the system.",
     "name": "Branch Name",
     "address": "Address",
     "phone": "Phone",
