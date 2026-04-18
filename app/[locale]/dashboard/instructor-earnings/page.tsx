@@ -2,10 +2,9 @@ import { getInstructorEarnings } from '@/lib/actions/instructor-earnings.actions
 import { getInstructors } from '@/lib/actions/instructors.actions'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { Card } from '@/components/ui/card'
-import { InstructorEarningsFilters } from '@/components/instructor-earnings/EarningsFilters'
-import { EarningsEditButton } from '@/components/instructor-earnings/EarningsEditButton'
 import { formatCurrency } from '@/lib/utils/format'
 import { TrendingUp, DollarSign } from 'lucide-react'
+import { InstructorEarningsTable } from './instructor-earnings-client'
 
 export default async function InstructorEarningsPage({
   searchParams,
@@ -61,43 +60,15 @@ export default async function InstructorEarningsPage({
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card className="border-[#E5E7EB] p-6">
-        <InstructorEarningsFilters instructors={instructors} instructorId={instructorId} fromDate={fromDate} toDate={toDate} />
-      </Card>
-
-      {/* Earnings List */}
-      {earnings.length === 0 ? (
-        <Card className="border-[#E5E7EB] p-12 text-center">
-          <div className="text-gray-500">
-            <TrendingUp size={48} className="mx-auto mb-4 opacity-50" />
-            <p className="text-lg">No earnings records found</p>
-            <p className="text-sm mt-1">Complete course sessions to generate instructor earnings</p>
-          </div>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {earnings.map((earning: any) => (
-            <Card key={earning.id} className="border-[#E5E7EB] p-4">
-              <div className="flex justify-between items-center">
-                <div className="flex-1">
-                  <p className="font-medium text-[#111827]">
-                    {earning.instructors?.first_name} {earning.instructors?.last_name} - Session Payment
-                  </p>
-                  <p className="text-sm text-gray-600">{new Date(earning.created_at).toLocaleDateString()}</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <p className="text-lg font-bold text-green-600">{formatCurrency(earning.amount, currency)}</p>
-                  <EarningsEditButton 
-                    earningsId={earning.id}
-                    currentAmount={Number(earning.amount)}
-                  />
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+      {/* Filters and Table */}
+      <InstructorEarningsTable
+        earnings={earnings}
+        instructors={instructors}
+        currency={currency}
+        instructorId={instructorId}
+        fromDate={fromDate}
+        toDate={toDate}
+      />
     </div>
   )
 }
