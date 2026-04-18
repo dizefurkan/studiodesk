@@ -200,12 +200,11 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
       return (
         <div className="space-y-2">
           <Label className="text-xs font-medium">{filter.label}</Label>
-          <Select value={value || ''} onValueChange={onChange}>
+          <Select value={value || ''} onValueChange={(val) => onChange(val || undefined)}>
             <SelectTrigger className="h-8">
               <SelectValue placeholder={filter.placeholder || t('common.selectOption')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">{t('common.selectOption')}</SelectItem>
               {filter.options?.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
