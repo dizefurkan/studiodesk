@@ -214,7 +214,10 @@
     "studentDeleted": "Öğrenci başarıyla silindi",
     "updateInformationMessage": "Öğrenci bilgilerini güncelleyin",
     "addNewStudentMessage": "Stüdyonuza yeni bir öğrenci ekleyin",
-    "addFirstStudent": "İlk Öğrenciyi Ekle"
+    "addFirstStudent": "İlk Öğrenciyi Ekle",
+    "danceType": "Dans Türü",
+    "branch": "Şube",
+    "course": "Kurs"
   },
   "instructors": {
     "title": "Eğitmenler",

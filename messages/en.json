@@ -219,7 +219,10 @@
     "studentDeleted": "Student deleted successfully",
     "updateInformationMessage": "Update student information",
     "addNewStudentMessage": "Add a new student to your studio",
-    "addFirstStudent": "Add First Student"
+    "addFirstStudent": "Add First Student",
+    "danceType": "Dance Type",
+    "branch": "Branch",
+    "course": "Course"
   },
   "instructors": {
     "title": "Instructors",
