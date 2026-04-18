@@ -187,6 +187,8 @@
     "addNew": "Yeni Öğrenci Ekle",
     "editStudent": "Öğrenciyi Düzenle",
     "deleteStudent": "Öğrenciyi Sil",
+    "deleteTitle": "Öğrenci Sil",
+    "deleteDescription": "Bu işlem geri alınamaz. Öğrenci kaydı kalıcı olarak silinecektir.",
     "updateStudent": "Öğrenciyi Güncelle",
     "createStudent": "Öğrenci Oluştur",
     "name": "Ad",

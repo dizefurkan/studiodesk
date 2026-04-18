@@ -192,6 +192,8 @@
     "addNew": "Add New Student",
     "editStudent": "Edit Student",
     "deleteStudent": "Delete Student",
+    "deleteTitle": "Delete Student",
+    "deleteDescription": "This action cannot be undone. The student record will be permanently deleted.",
     "updateStudent": "Update Student",
     "createStudent": "Create Student",
     "name": "Name",

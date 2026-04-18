@@ -1,38 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { StudentFilters } from './StudentFilters'
-import { StudentTable } from './StudentTable'
-import { useStudentColumns } from '@/hooks/useStudentColumns'
-
-interface Student {
-  id: string
-  first_name: string
-  last_name: string
-  email: string
-  phone?: string
-  created_at: string
-  totalRemainingCredits: number
-  enrolledCoursesCount: number
-  student_packages?: Array<{
-    id: string
-    remaining_credits: number
-  }>
-  course_students?: Array<{
-    course_id: string
-    course?: {
-      id: string
-      name: string
-    }
-  }>
-  packageDetails?: Array<{
-    id: string
-    name: string
-    danceType: string
-    danceTypeId: string
-    remaining: number
-  }>
-}
+import { useState } from 'react'
+import { DataTable } from '@/components/table/data-table'
+import { FilterConfig } from '@/components/table/data-table-filters'
+import { getStudentColumns, Student } from '@/app/[locale]/dashboard/students/columns'
+import { useTranslations } from 'next-intl'
+import { deleteStudent } from '@/lib/actions/students.actions'
+import { DeleteConfirmModal } from '@/components/common/DeleteConfirmModal'
 
 interface StudentTableWrapperProps {
   students: Student[]
@@ -59,53 +33,104 @@ export function StudentTableWrapper({
   courseId,
   filteredDanceTypeId,
 }: StudentTableWrapperProps) {
-  const { columns, toggleColumn, resetColumns, isLoaded } = useStudentColumns()
-  const [mobileViewMode, setMobileViewMode] = useState<'single' | 'expanded'>('expanded')
+  const t = useTranslations()
+  const [filterValues, setFilterValues] = useState<Record<string, any>>({
+    search: searchQuery || '',
+    danceType: danceTypeId || '',
+    branch: branchId || '',
+    course: courseId || '',
+    withCredits: hasCredits ? 'true' : '',
+  })
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  // Load mobile view preference from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('studentTableMobileView')
-    if (saved === 'single' || saved === 'expanded') {
-      setMobileViewMode(saved)
-    }
-  }, [])
-
-  // Save mobile view preference to localStorage
-  const handleToggleMobileView = (mode: 'single' | 'expanded') => {
-    setMobileViewMode(mode)
-    localStorage.setItem('studentTableMobileView', mode)
+  const handleDeleteClick = (student: Student) => {
+    setSelectedStudent(student)
+    setDeleteModalOpen(true)
   }
 
-  if (!isLoaded) return <div>Loading...</div>
+  const handleDeleteConfirm = async (reason?: string) => {
+    if (!selectedStudent) return
+
+    setIsDeleting(true)
+    try {
+      const result = await deleteStudent(selectedStudent.id, reason)
+
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      // Reload page to reflect deletion
+      window.location.reload()
+    } catch (err) {
+      throw err
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  // Define filters
+  const filters: FilterConfig[] = [
+    {
+      id: 'search',
+      label: t('common.search'),
+      type: 'text',
+      placeholder: t('common.searchStudent'),
+    },
+    {
+      id: 'danceType',
+      label: t('students.danceType'),
+      type: 'select',
+      options: danceTypes.map((dt) => ({ label: dt.name, value: dt.id })),
+    },
+    {
+      id: 'branch',
+      label: t('students.branch'),
+      type: 'select',
+      options: branches.map((b) => ({ label: b.name, value: b.id })),
+    },
+    {
+      id: 'course',
+      label: t('students.course'),
+      type: 'select',
+      options: courses.map((c) => ({ label: c.name, value: c.id })),
+    },
+  ]
+
+  // Get columns with delete handler
+  const columns = getStudentColumns({
+    onDelete: handleDeleteClick,
+    filteredDanceTypeId,
+  })
 
   return (
     <>
-      <StudentFilters
-        danceTypes={danceTypes}
-        branches={branches}
-        courses={courses}
-        searchQuery={searchQuery}
-        hasCredits={hasCredits}
-        danceTypeId={danceTypeId}
-        branchId={branchId}
-        courseId={courseId}
-        viewMode={mobileViewMode}
-        onViewModeChange={handleToggleMobileView}
+      <DataTable<Student, any>
         columns={columns}
-        onColumnsToggle={toggleColumn}
-        onColumnsReset={resetColumns}
+        data={students}
+        filters={filters}
+        filterValues={filterValues}
+        onFilterChange={(filterId, value) =>
+          setFilterValues((prev) => ({ ...prev, [filterId]: value }))
+        }
+        enablePagination={true}
+        enableFilters={true}
+        pageSize={10}
+        emptyMessage={t('students.noStudents')}
       />
 
-      <div className="mt-6 border-t border-[#E5E7EB] pt-6">
-        <StudentTable
-          students={students}
-          danceTypes={danceTypes}
-          branches={branches}
-          courses={courses}
-          filteredDanceTypeId={filteredDanceTypeId}
-          mobileViewMode={mobileViewMode}
-        />
-      </div>
+      {/* Delete Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModalOpen}
+        title={t('students.deleteTitle')}
+        description={t('students.deleteDescription')}
+        itemName={selectedStudent ? `${selectedStudent.first_name} ${selectedStudent.last_name}` : ''}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        withReason={true}
+        isLoading={isDeleting}
+      />
     </>
   )
 }
