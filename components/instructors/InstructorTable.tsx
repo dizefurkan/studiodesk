@@ -115,12 +115,12 @@ export function InstructorTable({
                   )}
                 </td>
                 <td className="hidden lg:table-cell px-6 py-4 text-gray-600">
-                  <Badge variant="default">
+                  <Badge className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200">
                     {t('instructors.courseCount', { count: instructor.courseCount })}
                   </Badge>
                 </td>
                 <td className="hidden lg:table-cell px-6 py-4 text-gray-600">
-                  <Badge variant="secondary">
+                  <Badge className="bg-purple-50 text-purple-700 dark:bg-purple-900 dark:text-purple-200">
                     {t('instructors.danceTypeCount', { count: instructor.danceTypeCount })}
                   </Badge>
                 </td>
@@ -128,7 +128,7 @@ export function InstructorTable({
                   {instructor.branches && instructor.branches.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
                       {instructor.branches.slice(0, 2).map((branch) => (
-                        <Badge key={branch.id} variant="outline">
+                        <Badge key={branch.id} className="bg-cyan-50 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-200">
                           {branch.name}
                         </Badge>
                       ))}
@@ -382,14 +382,14 @@ export function InstructorTable({
                       <div className="flex flex-wrap gap-1 mt-1">
                         {instructor.courses.length <= 2 ? (
                           instructor.courses.map((course) => (
-                            <Badge key={course.id} variant="default">
+                            <Badge key={course.id} className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200">
                               {course.name}
                             </Badge>
                           ))
                         ) : (
                           <>
                             {instructor.courses.slice(0, 2).map((course) => (
-                              <Badge key={course.id} variant="default">
+                              <Badge key={course.id} className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200">
                                 {course.name}
                               </Badge>
                             ))}
@@ -422,14 +422,14 @@ export function InstructorTable({
                       <div className="flex flex-wrap gap-1 mt-1">
                         {instructor.danceTypes.length <= 2 ? (
                           instructor.danceTypes.map((danceType) => (
-                            <Badge key={danceType.id} variant="secondary">
+                            <Badge key={danceType.id} className="bg-purple-50 text-purple-700 dark:bg-purple-900 dark:text-purple-200">
                               {danceType.name}
                             </Badge>
                           ))
                         ) : (
                           <>
                             {instructor.danceTypes.slice(0, 2).map((danceType) => (
-                              <Badge key={danceType.id} variant="secondary">
+                              <Badge key={danceType.id} className="bg-purple-50 text-purple-700 dark:bg-purple-900 dark:text-purple-200">
                                 {danceType.name}
                               </Badge>
                             ))}
@@ -469,7 +469,7 @@ export function InstructorTable({
                     <p className="text-[#9CA3AF] font-medium text-xs mb-2">{t('instructors.branchesAssigned')}</p>
                     <div className="flex flex-wrap gap-1">
                       {instructor.branches.map((branch) => (
-                        <Badge key={branch.id} variant="outline">
+                        <Badge key={branch.id} className="bg-cyan-50 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-200">
                           {branch.name}
                         </Badge>
                       ))}
