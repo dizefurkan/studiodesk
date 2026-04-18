@@ -17,20 +17,19 @@ export default async function StudentsPage({
   const t = await getTranslations()
   const params = await searchParams
   const searchQuery = typeof params.q === 'string' ? params.q : undefined
-  const page = typeof params.page === 'string' ? parseInt(params.page, 10) : 1
   const hasCredits = params.hasCredits === 'true'
   const danceTypeId = typeof params.danceType === 'string' ? params.danceType : undefined
   const courseId = typeof params.course === 'string' ? params.course : undefined
   const branchId = typeof params.branch === 'string' ? params.branch : undefined
 
-  const result = await getStudentsWithStats(searchQuery, page, 10, {
+  // Always fetch all students for client-side pagination/filtering
+  const result = await getStudentsWithStats(searchQuery, 1, 1000, {
     hasCredits,
     danceTypeId,
     courseId,
     branchId,
   })
   const students = result.data || []
-  const pagination = result.pagination || { page: 1, limit: 10, total: 0, totalPages: 1, hasNextPage: false, hasPrevPage: false }
 
   const filterOptions = await getStudentFilterOptions()
   const danceTypes = (filterOptions as any).danceTypes || []
