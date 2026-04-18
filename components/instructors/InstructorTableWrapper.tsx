@@ -26,8 +26,8 @@ export function InstructorTableWrapper({
   branchId,
 }: InstructorTableWrapperProps) {
   const t = useTranslations()
+  const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
   const [filterValues, setFilterValues] = useState<Record<string, any>>({
-    search: searchQuery || '',
     danceType: danceTypeId || '',
     branch: branchId || '',
   })
@@ -91,6 +91,9 @@ export function InstructorTableWrapper({
         onFilterChange={(filterId, value) =>
           setFilterValues((prev) => ({ ...prev, [filterId]: value }))
         }
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+        searchPlaceholder={t('common.searchInstructor')}
         enablePagination={true}
         enableFilters={true}
         pageSize={10}

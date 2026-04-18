@@ -26,8 +26,8 @@ export function CoursesPageClient({
   danceTypeId,
 }: CoursesPageClientProps) {
   const t = useTranslations()
+  const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
   const [filterValues, setFilterValues] = useState<Record<string, any>>({
-    search: searchQuery || '',
     branch: branchId || '',
     danceType: danceTypeId || '',
   })
@@ -91,6 +91,9 @@ export function CoursesPageClient({
         onFilterChange={(filterId, value) =>
           setFilterValues((prev) => ({ ...prev, [filterId]: value }))
         }
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+        searchPlaceholder={t('common.searchCourse')}
         enablePagination={true}
         enableFilters={true}
         pageSize={10}

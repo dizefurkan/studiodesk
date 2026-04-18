@@ -15,9 +15,8 @@ interface BranchesPageClientProps {
 
 export function BranchesPageClient({ branches, searchQuery }: BranchesPageClientProps) {
   const t = useTranslations()
-  const [filterValues, setFilterValues] = useState<Record<string, any>>({
-    search: searchQuery || '',
-  })
+  const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
+  const [filterValues, setFilterValues] = useState<Record<string, any>>({})
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -65,6 +64,9 @@ export function BranchesPageClient({ branches, searchQuery }: BranchesPageClient
         onFilterChange={(filterId, value) =>
           setFilterValues((prev) => ({ ...prev, [filterId]: value }))
         }
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+        searchPlaceholder={t('common.searchBranch')}
         enablePagination={true}
         enableFilters={true}
         pageSize={10}

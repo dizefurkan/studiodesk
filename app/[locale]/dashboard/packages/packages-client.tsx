@@ -26,7 +26,8 @@ export function PackagesPageContent({ currency }: PackagesPageContentProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [filterValues, setFilterValues] = useState({ search: '' })
+  const [searchValue, setSearchValue] = useState('')
+  const [filterValues, setFilterValues] = useState<Record<string, any>>({})
 
   useEffect(() => {
     loadPackages()
@@ -101,7 +102,7 @@ export function PackagesPageContent({ currency }: PackagesPageContentProps) {
         </Card>
       )}
 
-      {filteredPackages.length === 0 ? (
+      {packages.length === 0 ? (
         <Card className="border-[#E5E7EB] p-6 sm:p-8 md:p-12 text-center">
           <div className="text-gray-500">
             <PackageIcon size={48} className="mx-auto mb-4 opacity-50" />
@@ -113,12 +114,15 @@ export function PackagesPageContent({ currency }: PackagesPageContentProps) {
         <Card className="border-[#E5E7EB] p-3 sm:p-4 md:p-6">
           <DataTable<Package, any>
             columns={columns}
-            data={filteredPackages}
+            data={packages}
             filters={filters}
             filterValues={filterValues}
             onFilterChange={(filterId, value) =>
               setFilterValues((prev) => ({ ...prev, [filterId]: value }))
             }
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+            searchPlaceholder={t('common.search')}
             enablePagination={true}
             enableFilters={true}
             pageSize={10}

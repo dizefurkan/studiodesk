@@ -18,9 +18,8 @@ export function DanceTypesPageClient({
   searchQuery,
 }: DanceTypesPageClientProps) {
   const t = useTranslations()
-  const [filterValues, setFilterValues] = useState<Record<string, any>>({
-    search: searchQuery || '',
-  })
+  const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
+  const [filterValues, setFilterValues] = useState<Record<string, any>>({})
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedDanceType, setSelectedDanceType] = useState<DanceType | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -67,8 +66,9 @@ export function DanceTypesPageClient({
         filterValues={filterValues}
         onFilterChange={(filterId, value) =>
           setFilterValues((prev) => ({ ...prev, [filterId]: value }))
-        }
-        enablePagination={true}
+        }        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+        searchPlaceholder={t('common.search')}        enablePagination={true}
         enableFilters={true}
         pageSize={10}
         emptyMessage={t('danceTypes.noDanceTypes')}

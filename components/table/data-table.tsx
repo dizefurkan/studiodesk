@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { DataTableFilters, FilterConfig } from './data-table-filters'
+import { SearchInput } from './search-input'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface DataTableProps<TData, TValue> {
@@ -32,6 +33,9 @@ interface DataTableProps<TData, TValue> {
   filters?: FilterConfig[]
   filterValues?: Record<string, any>
   onFilterChange?: (filterId: string, value: any) => void
+  searchValue?: string
+  onSearchChange?: (value: string) => void
+  searchPlaceholder?: string
   pageSize?: number
   enablePagination?: boolean
   enableSearch?: boolean
@@ -47,6 +51,9 @@ export function DataTable<TData, TValue>({
   filters = [],
   filterValues = {},
   onFilterChange,
+  searchValue = '',
+  onSearchChange,
+  searchPlaceholder,
   pageSize = 10,
   enablePagination = true,
   enableSearch = true,
@@ -60,13 +67,34 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
-  // Apply external filters
-  const filteredData = useMemo(() => {
-    if (!enableFilters || Object.keys(filterValues).length === 0) {
+  // Apply search filter
+  const searchedData = useMemo(() => {
+    if (!enableSearch || !searchValue) {
       return data
     }
 
+    const lowerSearchValue = searchValue.toLowerCase()
     return data.filter((row: any) => {
+      if (searchableColumns.length === 0) {
+        // Search in all string columns if no specific columns defined
+        return Object.values(row).some((value) =>
+          String(value).toLowerCase().includes(lowerSearchValue)
+        )
+      }
+      // Search in specific columns
+      return searchableColumns.some((col) =>
+        String(row[col] || '').toLowerCase().includes(lowerSearchValue)
+      )
+    })
+  }, [data, searchValue, enableSearch, searchableColumns])
+
+  // Apply external filters
+  const filteredData = useMemo(() => {
+    if (!enableFilters || Object.keys(filterValues).length === 0) {
+      return searchedData
+    }
+
+    return searchedData.filter((row: any) => {
       return Object.entries(filterValues).every(([key, value]) => {
         if (!value) return true
 
@@ -86,7 +114,7 @@ export function DataTable<TData, TValue>({
         return fieldValue === value
       })
     })
-  }, [data, filterValues, enableFilters])
+  }, [searchedData, filterValues, enableFilters])
 
   const table = useReactTable({
     data: filteredData,
@@ -119,15 +147,24 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      {/* Filters Bar */}
-      {enableFilters && filters.length > 0 && onFilterChange && (
-        <div className="flex gap-2">
-          <DataTableFilters
-            filters={filters}
-            values={filterValues}
-            onFilterChange={onFilterChange}
-            onClearAll={handleClearFilters}
-          />
+      {/* Search and Filters Bar */}
+      {(enableSearch || (enableFilters && filters.length > 0)) && (
+        <div className="flex gap-2 items-center flex-wrap">
+          {enableSearch && onSearchChange && (
+            <SearchInput
+              value={searchValue}
+              onChange={onSearchChange}
+              placeholder={searchPlaceholder}
+            />
+          )}
+          {enableFilters && filters.length > 0 && onFilterChange && (
+            <DataTableFilters
+              filters={filters}
+              values={filterValues}
+              onFilterChange={onFilterChange}
+              onClearAll={handleClearFilters}
+            />
+          )}
         </div>
       )}
 

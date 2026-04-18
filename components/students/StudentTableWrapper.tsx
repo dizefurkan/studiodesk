@@ -34,8 +34,8 @@ export function StudentTableWrapper({
   filteredDanceTypeId,
 }: StudentTableWrapperProps) {
   const t = useTranslations()
+  const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
   const [filterValues, setFilterValues] = useState<Record<string, any>>({
-    search: searchQuery || '',
     danceType: danceTypeId || '',
     branch: branchId || '',
     course: courseId || '',
@@ -108,6 +108,9 @@ export function StudentTableWrapper({
         onFilterChange={(filterId, value) =>
           setFilterValues((prev) => ({ ...prev, [filterId]: value }))
         }
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+        searchPlaceholder={t('common.searchStudent')}
         enablePagination={true}
         enableFilters={true}
         pageSize={10}
