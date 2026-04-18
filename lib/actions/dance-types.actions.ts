@@ -12,15 +12,33 @@ type DanceType = Database['public']['Tables']['dance_types']['Row']
 
 export async function getDanceTypes(
   searchQuery?: string,
-): Promise<{ data?: DanceType[]; error?: string }> {
+  page: number = 1,
+  pageSize: number = 10
+): Promise<{ data?: DanceType[]; totalCount?: number; page?: number; pageSize?: number; totalPages?: number; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: 'No organization found', data: [], totalCount: 0 }
 
   try {
     const admin = createAdminClient()
+
+    // Count query
+    let countQuery = admin
+      .from('dance_types')
+      .select('id', { count: 'exact', head: true })
+      .eq('organization_id', organization.id)
+      .is('deleted_at', null)
+
+    if (searchQuery) {
+      countQuery = countQuery.ilike('name', `%${searchQuery}%`)
+    }
+
+    const { count: totalCount } = await countQuery
+    const count = totalCount || 0
+
+    // Data query
     let query = admin
       .from('dance_types')
       .select('*')
@@ -32,18 +50,23 @@ export async function getDanceTypes(
       query = query.ilike('name', `%${searchQuery}%`)
     }
 
+    // Apply pagination
+    const offset = (page - 1) * pageSize
+    query = query.range(offset, offset + pageSize - 1)
+
     const result = await query.overrideTypes<DanceType[]>()
     const { data, error } = result as { data: DanceType[] | null; error: any }
 
     if (error) {
       console.error('Error fetching dance types:', error)
-      return { error: 'Failed to fetch dance types' }
+      return { error: 'Failed to fetch dance types', data: [], totalCount: 0 }
     }
 
-    return { data: data || [] }
+    const totalPages = Math.ceil(count / pageSize)
+    return { data: data || [], totalCount: count, page, pageSize, totalPages }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: 'An unexpected error occurred', data: [], totalCount: 0 }
   }
 }
 

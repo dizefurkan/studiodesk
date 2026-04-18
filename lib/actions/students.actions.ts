@@ -49,27 +49,18 @@ export async function getStudents(searchQuery?: string) {
 export async function getStudentsWithStats(
   searchQuery?: string, 
   page: number = 1, 
-  limit: number = 10,
-  filters?: {
-    hasCredits?: boolean
-    danceTypeId?: string
-    courseId?: string
-    branchId?: string
-  }
+  pageSize: number = 10
 ) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: 'No organization found', data: [], totalCount: 0 }
 
   try {
     const adminSupabase = createAdminClient()
 
-    // Check if we have client-side filters that require fetching all data
-    const hasClientSideFilters = filters?.hasCredits || filters?.courseId || filters?.branchId || filters?.danceTypeId
-
-    // Build count query (for total count)
+    // Build queries for counting and fetching data
     let countQuery = adminSupabase
       .from('students')
       .select('id', { count: 'exact', head: true })
@@ -100,32 +91,25 @@ export async function getStudentsWithStats(
       dataQuery = dataQuery.or(searchFilter)
     }
 
-    // Get total count BEFORE pagination
+    // Get total count
     const { count: totalCount } = await countQuery
+    const count = totalCount || 0
 
     // Order by created_at
     dataQuery = dataQuery.order('created_at', { ascending: false })
 
-    // Only apply pagination if NO client-side filters
-    if (!hasClientSideFilters) {
-      const offset = (page - 1) * limit
-      dataQuery = dataQuery.range(offset, offset + limit - 1)
-    }
+    // Apply pagination with LIMIT/OFFSET
+    const offset = (page - 1) * pageSize
+    dataQuery = dataQuery.range(offset, offset + pageSize - 1)
 
     const { data, error } = await dataQuery
 
     if (error) {
-      console.error('Error fetching students with stats:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        fullError: error
-      })
-      return { error: `Failed to fetch students: ${error.message || JSON.stringify(error)}` }
+      console.error('Error fetching students with stats:', error)
+      return { error: `Failed to fetch students: ${error.message}`, data: [], totalCount: 0 }
     }
 
-    // Fetch student_packages separately (RLS works better this way)
+    // Fetch student_packages
     const studentIds = data?.map((s: any) => s.id) || []
     let studentPackages: any[] = []
     if (studentIds.length > 0) {
@@ -134,10 +118,9 @@ export async function getStudentsWithStats(
         .select('id, remaining_credits, package_id, student_id')
         .in('student_id', studentIds)
       studentPackages = packagesData || []
-      console.log(`Fetched ${studentPackages.length} student_packages for ${studentIds.length} students`)
     }
 
-    // Merge student_packages into students data
+    // Merge student_packages
     const studentPackagesByStudentId = new Map<string, any[]>()
     studentPackages.forEach(sp => {
       if (!studentPackagesByStudentId.has(sp.student_id)) {
@@ -150,7 +133,7 @@ export async function getStudentsWithStats(
       student.student_packages = studentPackagesByStudentId.get(student.id) || []
     })
 
-    // Fetch packages and create mapping for dance_type (with name)
+    // Fetch packages and dance types mapping
     let packageDanceTypeMap = new Map<string, { id: string; name: string }>()
     const packageIds = studentPackages.map(sp => sp.package_id).filter(Boolean)
     
@@ -162,17 +145,14 @@ export async function getStudentsWithStats(
       
       if (packagesData) {
         const packages = packagesData as any
-        // Get unique dance_type_ids
         const danceTypeIds = [...new Set(packages.map((pkg: any) => pkg.dance_type_id).filter(Boolean))]
         
-        // Fetch dance_types to get names
         if (danceTypeIds.length > 0) {
           const { data: danceTypesData } = await (adminSupabase
             .from('dance_types') as any)
             .select('id, name')
             .in('id', danceTypeIds)
           
-          // Create dance_type mapping
           const danceTypeMap = new Map<string, string>()
           if (danceTypesData) {
             (danceTypesData as any[]).forEach((dt: any) => {
@@ -180,7 +160,6 @@ export async function getStudentsWithStats(
             })
           }
           
-          // Create package mapping with dance_type_id and name
           (packages as any[]).forEach((pkg: any) => {
             packageDanceTypeMap.set(pkg.id, {
               id: pkg.dance_type_id,
@@ -191,7 +170,7 @@ export async function getStudentsWithStats(
       }
     }
 
-    // Enrich student_packages with dance_type from packages
+    // Enrich student_packages
     data?.forEach((student: any) => {
       if (student.student_packages) {
         student.student_packages = student.student_packages.map((sp: any) => ({
@@ -205,8 +184,8 @@ export async function getStudentsWithStats(
       }
     })
 
-    // Process data to add calculated stats and apply client-side filters
-    let studentsWithStats = (data || []).map((student: any) => {
+    // Add calculated stats
+    const studentsWithStats = (data || []).map((student: any) => {
       const totalCredits = (student.student_packages || []).reduce(
         (sum: number, sp: any) => sum + (sp.remaining_credits || 0),
         0
@@ -242,77 +221,16 @@ export async function getStudentsWithStats(
       }
     })
 
-    // Apply client-side filters (AFTER fetching all data)
-    if (filters?.hasCredits) {
-      studentsWithStats = studentsWithStats.filter(s => s.totalRemainingCredits > 0)
-    }
-
-    if (filters?.courseId) {
-      studentsWithStats = studentsWithStats.filter(s => 
-        s.enrolledCourseIds.includes(filters.courseId!)
-      )
-    }
-
-    if (filters?.branchId) {
-      studentsWithStats = studentsWithStats.filter(s => 
-        s.branchIds.includes(filters.branchId!)
-      )
-    }
-
-    if (filters?.danceTypeId) {
-      console.log(`Filtering students by danceTypeId: ${filters.danceTypeId}`)
-      console.log(`Total students before filter: ${studentsWithStats.length}`)
-      
-      // Debug: show sample student packages
-      if (studentsWithStats.length > 0) {
-        const sampleStudent = studentsWithStats[0]
-        console.log(`Sample student packages:`, {
-          studentId: sampleStudent.id,
-          packages: sampleStudent.student_packages?.map((sp: any) => ({
-            packageId: sp.packages?.id,
-            packageName: sp.packages?.name,
-            danceTypeId: sp.packages?.dance_type_id,
-            remainingCredits: sp.remaining_credits
-          }))
-        })
-      }
-      
-      studentsWithStats = studentsWithStats.filter(s => {
-        const hasMatchingDanceType = (s.student_packages || []).some((sp: any) => {
-          const matches = sp.packages?.dance_type_id === filters.danceTypeId
-          return matches
-        })
-        return hasMatchingDanceType
-      })
-      console.log(`After dance type filter: ${studentsWithStats.length} students`)
-    }
-
-    // Apply pagination to filtered results
-    let paginatedStudents = studentsWithStats
-    let finalTotal = totalCount || 0
-    
-    if (hasClientSideFilters) {
-      finalTotal = studentsWithStats.length
-      const offset = (page - 1) * limit
-      paginatedStudents = studentsWithStats.slice(offset, offset + limit)
-    }
-
-    const totalPages = Math.ceil(finalTotal / limit)
-
     return { 
-      data: paginatedStudents,
-      pagination: {
-        page,
-        limit,
-        total: finalTotal,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-      }
+      data: studentsWithStats,
+      totalCount: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize)
     }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: 'An unexpected error occurred', data: [], totalCount: 0 }
   }
 }
 

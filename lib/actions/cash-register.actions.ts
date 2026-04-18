@@ -23,52 +23,58 @@ interface CreateTransactionInput {
 }
 
 export async function getTransactions(
-  branchId?: string,
-  type?: 'income' | 'expense',
-  fromDate?: string,
-  toDate?: string,
-): Promise<{ data?: TransactionWithBranch[]; error?: string }> {
+  searchQuery?: string,
+  page: number = 1,
+  pageSize: number = 10
+): Promise<{ data?: TransactionWithBranch[]; totalCount?: number; page?: number; pageSize?: number; totalPages?: number; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: 'No organization found', data: [], totalCount: 0 }
 
   try {
     const supabase = await createServerSupabaseClient()
+
+    // Count query
+    let countQuery = supabase
+      .from('cash_transactions')
+      .select('id', { count: 'exact', head: true })
+
+    if (searchQuery) {
+      countQuery = countQuery.or(`description.ilike.%${searchQuery}%,type.ilike.%${searchQuery}%`)
+    }
+
+    const { count: totalCount } = await countQuery
+    const count = totalCount || 0
+
+    // Data query
     let query = supabase
       .from('cash_transactions')
       .select('*, branches(name)')
       .order('created_at', { ascending: false })
 
-    if (branchId) {
-      query = query.eq('branch_id', branchId)
+    if (searchQuery) {
+      query = query.or(`description.ilike.%${searchQuery}%,type.ilike.%${searchQuery}%`)
     }
 
-    if (type) {
-      query = query.eq('type', type)
-    }
+    // Apply pagination
+    const offset = (page - 1) * pageSize
+    query = query.range(offset, offset + pageSize - 1)
 
-    if (fromDate) {
-      query = query.gte('created_at', fromDate)
-    }
-
-    if (toDate) {
-      query = query.lte('created_at', toDate)
-    }
-
-    const result = await query.overrideTypes<TransactionWithBranch[]>()
-    const { data, error } = result as { data: TransactionWithBranch[] | null; error: any }
+    const result = await query.overrideTypes<TransactionWithBranch[]>() as { data: TransactionWithBranch[] | null; error: any }
+    const { data, error } = result
 
     if (error) {
       console.error('Error fetching transactions:', error)
-      return { error: 'Failed to fetch transactions' }
+      return { error: 'Failed to fetch transactions', data: [], totalCount: 0 }
     }
 
-    return { data: data || [] }
+    const totalPages = Math.ceil(count / pageSize)
+    return { data: data || [], totalCount: count, page, pageSize, totalPages }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: 'An unexpected error occurred', data: [], totalCount: 0 }
   }
 }
 

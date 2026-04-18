@@ -10,15 +10,35 @@ import type { Database } from '@/lib/types/database.types'
 
 type Package = Database['public']['Tables']['packages']['Row']
 
-export async function getPackages(searchQuery?: string) {
+export async function getPackages(
+  searchQuery?: string,
+  page: number = 1,
+  pageSize: number = 10
+) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: 'No organization found', data: [], totalCount: 0 }
 
   try {
     const admin = createAdminClient()
+
+    // Count query
+    let countQuery = (admin as any)
+      .from('packages')
+      .select('id', { count: 'exact', head: true })
+      .eq('organization_id', organization.id)
+      .is('deleted_at', null)
+
+    if (searchQuery) {
+      countQuery = countQuery.ilike('name', `%${searchQuery}%`)
+    }
+
+    const { count: totalCount } = await countQuery
+    const count = totalCount || 0
+
+    // Data query
     let query = (admin as any)
       .from('packages')
       .select('*')
@@ -30,17 +50,22 @@ export async function getPackages(searchQuery?: string) {
       query = query.ilike('name', `%${searchQuery}%`)
     }
 
+    // Apply pagination
+    const offset = (page - 1) * pageSize
+    query = query.range(offset, offset + pageSize - 1)
+
     const { data, error } = await query
 
     if (error) {
       console.error('Error fetching packages:', error)
-      return { error: 'Failed to fetch packages' }
+      return { error: 'Failed to fetch packages', data: [], totalCount: 0 }
     }
 
-    return { data: data as Package[] }
+    const totalPages = Math.ceil(count / pageSize)
+    return { data: data as Package[], totalCount: count, page, pageSize, totalPages }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: 'An unexpected error occurred', data: [], totalCount: 0 }
   }
 }
 

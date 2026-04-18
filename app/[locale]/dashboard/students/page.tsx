@@ -9,6 +9,8 @@ import type { Database } from '@/lib/types/database.types'
 
 type Student = Database['public']['Tables']['students']['Row']
 
+const PAGE_SIZE = 10
+
 export default async function StudentsPage({
   searchParams,
 }: {
@@ -16,20 +18,24 @@ export default async function StudentsPage({
 }) {
   const t = await getTranslations()
   const params = await searchParams
+  
+  // Extract parameters
   const searchQuery = typeof params.q === 'string' ? params.q : undefined
+  const pageParam = typeof params.page === 'string' ? parseInt(params.page, 10) : 1
+  const page = Math.max(1, pageParam) // Ensure page is at least 1
+  
+  // Note: Other filters (hasCredits, danceType, course, branch) are kept for potential
+  // future client-side filtering UI, but not used in table queries anymore
   const hasCredits = params.hasCredits === 'true'
   const danceTypeId = typeof params.danceType === 'string' ? params.danceType : undefined
   const courseId = typeof params.course === 'string' ? params.course : undefined
   const branchId = typeof params.branch === 'string' ? params.branch : undefined
 
-  // Always fetch all students for client-side pagination/filtering
-  const result = await getStudentsWithStats(searchQuery, 1, 1000, {
-    hasCredits,
-    danceTypeId,
-    courseId,
-    branchId,
-  })
+  // Fetch students with backend pagination
+  const result = await getStudentsWithStats(searchQuery, page, PAGE_SIZE)
   const students = result.data || []
+  const totalCount = result.totalCount || 0
+  const totalPages = result.totalPages || 1
 
   const filterOptions = await getStudentFilterOptions()
   const danceTypes = (filterOptions as any).danceTypes || []
@@ -69,6 +75,9 @@ export default async function StudentsPage({
           branchId={branchId}
           courseId={courseId}
           filteredDanceTypeId={danceTypeId}
+          currentPage={page}
+          totalCount={totalCount}
+          pageSize={PAGE_SIZE}
         />
 
         {/* Empty State */}
@@ -99,9 +108,6 @@ export default async function StudentsPage({
             )}
           </div>
         )}
-
-        {/* Pagination Controls */}
-        {/* Removed - DataTable now handles pagination client-side */}
       </Card>
     </div>
   )

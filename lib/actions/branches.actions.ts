@@ -12,16 +12,33 @@ type Branch = Database['public']['Tables']['branches']['Row']
 
 export async function getBranches(
   searchQuery?: string,
-): Promise<{ data?: Branch[]; error?: string }> {
+  page: number = 1,
+  pageSize: number = 10
+): Promise<{ data?: Branch[]; totalCount?: number; page?: number; pageSize?: number; totalPages?: number; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: 'No organization found', data: [], totalCount: 0 }
 
   try {
     const admin = createAdminClient()
-    
+
+    // Count query
+    let countQuery = admin
+      .from('branches')
+      .select('id', { count: 'exact', head: true })
+      .eq('organization_id', organization.id)
+      .is('deleted_at', null)
+
+    if (searchQuery) {
+      countQuery = countQuery.or(`name.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%`)
+    }
+
+    const { count: totalCount } = await countQuery
+    const count = totalCount || 0
+
+    // Data query
     let query = admin
       .from('branches')
       .select('*')
@@ -33,18 +50,23 @@ export async function getBranches(
       query = query.or(`name.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%`)
     }
 
+    // Apply pagination
+    const offset = (page - 1) * pageSize
+    query = query.range(offset, offset + pageSize - 1)
+
     const result = await query.overrideTypes<Branch[]>()
     const { data, error } = result as { data: Branch[] | null; error: any }
 
     if (error) {
       console.error('Error fetching branches:', error)
-      return { error: 'Failed to fetch branches' }
+      return { error: 'Failed to fetch branches', data: [], totalCount: 0 }
     }
 
-    return { data: data || [] }
+    const totalPages = Math.ceil(count / pageSize)
+    return { data: data || [], totalCount: count, page, pageSize, totalPages }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: 'An unexpected error occurred', data: [], totalCount: 0 }
   }
 }
 

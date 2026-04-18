@@ -5,58 +5,63 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 
-export async function getInstructorEarnings(instructorId?: string, fromDate?: string, toDate?: string) {
+export async function getInstructorEarnings(
+  searchQuery?: string,
+  page: number = 1,
+  pageSize: number = 10
+) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: 'No organization found', data: [], totalCount: 0 }
 
   try {
-    // Use admin client to bypass RLS for complex JOINs, but verify organization access
     const adminSupabase = createAdminClient()
+
+    // Count query
+    let countQuery = (adminSupabase
+      .from('instructor_earnings') as any)
+      .select('id', { count: 'exact', head: true })
+
+    if (searchQuery) {
+      countQuery = countQuery.or(`description.ilike.%${searchQuery}%`)
+    }
+
+    const { count: totalCount } = await countQuery
+    const count = totalCount || 0
+
+    // Data query
     let query = (adminSupabase
       .from('instructor_earnings') as any)
       .select('*, instructors(id, first_name, last_name, organization_id)')
       .order('created_at', { ascending: false })
 
-    // Filter by instructor's organization to maintain security
-    if (instructorId) {
-      query = query.eq('instructor_id', instructorId)
+    if (searchQuery) {
+      query = query.or(`description.ilike.%${searchQuery}%`)
     }
 
-    if (fromDate) {
-      query = query.gte('created_at', fromDate)
-    }
-
-    if (toDate) {
-      query = query.lte('created_at', toDate)
-    }
+    // Apply pagination
+    const offset = (page - 1) * pageSize
+    query = query.range(offset, offset + pageSize - 1)
 
     const { data, error } = await query
 
     if (error) {
-      console.error('Error fetching earnings:', {
-        error,
-        message: (error as any)?.message,
-        details: (error as any)?.details,
-      })
-      return { error: 'Failed to fetch earnings' }
+      console.error('Error fetching earnings:', error)
+      return { error: 'Failed to fetch earnings', data: [], totalCount: 0 }
     }
 
-    // Filter results to only include instructors from the user's organization
+    // Filter results to only include instructors from user's organization
     const filtered = (data || []).filter(
-      (earning: any) => earning.instructors?.organization_id === organization.id,
+      (earning: any) => earning.instructors?.organization_id === organization.id
     )
 
-    return { data: filtered }
+    const totalPages = Math.ceil(count / pageSize)
+    return { data: filtered, totalCount: count, page, pageSize, totalPages }
   } catch (error) {
-    console.error('Unexpected error in getInstructorEarnings:', {
-      error,
-      message: (error as any)?.message,
-      stack: (error as any)?.stack?.split('\n').slice(0, 3),
-    })
-    return { error: 'An unexpected error occurred' }
+    console.error('Unexpected error in getInstructorEarnings:', error)
+    return { error: 'An unexpected error occurred', data: [], totalCount: 0 }
   }
 }
 

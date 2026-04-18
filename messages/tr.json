@@ -110,7 +110,8 @@
     "select": "Seç",
     "instructorName": "Eğitmen Adı",
     "rateStatus": "Ücret Durumu",
-    "total": "toplam"
+    "total": "toplam",
+    "results": "sonuç"
   },
   "auth": {
     "login": "Giriş Yap",

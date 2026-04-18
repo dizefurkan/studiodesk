@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/table/data-table'
 import { FilterConfig } from '@/components/table/data-table-filters'
 import { getStudentColumns, Student } from '@/app/[locale]/dashboard/students/columns'
@@ -19,6 +20,9 @@ interface StudentTableWrapperProps {
   branchId?: string
   courseId?: string
   filteredDanceTypeId?: string
+  currentPage?: number
+  totalCount?: number
+  pageSize?: number
 }
 
 export function StudentTableWrapper({
@@ -32,8 +36,12 @@ export function StudentTableWrapper({
   branchId,
   courseId,
   filteredDanceTypeId,
+  currentPage = 1,
+  totalCount = 0,
+  pageSize = 10,
 }: StudentTableWrapperProps) {
   const t = useTranslations()
+  const router = useRouter()
   const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
   const [filterValues, setFilterValues] = useState<Record<string, any>>({
     danceType: danceTypeId || '',
@@ -68,6 +76,23 @@ export function StudentTableWrapper({
     } finally {
       setIsDeleting(false)
     }
+  }
+
+  // Handle search change - update URL param
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value)
+    const params = new URLSearchParams()
+    if (value) params.set('q', value)
+    params.set('page', '1') // Reset to first page on search change
+    router.push(`?${params.toString()}`)
+  }
+
+  // Handle page change - update URL param
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams()
+    if (searchQuery) params.set('q', searchQuery)
+    params.set('page', newPage.toString())
+    router.push(`?${params.toString()}`)
   }
 
   // Define filters
@@ -109,12 +134,14 @@ export function StudentTableWrapper({
           setFilterValues((prev) => ({ ...prev, [filterId]: value }))
         }
         searchValue={searchValue}
-        onSearchChange={setSearchValue}
+        onSearchChange={handleSearchChange}
         searchPlaceholder={t('common.searchStudent')}
-        searchableColumns={['first_name', 'last_name', 'email', 'phone']}
         enablePagination={true}
         enableFilters={true}
-        pageSize={10}
+        currentPage={currentPage}
+        totalItems={totalCount}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
         emptyMessage={t('students.noStudents')}
       />
 

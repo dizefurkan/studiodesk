@@ -87,26 +87,41 @@ export async function getInstructorsForDanceType(danceTypeId?: string) {
 
 export async function getInstructors(
   searchQuery?: string,
-  filters?: {
-    danceTypeId?: string
-    branchId?: string
-  }
+  page: number = 1,
+  pageSize: number = 10
 ) {
   try {
     const user = await getCurrentUser()
     if (!user) {
       console.warn('[getInstructors] User not authenticated - user is null')
-      return { error: 'Not authenticated' }
+      return { error: 'Not authenticated', data: [], totalCount: 0 }
     }
 
     const organization = await getOrganization()
     if (!organization) {
       console.warn('[getInstructors] No organization found for user:', user.id)
-      return { error: 'No organization found' }
+      return { error: 'No organization found', data: [], totalCount: 0 }
     }
 
     const admin = createAdminClient()
     
+    // Count query
+    let countQuery = (admin as any)
+      .from('instructors')
+      .select('id', { count: 'exact', head: true })
+      .eq('organization_id', organization.id)
+      .is('deleted_at', null)
+
+    if (searchQuery) {
+      countQuery = countQuery.or(
+        `first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`
+      )
+    }
+
+    const { count: totalCount } = await countQuery
+    const count = totalCount || 0
+
+    // Data query
     let query = (admin as any)
       .from('instructors')
       .select(`
@@ -131,15 +146,19 @@ export async function getInstructors(
       )
     }
 
+    // Apply pagination
+    const offset = (page - 1) * pageSize
+    query = query.range(offset, offset + pageSize - 1)
+
     const { data, error } = await query
 
     if (error) {
       console.error('[getInstructors] Supabase error:', error)
-      return { error: 'Failed to fetch instructors', details: error }
+      return { error: 'Failed to fetch instructors', details: error, data: [], totalCount: 0 }
     }
 
     // Enrich data with computed stats
-    let enrichedData = (data as any[]).map((instructor) => ({
+    const enrichedData = (data as any[]).map((instructor) => ({
       ...instructor,
       branchCount: instructor.branch_instructors?.length || 0,
       courseCount: instructor.course_instructors?.length || 0,
@@ -149,24 +168,12 @@ export async function getInstructors(
       danceTypes: instructor.instructor_rates?.filter((ir: any) => ir.dance_types).map((ir: any) => ir.dance_types) || [],
     }))
 
-    // Apply client-side filters
-    if (filters?.danceTypeId) {
-      enrichedData = enrichedData.filter((instructor: any) =>
-        instructor.danceTypes.some((dt: any) => dt.id === filters.danceTypeId)
-      )
-    }
-
-    if (filters?.branchId) {
-      enrichedData = enrichedData.filter((instructor: any) =>
-        instructor.branches.some((b: any) => b.id === filters.branchId)
-      )
-    }
-
-    return { data: enrichedData }
+    const totalPages = Math.ceil(count / pageSize)
+    return { data: enrichedData, totalCount: count, page, pageSize, totalPages }
   } catch (error) {
     console.error('[getInstructors] Unexpected error:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
-    return { error: 'An unexpected error occurred', details: errorMessage }
+    return { error: 'An unexpected error occurred', details: errorMessage, data: [], totalCount: 0 }
   }
 }
 

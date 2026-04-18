@@ -49,51 +49,60 @@ type CourseWithStats = Course & {
 }
 
 export async function getCourses(
-  branchId?: string,
   searchQuery?: string,
-  danceTypeId?: string,
-): Promise<{ data?: CourseWithStats[]; error?: string }> {
+  page: number = 1,
+  pageSize: number = 10
+): Promise<{ data?: CourseWithStats[]; totalCount?: number; page?: number; pageSize?: number; totalPages?: number; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
 
   try {
     const admin = createAdminClient()
+
+    // Count query
+    let countQuery = admin
+      .from('courses')
+      .select('id', { count: 'exact', head: true })
+      .is('deleted_at', null)
+
+    if (searchQuery) {
+      countQuery = countQuery.ilike('name', `%${searchQuery}%`)
+    }
+
+    const { count: totalCount } = await countQuery
+    const count = totalCount || 0
+
+    // Data query
     let query = admin
       .from('courses')
       .select('*, branches(name), dance_types(name), course_instructors(instructor_id, instructors(id, first_name, last_name))')
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
 
-    if (branchId) {
-      query = query.eq('branch_id', branchId)
-    }
-
-    if (danceTypeId) {
-      query = query.eq('dance_type_id', danceTypeId)
-    }
-
     if (searchQuery) {
       query = query.ilike('name', `%${searchQuery}%`)
     }
+
+    // Apply pagination
+    const offset = (page - 1) * pageSize
+    query = query.range(offset, offset + pageSize - 1)
 
     const result = await query.overrideTypes<CourseWithStats[]>()
     const { data, error } = result as { data: CourseWithStats[] | null; error: any }
 
     if (error) {
       console.error('Error fetching courses:', error)
-      return { error: 'Failed to fetch courses' }
+      return { error: 'Failed to fetch courses', data: [], totalCount: 0 }
     }
 
-    // Fetch student counts and attendance counts for each course
+    // Fetch student counts and attendance counts for each course (on current page only)
     const coursesWithStats = await Promise.all(
       (data || []).map(async (course) => {
-        // Get student count
         const { count: studentCount } = await (admin as any)
           .from('course_students')
           .select('*', { count: 'exact', head: true })
           .eq('course_id', course.id)
 
-        // Get attendance count (number of times attendance was taken, not number of records)
         const { data: sessions } = await admin
           .from('course_sessions')
           .select('id')
@@ -111,10 +120,11 @@ export async function getCourses(
       })
     )
 
-    return { data: coursesWithStats }
+    const totalPages = Math.ceil(count / pageSize)
+    return { data: coursesWithStats, totalCount: count, page, pageSize, totalPages }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: 'An unexpected error occurred', data: [], totalCount: 0 }
   }
 }
 

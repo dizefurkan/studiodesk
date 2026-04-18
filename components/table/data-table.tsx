@@ -1,15 +1,12 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import {
   ColumnDef,
-  ColumnFiltersState,
   SortingState,
   VisibilityState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
@@ -30,17 +27,24 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  // Pagination props for backend pagination
+  totalItems?: number
+  currentPage?: number
+  pageSize?: number
+  onPageChange?: (page: number) => void
+  // Filter props
   filters?: FilterConfig[]
   filterValues?: Record<string, any>
   onFilterChange?: (filterId: string, value: any) => void
+  // Search props
   searchValue?: string
   onSearchChange?: (value: string) => void
   searchPlaceholder?: string
-  pageSize?: number
+  // Feature flags
   enablePagination?: boolean
   enableSearch?: boolean
   enableFilters?: boolean
-  searchableColumns?: string[]
+  // Other
   emptyMessage?: string
   loading?: boolean
 }
@@ -48,102 +52,54 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data,
+  // Pagination
+  totalItems = 0,
+  currentPage = 1,
+  pageSize = 10,
+  onPageChange,
+  // Filters
   filters = [],
   filterValues = {},
   onFilterChange,
+  // Search
   searchValue = '',
   onSearchChange,
   searchPlaceholder,
-  pageSize = 10,
+  // Features
   enablePagination = true,
   enableSearch = true,
   enableFilters = true,
-  searchableColumns = [],
+  // Other
   emptyMessage,
   loading = false,
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations()
   const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
-  // Apply search filter
-  const searchedData = useMemo(() => {
-    if (!enableSearch || !searchValue) {
-      return data
-    }
-
-    const lowerSearchValue = searchValue.toLowerCase()
-    return data.filter((row: any) => {
-      if (searchableColumns.length === 0) {
-        // Search in all string columns if no specific columns defined
-        return Object.values(row).some((value) =>
-          String(value).toLowerCase().includes(lowerSearchValue)
-        )
-      }
-      // Search in specific columns
-      return searchableColumns.some((col) =>
-        String(row[col] || '').toLowerCase().includes(lowerSearchValue)
-      )
-    })
-  }, [data, searchValue, enableSearch, searchableColumns])
-
-  // Apply external filters
-  const filteredData = useMemo(() => {
-    if (!enableFilters || Object.keys(filterValues).length === 0) {
-      return searchedData
-    }
-
-    return searchedData.filter((row: any) => {
-      return Object.entries(filterValues).every(([key, value]) => {
-        if (!value) return true
-
-        const fieldValue = row[key]
-
-        if (typeof value === 'string') {
-          return String(fieldValue)
-            .toLowerCase()
-            .includes(String(value).toLowerCase())
-        }
-
-        if (value?.from && value?.to) {
-          const date = new Date(fieldValue)
-          return date >= value.from && date <= value.to
-        }
-
-        return fieldValue === value
-      })
-    })
-  }, [searchedData, filterValues, enableFilters])
-
   const table = useReactTable({
-    data: filteredData,
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
-      columnFilters,
       columnVisibility,
-    },
-    initialState: {
-      pagination: {
-        pageSize,
-      },
     },
   })
 
+
   const handleClearFilters = () => {
-    setColumnFilters([])
     Object.keys(filterValues).forEach((key) => {
       onFilterChange?.(key, '')
     })
   }
+
+  const totalPages = Math.ceil(totalItems / pageSize)
+  const hasNextPage = currentPage < totalPages
+  const hasPrevPage = currentPage > 1
 
   return (
     <div className="space-y-4">
@@ -221,32 +177,31 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      {/* Pagination */}
-      {enablePagination && (
+      {/* Pagination - Backend Pagination */}
+      {enablePagination && totalItems > 0 && (
         <div className="flex items-center justify-between text-sm">
           <div className="text-gray-600">
-            {table.getFilteredRowModel().rows.length} {t('table.total')}
+            {data.length} {t('table.results')} / {totalItems} {t('table.total')}
           </div>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
+              onClick={() => onPageChange?.(currentPage - 1)}
+              disabled={!hasPrevPage}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <div className="flex items-center gap-1">
               <span className="text-xs">
-                {table.getState().pagination.pageIndex + 1} /{' '}
-                {table.getPageCount()}
+                {currentPage} / {totalPages}
               </span>
             </div>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
+              onClick={() => onPageChange?.(currentPage + 1)}
+              disabled={!hasNextPage}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -256,3 +211,4 @@ export function DataTable<TData, TValue>({
     </div>
   )
 }
+
