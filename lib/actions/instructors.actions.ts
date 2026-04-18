@@ -122,6 +122,7 @@ export async function getInstructors(
         instructor_rates(dance_type_id, branch_id, dance_types(id, name))
       `)
       .eq('organization_id', organization.id)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
 
     if (searchQuery) {
@@ -189,6 +190,7 @@ export async function getInstructor(id: string) {
       .select('*')
       .eq('id', id)
       .eq('organization_id', organization.id)
+      .is('deleted_at', null)
       .single()
 
     if (error) {
@@ -348,7 +350,7 @@ export async function updateInstructor(id: string, input: UpdateInstructorInput)
   }
 }
 
-export async function deleteInstructor(id: string) {
+export async function deleteInstructor(id: string, reason?: string) {
   try {
     const user = await getCurrentUser()
     if (!user) {
@@ -376,11 +378,16 @@ export async function deleteInstructor(id: string) {
       return { error: 'Instructor not found or does not belong to your organization' }
     }
 
-    const { error } = await supabase
-      .from('instructors')
-      .delete()
+    const user_id = user.id
+    const updateResult = await (supabase.from('instructors') as any)
+      .update({
+        deleted_at: new Date().toISOString(),
+        deleted_by: user_id,
+        deleted_reason: reason || null,
+      })
       .eq('id', id)
-      .eq('organization_id', organization.id)
+      .eq('organization_id', organization.id) as any
+    const { error } = updateResult
 
     if (error) {
       console.error('[deleteInstructor] Supabase error:', error)

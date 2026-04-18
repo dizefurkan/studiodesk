@@ -26,6 +26,7 @@ export async function getBranches(
       .from('branches')
       .select('*')
       .eq('organization_id', organization.id)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
 
     if (searchQuery) {
@@ -61,8 +62,8 @@ export async function getBranch(id: string): Promise<{ data?: Branch; error?: st
       .select('*')
       .eq('id', id)
       .eq('organization_id', organization.id)
-      .single()
-      .overrideTypes<Branch>() as any
+      .is('deleted_at', null)
+      .single() as any as any
 
     const { data, error } = result as { data: Branch | null; error: any }
 
@@ -209,7 +210,7 @@ export async function updateBranch(
   }
 }
 
-export async function deleteBranch(id: string): Promise<{ success?: boolean; error?: string }> {
+export async function deleteBranch(id: string, reason?: string): Promise<{ success?: boolean; error?: string }> {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -225,8 +226,8 @@ export async function deleteBranch(id: string): Promise<{ success?: boolean; err
       .select('id, name, address, phone')
       .eq('id', id)
       .eq('organization_id', organization.id)
-      .single()
-      .overrideTypes<Branch>() as any
+      .is('deleted_at', null)
+      .single() as any as any
 
     const { data: beforeBranch } = beforeResult as { data: Branch | null; error: any }
 
@@ -234,11 +235,16 @@ export async function deleteBranch(id: string): Promise<{ success?: boolean; err
       return { error: 'Branch not found or does not belong to your organization' }
     }
 
-    const { error } = await supabase
-      .from('branches')
-      .delete()
+    const user_id = user.id
+    const updateResult = await (supabase.from('branches') as any)
+      .update({
+        deleted_at: new Date().toISOString(),
+        deleted_by: user_id,
+        deleted_reason: reason || null,
+      })
       .eq('id', id)
-      .eq('organization_id', organization.id)
+      .eq('organization_id', organization.id) as any
+    const { error } = updateResult
 
     if (error) {
       console.error('Error deleting branch:', error)

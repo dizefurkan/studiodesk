@@ -61,6 +61,7 @@ export async function getCourses(
     let query = admin
       .from('courses')
       .select('*, branches(name), dance_types(name), course_instructors(instructor_id, instructors(id, first_name, last_name))')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
 
     if (branchId) {
@@ -127,8 +128,8 @@ export async function getCourse(id: string): Promise<{ data?: CourseWithStats; e
       .from('courses')
       .select('*, branches(name), dance_types(name), course_instructors(instructor_id, instructors(id, first_name, last_name))')
       .eq('id', id)
-      .single()
-      .overrideTypes<CourseWithStats>() as any
+      .is('deleted_at', null)
+      .single() as any as any
 
     const { data, error } = result as { data: CourseWithStats | null; error: any }
 
@@ -161,6 +162,7 @@ export async function checkDuplicateCourseTime(
       .eq('branch_id', branchId)
       .eq('dance_type_id', danceTypeId)
       .eq('day_of_week', dayOfWeek)
+      .is('deleted_at', null)
 
     if (excludeCourseId) {
       query = query.neq('id', excludeCourseId)
@@ -415,7 +417,7 @@ export async function updateCourse(
   }
 }
 
-export async function deleteCourse(id: string): Promise<{ success?: boolean; error?: string }> {
+export async function deleteCourse(id: string, reason?: string): Promise<{ success?: boolean; error?: string }> {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -430,8 +432,8 @@ export async function deleteCourse(id: string): Promise<{ success?: boolean; err
       .from('courses')
       .select('id, name, day_of_week, start_time, end_time, branch_id, dance_type_id')
       .eq('id', id)
-      .single()
-      .overrideTypes<Course>() as any
+      .is('deleted_at', null)
+      .single() as any as any
 
     const { data: beforeCourse, error: fetchError } = deleteResult as { data: Course | null; error: any }
 
@@ -439,11 +441,15 @@ export async function deleteCourse(id: string): Promise<{ success?: boolean; err
       return { error: 'Course not found' }
     }
 
-    const { error } = await supabase
-      .from('courses')
-      .delete()
-      .eq('id', id)
-      .overrideTypes<Course>()
+    const user_id = user.id
+    const updateResult = await (supabase.from('courses') as any)
+      .update({
+        deleted_at: new Date().toISOString(),
+        deleted_by: user_id,
+        deleted_reason: reason || null,
+      })
+      .eq('id', id) as any
+    const { error } = updateResult
 
     if (error) {
       console.error('Error deleting course:', error)

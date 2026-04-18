@@ -25,6 +25,7 @@ export async function getDanceTypes(
       .from('dance_types')
       .select('*')
       .eq('organization_id', organization.id)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
 
     if (searchQuery) {
@@ -60,8 +61,8 @@ export async function getDanceType(id: string): Promise<{ data?: DanceType; erro
       .select('*')
       .eq('id', id)
       .eq('organization_id', organization.id)
-      .single()
-      .overrideTypes<DanceType>() as any
+      .is('deleted_at', null)
+      .single() as any as any
 
     const { data, error } = result as { data: DanceType | null; error: any }
 
@@ -206,7 +207,7 @@ export async function updateDanceType(
   }
 }
 
-export async function deleteDanceType(id: string): Promise<{ success?: boolean; error?: string }> {
+export async function deleteDanceType(id: string, reason?: string): Promise<{ success?: boolean; error?: string }> {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -222,8 +223,8 @@ export async function deleteDanceType(id: string): Promise<{ success?: boolean; 
       .select('id, name, description')
       .eq('id', id)
       .eq('organization_id', organization.id)
-      .single()
-      .overrideTypes<DanceType>() as any
+      .is('deleted_at', null)
+      .single() as any as any
 
     const { data: beforeDanceType, error: beforeError } = beforeResult as { data: DanceType | null; error: any }
 
@@ -231,12 +232,16 @@ export async function deleteDanceType(id: string): Promise<{ success?: boolean; 
       return { error: 'Dance type not found or does not belong to your organization' }
     }
 
-    const { error } = await supabase
-      .from('dance_types')
-      .delete()
+    const user_id = user.id
+    const updateResult = await (supabase.from('dance_types') as any)
+      .update({
+        deleted_at: new Date().toISOString(),
+        deleted_by: user_id,
+        deleted_reason: reason || null,
+      })
       .eq('id', id)
-      .eq('organization_id', organization.id)
-      .overrideTypes<DanceType>()
+      .eq('organization_id', organization.id) as any
+    const { error } = updateResult
 
     if (error) {
       console.error('Error deleting dance type:', error)

@@ -23,6 +23,7 @@ export async function getPackages(searchQuery?: string) {
       .from('packages')
       .select('*')
       .eq('organization_id', organization.id)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
 
     if (searchQuery) {
@@ -57,6 +58,7 @@ export async function getPackage(id: string) {
       .select('*')
       .eq('id', id)
       .eq('organization_id', organization.id)
+      .is('deleted_at', null)
       .single()
 
     if (error) {
@@ -201,7 +203,7 @@ export async function updatePackage(id: string, input: UpdatePackageInput) {
   }
 }
 
-export async function deletePackage(id: string) {
+export async function deletePackage(id: string, reason?: string) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -223,11 +225,16 @@ export async function deletePackage(id: string) {
       return { error: 'Package not found or does not belong to your organization' }
     }
 
-    const { error } = await supabase
-      .from('packages')
-      .delete()
+    const user_id = user.id
+    const updateResult = await (supabase.from('packages') as any)
+      .update({
+        deleted_at: new Date().toISOString(),
+        deleted_by: user_id,
+        deleted_reason: reason || null,
+      })
       .eq('id', id)
-      .eq('organization_id', organization.id)
+      .eq('organization_id', organization.id) as any
+    const { error } = updateResult
 
     if (error) {
       console.error('Error deleting package:', error)

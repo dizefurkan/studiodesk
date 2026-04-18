@@ -74,6 +74,7 @@ export async function getStudentsWithStats(
       .from('students')
       .select('id', { count: 'exact', head: true })
       .eq('organization_id', organization.id)
+      .is('deleted_at', null)
 
     let dataQuery = adminSupabase
       .from('students')
@@ -90,6 +91,7 @@ export async function getStudentsWithStats(
         )
       `)
       .eq('organization_id', organization.id)
+      .is('deleted_at', null)
 
     // Apply search filter to both queries
     if (searchQuery) {
@@ -663,7 +665,7 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
   }
 }
 
-export async function deleteStudent(id: string) {
+export async function deleteStudent(id: string, reason?: string) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -685,11 +687,16 @@ export async function deleteStudent(id: string) {
       return { error: 'Student not found or does not belong to your organization' }
     }
 
-    const { error } = await supabase
-      .from('students')
-      .delete()
+    const user_id = user.id
+    const updateResult = await (supabase.from('students') as any)
+      .update({
+        deleted_at: new Date().toISOString(),
+        deleted_by: user_id,
+        deleted_reason: reason || null,
+      })
       .eq('id', id)
-      .eq('organization_id', organization.id)
+      .eq('organization_id', organization.id) as any
+    const { error } = updateResult
 
     if (error) {
       console.error('Error deleting student:', error)
