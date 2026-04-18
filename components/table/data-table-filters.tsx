@@ -135,7 +135,7 @@ export function DataTableFilters({
       <div className="hidden sm:block">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2 h-9">
               <Settings2 className="h-4 w-4" />
               {t('filters.title')}
               {activeFilters > 0 && (
@@ -155,7 +155,7 @@ export function DataTableFilters({
       <div className="sm:hidden">
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2 h-9">
               <Settings2 className="h-4 w-4" />
               {activeFilters > 0 && (
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-xs font-semibold text-white">
@@ -194,7 +194,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
         <div className="space-y-2.5">
           <Label className="text-sm font-semibold text-gray-700">{filter.label}</Label>
           <Select value={value || ''} onValueChange={(val) => onChange(val || undefined)}>
-            <SelectTrigger className="h-9 bg-white">
+            <SelectTrigger className="h-9 w-full bg-white">
               <SelectValue placeholder={filter.placeholder || t('common.selectOption')} />
             </SelectTrigger>
             <SelectContent>
@@ -217,7 +217,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
             placeholder={filter.placeholder || t('common.selectOption')}
             value={value || ''}
             onChange={(e) => onChange(e.target.value ? Number(e.target.value) : '')}
-            className="h-9 bg-white"
+            className="h-9 w-full bg-white"
           />
         </div>
       )
@@ -238,7 +238,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
                     : undefined,
                 })
               }
-              className="h-9 bg-white"
+              className="h-9 w-full bg-white"
               placeholder="From"
             />
             <Input
@@ -252,7 +252,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
                     : undefined,
                 })
               }
-              className="h-9 bg-white"
+              className="h-9 w-full bg-white"
               placeholder="To"
             />
           </div>
