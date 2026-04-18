@@ -193,18 +193,30 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
       return (
         <div className="space-y-2.5">
           <Label className="text-sm font-semibold text-gray-700">{filter.label}</Label>
-          <Select value={value || ''} onValueChange={(val) => onChange(val || undefined)}>
-            <SelectTrigger className="h-9 w-full bg-white">
-              <SelectValue placeholder={filter.placeholder || t('common.selectOption')} />
-            </SelectTrigger>
-            <SelectContent>
-              {filter.options?.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="relative">
+            <Select value={value || ''} onValueChange={(val) => onChange(val || undefined)}>
+              <SelectTrigger className="h-9 w-full bg-white pr-8">
+                <SelectValue placeholder={filter.placeholder || t('common.selectOption')} />
+              </SelectTrigger>
+              <SelectContent>
+                {filter.options?.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {value && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onChange(undefined)}
+                className="absolute right-0 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       )
 
