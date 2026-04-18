@@ -195,7 +195,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
           <Label className="text-sm font-semibold text-gray-700">{filter.label}</Label>
           <div className="relative">
             <Select value={value || ''} onValueChange={(val) => onChange(val || undefined)}>
-              <SelectTrigger className="h-9 w-full bg-white pr-8">
+              <SelectTrigger className={`h-9 w-full bg-white ${value ? 'pr-8' : ''}`}>
                 <SelectValue placeholder={filter.placeholder || t('common.selectOption')} />
               </SelectTrigger>
               <SelectContent>
