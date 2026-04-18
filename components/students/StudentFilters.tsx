@@ -312,7 +312,7 @@ export function StudentFilters({
           {/* Filter Button - Icon Only */}
           <Button
             onClick={() => setDrawerOpen(true)}
-            className="bg-[#4F46E5] hover:bg-[#4338CA] text-white h-10 w-10 p-0 flex-shrink-0"
+            className="bg-[#4F46E5] hover:bg-[#4338CA] text-white h-10 w-10 p-0 shrink-0"
             aria-label="Open filters drawer"
             title="Open filters"
           >

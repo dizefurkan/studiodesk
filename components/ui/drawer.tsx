@@ -69,7 +69,7 @@ export function Drawer({
             </div>
             <button
               onClick={() => onOpenChange(false)}
-              className="inline-flex items-center justify-center rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors ml-2 flex-shrink-0"
+              className="inline-flex items-center justify-center rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors ml-2 shrink-0"
               aria-label="Close drawer"
             >
               <X size={20} />

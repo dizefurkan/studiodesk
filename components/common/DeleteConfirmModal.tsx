@@ -105,7 +105,7 @@ export function DeleteConfirmModal({
                 placeholder="Why are you deleting this? (optional)"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="min-h-[80px] resize-none"
+                className="min-h-20 resize-none"
                 disabled={isLoading}
               />
             </div>

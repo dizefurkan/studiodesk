@@ -37,11 +37,11 @@ export function getCashRegisterColumns({
         return (
           <div className="flex items-center gap-3">
             {item.type === 'income' ? (
-              <TrendingUp className="text-green-600 flex-shrink-0" size={18} />
+              <TrendingUp className="text-green-600 shrink-0" size={18} />
             ) : item.type === 'expense' ? (
-              <TrendingDown className="text-red-600 flex-shrink-0" size={18} />
+              <TrendingDown className="text-red-600 shrink-0" size={18} />
             ) : (
-              <Users className="text-purple-600 flex-shrink-0" size={18} />
+              <Users className="text-purple-600 shrink-0" size={18} />
             )}
             <div>
               <p className="font-medium text-[#111827]">{item.description}</p>
