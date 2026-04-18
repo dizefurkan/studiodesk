@@ -228,6 +228,8 @@
     "deleteInstructor": "Delete Instructor",
     "updateInstructor": "Update Instructor",
     "createInstructor": "Create Instructor",
+    "deleteTitle": "Delete Instructor",
+    "deleteDescription": "This action cannot be undone. The instructor will be permanently removed from the system.",
     "name": "Name",
     "email": "Email",
     "emailAddress": "Email Address",
@@ -250,7 +252,19 @@
     "courseCount": "{count} course{count, plural, one {} other {s}}",
     "danceTypesAssigned": "Dance Types",
     "danceTypeCount": "{count} type{count, plural, one {} other {s}}",
-    "branchesAssigned": "Branches"
+    "branchesAssigned": "Branches",
+    "danceType": "Dance Type",
+    "branch": "Branch",
+    "tableHeaders": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "courses": "Courses",
+      "danceTypes": "Dance Types",
+      "branches": "Branches",
+      "joined": "Joined",
+      "actions": "Actions"
+    }
   },
   "courses": {
     "title": "Courses",

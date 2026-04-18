@@ -223,6 +223,8 @@
     "deleteInstructor": "Eğitmeni Sil",
     "updateInstructor": "Eğitmeni Güncelle",
     "createInstructor": "Eğitmen Oluştur",
+    "deleteTitle": "Eğitmeni Sil",
+    "deleteDescription": "Bu işlem geri alınamaz. Eğitmen sistemden kalıcı olarak silinecektir.",
     "name": "Ad",
     "email": "E-posta",
     "emailAddress": "E-posta Adresi",
@@ -245,7 +247,19 @@
     "courseCount": "{count} kurs",
     "danceTypesAssigned": "Dans Tipleri",
     "danceTypeCount": "{count} tip",
-    "branchesAssigned": "Şubeler"
+    "branchesAssigned": "Şubeler",
+    "danceType": "Dans Tipi",
+    "branch": "Şube",
+    "tableHeaders": {
+      "name": "Ad",
+      "email": "E-posta",
+      "phone": "Telefon",
+      "courses": "Kurslar",
+      "danceTypes": "Dans Tipleri",
+      "branches": "Şubeler",
+      "joined": "Katıldı",
+      "actions": "İşlemler"
+    }
   },
   "courses": {
     "title": "Kurslar",

@@ -1,26 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { InstructorFilters } from './InstructorFilters'
-import { InstructorTable } from './InstructorTable'
-
-interface Instructor {
-  id: string
-  first_name: string
-  last_name: string
-  email: string
-  phone?: string
-  created_at: string
-  branchCount: number
-  courseCount: number
-  danceTypeCount: number
-  branches?: Array<{ id: string; name: string }>
-  courses?: Array<{ id: string; name: string }>
-  danceTypes?: Array<{ id: string; name: string }>
-  branch_instructors?: Array<{ branch_id: string; branches?: { id: string; name: string } }>
-  course_instructors?: Array<{ course_id: string }>
-  instructor_rates?: Array<{ dance_type_id: string; branch_id: string; dance_types?: { id: string; name: string } }>
-}
+import { useState } from 'react'
+import { DataTable } from '@/components/table/data-table'
+import { FilterConfig } from '@/components/table/data-table-filters'
+import { getInstructorColumns, Instructor } from '@/app/[locale]/dashboard/instructors/columns'
+import { useTranslations } from 'next-intl'
+import { deleteInstructor } from '@/lib/actions/instructors.actions'
+import { DeleteConfirmModal } from '@/components/common/DeleteConfirmModal'
 
 interface InstructorTableWrapperProps {
   instructors: Instructor[]
@@ -39,46 +25,95 @@ export function InstructorTableWrapper({
   danceTypeId,
   branchId,
 }: InstructorTableWrapperProps) {
-  const [mobileViewMode, setMobileViewMode] = useState<'single' | 'expanded'>('expanded')
-  const [isLoaded, setIsLoaded] = useState(false)
+  const t = useTranslations()
+  const [filterValues, setFilterValues] = useState<Record<string, any>>({
+    search: searchQuery || '',
+    danceType: danceTypeId || '',
+    branch: branchId || '',
+  })
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  // Load mobile view preference from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('instructorTableMobileView')
-    if (saved === 'single' || saved === 'expanded') {
-      setMobileViewMode(saved)
-    }
-    setIsLoaded(true)
-  }, [])
-
-  // Save mobile view preference to localStorage
-  const handleToggleMobileView = (mode: 'single' | 'expanded') => {
-    setMobileViewMode(mode)
-    localStorage.setItem('instructorTableMobileView', mode)
+  const handleDeleteClick = (instructor: Instructor) => {
+    setSelectedInstructor(instructor)
+    setDeleteModalOpen(true)
   }
 
-  if (!isLoaded) return <div>Loading...</div>
+  const handleDeleteConfirm = async (reason?: string) => {
+    if (!selectedInstructor) return
+
+    setIsDeleting(true)
+    try {
+      const result = await deleteInstructor(selectedInstructor.id, reason)
+
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      // Reload page to reflect deletion
+      window.location.reload()
+    } catch (err) {
+      throw err
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  // Define filters
+  const filters: FilterConfig[] = [
+    {
+      id: 'search',
+      label: t('common.search'),
+      type: 'text',
+      placeholder: t('common.searchInstructor'),
+    },
+    {
+      id: 'danceType',
+      label: t('instructors.danceType'),
+      type: 'select',
+      options: danceTypes.map((dt) => ({ label: dt.name, value: dt.id })),
+    },
+    {
+      id: 'branch',
+      label: t('instructors.branch'),
+      type: 'select',
+      options: branches.map((b) => ({ label: b.name, value: b.id })),
+    },
+  ]
+
+  // Get columns with delete handler
+  const columns = getInstructorColumns({
+    onDelete: handleDeleteClick,
+  })
 
   return (
     <>
-      <InstructorFilters
-        danceTypes={danceTypes}
-        branches={branches}
-        searchQuery={searchQuery}
-        danceTypeId={danceTypeId}
-        branchId={branchId}
-        viewMode={mobileViewMode}
-        onViewModeChange={handleToggleMobileView}
+      <DataTable<Instructor, any>
+        columns={columns}
+        data={instructors}
+        filters={filters}
+        filterValues={filterValues}
+        onFilterChange={(filterId, value) =>
+          setFilterValues((prev) => ({ ...prev, [filterId]: value }))
+        }
+        enablePagination={true}
+        enableFilters={true}
+        pageSize={10}
+        emptyMessage={t('instructors.noInstructors')}
       />
 
-      <div className="mt-6 border-t border-[#E5E7EB] pt-6">
-        <InstructorTable
-          instructors={instructors}
-          danceTypes={danceTypes}
-          branches={branches}
-          mobileViewMode={mobileViewMode}
-        />
-      </div>
+      {/* Delete Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModalOpen}
+        title={t('instructors.deleteTitle')}
+        description={t('instructors.deleteDescription')}
+        itemName={selectedInstructor ? `${selectedInstructor.first_name} ${selectedInstructor.last_name}` : ''}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        withReason={true}
+        isLoading={isDeleting}
+      />
     </>
   )
 }
