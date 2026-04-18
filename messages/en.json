@@ -429,7 +429,11 @@
     "validationPackageNameMin": "Package name must be at least 2 characters",
     "validationSelectDanceType": "Please select a dance type",
     "validationTotalCreditsMin": "Total credits must be at least 1",
-    "validationPriceInvalid": "Price must be a valid number"
+    "validationPriceInvalid": "Price must be a valid number",
+    "deleteTitle": "Delete Package",
+    "deleteDescription": "This action cannot be undone. The package will be permanently deleted from the system.",
+    "getStarted": "Get started by adding your first package",
+    "searchPlaceholder": "Search packages by name..."
   },
   "branches": {
     "title": "Branches",

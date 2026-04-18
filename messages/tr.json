@@ -424,7 +424,11 @@
     "validationPackageNameMin": "Paket adı en az 2 karakter olmalıdır",
     "validationSelectDanceType": "Lütfen bir dans türü seçin",
     "validationTotalCreditsMin": "Toplam krediler en az 1 olmalıdır",
-    "validationPriceInvalid": "Fiyat geçerli bir sayı olmalıdır"
+    "validationPriceInvalid": "Fiyat geçerli bir sayı olmalıdır",
+    "deleteTitle": "Paketi Sil",
+    "deleteDescription": "Bu işlem geri alınamaz. Paket sistemden kalıcı olarak silinecektir.",
+    "getStarted": "İlk paketinizi ekleyerek başlayın",
+    "searchPlaceholder": "Paketleri ada göre arayın..."
   },
   "branches": {
     "title": "Şubeler",
