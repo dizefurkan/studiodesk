@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StudentTableWrapper } from '@/components/students/StudentTableWrapper'
 import Link from 'next/link'
-import { Users, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Users, Plus } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
 
 type Student = Database['public']['Tables']['students']['Row']
@@ -102,61 +102,7 @@ export default async function StudentsPage({
         )}
 
         {/* Pagination Controls */}
-        {students.length > 0 && (
-          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-[#E5E7EB] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <div className="text-xs sm:text-sm text-gray-600 order-2 sm:order-1">
-              Showing {(pagination.page - 1) * pagination.limit + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} students
-            </div>
-            <div className="flex flex-wrap gap-1 sm:gap-2 items-center order-1 sm:order-2">
-              <Link 
-                href={`/dashboard/students?q=${searchQuery || ''}&page=${pagination.page - 1}`}
-                className={pagination.hasPrevPage ? '' : 'pointer-events-none opacity-50'}
-              >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-[#E5E7EB]"
-                  disabled={!pagination.hasPrevPage}
-                >
-                  <ChevronLeft size={16} className="mr-1" />
-                  Previous
-                </Button>
-              </Link>
-              
-              <div className="flex items-center gap-1">
-                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((p) => (
-                  <Link 
-                    key={p}
-                    href={`/dashboard/students?q=${searchQuery || ''}&page=${p}`}
-                  >
-                    <Button
-                      variant={p === pagination.page ? 'default' : 'outline'}
-                      size="sm"
-                      className={p === pagination.page ? 'bg-[#4F46E5] text-white' : 'border-[#E5E7EB]'}
-                    >
-                      {p}
-                    </Button>
-                  </Link>
-                ))}
-              </div>
-
-              <Link 
-                href={`/dashboard/students?q=${searchQuery || ''}&page=${pagination.page + 1}`}
-                className={pagination.hasNextPage ? '' : 'pointer-events-none opacity-50'}
-              >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-[#E5E7EB]"
-                  disabled={!pagination.hasNextPage}
-                >
-                  Next
-                  <ChevronRight size={16} className="ml-1" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        )}
+        {/* Removed - DataTable now handles pagination client-side */}
       </Card>
     </div>
   )

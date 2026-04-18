@@ -111,6 +111,7 @@ export function StudentTableWrapper({
         searchValue={searchValue}
         onSearchChange={setSearchValue}
         searchPlaceholder={t('common.searchStudent')}
+        searchableColumns={['first_name', 'last_name', 'email', 'phone']}
         enablePagination={true}
         enableFilters={true}
         pageSize={10}
