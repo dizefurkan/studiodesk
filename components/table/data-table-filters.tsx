@@ -63,7 +63,7 @@ export function DataTableFilters({
 
   // Mobile Filter UI
   const MobileFilterContent = () => (
-    <div className="space-y-5 pr-4">
+    <div className="space-y-6">
       <div className="space-y-5">
         {filters.map((filter) => (
           <FilterField
@@ -84,14 +84,14 @@ export function DataTableFilters({
           }}
           variant="outline"
           size="sm"
-          className="flex-1"
+          className="flex-1 h-9"
         >
           {t('common.reset')}
         </Button>
         <Button
           onClick={() => setMobileOpen(false)}
           size="sm"
-          className="flex-1"
+          className="flex-1 h-9"
         >
           {t('common.apply')}
         </Button>
@@ -165,10 +165,10 @@ export function DataTableFilters({
             </Button>
           </SheetTrigger>
           <SheetContent side="bottom" className="h-auto rounded-t-lg">
-            <SheetHeader>
-              <SheetTitle>{t('filters.title')}</SheetTitle>
+            <SheetHeader className="mb-6">
+              <SheetTitle className="text-lg">{t('filters.title')}</SheetTitle>
             </SheetHeader>
-            <div className="mt-4">
+            <div className="px-4 pb-6">
               <MobileFilterContent />
             </div>
           </SheetContent>
