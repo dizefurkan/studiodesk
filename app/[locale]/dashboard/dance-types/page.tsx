@@ -1,210 +1,55 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Card, CardContent } from '@/components/ui/card'
+import { getDanceTypes } from '@/lib/actions/dance-types.actions'
+import { getTranslations } from 'next-intl/server'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Plus, Edit2, Trash2, Search, Music2 } from 'lucide-react'
-import { getDanceTypes, deleteDanceType } from '@/lib/actions/dance-types.actions'
-import { DeleteConfirmModal } from '@/components/common/DeleteConfirmModal'
-import type { Database } from '@/lib/types/database.types'
+import { DanceTypesPageClient } from './dance-types-client'
+import Link from 'next/link'
+import { Plus, Music2 } from 'lucide-react'
 
-type DanceType = Database['public']['Tables']['dance_types']['Row']
+export default async function DanceTypesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const t = await getTranslations()
+  const params = await searchParams
+  const searchQuery = typeof params.q === 'string' ? params.q : undefined
 
-export default function DanceTypesPage() {
-  const router = useRouter()
-  const [danceTypes, setDanceTypes] = useState<DanceType[]>([])
-  const [filteredDanceTypes, setFilteredDanceTypes] = useState<DanceType[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [selectedDanceType, setSelectedDanceType] = useState<DanceType | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
-
-  useEffect(() => {
-    loadDanceTypes()
-  }, [])
-
-  async function loadDanceTypes() {
-    setIsLoading(true)
-    setError(null)
-    const result = await getDanceTypes()
-
-    if (result.error) {
-      setError(result.error)
-    } else if (result.data) {
-      setDanceTypes(result.data)
-      setFilteredDanceTypes(result.data)
-    }
-
-    setIsLoading(false)
-  }
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    if (!query.trim()) {
-      setFilteredDanceTypes(danceTypes)
-    } else {
-      const query_lower = query.toLowerCase()
-      const filtered = danceTypes.filter((dt) =>
-        dt.name?.toLowerCase().includes(query_lower)
-      )
-      setFilteredDanceTypes(filtered)
-    }
-  }
-
-  const handleDeleteClick = (danceType: DanceType) => {
-    setSelectedDanceType(danceType)
-    setDeleteModalOpen(true)
-  }
-
-  const handleDeleteConfirm = async (reason?: string) => {
-    if (!selectedDanceType) return
-
-    setIsDeleting(true)
-    try {
-      const result = await deleteDanceType(selectedDanceType.id, reason)
-
-      if (result.error) {
-        throw new Error(result.error)
-      }
-
-      setDanceTypes(danceTypes.filter((dt) => dt.id !== selectedDanceType.id))
-      setFilteredDanceTypes(filteredDanceTypes.filter((dt) => dt.id !== selectedDanceType.id))
-      setDeleteModalOpen(false)
-      setSelectedDanceType(null)
-    } catch (err) {
-      throw err
-    } finally {
-      setIsDeleting(false)
-    }
-  }
+  const result = await getDanceTypes()
+  const danceTypes = result.data || []
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-3 sm:space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#111827]">Dance Types</h1>
-          <p className="text-gray-600 mt-1">Manage dance styles</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">{t('danceTypes.title')}</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">{t('danceTypes.description')}</p>
         </div>
-        <Link href="/dashboard/dance-types/new">
-          <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
-            <Plus size={20} className="mr-2" />
-            Add Dance Type
+        <Link href="/dashboard/dance-types/new" className="inline-block w-fit">
+          <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 text-sm md:text-base h-9 md:h-10">
+            <Plus size={20} />
+            {t('danceTypes.addNew')}
           </Button>
         </Link>
       </div>
 
-      {/* Search */}
-      <Card className="border-[#E5E7EB]">
-        <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 text-[#9CA3AF]" size={18} />
-            <Input
-              type="search"
-              placeholder="Search dance types..."
-              className="pl-10 bg-[#F9FAFB] border-[#E5E7EB]"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
+      {/* Content */}
+      {danceTypes.length === 0 ? (
+        <Card className="border-[#E5E7EB] p-6 sm:p-8 md:p-12 text-center">
+          <div className="text-gray-500">
+            <Music2 size={48} className="mx-auto mb-4 opacity-50" />
+            <p className="text-lg">{t('danceTypes.noDanceTypes')}</p>
+            <p className="text-sm mt-1">{t('danceTypes.getStarted')}</p>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Error */}
-      {error && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="pt-6">
-            <p className="text-red-600">{error}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* List */}
-      {isLoading ? (
-        <Card className="border-[#E5E7EB]">
-          <CardContent className="pt-6">
-            <p className="text-gray-500">Loading...</p>
-          </CardContent>
-        </Card>
-      ) : filteredDanceTypes.length === 0 ? (
-        <Card className="border-[#E5E7EB]">
-          <CardContent className="pt-12 text-center">
-            <Music2 className="mx-auto text-[#9CA3AF] mb-4" size={48} />
-            <h3 className="text-lg font-semibold text-[#111827] mb-1">No dance types yet</h3>
-            <p className="text-gray-600 mb-6">Get started by adding your first dance type</p>
-            <Link href="/dashboard/dance-types/new">
-              <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
-                <Plus size={20} className="mr-2" />
-                Add First Dance Type
-              </Button>
-            </Link>
-          </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {filteredDanceTypes.map((danceType) => (
-            <Card key={danceType.id} className="border-[#E5E7EB] hover:shadow-lg transition-all hover:border-[#4F46E5]">
-              <div className="p-4">
-                {/* Title */}
-                <h3 className="text-base font-bold text-[#111827] mb-2">{danceType.name}</h3>
-                
-                {/* Description */}
-                {danceType.description ? (
-                  <p className="text-gray-600 text-xs mb-4 line-clamp-2">{danceType.description}</p>
-                ) : (
-                  <p className="text-gray-400 text-xs italic mb-4">No description</p>
-                )}
-                
-                {/* Divider */}
-                <div className="border-t border-[#E5E7EB] mb-3"></div>
-                
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  <Link href={`/dashboard/dance-types/${danceType.id}/edit`} className="flex-1">
-                    <Button
-                      size="sm"
-                      className="w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white text-xs h-8"
-                    >
-                      <Edit2 size={14} className="mr-1" />
-                      Edit
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:bg-red-50 hover:text-red-700 h-8"
-                    onClick={() => handleDeleteClick(danceType)}
-                    disabled={isDeleting}
-                  >
-                    <Trash2 size={14} />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+        <Card className="border-[#E5E7EB] p-3 sm:p-4 md:p-6">
+          <DanceTypesPageClient
+            danceTypes={danceTypes}
+            searchQuery={searchQuery}
+          />
+        </Card>
       )}
-
-      {/* Delete Confirmation Modal */}
-      <DeleteConfirmModal
-        isOpen={deleteModalOpen}
-        onClose={() => {
-          setDeleteModalOpen(false)
-          setSelectedDanceType(null)
-        }}
-        onConfirm={handleDeleteConfirm}
-        title="Delete Dance Type"
-        description="Are you sure?"
-        itemName={selectedDanceType?.name}
-        withReason={true}
-        isLoading={isDeleting}
-      />
     </div>
   )
 }

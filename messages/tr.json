@@ -458,7 +458,10 @@
     "typeAdded": "Dans türü başarıyla eklendi",
     "typeUpdated": "Dans türü başarıyla güncellendi",
     "typeDeleted": "Dans türü başarıyla silindi",
-    "addFirstType": "İlk Dans Türünü Ekle"
+    "addFirstType": "İlk Dans Türünü Ekle",
+    "deleteTitle": "Dans Türünü Sil",
+    "deleteDescription": "Bu işlem geri alınamaz. Dans türü sistemden kalıcı olarak silinecektir.",
+    "getStarted": "İlk dans türünüzü ekleyerek başlayın"
   },  "instructorRates": {
     "title": "Eğitmen Oranları",
     "description": "Her eğitmenin her sınıf için ne kadar kazandığını belirle",
