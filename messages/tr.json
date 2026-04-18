@@ -109,7 +109,8 @@
     "joined": "Katılma Tarihi",
     "select": "Seç",
     "instructorName": "Eğitmen Adı",
-    "rateStatus": "Ücret Durumu"
+    "rateStatus": "Ücret Durumu",
+    "total": "toplam"
   },
   "auth": {
     "login": "Giriş Yap",

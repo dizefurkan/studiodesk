@@ -114,7 +114,8 @@
     "joined": "Joined",
     "select": "Select",
     "instructorName": "Instructor Name",
-    "rateStatus": "Rate Status"
+    "rateStatus": "Rate Status",
+    "total": "total"
   },
   "auth": {
     "login": "Login",
