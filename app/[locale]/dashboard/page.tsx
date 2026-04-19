@@ -225,42 +225,49 @@ export default async function DashboardPage({
         })}
       </div>
 
-      {/* Growth Rate Card */}
-      <Card className="border-[#E5E7EB]">
-        <CardHeader className="pb-3 md:pb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg sm:text-xl">{t('dashboard.growthRate')}</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">{t('dashboard.monthlyGrowth')}</CardDescription>
+      {/* Growth Rate & Revenue Chart Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+        {/* Growth Rate Card */}
+        <Card className="border-[#E5E7EB] lg:col-span-1">
+          <CardHeader className="pb-3 md:pb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg sm:text-xl">{t('dashboard.growthRate')}</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">{t('dashboard.monthlyGrowth')}</CardDescription>
+              </div>
+              <div className={`p-2 md:p-3 rounded-lg ${growthRate >= 0 ? 'bg-green-100' : 'bg-red-100'} flex-shrink-0`}>
+                {growthRate >= 0 ? (
+                  <ArrowUpRight className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+                ) : (
+                  <ArrowDownRight className="w-5 h-5 md:w-6 md:h-6 text-red-600" />
+                )}
+              </div>
             </div>
-            <div className={`p-2 md:p-3 rounded-lg ${growthRate >= 0 ? 'bg-green-100' : 'bg-red-100'} flex-shrink-0`}>
-              {growthRate >= 0 ? (
-                <ArrowUpRight className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
-              ) : (
-                <ArrowDownRight className="w-5 h-5 md:w-6 md:h-6 text-red-600" />
-              )}
-            </div>
+          </CardHeader>
+          <CardContent>
+            <p className={`text-3xl md:text-4xl font-bold ${growthRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {growthRate >= 0 ? '+' : ''}{growthRate.toFixed(1)}%
+            </p>
+            <p className="text-xs sm:text-sm text-gray-600 mt-2">
+              {formatCurrency(lastMonthRevenue, organization?.currency || 'TRY')}
+              <span className="text-gray-400 mx-1">→</span>
+              {formatCurrency(revenue, organization?.currency || 'TRY')}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Revenue Chart */}
+        {chartData.length > 0 && (
+          <div className="lg:col-span-3">
+            <RevenueChart data={chartData} currency={organization?.currency || 'TRY'} />
           </div>
-        </CardHeader>
-        <CardContent>
-          <p className={`text-3xl md:text-4xl font-bold ${growthRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {growthRate >= 0 ? '+' : ''}{growthRate.toFixed(1)}%
-          </p>
-          <p className="text-xs sm:text-sm text-gray-600 mt-2">
-            {t('dashboard.revenue')}: {formatCurrency(lastMonthRevenue, organization?.currency || 'TRY')} → {formatCurrency(revenue, organization?.currency || 'TRY')}
-          </p>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
-      {/* Revenue Chart */}
-      {chartData.length > 0 && (
-        <RevenueChart data={chartData} currency={organization?.currency || 'TRY'} />
-      )}
-
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+      {/* Quick Actions, Getting Started, Recent Activity Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
         {/* Quick Actions */}
-        <div className="lg:col-span-1">
+        <div>
           <Card className="border-[#E5E7EB]">
             <CardHeader className="pb-3 md:pb-6">
               <CardTitle className="text-lg sm:text-xl">{t('dashboard.quickActions')}</CardTitle>
@@ -273,7 +280,7 @@ export default async function DashboardPage({
                   <Link key={action.label} href={action.href}>
                     <Button
                       variant="outline"
-                      className="w-full justify-between border-[#E5E7EB] text-[#111827] hover:bg-gray-50 text-sm md:text-base h-9 md:h-10"
+                      className="w-full justify-between border-[#E5E7EB] text-[#111827] hover:bg-gray-50 text-xs md:text-sm h-9 md:h-10"
                     >
                       <span className="flex items-center gap-2 min-w-0">
                         <Icon className="w-4 h-4 flex-shrink-0" />
@@ -288,9 +295,8 @@ export default async function DashboardPage({
           </Card>
         </div>
 
-        {/* Getting Started & Activity */}
-        <div className="lg:col-span-2 space-y-3 sm:space-y-4 md:space-y-6">
-          {/* Getting Started Checklist */}
+        {/* Getting Started Checklist */}
+        <div>
           <Card className="border-[#E5E7EB]">
             <CardHeader className="pb-3 md:pb-6">
               <CardTitle className="text-lg sm:text-xl">{t('dashboard.gettingStarted')}</CardTitle>
@@ -300,13 +306,13 @@ export default async function DashboardPage({
               <div className="space-y-2 md:space-y-3">
                 {gettingStarted.map((item) => (
                   <Link key={item.title} href={item.href}>
-                    <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-[#E5E7EB] transition-colors">
+                    <div className="flex items-center gap-3 p-2 md:p-3 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-[#E5E7EB] transition-colors">
                       {item.completed ? (
                         <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
                       ) : (
                         <Clock className="w-5 h-5 text-gray-400 shrink-0" />
                       )}
-                      <span className={item.completed ? 'text-gray-500 line-through' : 'text-[#111827]'}>
+                      <span className={`text-xs md:text-sm ${item.completed ? 'text-gray-500 line-through' : 'text-[#111827]'}`}>
                         {item.title}
                       </span>
                     </div>
@@ -315,13 +321,15 @@ export default async function DashboardPage({
               </div>
             </CardContent>
           </Card>
+        </div>
 
-          {/* Recent Activity */}
+        {/* Recent Activity */}
+        <div>
           <RecentActivityCard activities={recentActivities} />
         </div>
       </div>
 
-      {/* Upcoming Courses */}
+      {/* Upcoming Courses - Full Width */}
       <UpcomingCoursesCard upcomingCourses={upcomingCourses} />
     </div>
   )

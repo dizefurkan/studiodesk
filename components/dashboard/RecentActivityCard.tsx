@@ -27,7 +27,7 @@ export function RecentActivityCard({ activities }: RecentActivityCardProps) {
   }
 
   return (
-    <Card className="border-[#E5E7EB]">
+    <Card className="border-[#E5E7EB] h-full">
       <CardHeader className="pb-3 md:pb-6">
         <CardTitle className="text-lg sm:text-xl">{t('dashboard.recentActivity')}</CardTitle>
         <CardDescription className="text-xs sm:text-sm">
@@ -37,18 +37,18 @@ export function RecentActivityCard({ activities }: RecentActivityCardProps) {
       <CardContent>
         {activities.length > 0 ? (
           <div className="space-y-3">
-            {activities.map((activity, idx) => (
+            {activities.slice(0, 4).map((activity, idx) => (
               <div
                 key={idx}
-                className="flex items-start gap-3 p-3 rounded-lg border border-[#E5E7EB] hover:bg-gray-50 transition-colors"
+                className="flex items-start gap-3 p-2 md:p-3 rounded-lg border border-[#E5E7EB] hover:bg-gray-50 transition-colors"
               >
                 <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
                   {getActivityIcon(activity.icon)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-[#111827]">{activity.title}</p>
+                  <p className="text-xs md:text-sm text-[#111827] break-words">{activity.title}</p>
                   <p className="text-xs text-gray-600 mt-1">
-                    {format(new Date(activity.date), 'MMM dd, yyyy HH:mm')}
+                    {format(new Date(activity.date), 'MMM dd, HH:mm')}
                   </p>
                 </div>
               </div>
@@ -57,7 +57,7 @@ export function RecentActivityCard({ activities }: RecentActivityCardProps) {
         ) : (
           <div className="text-center py-8">
             <Activity className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-            <p className="text-sm text-gray-600">{t('dashboard.noRecentActivity')}</p>
+            <p className="text-xs md:text-sm text-gray-600">{t('dashboard.noRecentActivity')}</p>
           </div>
         )}
       </CardContent>

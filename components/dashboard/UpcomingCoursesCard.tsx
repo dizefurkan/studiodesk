@@ -28,7 +28,7 @@ export function UpcomingCoursesCard({ upcomingCourses }: UpcomingCoursesCardProp
 
   return (
     <Card className="border-[#E5E7EB]">
-      <CardHeader className="pb-3 md:pb-6 flex flex-row items-center justify-between space-y-0">
+      <CardHeader className="pb-3 md:pb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
         <div>
           <CardTitle className="text-lg sm:text-xl">{t('dashboard.upcomingCourses')}</CardTitle>
           <CardDescription className="text-xs sm:text-sm">
@@ -36,7 +36,7 @@ export function UpcomingCoursesCard({ upcomingCourses }: UpcomingCoursesCardProp
           </CardDescription>
         </div>
         <Link href="/dashboard/calendar">
-          <Button variant="outline" size="sm" className="border-[#E5E7EB]">
+          <Button variant="outline" size="sm" className="border-[#E5E7EB] w-full sm:w-auto">
             {t('common.viewDetails')}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
@@ -44,20 +44,20 @@ export function UpcomingCoursesCard({ upcomingCourses }: UpcomingCoursesCardProp
       </CardHeader>
       <CardContent>
         {upcomingCourses.length > 0 ? (
-          <div className="space-y-3">
-            {upcomingCourses.map((session) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {upcomingCourses.slice(0, 6).map((session) => (
               <div
                 key={session.id}
-                className="flex items-start gap-4 p-3 rounded-lg border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-gray-50 transition-colors"
+                className="flex items-start gap-3 p-3 rounded-lg border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-gray-50 transition-colors"
               >
                 <div className="p-2 bg-orange-100 rounded-lg flex-shrink-0">
                   <Calendar className="w-4 h-4 text-orange-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-[#111827] truncate">
+                  <p className="font-medium text-[#111827] truncate text-sm">
                     {session.courses?.title || 'Unknown Course'}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-600">
+                  <p className="text-xs text-gray-600">
                     {format(new Date(session.session_date), 'MMM dd, yyyy')}
                   </p>
                   {session.courses?.instructors && session.courses.instructors.length > 0 && (

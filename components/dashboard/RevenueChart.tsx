@@ -32,7 +32,7 @@ export function RevenueChart({ data, currency }: RevenueChartProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="w-full h-80">
+        <div className="w-full h-64 md:h-72">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
