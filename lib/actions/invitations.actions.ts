@@ -5,6 +5,7 @@ import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { generateTemporaryPassword } from '@/lib/utils/generatePassword'
 import { revalidatePath } from 'next/cache'
+import { logOperation } from '@/lib/actions/history.actions'
 import type { Database } from '@/lib/types/database.types'
 
 type Profile = Database['public']['Tables']['profiles']['Row']

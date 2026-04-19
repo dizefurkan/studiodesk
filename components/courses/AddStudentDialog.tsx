@@ -133,7 +133,7 @@ export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [
         setIsOpen(false)
         setSelectedStudents(new Set())
         onStudentsAdded?.()
-        router.refresh()
+        // Don't use router.refresh() - let the Container handle the refresh via callback
       } else {
         setError(
           `Added ${successCount} student${successCount !== 1 ? 's' : ''}. ${failureCount} failed.`,

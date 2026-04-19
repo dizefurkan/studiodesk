@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { logOperation } from '@/lib/actions/history.actions'
 
 /**
  * Get students with active packages for a dance type (not yet enrolled in the course)
@@ -124,6 +125,9 @@ export async function addStudentToCourse(courseId: string, studentId: string) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
   try {
     const supabase = await createServerSupabaseClient()
 
@@ -145,6 +149,29 @@ export async function addStudentToCourse(courseId: string, studentId: string) {
       return { error: 'Failed to add student to course' }
     }
 
+    console.log('[addStudentToCourse] 🎯 Student added successfully, now logging...')
+
+    // Get student name for history logging
+    const { data: studentData } = await (supabase
+      .from('students') as any)
+      .select('first_name, last_name')
+      .eq('id', studentId)
+      .single()
+    
+    const studentName = studentData 
+      ? `${(studentData as any).first_name} ${(studentData as any).last_name}`.trim()
+      : 'Unknown Student'
+
+    // Log the action to history using the standard pattern
+    await logOperation('CREATE', 'course_student', courseId, {
+      after: {
+        studentId: studentId,
+        studentName: studentName,
+        courseId: courseId,
+      },
+    }, organization.id)
+
+    console.log('[addStudentToCourse] ✅ History logged')
     return { success: true, data }
   } catch (error) {
     console.error('Unexpected error in addStudentToCourse:', error)
@@ -158,6 +185,9 @@ export async function addStudentToCourse(courseId: string, studentId: string) {
 export async function removeStudentFromCourse(courseId: string, studentId: string) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
+
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -173,6 +203,29 @@ export async function removeStudentFromCourse(courseId: string, studentId: strin
       return { error: 'Failed to remove student from course' }
     }
 
+    console.log('[removeStudentFromCourse] 🎯 Student removed successfully, now logging...')
+
+    // Get student name for history logging
+    const { data: studentData } = await (supabase
+      .from('students') as any)
+      .select('first_name, last_name')
+      .eq('id', studentId)
+      .single()
+    
+    const studentName = studentData 
+      ? `${(studentData as any).first_name} ${(studentData as any).last_name}`.trim()
+      : 'Unknown Student'
+
+    // Log the action to history using the standard pattern
+    await logOperation('DELETE', 'course_student', courseId, {
+      before: {
+        studentId: studentId,
+        studentName: studentName,
+        courseId: courseId,
+      },
+    }, organization.id)
+
+    console.log('[removeStudentFromCourse] ✅ History logged')
     return { success: true }
   } catch (error) {
     console.error('Unexpected error in removeStudentFromCourse:', error)

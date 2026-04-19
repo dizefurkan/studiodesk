@@ -3,6 +3,8 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { logOperation } from '@/lib/actions/history.actions'
+import { getChanges } from '@/lib/utils/history-utils'
 
 export interface AttendanceConfig {
   week_start_day: number
@@ -72,6 +74,15 @@ export async function updateAttendanceConfig(
   try {
     const supabase = await createServerSupabaseClient()
 
+    // Get current config for before state
+    const { data: beforeData } = await supabase
+      .from('organizations')
+      .select(
+        'week_start_day, timezone, virtual_sessions_weeks, attendance_per_week_limit, allow_makeup_sessions',
+      )
+      .eq('id', organization.id)
+      .single()
+
     const updateData: any = {}
     if (config.week_start_day !== undefined) updateData.week_start_day = config.week_start_day
     if (config.timezone !== undefined) updateData.timezone = config.timezone
@@ -92,6 +103,21 @@ export async function updateAttendanceConfig(
       console.error('Error updating config:', error)
       return { error: 'Failed to update config' }
     }
+
+    // Log operation (non-blocking)
+    const beforeState = beforeData || {}
+    const changes = getChanges(beforeState, updateData)
+    void logOperation(
+      'UPDATE',
+      'organization_settings',
+      organization.id,
+      {
+        before: beforeState,
+        after: updateData,
+        changes,
+      },
+      organization.id
+    )
 
     return { success: true }
   } catch (error) {

@@ -1,11 +1,13 @@
 import { getInstructor } from '@/lib/actions/instructors.actions'
 import { getInstructorCourses, getInstructorMonthlyStats, getInstructorTotalEarnings } from '@/lib/actions/instructor-detail.actions'
+import { getEntityHistory } from '@/lib/actions/history.actions'
 import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Edit2, Mail, Phone, BookOpen, DollarSign, Calendar } from 'lucide-react'
 import { InstructorAttendanceHistory } from '@/components/instructors/InstructorAttendanceHistory'
+import { ActivityTimelineWrapper } from '@/components/history/ActivityTimelineWrapper'
 import { formatTime } from '@/lib/utils/formatTime'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -27,15 +29,17 @@ export default async function InstructorDetailPage({ params }: InstructorDetailP
   const instructor = result.data!
 
   // Fetch instructor stats in parallel
-  const [coursesResult, statsResult, totalEarningsResult] = await Promise.all([
+  const [coursesResult, statsResult, totalEarningsResult, entityHistoryResult] = await Promise.all([
     getInstructorCourses(id),
     getInstructorMonthlyStats(id),
     getInstructorTotalEarnings(id),
+    getEntityHistory('instructor', id, 20),
   ])
 
   const courses = coursesResult.data || []
   const stats = statsResult.data
   const totalStats = totalEarningsResult.data
+  const entityHistory = entityHistoryResult || []
 
   return (
     <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-4 sm:p-6 md:p-8">
@@ -179,6 +183,18 @@ export default async function InstructorDetailPage({ params }: InstructorDetailP
               showCourseInfo={true}
               showInstructors={true}
             />
+
+            {/* Activity Timeline */}
+            <div className="mt-12 pt-8 border-t border-[#E5E7EB]">
+              <ActivityTimelineWrapper
+                entity="instructor"
+                entityId={id}
+                initialLogs={entityHistory}
+                title="Activity Timeline"
+                description="All changes and actions related to this instructor"
+                showFullPage={false}
+              />
+            </div>
           </div>
         </Card>
       </div>

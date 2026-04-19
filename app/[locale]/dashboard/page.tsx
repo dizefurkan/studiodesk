@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Users, BookOpen, Calendar, TrendingUp, ArrowRight, CheckCircle2, Clock, AlertCircle, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { getStudents } from '@/lib/actions/students.actions'
 import { getCourses } from '@/lib/actions/courses.actions'
+import { getHistoryLogs } from '@/lib/actions/history.actions'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils/format'
 import { RevenueChart } from '@/components/dashboard/RevenueChart'
 import { UpcomingCoursesCard } from '@/components/dashboard/UpcomingCoursesCard'
-import { RecentActivityCard } from '@/components/dashboard/RecentActivityCard'
+import { HistoryComponent } from '@/components/history/HistoryComponent'
 
 export default async function DashboardPage({
   params,
@@ -149,26 +150,9 @@ export default async function DashboardPage({
         upcomingCourses = upcomingSessions
       }
       
-      // Get recent activities (mix of different actions)
-      const { data: recentSessions } = await supabase
-        .from('course_sessions')
-        .select(`
-          id,
-          created_at,
-          session_date,
-          courses(id, title)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(5)
-      
-      if (recentSessions && Array.isArray(recentSessions)) {
-        recentActivities = recentSessions.map((session: any) => ({
-          type: 'sessionHeld',
-          title: `${t('dashboard.sessionHeld')}: ${session.courses?.title || 'Unknown Course'}`,
-          date: session.created_at,
-          icon: 'calendar',
-        }))
-      }
+      // Get recent activity from history logs
+      const historyLogs = await getHistoryLogs(5)
+      recentActivities = historyLogs
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
     }
@@ -325,7 +309,11 @@ export default async function DashboardPage({
 
         {/* Recent Activity */}
         <div>
-          <RecentActivityCard activities={recentActivities} />
+          <HistoryComponent 
+            logs={recentActivities} 
+            title={t('dashboard.recentActivity')}
+            maxItems={4}
+          />
         </div>
       </div>
 

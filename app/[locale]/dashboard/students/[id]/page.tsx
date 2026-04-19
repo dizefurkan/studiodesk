@@ -6,12 +6,14 @@ import { Edit2, ArrowLeft, Mail, Phone } from 'lucide-react'
 import { getStudent, getStudentPackages } from '@/lib/actions/students.actions'
 import { getPackages } from '@/lib/actions/packages.actions'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { getEntityHistory } from '@/lib/actions/history.actions'
 import { DEFAULT_CURRENCY } from '@/config/currencies'
 import { getStudentAttendanceHistory, getStudentPackageHistory } from '@/lib/actions/history.actions'
 import { StudentCredits } from '@/components/students/StudentCredits'
 import { StudentPurchaseDialog } from '@/components/students/StudentPurchaseDialog'
 import { StudentCoursesSection } from '@/components/students/StudentCoursesSection'
 import { StudentHistory } from '@/components/students/StudentHistory'
+import { ActivityTimelineWrapper } from '@/components/history/ActivityTimelineWrapper'
 
 interface StudentDetailPageProps {
   params: {
@@ -32,17 +34,19 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
   const currency = organization?.currency || 'TRY'
 
   // Fetch student packages, available packages, and history
-  const [packagesResult, availablePackagesResult, attendanceHistoryResult, packageHistoryResult] = await Promise.all([
+  const [packagesResult, availablePackagesResult, attendanceHistoryResult, packageHistoryResult, entityHistoryResult] = await Promise.all([
     getStudentPackages(id),
     getPackages(),
     getStudentAttendanceHistory(id),
     getStudentPackageHistory(id),
+    getEntityHistory('student', id, 20),
   ])
 
   const studentPackages = packagesResult.data || []
   const availablePackages = availablePackagesResult.data || []
   const attendanceHistory = attendanceHistoryResult.data || []
   const packageHistory = packageHistoryResult.data || []
+  const entityHistory = entityHistoryResult || []
 
   return (
     <div className="space-y-6">
@@ -149,6 +153,16 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
           </div>
         </div>
       </Card>
+
+      {/* Timeline History */}
+      <ActivityTimelineWrapper 
+        entity="student"
+        entityId={id}
+        initialLogs={entityHistory}
+        title="Activity Timeline"
+        description="All changes and actions related to this student"
+        showFullPage={false}
+      />
     </div>
   )
 }

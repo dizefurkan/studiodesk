@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { CourseStudentsSection } from './CourseStudentsSection'
 import { AddStudentDialog } from './AddStudentDialog'
@@ -13,13 +13,13 @@ interface CourseStudentsContainerProps {
 
 export function CourseStudentsContainer({ courseId, danceTypeId }: CourseStudentsContainerProps) {
   const t = useTranslations()
-  const refreshKey = useRef(0)
+  const [refreshKey, setRefreshKey] = useState(0)
   const [studentCount, setStudentCount] = useState(0)
 
   const handleStudentsAdded = () => {
-    // Trigger a re-render of CourseStudentsSection by changing the ref
-    // In practice, router.refresh() in AddStudentDialog should handle this
-    // But we'll keep this for potential future use
+    // Trigger a re-render of CourseStudentsSection by changing the key
+    // This will cause the component to unmount and remount, reloading the student list
+    setRefreshKey((prev) => prev + 1)
   }
 
   return (
@@ -40,7 +40,7 @@ export function CourseStudentsContainer({ courseId, danceTypeId }: CourseStudent
         />
       </div>
       <CourseStudentsSection 
-        key={`students-${refreshKey.current}`} 
+        key={`students-${refreshKey}`} 
         courseId={courseId} 
         danceTypeId={danceTypeId}
         onStudentsLoaded={(count) => setStudentCount(count)}

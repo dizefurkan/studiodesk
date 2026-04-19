@@ -1,6 +1,8 @@
 import { getCourse, getCourseSessions } from '@/lib/actions/courses.actions'
 import { getCourseAttendanceHistory } from '@/lib/actions/course-attendance.actions'
+import { getEntityHistory } from '@/lib/actions/history.actions'
 import { CourseStudentsContainer } from '@/components/courses/CourseStudentsContainer'
+import { ActivityTimelineWrapper } from '@/components/history/ActivityTimelineWrapper'
 import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -29,6 +31,9 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   // Get attendance history
   const historyResult = await getCourseAttendanceHistory(course.id)
   const attendanceHistory = historyResult.data || []
+
+  // Get entity activity history
+  const entityHistory = await getEntityHistory('course', id, 20) || []
 
   return (
     <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-4 sm:p-6 md:p-8">
@@ -167,6 +172,18 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
 
         {/* Students */}
         <CourseStudentsContainer courseId={course.id} danceTypeId={course.dance_type_id} />
+
+        {/* Activity Timeline */}
+        <div className="mt-12 pt-8 border-t border-[#E5E7EB]">
+          <ActivityTimelineWrapper
+            entity="course"
+            entityId={course.id}
+            initialLogs={entityHistory}
+            title="Activity Timeline"
+            description="All changes and actions related to this course"
+            showFullPage={false}
+          />
+        </div>
       </div>
     </div>
   )
