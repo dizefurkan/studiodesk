@@ -179,7 +179,19 @@
     "quickActions": "Hızlı İşlemler",
     "commonTasks": "Sık Yapılan Görevler",
     "gettingStarted": "Başlangıç",
-    "setupYourStudio": "Stüdyonuzu Kurun"
+    "setupYourStudio": "Stüdyonuzu Kurun",
+    "growthRate": "Büyüme Oranı",
+    "upcomingCourses": "Yaklaşan Kurslar",
+    "recentActivity": "Son Aktiviteler",
+    "revenueOverMonth": "Aylık Gelir",
+    "noUpcomingCourses": "Yaklaşan kurs yok",
+    "noRecentActivity": "Son aktivite yok",
+    "monthlyGrowth": "Aylık Büyüme",
+    "courseStarting": "Kurs başlıyor",
+    "sessionHeld": "Seans yapıldı",
+    "studentRegistered": "Öğrenci kaydı",
+    "courseCreated": "Kurs oluşturuldu",
+    "viewAll": "Tümünü Gör"
   },
   "students": {
     "title": "Öğrenciler",

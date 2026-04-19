@@ -184,7 +184,19 @@
     "quickActions": "Quick Actions",
     "commonTasks": "Common tasks",
     "gettingStarted": "Getting Started",
-    "setupYourStudio": "Set up your studio"
+    "setupYourStudio": "Set up your studio",
+    "growthRate": "Growth Rate",
+    "upcomingCourses": "Upcoming Courses",
+    "recentActivity": "Recent Activity",
+    "revenueOverMonth": "Revenue Over Month",
+    "noUpcomingCourses": "No upcoming courses",
+    "noRecentActivity": "No recent activity",
+    "monthlyGrowth": "Monthly Growth",
+    "courseStarting": "Course starting",
+    "sessionHeld": "Session held",
+    "studentRegistered": "Student registered",
+    "courseCreated": "Course created",
+    "viewAll": "View All"
   },
   "students": {
     "title": "Students",
