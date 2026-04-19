@@ -10,6 +10,8 @@ import type { Database } from '@/lib/types/database.types'
 
 type Instructor = Database['public']['Tables']['instructors']['Row']
 
+const PAGE_SIZE = 10
+
 export default async function InstructorsPage({
   searchParams,
 }: {
@@ -18,10 +20,12 @@ export default async function InstructorsPage({
   const t = await getTranslations()
   const params = await searchParams
   const searchQuery = typeof params.q === 'string' ? params.q : undefined
+  const pageParam = typeof params.page === 'string' ? parseInt(params.page, 10) : 1
+  const page = Math.max(1, pageParam)
   const danceTypeId = typeof params.danceType === 'string' ? params.danceType : undefined
   const branchId = typeof params.branch === 'string' ? params.branch : undefined
 
-  const result = await getInstructors(searchQuery, { danceTypeId, branchId })
+  const result = await getInstructors(searchQuery, page, PAGE_SIZE)
 
   // Handle auth errors specifically
   if (result.error === 'Not authenticated') {
@@ -34,6 +38,8 @@ export default async function InstructorsPage({
   }
 
   const instructors = result.data || []
+  const totalCount = result.totalCount || 0
+  const totalPages = result.totalPages || 1
 
   const filterOptions = await getInstructorFilterOptions()
   const danceTypes = (filterOptions as any).danceTypes || []
@@ -79,6 +85,9 @@ export default async function InstructorsPage({
             searchQuery={searchQuery}
             danceTypeId={danceTypeId}
             branchId={branchId}
+            currentPage={page}
+            totalCount={totalCount}
+            pageSize={PAGE_SIZE}
           />
         </Card>
       )}

@@ -91,7 +91,41 @@ export function StudentTableWrapper({
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams()
     if (searchQuery) params.set('q', searchQuery)
+    if (filterValues.danceType) params.set('danceType', filterValues.danceType)
+    if (filterValues.branch) params.set('branch', filterValues.branch)
+    if (filterValues.course) params.set('course', filterValues.course)
+    if (filterValues.withCredits) params.set('withCredits', filterValues.withCredits)
     params.set('page', newPage.toString())
+    router.push(`?${params.toString()}`)
+  }
+
+  // Handle filter change - update URL param
+  const handleFilterChange = (filterId: string, value: any) => {
+    const newFilterValues = { ...filterValues, [filterId]: value }
+    setFilterValues(newFilterValues)
+    
+    const params = new URLSearchParams()
+    if (searchQuery) params.set('q', searchQuery)
+    if (newFilterValues.danceType) params.set('danceType', newFilterValues.danceType)
+    if (newFilterValues.branch) params.set('branch', newFilterValues.branch)
+    if (newFilterValues.course) params.set('course', newFilterValues.course)
+    if (newFilterValues.withCredits) params.set('withCredits', newFilterValues.withCredits)
+    params.set('page', '1') // Reset to first page on filter change
+    router.push(`?${params.toString()}`)
+  }
+
+  // Handle clear filters - reset all filters and URL
+  const handleClearFilters = () => {
+    setFilterValues({
+      danceType: '',
+      branch: '',
+      course: '',
+      withCredits: '',
+    })
+    
+    const params = new URLSearchParams()
+    if (searchQuery) params.set('q', searchQuery)
+    params.set('page', '1')
     router.push(`?${params.toString()}`)
   }
 
@@ -130,9 +164,8 @@ export function StudentTableWrapper({
         data={students}
         filters={filters}
         filterValues={filterValues}
-        onFilterChange={(filterId, value) =>
-          setFilterValues((prev) => ({ ...prev, [filterId]: value }))
-        }
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
         searchValue={searchValue}
         onSearchChange={handleSearchChange}
         searchPlaceholder={t('common.searchStudent')}

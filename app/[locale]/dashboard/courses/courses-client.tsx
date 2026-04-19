@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/table/data-table'
 import { FilterConfig } from '@/components/table/data-table-filters'
 import { getCourseColumns, Course } from './columns'
@@ -13,8 +14,9 @@ interface CoursesPageClientProps {
   branches: Array<{ id: string; name: string }>
   danceTypes: Array<{ id: string; name: string }>
   searchQuery?: string
-  branchId?: string
-  danceTypeId?: string
+  currentPage: number
+  totalCount: number
+  pageSize: number
 }
 
 export function CoursesPageClient({
@@ -22,18 +24,35 @@ export function CoursesPageClient({
   branches,
   danceTypes,
   searchQuery,
-  branchId,
-  danceTypeId,
+  currentPage,
+  totalCount,
+  pageSize,
 }: CoursesPageClientProps) {
   const t = useTranslations()
+  const router = useRouter()
   const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
   const [filterValues, setFilterValues] = useState<Record<string, any>>({
-    branch: branchId || '',
-    danceType: danceTypeId || '',
+    branch: '',
+    danceType: '',
   })
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value)
+    const params = new URLSearchParams()
+    if (value) params.set('q', value)
+    params.set('page', '1')
+    router.push(`?${params.toString()}`)
+  }
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams()
+    if (searchQuery) params.set('q', searchQuery)
+    params.set('page', newPage.toString())
+    router.push(`?${params.toString()}`)
+  }
 
   const handleDeleteClick = (course: Course) => {
     setSelectedCourse(course)
@@ -92,11 +111,14 @@ export function CoursesPageClient({
           setFilterValues((prev) => ({ ...prev, [filterId]: value }))
         }
         searchValue={searchValue}
-        onSearchChange={setSearchValue}
+        onSearchChange={handleSearchChange}
         searchPlaceholder={t('common.searchCourse')}
         enablePagination={true}
         enableFilters={true}
-        pageSize={10}
+        currentPage={currentPage}
+        totalItems={totalCount}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
         emptyMessage={t('courses.noCourses')}
       />
 

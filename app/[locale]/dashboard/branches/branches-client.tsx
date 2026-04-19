@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/table/data-table'
 import { FilterConfig } from '@/components/table/data-table-filters'
 import { getBranchColumns, Branch } from './columns'
@@ -11,15 +12,40 @@ import { DeleteConfirmModal } from '@/components/common/DeleteConfirmModal'
 interface BranchesPageClientProps {
   branches: Branch[]
   searchQuery?: string
+  currentPage: number
+  totalCount: number
+  pageSize: number
 }
 
-export function BranchesPageClient({ branches, searchQuery }: BranchesPageClientProps) {
+export function BranchesPageClient({
+  branches,
+  searchQuery,
+  currentPage,
+  totalCount,
+  pageSize,
+}: BranchesPageClientProps) {
   const t = useTranslations()
+  const router = useRouter()
   const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
   const [filterValues, setFilterValues] = useState<Record<string, any>>({})
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value)
+    const params = new URLSearchParams()
+    if (value) params.set('q', value)
+    params.set('page', '1')
+    router.push(`?${params.toString()}`)
+  }
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams()
+    if (searchQuery) params.set('q', searchQuery)
+    params.set('page', newPage.toString())
+    router.push(`?${params.toString()}`)
+  }
 
   const handleDeleteClick = (branch: Branch) => {
     setSelectedBranch(branch)
@@ -65,11 +91,14 @@ export function BranchesPageClient({ branches, searchQuery }: BranchesPageClient
           setFilterValues((prev) => ({ ...prev, [filterId]: value }))
         }
         searchValue={searchValue}
-        onSearchChange={setSearchValue}
+        onSearchChange={handleSearchChange}
         searchPlaceholder={t('common.searchBranch')}
         enablePagination={true}
         enableFilters={true}
-        pageSize={10}
+        currentPage={currentPage}
+        totalItems={totalCount}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
         emptyMessage={t('branches.noBranches')}
       />
 

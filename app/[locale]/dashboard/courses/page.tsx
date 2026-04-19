@@ -8,6 +8,8 @@ import { CoursesPageClient } from './courses-client'
 import Link from 'next/link'
 import { Plus, Clock } from 'lucide-react'
 
+const PAGE_SIZE = 10
+
 export default async function CoursesPage({
   searchParams,
 }: {
@@ -15,12 +17,12 @@ export default async function CoursesPage({
 }) {
   const t = await getTranslations()
   const params = await searchParams
-  const branchId = typeof params.branch === 'string' ? params.branch : undefined
   const searchQuery = typeof params.q === 'string' ? params.q : undefined
-  const danceTypeId = typeof params.danceType === 'string' ? params.danceType : undefined
+  const pageParam = typeof params.page === 'string' ? parseInt(params.page, 10) : 1
+  const page = Math.max(1, pageParam)
 
   const [coursesResult, branchesResult, danceTypesResult] = await Promise.all([
-    getCourses(branchId, searchQuery, danceTypeId),
+    getCourses(searchQuery, page, PAGE_SIZE),
     getBranches(),
     getDanceTypes(),
   ])
@@ -28,6 +30,7 @@ export default async function CoursesPage({
   const courses = coursesResult.data || []
   const branches = branchesResult.data || []
   const danceTypes = danceTypesResult.data || []
+  const totalCount = coursesResult.totalCount || 0
 
   return (
     <div className="space-y-3 sm:space-y-4 md:space-y-6">
@@ -60,8 +63,9 @@ export default async function CoursesPage({
             branches={branches}
             danceTypes={danceTypes}
             searchQuery={searchQuery}
-            branchId={branchId}
-            danceTypeId={danceTypeId}
+            currentPage={page}
+            totalCount={totalCount}
+            pageSize={PAGE_SIZE}
           />
         </Card>
       )}

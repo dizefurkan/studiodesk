@@ -11,21 +11,26 @@ export default async function InstructorEarningsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  const PAGE_SIZE = 10
   const params = await searchParams
   const instructorId = typeof params.instructor === 'string' ? params.instructor : undefined
   const fromDate = typeof params.from === 'string' ? params.from : undefined
   const toDate = typeof params.to === 'string' ? params.to : undefined
+  const searchQuery = typeof params.q === 'string' ? params.q : undefined
+  const pageParam = typeof params.page === 'string' ? parseInt(params.page, 10) : 1
+  const page = Math.max(1, pageParam)
 
   const organization = await getOrganization()
   const currency = organization?.currency || 'TRY'
 
   const [earningsResult, instructorsResult] = await Promise.all([
-    getInstructorEarnings(instructorId, fromDate, toDate),
+    getInstructorEarnings(searchQuery, page, PAGE_SIZE),
     getInstructors(),
   ])
 
   const earnings = earningsResult.data || []
   const instructors = instructorsResult.data || []
+  const totalCount = earningsResult.totalCount || 0
 
   const totalEarnings = earnings.reduce((sum: number, e: any) => sum + Number(e.amount), 0)
   const sessionCount = earnings.length
@@ -65,9 +70,10 @@ export default async function InstructorEarningsPage({
         earnings={earnings}
         instructors={instructors}
         currency={currency}
-        instructorId={instructorId}
-        fromDate={fromDate}
-        toDate={toDate}
+        searchQuery={searchQuery}
+        currentPage={page}
+        totalCount={totalCount}
+        pageSize={PAGE_SIZE}
       />
     </div>
   )

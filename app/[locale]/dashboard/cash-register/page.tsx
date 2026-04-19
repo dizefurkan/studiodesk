@@ -14,11 +14,15 @@ export default async function CashRegisterPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  const PAGE_SIZE = 10
   const params = await searchParams
   const branchId = typeof params.branch === 'string' ? params.branch : undefined
   const type = (typeof params.type === 'string' ? params.type : undefined) as 'income' | 'expense' | undefined
   const dataType = (typeof params.dataType === 'string' ? params.dataType : 'all') as 'all' | 'transactions' | 'earnings'
   const dateStr = typeof params.date === 'string' ? params.date : new Date().toISOString().split('T')[0]
+  const searchQuery = typeof params.q === 'string' ? params.q : undefined
+  const pageParam = typeof params.page === 'string' ? parseInt(params.page, 10) : 1
+  const page = Math.max(1, pageParam)
 
   const organization = await getOrganization()
   if (!organization) {
@@ -29,7 +33,7 @@ export default async function CashRegisterPage({
 
   try {
     const [transactionsResult, branchesResult, dailyReportResult, earningsResult] = await Promise.all([
-      dataType === 'earnings' ? { data: [] } : getTransactions(branchId, type),
+      dataType === 'earnings' ? { data: [] } : getTransactions(searchQuery, page, PAGE_SIZE),
       getBranches(),
       branchId && dataType !== 'earnings' ? getDailyReport(branchId, dateStr) : { success: false, data: null },
       dataType === 'transactions' ? { data: [] } : getInstructorEarningsByBranch(branchId, dateStr, dateStr),

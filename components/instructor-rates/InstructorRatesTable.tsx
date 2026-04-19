@@ -64,12 +64,19 @@ export function InstructorRatesTable({
   const [loading, setLoading] = useState(false)
   const [expandedInstructors, setExpandedInstructors] = useState<Set<string>>(new Set())
   const [currentPage, setCurrentPage] = useState(1)
+  const [searchValue, setSearchValue] = useState('')
+
+  // Filter instructors based on search
+  const filteredInstructors = (instructors || []).filter((instructor) => {
+    const fullName = `${instructor.first_name} ${instructor.last_name}`.toLowerCase()
+    return fullName.includes(searchValue.toLowerCase())
+  })
 
   // Calculate pagination
-  const totalPages = instructors ? Math.ceil(instructors.length / ITEMS_PER_PAGE) : 1
+  const totalPages = filteredInstructors ? Math.ceil(filteredInstructors.length / ITEMS_PER_PAGE) : 1
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
   const endIndex = startIndex + ITEMS_PER_PAGE
-  const paginatedInstructors = instructors ? instructors.slice(startIndex, endIndex) : []
+  const paginatedInstructors = filteredInstructors ? filteredInstructors.slice(startIndex, endIndex) : []
 
   const handleDelete = async (rateId: string) => {
     if (!confirm(t('common.confirm') + '?')) return
@@ -114,8 +121,22 @@ export function InstructorRatesTable({
 
   return (
     <div className="space-y-4">
+      {/* Search Input */}
+      <div>
+        <input
+          type="text"
+          placeholder={t('common.search') || 'Search instructors...'}
+          value={searchValue}
+          onChange={(e) => {
+            setSearchValue(e.target.value)
+            setCurrentPage(1)
+          }}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+        />
+      </div>
+
       {/* Datatable */}
-      {(!instructors || instructors.length === 0) && rates.length === 0 ? (
+      {(!filteredInstructors || filteredInstructors.length === 0) && rates.length === 0 ? (
         <Card className="border-[#E5E7EB] p-12 text-center">
           <p className="text-gray-500">{t('instructorRates.noRates')}</p>
           <p className="text-sm text-gray-400 mt-1">{t('instructorRates.description')}</p>
@@ -224,7 +245,7 @@ export function InstructorRatesTable({
           </div>
 
           {/* Pagination Controls */}
-          {instructors && instructors.length > ITEMS_PER_PAGE && (
+          {filteredInstructors && filteredInstructors.length > ITEMS_PER_PAGE && (
             <div className="flex items-center justify-between border-t border-[#E5E7EB] px-6 py-4">
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}

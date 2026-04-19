@@ -6,6 +6,8 @@ import { DanceTypesPageClient } from './dance-types-client'
 import Link from 'next/link'
 import { Plus, Music2 } from 'lucide-react'
 
+const PAGE_SIZE = 10
+
 export default async function DanceTypesPage({
   searchParams,
 }: {
@@ -14,9 +16,13 @@ export default async function DanceTypesPage({
   const t = await getTranslations()
   const params = await searchParams
   const searchQuery = typeof params.q === 'string' ? params.q : undefined
+  const pageParam = typeof params.page === 'string' ? parseInt(params.page, 10) : 1
+  const page = Math.max(1, pageParam)
 
-  const result = await getDanceTypes()
+  const result = await getDanceTypes(searchQuery, page, PAGE_SIZE)
   const danceTypes = result.data || []
+  const totalCount = result.totalCount || 0
+  const totalPages = result.totalPages || 1
 
   return (
     <div className="space-y-3 sm:space-y-4 md:space-y-6">
@@ -47,6 +53,9 @@ export default async function DanceTypesPage({
           <DanceTypesPageClient
             danceTypes={danceTypes}
             searchQuery={searchQuery}
+            currentPage={page}
+            totalCount={totalCount}
+            pageSize={PAGE_SIZE}
           />
         </Card>
       )}

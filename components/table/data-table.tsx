@@ -36,6 +36,7 @@ interface DataTableProps<TData, TValue> {
   filters?: FilterConfig[]
   filterValues?: Record<string, any>
   onFilterChange?: (filterId: string, value: any) => void
+  onClearFilters?: () => void
   // Search props
   searchValue?: string
   onSearchChange?: (value: string) => void
@@ -61,6 +62,7 @@ export function DataTable<TData, TValue>({
   filters = [],
   filterValues = {},
   onFilterChange,
+  onClearFilters,
   // Search
   searchValue = '',
   onSearchChange,
@@ -89,13 +91,7 @@ export function DataTable<TData, TValue>({
       columnVisibility,
     },
   })
-
-
-  const handleClearFilters = () => {
-    Object.keys(filterValues).forEach((key) => {
-      onFilterChange?.(key, '')
-    })
-  }
+  
 
   const totalPages = Math.ceil(totalItems / pageSize)
   const hasNextPage = currentPage < totalPages
@@ -118,7 +114,7 @@ export function DataTable<TData, TValue>({
               filters={filters}
               values={filterValues}
               onFilterChange={onFilterChange}
-              onClearAll={handleClearFilters}
+              onClearAll={onClearFilters || (() => {})}
             />
           )}
         </div>

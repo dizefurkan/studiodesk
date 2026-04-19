@@ -49,7 +49,11 @@ export async function getStudents(searchQuery?: string) {
 export async function getStudentsWithStats(
   searchQuery?: string, 
   page: number = 1, 
-  pageSize: number = 10
+  pageSize: number = 10,
+  danceTypeId?: string,
+  branchId?: string,
+  courseId?: string,
+  hasCredits?: boolean
 ) {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
@@ -59,6 +63,148 @@ export async function getStudentsWithStats(
 
   try {
     const adminSupabase = createAdminClient()
+
+    // If we need to filter by danceType or hasCredits, we need to get student IDs first
+    let filteredStudentIds: Set<string> = new Set()
+    let hasFilteringActive = false
+    
+    console.log('[DEBUG] getStudentsWithStats called with:', { searchQuery, page, pageSize, danceTypeId, branchId, courseId, hasCredits })
+    
+    if (danceTypeId || hasCredits) {
+      hasFilteringActive = true
+      
+      // Step 1: Get package IDs for the dance type
+      let packageIds: string[] = []
+      if (danceTypeId) {
+        const { data: packagesData } = await adminSupabase
+          .from('packages')
+          .select('id')
+          .eq('dance_type_id', danceTypeId)
+          .eq('organization_id', organization.id)
+        
+        packageIds = (packagesData as any[])?.map((p: any) => p.id) || []
+        
+        if (packageIds.length === 0) {
+          return {
+            data: [],
+            totalCount: 0,
+            page,
+            pageSize,
+            totalPages: 0
+          }
+        }
+      }
+      
+      // Step 2: Get student IDs from student_packages
+      let filterQuery: any = adminSupabase
+        .from('student_packages')
+        .select('student_id')
+      
+      if (danceTypeId && packageIds.length > 0) {
+        filterQuery = filterQuery.in('package_id', packageIds)
+      }
+      
+      if (hasCredits) {
+        filterQuery = filterQuery.gt('remaining_credits', 0)
+      }
+      
+      let packageData: any[] = []
+      try {
+        const response: any = await filterQuery
+        packageData = response?.data || []
+      } catch (e) {
+        console.error('Error fetching filtered packages:', e)
+      }
+      
+      (packageData as any[]).forEach((p: any) => {
+        if (p?.student_id) {
+          filteredStudentIds.add(p.student_id as string)
+        }
+      })
+      
+      console.log('[DEBUG] Filtered student IDs:', Array.from(filteredStudentIds))
+      
+      // If no students match the dance type filter, return empty result
+      if (filteredStudentIds.size === 0) {
+        return {
+          data: [],
+          totalCount: 0,
+          page,
+          pageSize,
+          totalPages: 0
+        }
+      }
+    }
+    
+    // If we need to filter by branch or course, get student IDs
+    if (branchId) {
+      hasFilteringActive = true
+      // Step 1: Get courses for this branch
+      const { data: courseData } = await adminSupabase
+        .from('courses')
+        .select('id')
+        .eq('branch_id', branchId)
+      
+      const courseIds = ((courseData as any) || []).map((c: any) => c.id)
+      console.log('[DEBUG] Found courses for branch:', courseIds)
+      
+      if (courseIds.length > 0) {
+        // Step 2: Get students enrolled in these courses
+        const { data: enrollmentData } = await adminSupabase
+          .from('course_students')
+          .select('student_id')
+          .in('course_id', courseIds)
+        
+        const branchStudentIds = new Set<string>(((enrollmentData as any) || []).map((e: any) => e.student_id as string))
+        console.log('[DEBUG] Filtered student IDs from branch:', Array.from(branchStudentIds))
+        
+        if (filteredStudentIds.size === 0) {
+          filteredStudentIds = branchStudentIds
+        } else {
+          // Intersect with existing filters
+          filteredStudentIds = new Set(
+            [...filteredStudentIds].filter(id => branchStudentIds.has(id))
+          )
+        }
+      } else {
+        return {
+          data: [],
+          totalCount: 0,
+          page,
+          pageSize,
+          totalPages: 0
+        }
+      }
+    }
+    
+    if (courseId) {
+      hasFilteringActive = true
+      const { data: enrollmentData } = await adminSupabase
+        .from('course_students')
+        .select('student_id')
+        .eq('course_id', courseId)
+      
+      const courseStudentIds = new Set<string>(((enrollmentData as any) || []).map((e: any) => e.student_id as string))
+      
+      if (filteredStudentIds.size === 0) {
+        filteredStudentIds = courseStudentIds
+      } else {
+        // Intersect with existing filters
+        filteredStudentIds = new Set(
+          [...filteredStudentIds].filter(id => courseStudentIds.has(id))
+        )
+      }
+      
+      if (filteredStudentIds.size === 0) {
+        return {
+          data: [],
+          totalCount: 0,
+          page,
+          pageSize,
+          totalPages: 0
+        }
+      }
+    }
 
     // Build queries for counting and fetching data
     let countQuery = adminSupabase
@@ -89,6 +235,13 @@ export async function getStudentsWithStats(
       const searchFilter = `first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`
       countQuery = countQuery.or(searchFilter)
       dataQuery = dataQuery.or(searchFilter)
+    }
+
+    // Apply combined filter (student IDs from dance type, branch, course, hasCredits)
+    if (hasFilteringActive && filteredStudentIds.size > 0) {
+      const studentIdArray = Array.from(filteredStudentIds)
+      countQuery = countQuery.in('id', studentIdArray)
+      dataQuery = dataQuery.in('id', studentIdArray)
     }
 
     // Get total count
@@ -703,12 +856,12 @@ export async function purchasePackage(input: PurchasePackageInput) {
     }
 
     // Get package details
-    const { data: packageData, error: packageError } = await (supabase
+    const { data: packageData, error: packageError } = (await (supabase
       .from('packages') as any)
       .select('*')
       .eq('id', input.packageId)
       .eq('organization_id', organization.id)
-      .single()
+      .single()) as { data: any; error: any }
 
     if (packageError || !packageData) {
       return { error: 'Package not found' }

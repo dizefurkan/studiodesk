@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { TrendingUp } from 'lucide-react'
 import { DataTable } from '@/components/table/data-table'
@@ -11,49 +12,47 @@ interface InstructorEarningsTableProps {
   earnings: EarningRecord[]
   instructors: Array<{ id: string; first_name: string; last_name: string }>
   currency: string
-  instructorId?: string
-  fromDate?: string
-  toDate?: string
+  searchQuery?: string
+  currentPage: number
+  totalCount: number
+  pageSize: number
 }
 
 export function InstructorEarningsTable({
   earnings: initialEarnings,
   instructors,
   currency,
-  instructorId: initialInstructorId,
-  fromDate: initialFromDate,
-  toDate: initialToDate,
+  searchQuery,
+  currentPage,
+  totalCount,
+  pageSize,
 }: InstructorEarningsTableProps) {
-  const [filterValues, setFilterValues] = useState({
-    search: '',
-  })
+  const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
+  const router = useRouter()
+
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value)
+    const params = new URLSearchParams()
+    if (value) params.set('q', value)
+    params.set('page', '1')
+    router.push(`?${params.toString()}`)
+  }
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams()
+    if (searchQuery) params.set('q', searchQuery)
+    params.set('page', newPage.toString())
+    router.push(`?${params.toString()}`)
+  }
 
   const columns = getEarningsColumns({
     currency,
   })
 
-  // Filter by search (instructor name)
-  const filteredEarnings = initialEarnings.filter((earning) => {
-    const searchLower = filterValues.search.toLowerCase()
-    const instructorName =
-      `${earning.instructors?.first_name} ${earning.instructors?.last_name}`.toLowerCase() || ''
-    return instructorName.includes(searchLower)
-  })
-
   return (
     <>
-      {/* Filters Card */}
-      <Card className="border-[#E5E7EB] p-6">
-        <InstructorEarningsFilters
-          instructors={instructors}
-          instructorId={initialInstructorId}
-          fromDate={initialFromDate}
-          toDate={initialToDate}
-        />
-      </Card>
-
       {/* Table or Empty State */}
-      {filteredEarnings.length === 0 ? (
+      {initialEarnings.length === 0 ? (
         <Card className="border-[#E5E7EB] p-12 text-center">
           <div className="text-gray-500">
             <TrendingUp size={48} className="mx-auto mb-4 opacity-50" />
@@ -65,10 +64,16 @@ export function InstructorEarningsTable({
         <Card className="border-[#E5E7EB] p-3 sm:p-4 md:p-6">
           <DataTable<EarningRecord, any>
             columns={columns}
-            data={filteredEarnings}
+            data={initialEarnings}
             enablePagination={true}
             enableFilters={false}
-            pageSize={10}
+            currentPage={currentPage}
+            totalItems={totalCount}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            searchValue={searchValue}
+            onSearchChange={handleSearchChange}
+            searchPlaceholder="Search instructors..."
             emptyMessage="No earnings found"
           />
         </Card>

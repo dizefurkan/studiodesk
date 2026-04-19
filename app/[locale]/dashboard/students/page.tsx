@@ -30,9 +30,19 @@ export default async function StudentsPage({
   const danceTypeId = typeof params.danceType === 'string' ? params.danceType : undefined
   const courseId = typeof params.course === 'string' ? params.course : undefined
   const branchId = typeof params.branch === 'string' ? params.branch : undefined
+  
+  console.log('[PAGE] StudentsPage filters:', { danceTypeId, branchId, courseId, hasCredits, searchQuery, page })
 
-  // Fetch students with backend pagination
-  const result = await getStudentsWithStats(searchQuery, page, PAGE_SIZE)
+  // Fetch students with backend pagination and filters
+  const result = await getStudentsWithStats(
+    searchQuery, 
+    page, 
+    PAGE_SIZE,
+    danceTypeId,
+    branchId,
+    courseId,
+    hasCredits
+  )
   const students = result.data || []
   const totalCount = result.totalCount || 0
   const totalPages = result.totalPages || 1

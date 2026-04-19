@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/table/data-table'
 import { FilterConfig } from '@/components/table/data-table-filters'
 import { getInstructorColumns, Instructor } from '@/app/[locale]/dashboard/instructors/columns'
@@ -15,6 +16,9 @@ interface InstructorTableWrapperProps {
   searchQuery?: string
   danceTypeId?: string
   branchId?: string
+  currentPage?: number
+  totalCount?: number
+  pageSize?: number
 }
 
 export function InstructorTableWrapper({
@@ -24,8 +28,12 @@ export function InstructorTableWrapper({
   searchQuery,
   danceTypeId,
   branchId,
+  currentPage = 1,
+  totalCount = 0,
+  pageSize = 10,
 }: InstructorTableWrapperProps) {
   const t = useTranslations()
+  const router = useRouter()
   const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
   const [filterValues, setFilterValues] = useState<Record<string, any>>({
     danceType: danceTypeId || '',
@@ -60,6 +68,21 @@ export function InstructorTableWrapper({
     }
   }
 
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value)
+    const params = new URLSearchParams()
+    if (value) params.set('q', value)
+    params.set('page', '1')
+    router.push(`?${params.toString()}`)
+  }
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams()
+    if (searchQuery) params.set('q', searchQuery)
+    params.set('page', newPage.toString())
+    router.push(`?${params.toString()}`)
+  }
+
   // Define filters
   const filters: FilterConfig[] = [
     {
@@ -92,11 +115,14 @@ export function InstructorTableWrapper({
           setFilterValues((prev) => ({ ...prev, [filterId]: value }))
         }
         searchValue={searchValue}
-        onSearchChange={setSearchValue}
+        onSearchChange={handleSearchChange}
         searchPlaceholder={t('common.searchInstructor')}
         enablePagination={true}
         enableFilters={true}
-        pageSize={10}
+        currentPage={currentPage}
+        totalItems={totalCount}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
         emptyMessage={t('instructors.noInstructors')}
       />
 

@@ -9,6 +9,8 @@ import { BranchesPageClient } from './branches-client'
 
 type Branch = Database['public']['Tables']['branches']['Row']
 
+const PAGE_SIZE = 10
+
 export default async function BranchesPage({
   searchParams,
 }: {
@@ -17,12 +19,13 @@ export default async function BranchesPage({
   const t = await getTranslations()
   const params = await searchParams
   const searchQuery = typeof params.q === 'string' ? params.q : undefined
+  const pageParam = typeof params.page === 'string' ? parseInt(params.page, 10) : 1
+  const page = Math.max(1, pageParam)
 
-  const result = await getBranches(searchQuery)
-  console.log('[BranchesPage] Result from getBranches:', result)
-  console.log('[BranchesPage] Result.error:', result.error)
-  console.log('[BranchesPage] Result.data:', result.data)
+  const result = await getBranches(searchQuery, page, PAGE_SIZE)
   const branches = result.data || []
+  const totalCount = result.totalCount || 0
+  const totalPages = result.totalPages || 1
   console.log('[BranchesPage] Branches to render:', branches)
   console.log('[BranchesPage] Branches length:', branches.length)
 
@@ -58,7 +61,15 @@ export default async function BranchesPage({
           </div>
         </Card>
       ) : (
-        <BranchesPageClient branches={branches} searchQuery={searchQuery} />
+        <Card className="border-[#E5E7EB] p-3 sm:p-4 md:p-6">
+          <BranchesPageClient
+            branches={branches}
+            searchQuery={searchQuery}
+            currentPage={page}
+            totalCount={totalCount}
+            pageSize={PAGE_SIZE}
+          />
+        </Card>
       )}
     </div>
   )
