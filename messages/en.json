@@ -73,7 +73,9 @@
     "viewDetails": "View Details",
     "instructor": "Instructor",
     "studio": "Studio",
-    "attendees": "Attendees"
+    "attendees": "Attendees",
+    "today": "Today",
+    "yesterday": "Yesterday"
   },
   "dates": {
     "days": {
@@ -394,7 +396,11 @@
     "attendanceCount": "{count} student{count, plural, one {} other {s}}",
     "presentOutOf": "present out of",
     "outOf": "out of",
-    "total": "total"
+    "total": "total",
+    "attendanceRecords": "Attendance Records",
+    "noRecordsForSession": "No attendance records for this session",
+    "backToAttendance": "Back to Attendance",
+    "instructors": "Instructors"
   },
   "calendar": {
     "title": "Calendar",

@@ -1,31 +1,36 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/getCurrentUser'
-import Link from 'next/link'
-import { ArrowLeft, Users, Check, X, User } from 'lucide-react'
-import { getTranslations } from 'next-intl/server'
-import { Card } from '@/components/ui/card'
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
+import Link from "next/link";
+import { ArrowLeft, Users, Check, X, User } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import { Card } from "@/components/ui/card";
+import { format, isToday, isYesterday, toDate } from "date-fns";
+import { tr, enUS } from "date-fns/locale";
 
 interface AttendanceDetailPageProps {
   params: Promise<{
-    locale: string
-    sessionId: string
-  }>
+    locale: string;
+    sessionId: string;
+  }>;
 }
 
-export default async function AttendanceDetailPage({ params }: AttendanceDetailPageProps) {
-  const { sessionId, locale } = await params
-  const t = await getTranslations()
-  
-  const user = await getCurrentUser()
+export default async function AttendanceDetailPage({
+  params,
+}: AttendanceDetailPageProps) {
+  const { sessionId, locale } = await params;
+  const t = await getTranslations();
+
+  const user = await getCurrentUser();
   if (!user) {
-    return <div>Not authenticated</div>
+    return <div>Not authenticated</div>;
   }
 
-  const supabase = await createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient();
 
   // Fetch session details
-  const { data: session, error: sessionError } = await (supabase
-    .from('course_sessions') as any)
+  const { data: session, error: sessionError } = await (
+    supabase.from("course_sessions") as any
+  )
     .select(
       `
       id,
@@ -43,106 +48,134 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
       )
     `
     )
-    .eq('id', sessionId)
-    .single()
+    .eq("id", sessionId)
+    .single();
 
   if (sessionError || !session) {
     return (
       <div className="space-y-6">
-        <Link href="/dashboard/attendance" className="text-[#4F46E5] hover:underline text-sm">
+        <Link
+          href="/dashboard/attendance"
+          className="text-[#4F46E5] hover:underline text-sm"
+        >
           ← Back
         </Link>
         <p className="text-red-600">Session not found</p>
       </div>
-    )
+    );
   }
 
-  const attendances = session.attendances || []
-  const presentCount = attendances.filter((a: any) => a.is_present).length
-  const absentCount = attendances.filter((a: any) => !a.is_present).length
-  
+  const attendances = session.attendances || [];
+  const presentCount = attendances.filter((a: any) => a.is_present).length;
+  const absentCount = attendances.filter((a: any) => !a.is_present).length;
+
   // ✅ Get session-specific instructors, fallback to course instructors
-  let instructors = session.session_instructors?.map((si: any) => si.instructor) || []
-  
+  let instructors =
+    session.session_instructors?.map((si: any) => si.instructor) || [];
+
   if (instructors.length === 0 && session.course?.id) {
     // Fallback: Get course instructors if session has none
     const query = supabase
-      .from('course_instructors')
-      .select('instructor:instructors(id, first_name, last_name)')
-      .eq('course_id', session.course.id)
-      .overrideTypes<{ instructor: any }[]>()
-    
-    const { data: courseInstructors } = (await query) as { data: { instructor: any }[] | null }
-    
-    instructors = (courseInstructors || []).map((ci: any) => ci.instructor)
+      .from("course_instructors")
+      .select("instructor:instructors(id, first_name, last_name)")
+      .eq("course_id", session.course.id)
+      .overrideTypes<{ instructor: any }[]>();
+
+    const { data: courseInstructors } = (await query) as {
+      data: { instructor: any }[] | null;
+    };
+
+    instructors = (courseInstructors || []).map((ci: any) => ci.instructor);
   }
-  
-  const studio = attendances.find((a: any) => a.studio?.name)?.studio
+
+  const studio = attendances.find((a: any) => a.studio?.name)?.studio;
 
   // Format date for display
-  const sessionDate = new Date(session.session_date + 'T00:00:00Z')
-  const formattedDate = sessionDate.toLocaleDateString('tr-TR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'long',
-  })
+  const sessionDate = new Date(session.session_date + "T00:00:00Z");
+  const dateLocale = locale === "tr" ? tr : enUS;
+  const formattedDate = (() => {
+    if (isToday(sessionDate)) {
+      return `${t("common.today")}, ${format(sessionDate, "MMMM d, yyyy", { locale: dateLocale })}`;
+    } else if (isYesterday(sessionDate)) {
+      return `${t("common.yesterday")}, ${format(sessionDate, "MMMM d, yyyy", { locale: dateLocale })}`;
+    }
+    return format(sessionDate, "EEEE, MMMM d, yyyy", { locale: dateLocale });
+  })();
 
   return (
     <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-4 sm:p-6 md:p-8">
       <div className="max-w-4xl mx-auto">
-        <Link href="/dashboard/attendance" className="text-[#4F46E5] hover:underline text-sm inline-flex items-center gap-1 mb-6">
+        <Link
+          href="/dashboard/attendance"
+          className="text-[#4F46E5] hover:underline text-sm inline-flex items-center gap-1 mb-6"
+        >
           <ArrowLeft className="w-4 h-4" />
-          Yoklamalara Dön
+          {t("attendance.backToAttendance")}
         </Link>
 
         <Card className="border-[#E5E7EB]">
           <div className="p-4 sm:p-6 md:p-8 space-y-4">
             <div>
-              <Link 
+              <Link
                 href={`/${locale}/dashboard/courses/${session.course?.id}`}
                 className="text-2xl font-bold text-[#4F46E5] hover:underline block"
               >
                 {session.course?.name}
               </Link>
-              <p className="text-sm text-gray-600 mt-1">{session.course?.branch?.name}</p>
+              <p className="text-sm text-gray-600 mt-1">
+                {session.course?.branch?.name}
+              </p>
               {studio?.name && (
-                <p className="text-sm text-gray-600 mt-1">Stüdyo: {studio.name}</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  {t("common.studio")}: {studio.name}
+                </p>
               )}
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Tarih</p>
-            <p className="text-sm font-semibold text-[#111827] mt-1">{formattedDate}</p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Geldi</p>
-            <p className="text-sm font-semibold text-green-600 mt-1 flex items-center gap-1">
-              <Check className="w-4 h-4" />
-              {presentCount}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Gelmedi</p>
-            <p className="text-sm font-semibold text-red-600 mt-1 flex items-center gap-1">
-              <X className="w-4 h-4" />
-              {absentCount}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Toplam</p>
-            <p className="text-sm font-semibold text-[#111827] mt-1 flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              {attendances.length}
-            </p>
-          </div>
-        </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                  {t("attendance.date")}
+                </p>
+                <p className="text-sm font-semibold text-[#111827] mt-1">
+                  {formattedDate}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                  {t("attendance.present")}
+                </p>
+                <p className="text-sm font-semibold text-green-600 mt-1 flex items-center gap-1">
+                  <Check className="w-4 h-4" />
+                  {presentCount}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                  {t("attendance.absent")}
+                </p>
+                <p className="text-sm font-semibold text-red-600 mt-1 flex items-center gap-1">
+                  <X className="w-4 h-4" />
+                  {absentCount}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">
+                  {t("common.total")}
+                </p>
+                <p className="text-sm font-semibold text-[#111827] mt-1 flex items-center gap-1">
+                  <Users className="w-4 h-4" />
+                  {attendances.length}
+                </p>
+              </div>
+            </div>
 
             {/* Instructors */}
             {instructors.length > 0 && (
               <div className="pt-4 border-t border-gray-200">
-                <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Öğretmenler</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                  {t("attendance.instructors")}
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {instructors.map((instructor: any) => (
                     <span
@@ -158,54 +191,61 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
 
             {/* Attendance Records */}
             <div className="pt-4 border-t border-gray-200 space-y-3">
-              <h2 className="text-lg font-semibold text-[#111827]">Yoklama Kayıtları</h2>
+              <h2 className="text-lg font-semibold text-[#111827]">
+                {t("attendance.attendanceRecords")}
+              </h2>
 
               {attendances.length === 0 ? (
                 <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-600">
-                  Bu oturum için yoklama kaydı yok
+                  {t("attendance.noRecordsForSession")}
                 </div>
               ) : (
                 <div className="space-y-2">
                   {attendances.map((attendance: any) => (
                     <div
-                key={attendance.id}
-                className={`flex items-center gap-4 p-4 rounded-lg border ${
-                  attendance.is_present
-                    ? 'bg-green-50 border-green-200'
-                    : 'bg-red-50 border-red-200'
-                }`}
-              >
-                <div
-                  className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                    attendance.is_present ? 'bg-green-200' : 'bg-red-200'
-                  }`}
-                >
-                  {attendance.is_present ? (
-                    <Check className="w-5 h-5 text-green-700" />
-                  ) : (
-                    <X className="w-5 h-5 text-red-700" />
-                  )}
-                </div>
+                      key={attendance.id}
+                      className={`flex items-center gap-4 p-4 rounded-lg border ${
+                        attendance.is_present
+                          ? "bg-green-50 border-green-200"
+                          : "bg-red-50 border-red-200"
+                      }`}
+                    >
+                      <div
+                        className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                          attendance.is_present ? "bg-green-200" : "bg-red-200"
+                        }`}
+                      >
+                        {attendance.is_present ? (
+                          <Check className="w-5 h-5 text-green-700" />
+                        ) : (
+                          <X className="w-5 h-5 text-red-700" />
+                        )}
+                      </div>
 
-                <div className="flex-1">
-                  <Link 
-                    href={`/${locale}/dashboard/students/${attendance.student?.id}`}
-                    className="font-semibold text-[#4F46E5] hover:underline"
-                  >
-                    {attendance.student?.first_name} {attendance.student?.last_name}
-                  </Link>
-                  {attendance.notes && (
-                    <p className="text-xs text-gray-600 mt-1">{attendance.notes}</p>
-                  )}
-                </div>
+                      <div className="flex-1">
+                        <Link
+                          href={`/${locale}/dashboard/students/${attendance.student?.id}`}
+                          className="font-semibold text-[#4F46E5] hover:underline"
+                        >
+                          {attendance.student?.first_name}{" "}
+                          {attendance.student?.last_name}
+                        </Link>
+                        {attendance.notes && (
+                          <p className="text-xs text-gray-600 mt-1">
+                            {attendance.notes}
+                          </p>
+                        )}
+                      </div>
 
-                <div className="text-right">
-                  <p className="text-xs font-semibold text-gray-600">
-                    {attendance.is_present ? 'Geldi' : 'Gelmedi'}
-                  </p>
-                </div>
-              </div>
-                    ))}
+                      <div className="text-right">
+                        <p className="text-xs font-semibold text-gray-600">
+                          {attendance.is_present
+                            ? t("attendance.present")
+                            : t("attendance.absent")}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -213,5 +253,5 @@ export default async function AttendanceDetailPage({ params }: AttendanceDetailP
         </Card>
       </div>
     </div>
-  )
+  );
 }

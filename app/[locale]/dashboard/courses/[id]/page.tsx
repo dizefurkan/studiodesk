@@ -10,6 +10,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Clock, Users, Edit2, BookOpen, CheckCircle } from "lucide-react";
 import { formatTime } from "@/lib/utils/formatTime";
+import { format, isToday, isYesterday } from "date-fns";
 
 interface CourseDetailPageProps {
   params: {
@@ -150,10 +151,23 @@ export default async function CourseDetailPage({
               >
                 <summary className="p-4 cursor-pointer hover:bg-gray-50 transition-colors flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                   <div className="flex-1">
-                    <p className="font-medium text-[#111827]">
-                      {record.session_date}
-                    </p>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <div className="space-y-1">
+                      <p className="font-medium text-[#111827]">
+                        {(() => {
+                          const date = new Date(record.session_date);
+                          if (isToday(date)) {
+                            return `Today, ${format(date, "MMMM d, yyyy")}`;
+                          } else if (isYesterday(date)) {
+                            return `Yesterday, ${format(date, "MMMM d, yyyy")}`;
+                          }
+                          return format(date, "EEEE, MMMM d, yyyy");
+                        })()}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {format(new Date(record.session_date), "HH:mm")}
+                      </p>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-2">
                       {record.attendance_count} {t("attendance.presentOutOf")} (
                       {t("attendance.outOf")} {record.attendances?.length || 0}{" "}
                       {t("attendance.total")})

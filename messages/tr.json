@@ -68,7 +68,9 @@
     "viewDetails": "Detayları Gör",
     "instructor": "Eğitmen",
     "studio": "Stüdyo",
-    "attendees": "Katılımcılar"
+    "attendees": "Katılımcılar",
+    "today": "Bugün",
+    "yesterday": "Dün"
   },
   "dates": {
     "days": {
@@ -386,6 +388,10 @@
     "presentOutOf": "müsait",
     "outOf": "/",
     "total": "toplam",
+    "attendanceRecords": "Yoklama Kayıtları",
+    "noRecordsForSession": "Bu oturum için yoklama kaydı yok",
+    "backToAttendance": "Yoklamalara Geri Dön",
+    "instructors": "Eğitmenler",
     "presentMarked": "{count} öğrenci başarıyla işaretlendi",
     "absentMarked": "{count} öğrenci devamsız işaretlendi",
     "sessionsRecorded": "{count} oturum kaydedildi",
