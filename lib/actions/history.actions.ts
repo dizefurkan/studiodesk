@@ -268,9 +268,7 @@ export async function getHistoryLogs(limit = 50): Promise<HistoryLog[]> {
     // Get history logs with user profile join
     const { data: logs, error: logsError } = await (supabase as any)
       .from("history_logs")
-      .select(
-        "id, action, entity, entity_id, data, created_at, profiles:user_id(full_name)"
-      )
+      .select("id, action, entity, entity_id, data, created_at, user_id")
       .eq("organization_id", organization.id)
       .order("created_at", { ascending: false })
       .limit(limit)

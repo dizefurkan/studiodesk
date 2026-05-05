@@ -197,6 +197,7 @@
     "title": "Öğrenciler",
     "activeCourses": "Aktif Kurslar ({count})",
     "completedCourses": "Tamamlandı ({count})",
+    "enrolledCourses": "Toplam {total} kurs - {active} aktif, {completed} tamamlandı",
     "description": "Stüdyonuzun öğrencilerini yönetin",
     "addNew": "Yeni Öğrenci Ekle",
     "editStudent": "Öğrenciyi Düzenle",

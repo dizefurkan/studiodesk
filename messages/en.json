@@ -202,6 +202,7 @@
     "title": "Students",
     "activeCourses": "Active Courses ({count})",
     "completedCourses": "Completed ({count})",
+    "enrolledCourses": "{total} total courses - {active} active, {completed} completed",
     "description": "Manage your studio students",
     "addNew": "Add New Student",
     "editStudent": "Edit Student",
