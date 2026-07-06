@@ -400,7 +400,8 @@
     "attendanceRecords": "Attendance Records",
     "noRecordsForSession": "No attendance records for this session",
     "backToAttendance": "Back to Attendance",
-    "instructors": "Instructors"
+    "instructors": "Instructors",
+    "lessonNote": "Lesson Note"
   },
   "calendar": {
     "title": "Calendar",

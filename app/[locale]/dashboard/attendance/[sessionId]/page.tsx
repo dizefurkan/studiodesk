@@ -35,6 +35,7 @@ export default async function AttendanceDetailPage({
       `
       id,
       session_date,
+      notes,
       course:courses(id, name, branch:branches(name)),
       attendances(
         id,
@@ -103,155 +104,165 @@ export default async function AttendanceDetailPage({
   })();
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-4 sm:p-6 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        <Link
-          href="/dashboard/attendance"
-          className="text-[#4F46E5] hover:underline text-sm inline-flex items-center gap-1 mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {t("attendance.backToAttendance")}
-        </Link>
+    <div className="space-y-6">
+      <Link
+        href="/dashboard/attendance"
+        className="text-[#4F46E5] hover:underline text-sm inline-flex items-center gap-1"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        {t("attendance.backToAttendance")}
+      </Link>
 
-        <Card className="border-[#E5E7EB]">
-          <div className="p-4 sm:p-6 md:p-8 space-y-4">
-            <div>
-              <Link
-                href={`/${locale}/dashboard/courses/${session.course?.id}`}
-                className="text-2xl font-bold text-[#4F46E5] hover:underline block"
-              >
-                {session.course?.name}
-              </Link>
+      <Card className="border-[#E5E7EB]">
+        <div className="p-4 sm:p-6 md:p-8 space-y-4">
+          <div>
+            <Link
+              href={`/${locale}/dashboard/courses/${session.course?.id}`}
+              className="text-2xl font-bold text-[#4F46E5] hover:underline block"
+            >
+              {session.course?.name}
+            </Link>
+            <p className="text-sm text-gray-600 mt-1">
+              {session.course?.branch?.name}
+            </p>
+            {studio?.name && (
               <p className="text-sm text-gray-600 mt-1">
-                {session.course?.branch?.name}
+                {t("common.studio")}: {studio.name}
               </p>
-              {studio?.name && (
-                <p className="text-sm text-gray-600 mt-1">
-                  {t("common.studio")}: {studio.name}
-                </p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">
-                  {t("attendance.date")}
-                </p>
-                <p className="text-sm font-semibold text-[#111827] mt-1">
-                  {formattedDate}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">
-                  {t("attendance.present")}
-                </p>
-                <p className="text-sm font-semibold text-green-600 mt-1 flex items-center gap-1">
-                  <Check className="w-4 h-4" />
-                  {presentCount}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">
-                  {t("attendance.absent")}
-                </p>
-                <p className="text-sm font-semibold text-red-600 mt-1 flex items-center gap-1">
-                  <X className="w-4 h-4" />
-                  {absentCount}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">
-                  {t("common.total")}
-                </p>
-                <p className="text-sm font-semibold text-[#111827] mt-1 flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  {attendances.length}
-                </p>
-              </div>
-            </div>
-
-            {/* Instructors */}
-            {instructors.length > 0 && (
-              <div className="pt-4 border-t border-gray-200">
-                <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">
-                  {t("attendance.instructors")}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {instructors.map((instructor: any) => (
-                    <span
-                      key={instructor.id}
-                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                    >
-                      {instructor.first_name} {instructor.last_name}
-                    </span>
-                  ))}
-                </div>
-              </div>
             )}
+          </div>
 
-            {/* Attendance Records */}
-            <div className="pt-4 border-t border-gray-200 space-y-3">
-              <h2 className="text-lg font-semibold text-[#111827]">
-                {t("attendance.attendanceRecords")}
-              </h2>
-
-              {attendances.length === 0 ? (
-                <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-600">
-                  {t("attendance.noRecordsForSession")}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {attendances.map((attendance: any) => (
-                    <div
-                      key={attendance.id}
-                      className={`flex items-center gap-4 p-4 rounded-lg border ${
-                        attendance.is_present
-                          ? "bg-green-50 border-green-200"
-                          : "bg-red-50 border-red-200"
-                      }`}
-                    >
-                      <div
-                        className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                          attendance.is_present ? "bg-green-200" : "bg-red-200"
-                        }`}
-                      >
-                        {attendance.is_present ? (
-                          <Check className="w-5 h-5 text-green-700" />
-                        ) : (
-                          <X className="w-5 h-5 text-red-700" />
-                        )}
-                      </div>
-
-                      <div className="flex-1">
-                        <Link
-                          href={`/${locale}/dashboard/students/${attendance.student?.id}`}
-                          className="font-semibold text-[#4F46E5] hover:underline"
-                        >
-                          {attendance.student?.first_name}{" "}
-                          {attendance.student?.last_name}
-                        </Link>
-                        {attendance.notes && (
-                          <p className="text-xs text-gray-600 mt-1">
-                            {attendance.notes}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="text-right">
-                        <p className="text-xs font-semibold text-gray-600">
-                          {attendance.is_present
-                            ? t("attendance.present")
-                            : t("attendance.absent")}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                {t("attendance.date")}
+              </p>
+              <p className="text-sm font-semibold text-[#111827] mt-1">
+                {formattedDate}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                {t("attendance.present")}
+              </p>
+              <p className="text-sm font-semibold text-green-600 mt-1 flex items-center gap-1">
+                <Check className="w-4 h-4" />
+                {presentCount}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                {t("attendance.absent")}
+              </p>
+              <p className="text-sm font-semibold text-red-600 mt-1 flex items-center gap-1">
+                <X className="w-4 h-4" />
+                {absentCount}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                {t("common.total")}
+              </p>
+              <p className="text-sm font-semibold text-[#111827] mt-1 flex items-center gap-1">
+                <Users className="w-4 h-4" />
+                {attendances.length}
+              </p>
             </div>
           </div>
-        </Card>
-      </div>
+
+          {/* Instructors */}
+          {instructors.length > 0 && (
+            <div className="pt-4 border-t border-gray-200">
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                {t("attendance.instructors")}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {instructors.map((instructor: any) => (
+                  <span
+                    key={instructor.id}
+                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                  >
+                    {instructor.first_name} {instructor.last_name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Lesson Note */}
+          {session.notes && (
+            <div className="pt-4 border-t border-gray-200">
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                {t("attendance.lessonNote")}
+              </p>
+              <p className="text-sm text-[#111827] whitespace-pre-wrap bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2">
+                {session.notes}
+              </p>
+            </div>
+          )}
+
+          {/* Attendance Records */}
+          <div className="pt-4 border-t border-gray-200 space-y-3">
+            <h2 className="text-lg font-semibold text-[#111827]">
+              {t("attendance.attendanceRecords")}
+            </h2>
+
+            {attendances.length === 0 ? (
+              <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-600">
+                {t("attendance.noRecordsForSession")}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {attendances.map((attendance: any) => (
+                  <div
+                    key={attendance.id}
+                    className={`flex items-center gap-4 p-4 rounded-lg border ${
+                      attendance.is_present
+                        ? "bg-green-50 border-green-200"
+                        : "bg-red-50 border-red-200"
+                    }`}
+                  >
+                    <div
+                      className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                        attendance.is_present ? "bg-green-200" : "bg-red-200"
+                      }`}
+                    >
+                      {attendance.is_present ? (
+                        <Check className="w-5 h-5 text-green-700" />
+                      ) : (
+                        <X className="w-5 h-5 text-red-700" />
+                      )}
+                    </div>
+
+                    <div className="flex-1">
+                      <Link
+                        href={`/${locale}/dashboard/students/${attendance.student?.id}`}
+                        className="font-semibold text-[#4F46E5] hover:underline"
+                      >
+                        {attendance.student?.first_name}{" "}
+                        {attendance.student?.last_name}
+                      </Link>
+                      {attendance.notes && (
+                        <p className="text-xs text-gray-600 mt-1">
+                          {attendance.notes}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-xs font-semibold text-gray-600">
+                        {attendance.is_present
+                          ? t("attendance.present")
+                          : t("attendance.absent")}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }

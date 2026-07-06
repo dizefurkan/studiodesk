@@ -2,6 +2,7 @@ import { getCourse, getCourseSessions } from "@/lib/actions/courses.actions";
 import { getCourseAttendanceHistory } from "@/lib/actions/course-attendance.actions";
 import { getEntityHistory } from "@/lib/actions/history.actions";
 import { CourseStudentsContainer } from "@/components/courses/CourseStudentsContainer";
+import { AttendanceHistorySection } from "@/components/courses/AttendanceHistorySection";
 import { ActivityTimelineWrapper } from "@/components/history/ActivityTimelineWrapper";
 import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/card";
@@ -127,115 +128,7 @@ export default async function CourseDetailPage({
       </Card>
 
       {/* Attendance History */}
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold text-[#111827] mb-4">
-          {t("courses.attendanceHistory")}
-        </h2>
-
-        {attendanceHistory.length === 0 ? (
-          <Card className="border-[#E5E7EB] p-12 text-center">
-            <div className="text-gray-500">
-              <BookOpen size={48} className="mx-auto mb-4 opacity-50" />
-              <p className="text-lg">{t("courses.noAttendanceRecords")}</p>
-              <p className="text-sm mt-1">
-                {t("courses.startMarkingAttendance")}
-              </p>
-            </div>
-          </Card>
-        ) : (
-          <div className="space-y-2">
-            {attendanceHistory.map((record: any) => (
-              <details
-                key={record.id}
-                className="border border-[#E5E7EB] rounded-lg hover:border-[#4F46E5] transition-colors group"
-              >
-                <summary className="p-4 cursor-pointer hover:bg-gray-50 transition-colors flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                  <div className="flex-1">
-                    <div className="space-y-1">
-                      <p className="font-medium text-[#111827]">
-                        {(() => {
-                          const date = new Date(record.session_date);
-                          if (isToday(date)) {
-                            return `Today, ${format(date, "MMMM d, yyyy")}`;
-                          } else if (isYesterday(date)) {
-                            return `Yesterday, ${format(date, "MMMM d, yyyy")}`;
-                          }
-                          return format(date, "EEEE, MMMM d, yyyy");
-                        })()}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {format(new Date(record.session_date), "HH:mm")}
-                      </p>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-2">
-                      {record.attendance_count} {t("attendance.presentOutOf")} (
-                      {t("attendance.outOf")} {record.attendances?.length || 0}{" "}
-                      {t("attendance.total")})
-                      {record.attendances?.length > 0 &&
-                        record.attendances[0]?.studios?.name &&
-                        ` • ${t("common.studio")}: ${record.attendances[0].studios.name}`}
-                    </p>
-                    {record.instructors && record.instructors.length > 0 && (
-                      <p className="text-sm text-[#4F46E5] mt-1 font-medium">
-                        {t("common.instructor")}:{" "}
-                        {record.instructors
-                          .map((i: any) => `${i.first_name} ${i.last_name}`)
-                          .join(", ")}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 self-start md:self-center md:ml-4">
-                    <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                      {record.attendance_count}/
-                      {record.attendances?.length || 0}
-                    </span>
-                    <Link
-                      href={`/dashboard/attendance/${record.id}`}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline"
-                    >
-                      {t("common.viewDetails")} →
-                    </Link>
-                  </div>
-                </summary>
-                <div className="px-4 pb-4 border-t border-[#E5E7EB] pt-4 bg-gray-50">
-                  <p className="text-sm font-semibold text-[#111827] mb-3">
-                    {t("common.attendees")}:
-                  </p>
-                  <div className="space-y-2">
-                    {record.attendances && record.attendances.length > 0 ? (
-                      record.attendances.map((att: any, idx: number) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-2 text-sm"
-                        >
-                          <span
-                            className={`font-bold ${att.is_present ? "text-green-600" : "text-red-600"}`}
-                          >
-                            {att.is_present ? "✓" : "✗"}
-                          </span>
-                          <Link
-                            href={`/dashboard/students/${att.student.id}`}
-                            className="text-[#4F46E5] hover:underline font-medium"
-                          >
-                            {att.student.first_name} {att.student.last_name}
-                          </Link>
-                          {att.notes && (
-                            <span className="text-gray-600">({att.notes})</span>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-gray-500">
-                        {t("attendance.noAttendance")}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </details>
-            ))}
-          </div>
-        )}
-      </div>
+      <AttendanceHistorySection attendanceHistory={attendanceHistory} />
 
       {/* Students */}
       <CourseStudentsContainer

@@ -495,7 +495,8 @@ export async function recordBatchAttendance(
   }>,
   studioId?: string | null,
   instructorIds?: string[] | null,
-  attendanceDate?: string
+  attendanceDate?: string,
+  sessionNote?: string | null
 ): Promise<{
   success?: boolean;
   data?: {
@@ -625,6 +626,7 @@ export async function recordBatchAttendance(
         .insert({
           course_id: courseId,
           session_date: today,
+          notes: sessionNote || null,
         } as any)
         .select()
         .single()
@@ -683,6 +685,14 @@ export async function recordBatchAttendance(
         "[recordBatchAttendance] Session already exists:",
         actualSessionId
       );
+
+      // Update session note if provided
+      if (sessionNote) {
+        await (supabase as any)
+          .from("course_sessions")
+          .update({ notes: sessionNote })
+          .eq("id", actualSessionId);
+      }
 
       // Check if attendance records already exist for this session
       const { data: existingAttendance, error: attendanceCheckError } =
