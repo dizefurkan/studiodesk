@@ -168,9 +168,10 @@ export function StudentAttendanceList({
     studentPackages?: StudentForAttendance["student_packages"]
   ) => {
     if (!studentPackages || studentPackages.length === 0) return 0;
-    // Return the remaining credits from the first package
-    // (In an ideal scenario, the query would be pre-filtered by dance_type_id)
-    return studentPackages[0]?.remaining_credits || 0;
+    return studentPackages.reduce(
+      (sum, pkg) => sum + (pkg.remaining_credits || 0),
+      0
+    );
   };
 
   // Separate students: with credits vs needing renewal
@@ -389,7 +390,10 @@ export function StudentAttendanceList({
         const student = availableStudents.find(
           (s) => s.id === record.studentId
         );
-        const studentPackageId = student?.student_packages?.[0]?.id || "";
+        const activePackage = student?.student_packages?.find(
+          (sp) => sp.remaining_credits > 0
+        );
+        const studentPackageId = activePackage?.id || "";
         const deductCredits = record.deductCredits !== false; // Default to true
         console.log(
           `[StudentAttendanceList] Preparing batch for ${record.studentId}, packageId: ${studentPackageId}, status: ${record.status}, deductCredits: ${deductCredits}`
