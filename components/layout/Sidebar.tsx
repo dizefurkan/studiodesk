@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { useSidebar } from '@/lib/context/SidebarContext'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/brand/Logo'
 import {
@@ -143,16 +144,8 @@ export function Sidebar() {
     }
   }
 
-  return (
+  const content = (
     <>
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          'w-64 bg-background border-r border-border transition-transform duration-300 flex flex-col overflow-hidden transform',
-          isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
-          'fixed md:relative h-full z-40'
-        )}
-      >
         {/* Logo Section */}
         <div className="h-14 md:h-16 border-b border-border flex items-center px-3 md:px-6 gap-2 md:gap-3">
           <Logo />
@@ -254,15 +247,23 @@ export function Sidebar() {
             </p>
           </div>
         </div>
+    </>
+  )
+
+  return (
+    <>
+      {/* Desktop */}
+      <aside className="hidden md:flex w-64 h-full flex-col overflow-hidden border-r border-border bg-background">
+        {content}
       </aside>
 
-      {/* Mobile Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 md:hidden z-30"
-          onClick={toggleSidebar}
-        />
-      )}
+      {/* Mobile */}
+      <Sheet open={isOpen} onOpenChange={(open) => open !== isOpen && toggleSidebar()}>
+        <SheetContent side="left" className="w-64 gap-0 p-0 md:hidden" showCloseButton={false}>
+          <SheetTitle className="sr-only">{t('dashboard.menu')}</SheetTitle>
+          <div className="flex h-full flex-col overflow-hidden">{content}</div>
+        </SheetContent>
+      </Sheet>
     </>
   )
 }

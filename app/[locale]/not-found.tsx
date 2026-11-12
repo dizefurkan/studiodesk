@@ -14,7 +14,7 @@ export default function NotFound() {
 
         {/* Description */}
         <p className="text-muted-foreground text-lg">
-          Sorry, the page you're looking for doesn't exist or has been moved.
+          Sorry, the page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
 
         {/* Back to Home Button */}

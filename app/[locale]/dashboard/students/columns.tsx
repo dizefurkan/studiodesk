@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Edit2, Trash2 } from 'lucide-react'
 import { StudentPopover } from '@/components/students/StudentPopover'
 import { format } from 'date-fns'
+import { ColumnHeader } from '@/components/table/column-header'
 
 export interface Student {
   id: string
@@ -68,7 +69,7 @@ export function getStudentColumns({
   if (visibleColumns.name !== false) {
     columns.push({
       accessorKey: 'first_name',
-      header: 'Name',
+      header: () => <ColumnHeader k="name" />,
       cell: ({ row }) => (
         <Link
           href={`/dashboard/students/${row.original.id}`}
@@ -83,7 +84,7 @@ export function getStudentColumns({
   if (visibleColumns.email !== false) {
     columns.push({
       accessorKey: 'email',
-      header: 'Email',
+      header: () => <ColumnHeader k="email" />,
       cell: ({ row }) => (
         <span className="text-muted-foreground truncate">{row.original.email}</span>
       ),
@@ -93,7 +94,7 @@ export function getStudentColumns({
   if (visibleColumns.phone !== false) {
     columns.push({
       accessorKey: 'phone',
-      header: 'Phone',
+      header: () => <ColumnHeader k="phone" />,
       cell: ({ row }) => (
         row.original.phone ? (
           <a
@@ -112,7 +113,7 @@ export function getStudentColumns({
   if (visibleColumns.credits !== false) {
     columns.push({
       accessorKey: 'totalRemainingCredits',
-      header: 'Credits',
+      header: () => <ColumnHeader k="credits" />,
       cell: ({ row }) => (
         <StudentPopover
           type="credits"
@@ -127,7 +128,7 @@ export function getStudentColumns({
   if (visibleColumns.courses !== false) {
     columns.push({
       accessorKey: 'enrolledCoursesCount',
-      header: 'Courses',
+      header: () => <ColumnHeader k="courses" />,
       cell: ({ row }) => {
         const courses = new Map<string, string>()
         row.original.course_students?.forEach((cs) => {
@@ -152,7 +153,7 @@ export function getStudentColumns({
   if (visibleColumns.joined !== false) {
     columns.push({
       accessorKey: 'created_at',
-      header: 'Joined',
+      header: () => <ColumnHeader k="joined" />,
       cell: ({ row }) => (
         <span className="text-muted-foreground">
           {format(new Date(row.original.created_at), 'MMM dd, yyyy')}
@@ -164,7 +165,7 @@ export function getStudentColumns({
   if (visibleColumns.actions !== false) {
     columns.push({
       id: 'actions',
-      header: 'Actions',
+      header: () => <ColumnHeader k="actions" />,
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
           <Link href={`/dashboard/students/${row.original.id}/edit`}>

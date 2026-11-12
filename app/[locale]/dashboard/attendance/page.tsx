@@ -24,7 +24,7 @@ export default async function AttendancePage({
   const courseId = typeof params.course === 'string' ? params.course : undefined
   const newSession = params.newSession === 'true'
 
-  let selectedSession = null
+  const selectedSession = null
   let attendances = []
 
   // MODE 1: Session-based attendance (legacy)
@@ -48,8 +48,8 @@ export default async function AttendancePage({
     const courseId = sessionDataResult?.course_id
     let studios: any[] = []
     let courseInstructors: any[] = []
-    let allInstructors: any[] = []
-    let instructorRates: any[] = []
+    const allInstructors: any[] = []
+    const instructorRates: any[] = []
     let danceTypeId = ''
     let attendanceHistory: any[] = []
 

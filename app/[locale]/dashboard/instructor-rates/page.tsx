@@ -19,27 +19,14 @@ export default function InstructorRatesPage() {
   const searchParams = useSearchParams()
   const [rates, setRates] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [editLoading, setEditLoading] = useState(false)
   const [drawerData, setDrawerData] = useState<any>(null)
-  const [editingRate, setEditingRate] = useState<any>(null)
-  
-  // Local state with URL param initialization
-  const [modalType, setModalType] = useState<string | null>(null)
-  const [editId, setEditId] = useState<string | null>(null)
-  const [selectedInstructor, setSelectedInstructor] = useState<string | null>(null)
+  // Rate loaded for the edit drawer, keyed by id so a stale one is never shown
+  const [loadedRate, setLoadedRate] = useState<{ id: string; data: any } | null>(null)
 
-  // Initialize modal from URL params
-  useEffect(() => {
-    const modal = searchParams?.get('modal')
-    const editIdParam = searchParams?.get('editId')
-    
-    if (modal) {
-      setModalType(modal)
-    }
-    if (editIdParam) {
-      setEditId(editIdParam)
-    }
-  }, [searchParams])
+  // Local state, initialised from the URL (?modal=new|edit&editId=…)
+  const [modalType, setModalType] = useState<string | null>(() => searchParams?.get('modal') ?? null)
+  const [editId, setEditId] = useState<string | null>(() => searchParams?.get('editId') ?? null)
+  const [selectedInstructor, setSelectedInstructor] = useState<string | null>(null)
 
   // Load rates and drawer data - fetch once on mount
   useEffect(() => {
@@ -72,29 +59,19 @@ export default function InstructorRatesPage() {
     }
   }, [])
 
+  const isEditing = modalType === 'edit' && !!editId
+  const editingRate = isEditing && loadedRate?.id === editId ? loadedRate.data : null
+  const editLoading = isEditing && loadedRate?.id !== editId
+
   // Load editing rate if in edit mode
   useEffect(() => {
-    if (modalType === 'edit' && editId) {
-      setEditLoading(true)
-      
-      let isMounted = true
-      
-      async function loadEditingRate() {
-        const result = await getInstructorRate(editId as string)
-        if (isMounted) {
-          setEditingRate(result.data)
-          setEditLoading(false)
-        }
-      }
-      
-      loadEditingRate()
-
-      return () => {
-        isMounted = false
-      }
-    } else {
-      setEditingRate(null)
-      setEditLoading(false)
+    if (modalType !== 'edit' || !editId) return
+    let isMounted = true
+    getInstructorRate(editId).then((result) => {
+      if (isMounted) setLoadedRate({ id: editId, data: result.data })
+    })
+    return () => {
+      isMounted = false
     }
   }, [modalType, editId])
 

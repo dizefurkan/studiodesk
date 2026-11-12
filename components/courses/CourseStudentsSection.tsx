@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/table/data-table'
+import { ColumnHeader } from '@/components/table/column-header'
 
 interface CourseStudent {
   id: string
@@ -101,7 +102,7 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
   const columns: ColumnDef<CourseStudent>[] = [
     {
       id: 'name',
-      header: 'Student Name',
+      header: () => <ColumnHeader k="studentName" />,
       cell: ({ row }) => (
         <Link
           href={`/dashboard/students/${row.original.students.id}`}
@@ -118,7 +119,7 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
     },
     {
       id: 'joined',
-      header: 'Joined',
+      header: () => <ColumnHeader k="joined" />,
       cell: ({ row }) => (
         <span className="text-muted-foreground">{new Date(row.original.joined_at).toLocaleDateString()}</span>
       ),

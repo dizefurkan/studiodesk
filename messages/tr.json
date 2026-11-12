@@ -122,7 +122,23 @@
     "noResultsHint": "Aramanı ya da filtrelerini değiştirmeyi dene.",
     "clearFilters": "Filtreleri temizle",
     "expand": "Genişlet",
-    "collapse": "Daralt"
+    "collapse": "Daralt",
+    "classes": "Ders sayısı",
+    "price": "Fiyat",
+    "instructor": "Eğitmen",
+    "date": "Tarih",
+    "amount": "Tutar",
+    "description": "Açıklama",
+    "branch": "Şube",
+    "danceType": "Dans türü",
+    "schedule": "Ders zamanı",
+    "students": "Öğrenciler",
+    "instructors": "Eğitmenler",
+    "attendance": "Yoklama",
+    "address": "Adres",
+    "created": "Oluşturulma",
+    "danceTypes": "Dans türleri",
+    "branches": "Şubeler"
   },
   "auth": {
     "login": "Giriş Yap",
@@ -243,7 +259,13 @@
     "addFirstStudent": "İlk Öğrenciyi Ekle",
     "danceType": "Dans Türü",
     "branch": "Şube",
-    "course": "Kurs"
+    "course": "Kurs",
+    "creditsByDanceType": "Dans türüne göre krediler",
+    "otherCredits": "Diğer krediler",
+    "totalCredits": "Toplam: {count}",
+    "noCredits": "Kredi yok",
+    "creditUnit": "kredi",
+    "enrolledCoursesTitle": "Kayıtlı kurslar"
   },
   "instructors": {
     "title": "Eğitmenler",

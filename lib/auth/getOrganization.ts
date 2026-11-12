@@ -1,3 +1,4 @@
+import { unstable_rethrow } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getOrganizationIdFromCookie, getCurrentUser } from './getCurrentUser'
@@ -70,6 +71,7 @@ export async function getOrganization() {
     console.warn('Organization data empty for orgId:', orgId)
     return null
   } catch (error) {
+    unstable_rethrow(error)
     console.error('Error in getOrganization:', error)
     return null
   }
@@ -92,7 +94,8 @@ export async function getUserRoleInOrganization(organizationId: string) {
       .single()
 
     return data
-  } catch {
+  } catch (err) {
+    unstable_rethrow(err)
     return null
   }
 }

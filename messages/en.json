@@ -122,7 +122,23 @@
     "noResultsHint": "Try changing your search or filters.",
     "clearFilters": "Clear filters",
     "expand": "Expand",
-    "collapse": "Collapse"
+    "collapse": "Collapse",
+    "classes": "Classes",
+    "price": "Price",
+    "instructor": "Instructor",
+    "date": "Date",
+    "amount": "Amount",
+    "description": "Description",
+    "branch": "Branch",
+    "danceType": "Dance Type",
+    "schedule": "Schedule",
+    "students": "Students",
+    "instructors": "Instructors",
+    "attendance": "Attendance",
+    "address": "Address",
+    "created": "Created",
+    "danceTypes": "Dance Types",
+    "branches": "Branches"
   },
   "auth": {
     "login": "Login",
@@ -243,7 +259,13 @@
     "addFirstStudent": "Add First Student",
     "danceType": "Dance Type",
     "branch": "Branch",
-    "course": "Course"
+    "course": "Course",
+    "creditsByDanceType": "Credits by dance type",
+    "otherCredits": "Other credits",
+    "totalCredits": "Total: {count}",
+    "noCredits": "No credits",
+    "creditUnit": "{count, plural, one {credit} other {credits}}",
+    "enrolledCoursesTitle": "Enrolled courses"
   },
   "instructors": {
     "title": "Instructors",

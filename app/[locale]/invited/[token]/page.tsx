@@ -159,7 +159,7 @@ export default function InvitationPage() {
           <div className="flex items-center justify-center mb-3">
             <Mail size={32} />
           </div>
-          <h1 className="text-2xl font-bold text-center mb-1">You're Invited!</h1>
+          <h1 className="text-2xl font-bold text-center mb-1">You&apos;re Invited!</h1>
           <p className="text-center text-blue-100">
             to {invitation?.organizations?.name}
           </p>

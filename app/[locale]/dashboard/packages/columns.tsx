@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Edit2, Trash2 } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
+import { ColumnHeader } from '@/components/table/column-header'
 
 type Package = Database['public']['Tables']['packages']['Row']
 
@@ -20,7 +21,7 @@ export function getPackageColumns({
   return [
     {
       accessorKey: 'name',
-      header: 'Name',
+      header: () => <ColumnHeader k="name" />,
       cell: ({ row }) => {
         const pkg = row.original
         return (
@@ -35,14 +36,14 @@ export function getPackageColumns({
     },
     {
       accessorKey: 'total_credits',
-      header: 'Classes',
+      header: () => <ColumnHeader k="classes" />,
       cell: ({ row }) => {
         return <span className="font-medium">{row.original.total_credits}</span>
       },
     },
     {
       accessorKey: 'price',
-      header: 'Price',
+      header: () => <ColumnHeader k="price" />,
       cell: ({ row }) => {
         const price = row.original.price || 0
         const formatter = new Intl.NumberFormat('en-US', {
@@ -54,7 +55,7 @@ export function getPackageColumns({
     },
     {
       id: 'actions',
-      header: 'Actions',
+      header: () => <ColumnHeader k="actions" />,
       cell: ({ row }) => {
         return (
           <div className="flex gap-2">

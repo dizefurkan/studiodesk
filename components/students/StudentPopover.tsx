@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { createPortal } from 'react-dom'
+import { useTranslations } from 'next-intl'
 import { BookOpen, Zap } from 'lucide-react'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface StudentPopoverProps {
   type: 'courses' | 'credits'
@@ -18,174 +20,119 @@ interface StudentPopoverProps {
   filteredDanceTypeId?: string
 }
 
-function PopoverContent({
-  isOpen,
-  triggerRef,
-  title,
-  children,
-}: {
-  isOpen: boolean
-  triggerRef: React.RefObject<HTMLDivElement | null>
-  title: string
-  children: React.ReactNode
-}) {
-  const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 })
-  const [mounted, setMounted] = useState(false)
+const triggerClass = '-ml-2 font-normal'
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (!isOpen || !triggerRef.current) return
-
-    const updatePosition = () => {
-      if (triggerRef.current) {
-        const rect = triggerRef.current.getBoundingClientRect()
-        setPopoverPos({
-          top: rect.bottom + 8 + window.scrollY,
-          left: rect.left + window.scrollX,
-        })
-      }
-    }
-
-    updatePosition()
-    window.addEventListener('scroll', updatePosition)
-    window.addEventListener('resize', updatePosition)
-    return () => {
-      window.removeEventListener('scroll', updatePosition)
-      window.removeEventListener('resize', updatePosition)
-    }
-  }, [isOpen, triggerRef])
-
-  if (!isOpen || !mounted) return null
-
-  return createPortal(
-    <div
-      className="fixed z-[9999] bg-background border border-border rounded-lg shadow-lg p-3 w-56"
-      style={{
-        top: `${popoverPos.top}px`,
-        left: `${popoverPos.left}px`,
-      }}
-    >
-      <h4 className="font-semibold text-sm text-foreground mb-3">{title}</h4>
-      {children}
-    </div>,
-    document.body
-  )
-}
-
-export function StudentPopover({ type, courses, credits, packageDetails, filteredDanceTypeId }: StudentPopoverProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const triggerRef = useRef<HTMLDivElement>(null)
+export function StudentPopover({
+  type,
+  courses,
+  credits,
+  packageDetails,
+  filteredDanceTypeId,
+}: StudentPopoverProps) {
+  const t = useTranslations('students')
 
   if (type === 'courses') {
-    return (
-      <div className="relative inline-block">
-        <div
-          ref={triggerRef}
-          onClick={() => setIsOpen(!isOpen)}
-          onMouseEnter={() => setIsOpen(true)}
-          onMouseLeave={() => setIsOpen(false)}
-          className="flex items-center gap-1 cursor-pointer hover:text-primary"
-        >
-          <BookOpen size={14} className="text-purple-500" />
-          <span className="text-foreground font-semibold">
-            {courses?.length || 0}
-          </span>
-        </div>
+    const count = courses?.length ?? 0
+    const summary = (
+      <>
+        <BookOpen className="size-3.5 text-muted-foreground" />
+        <span className="font-semibold text-foreground">{count}</span>
+      </>
+    )
+    if (count === 0) return <span className="inline-flex items-center gap-1">{summary}</span>
 
-        <PopoverContent isOpen={!!(isOpen && courses && courses.length > 0)} triggerRef={triggerRef} title="Enrolled Courses">
-          <ul className="space-y-1">
-            {courses?.map((course) => (
-              <li key={course.id} className="text-xs text-muted-foreground">
-                • {course.name}
-              </li>
+    return (
+      <HoverCard openDelay={100} closeDelay={100}>
+        <HoverCardTrigger asChild>
+          <Button variant="ghost" size="xs" className={triggerClass}>
+            {summary}
+          </Button>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-56">
+          <h4 className="mb-2 text-sm font-semibold">{t('enrolledCoursesTitle')}</h4>
+          <ul className="space-y-1 text-xs text-muted-foreground">
+            {courses!.map((course) => (
+              <li key={course.id}>{course.name}</li>
             ))}
           </ul>
-        </PopoverContent>
+        </HoverCardContent>
+      </HoverCard>
+    )
+  }
+
+  const total = credits ?? 0
+  const filtered = filteredDanceTypeId
+    ? packageDetails?.find((p) => p.danceTypeId === filteredDanceTypeId)
+    : undefined
+  const others = (packageDetails ?? []).filter(
+    (pkg) => !filteredDanceTypeId || pkg.danceTypeId !== filteredDanceTypeId
+  )
+
+  const details = (
+    <HoverCardContent className="w-60">
+      <h4 className="mb-2 text-sm font-semibold">
+        {filteredDanceTypeId ? t('otherCredits') : t('creditsByDanceType')}
+      </h4>
+      {others.length > 0 ? (
+        <div className="space-y-1.5">
+          {others.map((pkg) => (
+            <div key={pkg.id} className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{pkg.danceType}</span>
+              <span className={cn('font-semibold', pkg.remaining === 0 && 'text-destructive')}>
+                {pkg.remaining}{' '}
+                <span className="text-xs font-normal text-muted-foreground">
+                  {t('creditUnit', { count: pkg.remaining })}
+                </span>
+              </span>
+            </div>
+          ))}
+          {!filteredDanceTypeId && (
+            <div className="mt-2 border-t pt-2 text-sm font-semibold">
+              {t('totalCredits', { count: total })}
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm font-medium text-destructive">{t('noCredits')}</p>
+      )}
+    </HoverCardContent>
+  )
+
+  if (filteredDanceTypeId && packageDetails) {
+    return (
+      <div className="flex items-start gap-2">
+        <div className="flex items-center gap-1">
+          <Zap className="size-3.5 text-highlight" />
+          <span className="font-semibold text-foreground">{filtered?.remaining ?? 0}</span>
+          <span className="text-xs text-muted-foreground">{filtered?.danceType}</span>
+        </div>
+        {packageDetails.length > 1 && (
+          <HoverCard openDelay={100} closeDelay={100}>
+            <HoverCardTrigger asChild>
+              <Button variant="ghost" size="xs" className="font-semibold text-primary">
+                +{packageDetails.length - 1}
+              </Button>
+            </HoverCardTrigger>
+            {details}
+          </HoverCard>
+        )}
       </div>
     )
   }
 
   return (
-    <div className="relative inline-block">
-      {/* Get filtered dance type package if available */}
-      {filteredDanceTypeId && packageDetails ? (
-        <div className="flex items-start gap-2">
-          {/* Directly show filtered dance type credits */}
-          <div className="flex items-center gap-1">
-            <Zap size={14} className="text-amber-500" />
-            <span className="font-semibold text-foreground">
-              {packageDetails.find(p => p.danceTypeId === filteredDanceTypeId)?.remaining || 0}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {packageDetails.find(p => p.danceTypeId === filteredDanceTypeId)?.danceType}
-            </span>
-          </div>
-
-          {/* Show popover only if multiple packages */}
-          {packageDetails.length > 1 && (
-            <div
-              ref={triggerRef}
-              onClick={() => setIsOpen(!isOpen)}
-              onMouseEnter={() => setIsOpen(true)}
-              onMouseLeave={() => setIsOpen(false)}
-              className="text-primary cursor-pointer hover:underline text-xs font-semibold"
-            >
-              +{packageDetails.length - 1}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div
-          ref={triggerRef}
-          onClick={() => setIsOpen(!isOpen)}
-          onMouseEnter={() => setIsOpen(true)}
-          onMouseLeave={() => setIsOpen(false)}
-          className={`flex items-center gap-1 cursor-pointer hover:text-primary ${
-            (credits || 0) === 0 ? 'text-red-600' : 'text-foreground'
-          }`}
+    <HoverCard openDelay={100} closeDelay={100}>
+      <HoverCardTrigger asChild>
+        <Button
+          variant="ghost"
+          size="xs"
+          className={cn(triggerClass, total === 0 ? 'text-destructive' : 'text-foreground')}
         >
-          <Zap size={14} className={credits === 0 ? 'text-red-500' : 'text-amber-500'} />
-          <span className="font-semibold">{credits || 0}</span>
-        </div>
-      )}
-
-      <PopoverContent
-        isOpen={isOpen}
-        triggerRef={triggerRef}
-        title={filteredDanceTypeId ? 'Other Credits' : 'Credits by Dance Type'}
-      >
-        {packageDetails && packageDetails.length > 0 ? (
-          <div className="space-y-2">
-            {packageDetails
-              .filter(pkg => !filteredDanceTypeId || pkg.danceTypeId !== filteredDanceTypeId)
-              .map((pkg, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">{pkg.danceType}:</span>
-                    <span
-                      className={`font-semibold ${
-                        pkg.remaining === 0 ? 'text-red-600' : 'text-foreground'
-                      }`}
-                    >
-                      {pkg.remaining}
-                    </span>
-                  </div>
-                  <span className="text-xs text-muted-foreground">credit{pkg.remaining !== 1 ? 's' : ''}</span>
-                </div>
-              ))}
-            {!filteredDanceTypeId && (
-              <div className="pt-2 mt-2 border-t border-border text-sm font-semibold text-foreground">
-                Total: {credits}
-              </div>
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-red-600 font-medium">No credits</p>
-        )}
-      </PopoverContent>
-    </div>
+          <Zap className={cn('size-3.5', total === 0 ? 'text-destructive' : 'text-highlight')} />
+          <span className="font-semibold">{total}</span>
+        </Button>
+      </HoverCardTrigger>
+      {details}
+    </HoverCard>
   )
 }

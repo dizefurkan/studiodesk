@@ -1,3 +1,4 @@
+import { unstable_rethrow } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { cookies } from 'next/headers'
@@ -18,6 +19,7 @@ export async function getCurrentUser(): Promise<User | null> {
     
     return user || null
   } catch (err) {
+    unstable_rethrow(err)
     console.error('[getCurrentUser] Exception:', err instanceof Error ? err.message : err)
     return null
   }
@@ -49,6 +51,7 @@ export async function getUserRoleInOrganization(organizationId: string) {
     console.log('✅ User role fetched successfully:', data)
     return data
   } catch (e) {
+    unstable_rethrow(e)
     console.error('❌ Exception in getUserRoleInOrganization:', e)
     return null
   }
@@ -66,7 +69,8 @@ export async function getCurrentUserProfile() {
       .eq('id', user.id)
       .single()
     return data
-  } catch {
+  } catch (err) {
+    unstable_rethrow(err)
     return null
   }
 }
@@ -85,7 +89,8 @@ export async function getOrganizationIdFromCookie(): Promise<string | null> {
   try {
     const cookieStore = await cookies()
     return cookieStore.get('organization_id')?.value || null
-  } catch {
+  } catch (err) {
+    unstable_rethrow(err)
     return null
   }
 }
@@ -111,7 +116,8 @@ export async function getUserOrganizations() {
       .eq('user_id', user.id)
 
     return data || []
-  } catch {
+  } catch (err) {
+    unstable_rethrow(err)
     return []
   }
 }
@@ -135,7 +141,8 @@ export async function getUserOrganization(organizationId: string) {
       .single()
 
     return data
-  } catch {
+  } catch (err) {
+    unstable_rethrow(err)
     return null
   }
 }

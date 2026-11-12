@@ -3,6 +3,7 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { EarningsEditButton } from '@/components/instructor-earnings/EarningsEditButton'
+import { ColumnHeader } from '@/components/table/column-header'
 
 export interface EarningRecord {
   id: string
@@ -27,7 +28,7 @@ export function getEarningsColumns({ currency }: ColumnContextProps): ColumnDef<
   return [
     {
       accessorKey: 'instructors',
-      header: 'Instructor',
+      header: () => <ColumnHeader k="instructor" />,
       cell: ({ row }) => {
         const earning = row.original
         const instructor = earning.instructors
@@ -41,14 +42,14 @@ export function getEarningsColumns({ currency }: ColumnContextProps): ColumnDef<
     },
     {
       accessorKey: 'created_at',
-      header: 'Date',
+      header: () => <ColumnHeader k="date" />,
       cell: ({ row }) => {
         return new Date(row.original.created_at).toLocaleDateString()
       },
     },
     {
       accessorKey: 'amount',
-      header: 'Amount',
+      header: () => <ColumnHeader k="amount" />,
       cell: ({ row }) => {
         return (
           <p className="font-bold text-green-600">
@@ -59,7 +60,7 @@ export function getEarningsColumns({ currency }: ColumnContextProps): ColumnDef<
     },
     {
       id: 'actions',
-      header: 'Actions',
+      header: () => <ColumnHeader k="actions" />,
       cell: ({ row }) => {
         const earning = row.original
         return (

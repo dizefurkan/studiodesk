@@ -265,7 +265,7 @@ export async function getInstructorAttendanceHistory(instructorId: string) {
     }
 
     // Get course details
-    let coursesMap = new Map()
+    const coursesMap = new Map()
     if (courseIds.length > 0) {
       const { data: courses, error: coursesError } = await (adminSupabase
         .from('courses') as any)

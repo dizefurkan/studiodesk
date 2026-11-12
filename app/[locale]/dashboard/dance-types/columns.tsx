@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Edit2, Trash2 } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
+import { ColumnHeader } from '@/components/table/column-header'
 
 export type DanceType = Database['public']['Tables']['dance_types']['Row']
 
@@ -30,7 +31,7 @@ export function getDanceTypeColumns({
   if (visibleColumns.name !== false) {
     columns.push({
       accessorKey: 'name',
-      header: 'Name',
+      header: () => <ColumnHeader k="name" />,
       cell: ({ row }) => (
         <Link
           href={`/dashboard/dance-types/${row.original.id}`}
@@ -45,7 +46,7 @@ export function getDanceTypeColumns({
   if (visibleColumns.description !== false) {
     columns.push({
       accessorKey: 'description',
-      header: 'Description',
+      header: () => <ColumnHeader k="description" />,
       cell: ({ row }) => (
         <span className="text-muted-foreground text-sm">
           {row.original.description ? (
@@ -61,7 +62,7 @@ export function getDanceTypeColumns({
   if (visibleColumns.actions !== false) {
     columns.push({
       id: 'actions',
-      header: 'Actions',
+      header: () => <ColumnHeader k="actions" />,
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
           <Link href={`/dashboard/dance-types/${row.original.id}/edit`}>

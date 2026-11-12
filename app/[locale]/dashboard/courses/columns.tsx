@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { Edit2, Trash2 } from 'lucide-react'
 import { formatTime } from '@/lib/utils/formatTime'
+import { ColumnHeader } from '@/components/table/column-header'
 
 export interface Course {
   id: string
@@ -56,7 +57,7 @@ export function getCourseColumns({
   if (visibleColumns.name !== false) {
     columns.push({
       accessorKey: 'name',
-      header: 'Name',
+      header: () => <ColumnHeader k="name" />,
       cell: ({ row }) => (
         <Link
           href={`/dashboard/courses/${row.original.id}`}
@@ -71,7 +72,7 @@ export function getCourseColumns({
   if (visibleColumns.branch !== false) {
     columns.push({
       accessorKey: 'branch_id',
-      header: 'Branch',
+      header: () => <ColumnHeader k="branch" />,
       cell: ({ row }) => (
         <Badge className="bg-primary/10 text-primary">
           {row.original.branches?.name || '-'}
@@ -83,7 +84,7 @@ export function getCourseColumns({
   if (visibleColumns.danceType !== false) {
     columns.push({
       accessorKey: 'dance_type_id',
-      header: 'Dance Type',
+      header: () => <ColumnHeader k="danceType" />,
       cell: ({ row }) => (
         <Badge className="bg-purple-50 text-purple-700 dark:bg-purple-900 dark:text-purple-200">
           {row.original.dance_types?.name || '-'}
@@ -95,7 +96,7 @@ export function getCourseColumns({
   if (visibleColumns.schedule !== false) {
     columns.push({
       id: 'schedule',
-      header: 'Schedule',
+      header: () => <ColumnHeader k="schedule" />,
       cell: ({ row }) => (
         <span className="text-muted-foreground text-sm">
           {DAYS[row.original.day_of_week]} {formatTime(row.original.start_time)} - {formatTime(row.original.end_time)}
@@ -107,7 +108,7 @@ export function getCourseColumns({
   if (visibleColumns.students !== false) {
     columns.push({
       accessorKey: 'studentCount',
-      header: 'Students',
+      header: () => <ColumnHeader k="students" />,
       cell: ({ row }) => (
         <Badge className="bg-cyan-50 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-200">
           {row.original.studentCount || 0}
@@ -119,7 +120,7 @@ export function getCourseColumns({
   if (visibleColumns.instructors !== false) {
     columns.push({
       id: 'instructors',
-      header: 'Instructors',
+      header: () => <ColumnHeader k="instructors" />,
       cell: ({ row }) => {
         const instructors = row.original.course_instructors || []
         return (
@@ -144,7 +145,7 @@ export function getCourseColumns({
   if (visibleColumns.attendance !== false) {
     columns.push({
       accessorKey: 'attendanceCount',
-      header: 'Attendance',
+      header: () => <ColumnHeader k="attendance" />,
       cell: ({ row }) => (
         <span className="text-muted-foreground text-sm">{row.original.attendanceCount || 0}</span>
       ),
@@ -154,7 +155,7 @@ export function getCourseColumns({
   if (visibleColumns.actions !== false) {
     columns.push({
       id: 'actions',
-      header: 'Actions',
+      header: () => <ColumnHeader k="actions" />,
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
           <Link href={`/dashboard/courses/${row.original.id}/edit`}>

@@ -3,6 +3,7 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { TrendingUp, TrendingDown, Users, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ColumnHeader } from '@/components/table/column-header'
 
 export interface CombinedCashItem {
   id: string
@@ -31,7 +32,7 @@ export function getCashRegisterColumns({
   return [
     {
       accessorKey: 'description',
-      header: 'Description',
+      header: () => <ColumnHeader k="description" />,
       cell: ({ row }) => {
         const item = row.original
         return (
@@ -53,14 +54,14 @@ export function getCashRegisterColumns({
     },
     {
       accessorKey: 'created_at',
-      header: 'Date',
+      header: () => <ColumnHeader k="date" />,
       cell: ({ row }) => {
         return new Date(row.original.created_at).toLocaleDateString()
       },
     },
     {
       accessorKey: 'amount',
-      header: 'Amount',
+      header: () => <ColumnHeader k="amount" />,
       cell: ({ row }) => {
         const item = row.original
         return (
@@ -77,7 +78,7 @@ export function getCashRegisterColumns({
     },
     {
       id: 'actions',
-      header: 'Actions',
+      header: () => <ColumnHeader k="actions" />,
       cell: ({ row }) => {
         const item = row.original
         // Only show delete button for transactions, not earnings

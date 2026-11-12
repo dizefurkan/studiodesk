@@ -230,7 +230,7 @@ export function StudentAttendanceList({
         ? Array.from(checkedStudentIds)
         : [studentId];
 
-      let updated = [...prev];
+      const updated = [...prev];
 
       studentsToUpdate.forEach((id) => {
         const existingIndex = updated.findIndex((a) => a.studentId === id);
@@ -274,7 +274,7 @@ export function StudentAttendanceList({
         ? Array.from(checkedStudentIds)
         : [studentId];
 
-      let updated = [...prev];
+      const updated = [...prev];
 
       studentsToUpdate.forEach((id) => {
         const existingIndex = updated.findIndex((a) => a.studentId === id);
@@ -306,7 +306,7 @@ export function StudentAttendanceList({
         ? Array.from(checkedStudentIds)
         : [studentId];
 
-      let updated = [...prev];
+      const updated = [...prev];
 
       studentsToUpdate.forEach((id) => {
         const existingIndex = updated.findIndex((a) => a.studentId === id);

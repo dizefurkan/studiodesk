@@ -204,14 +204,14 @@ export function getHistoryEntityColor(entity: HistoryEntity): string {
     branch: "bg-yellow-100 text-yellow-800 border-yellow-300",
     package: "bg-pink-100 text-pink-800 border-pink-300",
     dance_type: "bg-orange-100 text-orange-800 border-orange-300",
-    attendance: "bg-indigo-100 text-indigo-800 border-indigo-300",
+    attendance: "bg-primary/10 text-primary border-primary/30",
     cash_register: "bg-emerald-100 text-emerald-800 border-emerald-300",
     organization: "bg-red-100 text-red-800 border-red-300",
     user: "bg-cyan-100 text-cyan-800 border-cyan-300",
     studio: "bg-amber-100 text-amber-800 border-amber-300",
     instructor_rate: "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300",
-    organization_settings: "bg-slate-100 text-slate-800 border-slate-300",
+    organization_settings: "bg-muted text-muted-foreground border-border",
     invitation: "bg-sky-100 text-sky-800 border-sky-300",
   };
-  return colors[entity] || "bg-gray-100 text-gray-800 border-gray-300";
+  return colors[entity] || "bg-muted text-muted-foreground border-border";
 }

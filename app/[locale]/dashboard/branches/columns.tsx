@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Edit2, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 import type { Database } from '@/lib/types/database.types'
+import { ColumnHeader } from '@/components/table/column-header'
 
 export type Branch = Database['public']['Tables']['branches']['Row']
 
@@ -35,7 +36,7 @@ export function getBranchColumns({
   if (visibleColumns.name !== false) {
     columns.push({
       accessorKey: 'name',
-      header: 'Name',
+      header: () => <ColumnHeader k="name" />,
       cell: ({ row }) => (
         <Link
           href={`/dashboard/branches/${row.original.id}`}
@@ -50,7 +51,7 @@ export function getBranchColumns({
   if (visibleColumns.address !== false) {
     columns.push({
       accessorKey: 'address',
-      header: 'Address',
+      header: () => <ColumnHeader k="address" />,
       cell: ({ row }) => (
         <span className="text-muted-foreground">{row.original.address || '-'}</span>
       ),
@@ -60,7 +61,7 @@ export function getBranchColumns({
   if (visibleColumns.phone !== false) {
     columns.push({
       accessorKey: 'phone',
-      header: 'Phone',
+      header: () => <ColumnHeader k="phone" />,
       cell: ({ row }) => (
         row.original.phone ? (
           <a
@@ -79,7 +80,7 @@ export function getBranchColumns({
   if (visibleColumns.created !== false) {
     columns.push({
       accessorKey: 'created_at',
-      header: 'Created',
+      header: () => <ColumnHeader k="created" />,
       cell: ({ row }) => (
         <span className="text-muted-foreground">
           {format(new Date(row.original.created_at!), 'MMM dd, yyyy')}
@@ -91,7 +92,7 @@ export function getBranchColumns({
   if (visibleColumns.actions !== false) {
     columns.push({
       id: 'actions',
-      header: 'Actions',
+      header: () => <ColumnHeader k="actions" />,
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
           <Link href={`/dashboard/branches/${row.original.id}/edit`}>

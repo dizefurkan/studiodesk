@@ -317,7 +317,7 @@ export async function getStudentsWithStats(
     });
 
     // Fetch packages and dance types mapping
-    let packageDanceTypeMap = new Map<string, { id: string; name: string }>();
+    const packageDanceTypeMap = new Map<string, { id: string; name: string }>();
     const packageIds = studentPackages
       .map((sp) => sp.package_id)
       .filter(Boolean);

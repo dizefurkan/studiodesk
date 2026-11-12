@@ -21,6 +21,13 @@
 - Installing any npm package from the Linux VM against this Mac checkout:
   `npm install <pkg> --os=darwin --cpu=arm64` (don't let Linux binaries land in node_modules).
 
+## Tables, empty states, i18n
+- Lists → `components/table/data-table` (shadcn DataTable). Column headers are translated:
+  `header: () => <ColumnHeader k="name" />` (keys under `table.*`).
+- No records yet → `EmptyState` (Lottie + one create action) and **no** header create button;
+  with records or active filters → `PageHeader` action + DataTable.
+- No hardcoded UI text: every string goes into `messages/tr.json` **and** `messages/en.json`.
+
 ## Theme
 - Colors are tokens in `app/globals.css` (`primary`, `highlight`, `muted-foreground`, `border`, …).
   **No hardcoded hex / Tailwind gray|indigo classes** in components.
@@ -31,3 +38,8 @@
 ## Database
 - Schema lives only in `supabase/migrations/` (see `database/README.md`). New change = new migration file.
 - Supabase project: `studiodesk` (eu-central-1, ref `bymqrtvzlakwbdgyznxz`).
+- After a schema change regenerate `lib/types/database.types.ts` and check the Supabase advisors.
+- Writes go through server actions in `lib/actions/*` with a role check; never trust a client-sent
+  organization id. Service-role client (`lib/supabase/admin`) only on the server.
+- `proxy.ts` (Next 16 middleware) runs next-intl and refreshes the Supabase session cookies — keep both.
+- In `catch` blocks of server code that reads cookies/headers, call `unstable_rethrow(err)` first.

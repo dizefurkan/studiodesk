@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { use, useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
@@ -14,10 +13,10 @@ import { Label } from '@/components/ui/label'
 interface Studio {
   id: string
   name: string
-  description?: string
-  capacity?: number
-  image_url?: string
-  created_at: string
+  description: string | null
+  capacity: number | null
+  image_url: string | null
+  created_at: string | null
 }
 
 interface StudioFormData {
@@ -28,8 +27,7 @@ interface StudioFormData {
 }
 
 export default function StudiosPage({ params }: { params: Promise<{ id: string }> }) {
-  const router = useRouter()
-  const [branchId, setBranchId] = useState<string>('')
+  const { id: branchId } = use(params)
   const [studios, setStudios] = useState<Studio[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -42,16 +40,7 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
     image_url: '',
   })
 
-  useEffect(() => {
-    ;(async () => {
-      const { id } = await params
-      setBranchId(id)
-      loadStudios(id)
-    })()
-  }, [params])
-
-  const loadStudios = async (id: string) => {
-    setLoading(true)
+  const loadStudios = useCallback(async (id: string) => {
     const result = await getStudios(id)
     if (result.error) {
       setError(result.error)
@@ -59,7 +48,12 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
       setStudios(result.data || [])
     }
     setLoading(false)
-  }
+  }, [])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on mount; state is set after the await
+    loadStudios(branchId)
+  }, [branchId, loadStudios])
 
   const resetForm = () => {
     setFormData({ name: '', description: '', capacity: '', image_url: '' })

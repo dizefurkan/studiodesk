@@ -95,7 +95,7 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
       <Card className="border-border p-12 text-center">
         <BookOpen size={48} className="mx-auto mb-4 opacity-50" />
         <p className="text-muted-foreground text-lg font-medium">No courses enrolled</p>
-        <p className="text-sm text-muted-foreground mt-1">Student hasn't enrolled in any courses yet</p>
+        <p className="text-sm text-muted-foreground mt-1">Student hasn&apos;t enrolled in any courses yet</p>
       </Card>
     )
   }
