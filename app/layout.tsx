@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -16,6 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "StudioDesk - Dance Studio Management",
+  applicationName: "StudioDesk",
   description: "All-in-one platform for managing dance studios",
   keywords: "dance studio, management, scheduling, students, instructors",
 };
@@ -31,7 +34,8 @@ export default function RootLayout({
         className={`${inter.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        {children}
+        <TooltipProvider>{children}</TooltipProvider>
+        <Toaster richColors position="top-right" />
         <Analytics />
       </body>
     </html>

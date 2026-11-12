@@ -39,7 +39,7 @@ export function getBranchColumns({
       cell: ({ row }) => (
         <Link
           href={`/dashboard/branches/${row.original.id}`}
-          className="font-medium text-[#111827] hover:text-[#4F46E5]"
+          className="font-medium text-foreground hover:text-primary"
         >
           {row.original.name}
         </Link>
@@ -52,7 +52,7 @@ export function getBranchColumns({
       accessorKey: 'address',
       header: 'Address',
       cell: ({ row }) => (
-        <span className="text-gray-600">{row.original.address || '-'}</span>
+        <span className="text-muted-foreground">{row.original.address || '-'}</span>
       ),
     })
   }
@@ -65,12 +65,12 @@ export function getBranchColumns({
         row.original.phone ? (
           <a
             href={`tel:${row.original.phone}`}
-            className="text-[#4F46E5] hover:underline"
+            className="text-primary hover:underline"
           >
             {row.original.phone}
           </a>
         ) : (
-          <span className="text-gray-400">-</span>
+          <span className="text-muted-foreground/70">-</span>
         )
       ),
     })
@@ -81,7 +81,7 @@ export function getBranchColumns({
       accessorKey: 'created_at',
       header: 'Created',
       cell: ({ row }) => (
-        <span className="text-gray-600">
+        <span className="text-muted-foreground">
           {format(new Date(row.original.created_at!), 'MMM dd, yyyy')}
         </span>
       ),
@@ -98,7 +98,7 @@ export function getBranchColumns({
             <Button
               variant="ghost"
               size="sm"
-              className="text-[#4F46E5] hover:bg-[#EEF2FF]"
+              className="text-primary hover:bg-primary/10"
             >
               <Edit2 size={16} />
             </Button>

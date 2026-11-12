@@ -32,17 +32,17 @@ export async function TopBar() {
         {/* Organization Name - Hide on mobile and tablet */}
         {organization && (
           <div className="hidden lg:block text-sm">
-            <p className="text-[#9CA3AF] text-xs uppercase tracking-wider">{t('settings.organization')}</p>
-            <p className="font-semibold text-[#111827] truncate">{organization.name}</p>
+            <p className="text-muted-foreground/70 text-xs uppercase tracking-wider">{t('settings.organization')}</p>
+            <p className="font-semibold text-foreground truncate">{organization.name}</p>
           </div>
         )}
 
         {/* Divider */}
-        <div className="w-px h-6 md:h-8 bg-[#E5E7EB] hidden lg:block" />
+        <div className="w-px h-6 md:h-8 bg-border hidden lg:block" />
 
         {/* Notification Bell */}
         <Button variant="ghost" size="icon" className="relative h-8 w-8 md:h-10 md:w-10">
-          <Bell size={18} className="text-[#6B7280]" />
+          <Bell size={18} className="text-muted-foreground" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         </Button>
 
@@ -58,7 +58,7 @@ export async function TopBar() {
   )
 
   return (
-    <header className="h-14 md:h-16 border-b border-[#E5E7EB] bg-white flex items-center px-3 sm:px-4 md:px-6 lg:px-8 gap-2 md:gap-4">
+    <header className="h-14 md:h-16 border-b border-border bg-background flex items-center px-3 sm:px-4 md:px-6 lg:px-8 gap-2 md:gap-4">
       <TopBarClient>{content}</TopBarClient>
     </header>
   )

@@ -6,7 +6,9 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CoursesPageClient } from './courses-client'
 import Link from 'next/link'
-import { Plus, Clock } from 'lucide-react'
+import { PageHeader } from '@/components/common/PageHeader'
+import { EmptyState } from '@/components/common/EmptyState'
+import { Plus } from 'lucide-react'
 
 const PAGE_SIZE = 10
 
@@ -32,32 +34,25 @@ export default async function CoursesPage({
   const danceTypes = danceTypesResult.data || []
   const totalCount = coursesResult.totalCount || 0
 
-  return (
-    <div className="space-y-3 sm:space-y-4 md:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">{t('courses.title')}</h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">{t('courses.description')}</p>
-        </div>
-        <Link href="/dashboard/courses/new" className="inline-block w-fit">
-          <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 text-sm md:text-base h-9 md:h-10">
-            <Plus size={20} />
-            {t('courses.addNew')}
-          </Button>
-        </Link>
-      </div>
+  const hasRecords = totalCount > 0 || !!searchQuery
+  const createAction = (
+    <Button asChild>
+      <Link href="/dashboard/courses/new">
+        <Plus /> {t('courses.addNew')}
+      </Link>
+    </Button>
+  )
 
-      {/* Content */}
-      {courses.length === 0 ? (
-        <Card className="border-[#E5E7EB] p-6 sm:p-8 md:p-12 text-center">
-          <div className="text-gray-500">
-            <Clock size={48} className="mx-auto mb-4 opacity-50" />
-            <p className="text-lg">{t('courses.noCourses')}</p>
-            <p className="text-sm mt-1">{t('courses.createFirstCourse')}</p>
-          </div>
-        </Card>
-      ) : (
-        <Card className="border-[#E5E7EB] p-3 sm:p-4 md:p-6">
+  return (
+    <div className="space-y-4 md:space-y-6">
+      <PageHeader
+        title={t('courses.title')}
+        description={t('courses.description')}
+        action={hasRecords ? createAction : undefined}
+      />
+
+      {hasRecords ? (
+        <Card className="p-3 sm:p-4 md:p-6">
           <CoursesPageClient
             courses={courses}
             branches={branches}
@@ -68,6 +63,12 @@ export default async function CoursesPage({
             pageSize={PAGE_SIZE}
           />
         </Card>
+      ) : (
+        <EmptyState
+          title={t('emptyStates.courses.title')}
+          description={t('emptyStates.courses.description')}
+          action={createAction}
+        />
       )}
     </div>
   )

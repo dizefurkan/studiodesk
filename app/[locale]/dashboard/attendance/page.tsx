@@ -115,28 +115,28 @@ export default async function AttendancePage({
     return (
       <div className="space-y-6">
         <div>
-          <Link href="/dashboard/attendance" className="text-[#4F46E5] hover:underline mb-4 inline-block">
+          <Link href="/dashboard/attendance" className="text-primary hover:underline mb-4 inline-block">
             ← {t('attendance.backToSessions')}
           </Link>
-          <h1 className="text-3xl font-bold text-[#111827]">{t('attendance.markAttendance')}</h1>
-          <p className="text-gray-600 mt-1">{t('attendance.recordDescription')}</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('attendance.markAttendance')}</h1>
+          <p className="text-muted-foreground mt-1">{t('attendance.recordDescription')}</p>
         </div>
 
-        <Card className="border-[#E5E7EB] p-6 bg-blue-50">
+        <Card className="border-border p-6 bg-blue-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Calendar className="text-[#4F46E5]" size={24} />
+              <Calendar className="text-primary" size={24} />
               <div>
-                <p className="font-medium text-[#111827]">{t('attendance.session')}: {sessionId}</p>
-                <p className="text-sm text-gray-600">{attendances.length} {t('attendance.marked')} • {availableStudents.length} {t('attendance.available')}</p>
+                <p className="font-medium text-foreground">{t('attendance.session')}: {sessionId}</p>
+                <p className="text-sm text-muted-foreground">{attendances.length} {t('attendance.marked')} • {availableStudents.length} {t('attendance.available')}</p>
               </div>
             </div>
           </div>
         </Card>
 
         {studios.length > 0 && (
-          <Card className="border-[#E5E7EB] p-4">
-            <p className="text-sm text-gray-600 mb-2">{t('attendance.availableStudios')}: {studios.map((s: any) => s.name).join(', ')}</p>
+          <Card className="border-border p-4">
+            <p className="text-sm text-muted-foreground mb-2">{t('attendance.availableStudios')}: {studios.map((s: any) => s.name).join(', ')}</p>
           </Card>
         )}
 
@@ -162,8 +162,8 @@ export default async function AttendancePage({
     if (courseResult.error || !courseResult.data) {
       return (
         <div className="space-y-6">
-          <h1 className="text-3xl font-bold text-[#111827]">Error</h1>
-          <p className="text-gray-600">Course not found</p>
+          <h1 className="text-3xl font-bold text-foreground">Error</h1>
+          <p className="text-muted-foreground">Course not found</p>
         </div>
       )
     }
@@ -331,13 +331,13 @@ export default async function AttendancePage({
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-[#111827]">{t('attendance.title')}</h1>
-          <p className="text-gray-600 mt-1">{t('attendance.pageDescription')}</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('attendance.title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('attendance.pageDescription')}</p>
         </div>
 
         {courses.length === 0 ? (
-          <Card className="border-[#E5E7EB] p-12 text-center">
-            <div className="text-gray-500">
+          <Card className="border-border p-12 text-center">
+            <div className="text-muted-foreground">
               <Calendar size={48} className="mx-auto mb-4 opacity-50" />
               <p className="text-lg">{t('attendance.noCoursesFound')}</p>
               <p className="text-sm mt-1">{t('attendance.noCoursesMessage')}</p>
@@ -346,12 +346,12 @@ export default async function AttendancePage({
         ) : (
           <div className="space-y-4">
             {coursesWithAttendance.map((course: any) => (
-              <Card key={course.id} className="border-[#E5E7EB] p-4 hover:border-[#4F46E5] transition-colors">
+              <Card key={course.id} className="border-border p-4 hover:border-primary transition-colors">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                   <Link href={`/dashboard/courses/${course.id}`} className="flex-1">
                     <div className="cursor-pointer">
-                      <h3 className="font-semibold text-[#4F46E5] hover:underline">{course.name}</h3>
-                      <p className="text-sm text-gray-600">
+                      <h3 className="font-semibold text-primary hover:underline">{course.name}</h3>
+                      <p className="text-sm text-muted-foreground">
                         {course.branches?.name} • {course.dance_types?.name}
                       </p>
                       {course.totalAttendance > 0 && (
@@ -365,7 +365,7 @@ export default async function AttendancePage({
                     </div>
                   </Link>
                   <Link href={`/dashboard/attendance?course=${course.id}`} className="w-full md:w-auto">
-                    <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 w-full md:w-auto">
+                    <Button className="gap-2 w-full md:w-auto">
                       <CheckCircle size={16} />
                       {t('attendance.markAttendance')}
                     </Button>

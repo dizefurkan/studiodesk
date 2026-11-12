@@ -14,6 +14,10 @@ import { useTranslations } from "next-intl";
 import { InstructorSelector } from "./InstructorSelector";
 import { InstructorDropdown } from "./InstructorDropdown";
 import { StudioDropdown } from "./StudioDropdown";
+import { useConfirm } from '@/components/common/ConfirmProvider'
+import { Label } from '@/components/ui/label'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Checkbox } from '@/components/ui/checkbox'
 
 interface StudentForAttendance {
   id: string;
@@ -484,11 +488,13 @@ export function StudentAttendanceList({
     }
   };
 
+  const confirm = useConfirm()
+
   const handleRemoveAttendance = async (
     attendanceId: string,
     studentPackageId: string
   ) => {
-    if (!confirm(t("common.deleteConfirm"))) return;
+    if (!(await confirm({ title: t("common.deleteConfirm"), destructive: true }))) return;
 
     setError("");
 
@@ -549,14 +555,14 @@ export function StudentAttendanceList({
         <div className="space-y-4">
           {/* Calendar Heat Map - Last 30 days */}
           {lastMonthAttendances.length > 0 && (
-            <Card className="border-[#E5E7EB] p-4 bg-blue-50">
+            <Card className="border-border p-4 bg-blue-50">
               <div className="flex items-start gap-3 mb-3">
-                <Calendar className="text-[#4F46E5] mt-0.5" size={18} />
+                <Calendar className="text-primary mt-0.5" size={18} />
                 <div>
-                  <p className="text-sm font-medium text-[#111827]">
+                  <p className="text-sm font-medium text-foreground">
                     Attendance History (Last 30 days)
                   </p>
-                  <p className="text-xs text-gray-600 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {t("attendance.sessionsRecorded", {
                       count: lastMonthAttendances.length,
                     })}
@@ -565,17 +571,12 @@ export function StudentAttendanceList({
               </div>
               <div className="flex flex-wrap gap-2">
                 {lastMonthAttendances.map((record, idx) => (
-                  <button
+                  <Button size="xs" variant={selectedDate === record.session_date ? "default" : "outline"}
                     key={`attendance-${record.session_date}-${idx}`}
                     onClick={() => {
                       setSelectedDate(record.session_date);
                       onDateChange?.(record.session_date);
                     }}
-                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                      selectedDate === record.session_date
-                        ? "bg-[#4F46E5] text-white"
-                        : "bg-white border border-[#E5E7EB] text-[#111827] hover:border-[#4F46E5]"
-                    }`}
                     title={t("attendance.attendanceCount", {
                       count: record.attendance_count,
                     })}
@@ -584,13 +585,13 @@ export function StudentAttendanceList({
                       day: "2-digit",
                       month: "2-digit",
                     })}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </Card>
           )}
 
-          <h3 className="text-lg font-semibold text-[#111827]">
+          <h3 className="text-lg font-semibold text-foreground">
             {t("attendance.markAttendance")} ({studentsWithCredits.length}{" "}
             {t("attendance.enrolled")})
           </h3>
@@ -599,9 +600,9 @@ export function StudentAttendanceList({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {studios && studios.length > 0 && (
               <div>
-                <label className="block text-xs font-semibold text-[#6B7280] mb-2 uppercase tracking-wide">
+                <Label className="block mb-2">
                   {t("attendance.studioOptional")}
-                </label>
+                </Label>
                 <StudioDropdown
                   studios={studios}
                   selectedStudioId={selectedStudioId}
@@ -612,9 +613,9 @@ export function StudentAttendanceList({
 
             {instructors && instructors.length > 0 && (
               <div>
-                <label className="block text-xs font-semibold text-[#6B7280] mb-2 uppercase tracking-wide">
+                <Label className="block mb-2">
                   Instructors
-                </label>
+                </Label>
                 <div className="flex gap-2 flex-wrap">
                   {instructors.map((instructor) => {
                     const replacement = instructorOverrides[instructor.id];
@@ -642,7 +643,7 @@ export function StudentAttendanceList({
                           }}
                         />
                         {isOverridden && (
-                          <div className="text-xs text-gray-500 mt-1.5 ml-0.5">
+                          <div className="text-xs text-muted-foreground mt-1.5 ml-0.5">
                             Original: {instructor.first_name}{" "}
                             {instructor.last_name}
                           </div>
@@ -682,59 +683,56 @@ export function StudentAttendanceList({
           {/* Search Input */}
           <div className="relative">
             <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70"
               size={18}
             />
-            <input
+            <Input
               type="text"
               placeholder="Search students by name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+              className="w-full"
             />
           </div>
 
-          <div className="overflow-x-auto border border-[#E5E7EB] rounded-lg">
-            <table className="w-full border-collapse">
-              <thead className="bg-gray-50 sticky top-0 border-b border-[#E5E7EB]">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">
-                    <input
-                      type="checkbox"
+          <div className="overflow-x-auto border border-border rounded-lg">
+            <Table className="w-full border-collapse">
+              <TableHeader className="bg-muted/50 sticky top-0 border-b border-border">
+                <TableRow>
+                  <TableHead className="px-4 py-3 text-left text-sm font-semibold text-foreground">
+                    <Checkbox onCheckedChange={handleToggleMasterCheckbox}
                       checked={
                         checkedStudentIds.size === studentsWithCredits.length &&
                         studentsWithCredits.length > 0
                       }
-                      onChange={handleToggleMasterCheckbox}
-                      className="w-4 h-4 text-[#4F46E5] rounded focus:ring-2 focus:ring-[#4F46E5]"
                       title={
                         checkedStudentIds.size === studentsWithCredits.length
                           ? "Uncheck all"
                           : "Check all"
                       }
                     />
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-left text-sm font-semibold text-foreground">
                     {t("table.studentName")}
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-left text-sm font-semibold text-foreground">
                     {t("table.credits")}
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-left text-sm font-semibold text-foreground">
                     {t("table.status")}
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-left text-sm font-semibold text-foreground">
                     {t("table.deductCredits")}
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-left text-sm font-semibold text-foreground">
                     {t("table.notes")}
-                  </th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-[#111827]">
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-right text-sm font-semibold text-foreground">
                     {t("table.actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E5E7EB]">
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className="divide-y divide-border">
                 {studentsWithCredits.map((student) => {
                   const creditsCount = getStudentCredits(
                     student.student_packages
@@ -746,89 +744,62 @@ export function StudentAttendanceList({
                   const isMarked = !!recordedAttendance;
 
                   return (
-                    <tr
+                    <TableRow
                       key={student.id}
-                      className={`hover:bg-gray-50 transition-colors ${
+                      className={`hover:bg-muted/50 transition-colors ${
                         isMarked ? "bg-green-50" : ""
                       }`}
                     >
-                      <td className="px-4 py-3 text-center">
-                        <input
-                          type="checkbox"
+                      <TableCell className="px-4 py-3 text-center">
+                        <Checkbox onCheckedChange={() => handleToggleStudent(student.id)}
                           checked={checkedStudentIds.has(student.id)}
-                          onChange={() => handleToggleStudent(student.id)}
-                          className="w-4 h-4 text-[#4F46E5] rounded focus:ring-2 focus:ring-[#4F46E5]"
                         />
-                      </td>
-                      <td className="px-4 py-3 text-sm font-medium text-[#111827]">
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-sm font-medium text-foreground">
                         {student.first_name} {student.last_name}
                         {isMarked && (
                           <span className="ml-2 text-xs font-semibold text-green-700">
                             ✓
                           </span>
                         )}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-sm">
                         <span className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
                           {creditsCount}
                         </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-sm">
                         <div className="flex gap-2">
-                          <button
+                          <Button size="xs" variant={currentState?.status === "geldi" || (isMarked && !currentState && recordedAttendance?.is_present) ? "default" : "secondary"} className={currentState?.status === "geldi" || (isMarked && !currentState && recordedAttendance?.is_present) ? "bg-green-600 text-white hover:bg-green-600/90" : undefined}
                             onClick={() =>
                               handleStatusChange(student.id, "geldi")
                             }
-                            className={`px-3 py-1 rounded-lg font-medium text-xs transition-colors ${
-                              currentState?.status === "geldi" ||
-                              (isMarked &&
-                                !currentState &&
-                                recordedAttendance?.is_present)
-                                ? "bg-green-600 text-white"
-                                : "bg-gray-100 text-gray-700 hover:bg-green-100"
-                            }`}
                           >
                             ✓ Geldi
-                          </button>
-                          <button
+                          </Button>
+                          <Button size="xs" variant={currentState?.status === "gelmedi" || (isMarked && !currentState && !recordedAttendance?.is_present) ? "destructive" : "secondary"} className={currentState?.status === "gelmedi" || (isMarked && !currentState && !recordedAttendance?.is_present) ? "bg-red-600 text-white hover:bg-red-600/90" : undefined}
                             onClick={() =>
                               handleStatusChange(student.id, "gelmedi")
                             }
-                            className={`px-3 py-1 rounded-lg font-medium text-xs transition-colors ${
-                              currentState?.status === "gelmedi" ||
-                              (isMarked &&
-                                !currentState &&
-                                !recordedAttendance?.is_present)
-                                ? "bg-red-600 text-white"
-                                : "bg-gray-100 text-gray-700 hover:bg-red-100"
-                            }`}
                           >
                             ✗ Gelmedi
-                          </button>
+                          </Button>
                         </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-sm">
                         {(currentState?.status === "geldi" ||
                           currentState?.status === "gelmedi" ||
                           (isMarked && recordedAttendance?.notes)) && (
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
+                          <Label className="flex items-center gap-2 cursor-pointer">
+                            <Checkbox onCheckedChange={(c) => handleDeductCreditsChange(student.id, c === true)}
                               checked={currentState?.deductCredits ?? true}
-                              onChange={(e) =>
-                                handleDeductCreditsChange(
-                                  student.id,
-                                  e.target.checked
-                                )
-                              }
-                              className="rounded cursor-pointer accent-[#4F46E5]"
                               title="Kredi düşsün mü?"
                             />
-                            <span className="text-xs text-gray-600">Evet</span>
-                          </label>
+                            <span className="text-xs text-muted-foreground">Evet</span>
+                          </Label>
                         )}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-sm">
                         {(currentState?.status === "geldi" ||
                           currentState?.status === "gelmedi" ||
                           (isMarked && recordedAttendance?.notes)) && (
@@ -845,8 +816,8 @@ export function StudentAttendanceList({
                             className="text-xs py-1 px-2"
                           />
                         )}
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm">
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-right text-sm">
                         {isMarked && (
                           <Button
                             variant="ghost"
@@ -862,12 +833,12 @@ export function StudentAttendanceList({
                             <Trash2 size={14} />
                           </Button>
                         )}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </div>
       )}
@@ -875,7 +846,7 @@ export function StudentAttendanceList({
       {/* Students Needing Package Renewal */}
       {studentsNeedingRenewal.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-[#111827] mb-4">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
             ⚠️ Package Renewal Needed ({studentsNeedingRenewal.length})
           </h3>
           <div className="space-y-2">
@@ -887,7 +858,7 @@ export function StudentAttendanceList({
                 <div className="flex items-center gap-3">
                   <AlertCircle className="text-orange-600" size={20} />
                   <div>
-                    <p className="font-medium text-[#111827]">
+                    <p className="font-medium text-foreground">
                       {student.first_name} {student.last_name}
                     </p>
                     <p className="text-xs text-orange-700 font-medium">
@@ -903,11 +874,11 @@ export function StudentAttendanceList({
 
       {/* Empty State */}
       {availableStudents.length === 0 && recordedAttendances.length === 0 && (
-        <Card className="border-[#E5E7EB] p-12 text-center">
-          <p className="text-[#6B7280]">
+        <Card className="border-border p-12 text-center">
+          <p className="text-muted-foreground">
             No students available for this session
           </p>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Students must be enrolled in this course to attend sessions
           </p>
         </Card>
@@ -920,7 +891,7 @@ export function StudentAttendanceList({
           <Button
             onClick={handleSaveAttendance}
             disabled={savingBatch}
-            className="w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 py-2.5"
+            className="w-full gap-2 py-2.5"
             size="lg"
           >
             <Save size={18} />

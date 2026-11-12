@@ -57,7 +57,7 @@ export default async function AttendanceDetailPage({
       <div className="space-y-6">
         <Link
           href="/dashboard/attendance"
-          className="text-[#4F46E5] hover:underline text-sm"
+          className="text-primary hover:underline text-sm"
         >
           ← Back
         </Link>
@@ -107,42 +107,42 @@ export default async function AttendanceDetailPage({
     <div className="space-y-6">
       <Link
         href="/dashboard/attendance"
-        className="text-[#4F46E5] hover:underline text-sm inline-flex items-center gap-1"
+        className="text-primary hover:underline text-sm inline-flex items-center gap-1"
       >
         <ArrowLeft className="w-4 h-4" />
         {t("attendance.backToAttendance")}
       </Link>
 
-      <Card className="border-[#E5E7EB]">
+      <Card className="border-border">
         <div className="p-4 sm:p-6 md:p-8 space-y-4">
           <div>
             <Link
               href={`/${locale}/dashboard/courses/${session.course?.id}`}
-              className="text-2xl font-bold text-[#4F46E5] hover:underline block"
+              className="text-2xl font-bold text-primary hover:underline block"
             >
               {session.course?.name}
             </Link>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               {session.course?.branch?.name}
             </p>
             {studio?.name && (
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {t("common.studio")}: {studio.name}
               </p>
             )}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">
                 {t("attendance.date")}
               </p>
-              <p className="text-sm font-semibold text-[#111827] mt-1">
+              <p className="text-sm font-semibold text-foreground mt-1">
                 {formattedDate}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">
                 {t("attendance.present")}
               </p>
               <p className="text-sm font-semibold text-green-600 mt-1 flex items-center gap-1">
@@ -151,7 +151,7 @@ export default async function AttendanceDetailPage({
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">
                 {t("attendance.absent")}
               </p>
               <p className="text-sm font-semibold text-red-600 mt-1 flex items-center gap-1">
@@ -160,10 +160,10 @@ export default async function AttendanceDetailPage({
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">
                 {t("common.total")}
               </p>
-              <p className="text-sm font-semibold text-[#111827] mt-1 flex items-center gap-1">
+              <p className="text-sm font-semibold text-foreground mt-1 flex items-center gap-1">
                 <Users className="w-4 h-4" />
                 {attendances.length}
               </p>
@@ -172,8 +172,8 @@ export default async function AttendanceDetailPage({
 
           {/* Instructors */}
           {instructors.length > 0 && (
-            <div className="pt-4 border-t border-gray-200">
-              <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+            <div className="pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
                 {t("attendance.instructors")}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -191,24 +191,24 @@ export default async function AttendanceDetailPage({
 
           {/* Lesson Note */}
           {session.notes && (
-            <div className="pt-4 border-t border-gray-200">
-              <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+            <div className="pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
                 {t("attendance.lessonNote")}
               </p>
-              <p className="text-sm text-[#111827] whitespace-pre-wrap bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2">
+              <p className="text-sm text-foreground whitespace-pre-wrap bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2">
                 {session.notes}
               </p>
             </div>
           )}
 
           {/* Attendance Records */}
-          <div className="pt-4 border-t border-gray-200 space-y-3">
-            <h2 className="text-lg font-semibold text-[#111827]">
+          <div className="pt-4 border-t border-border space-y-3">
+            <h2 className="text-lg font-semibold text-foreground">
               {t("attendance.attendanceRecords")}
             </h2>
 
             {attendances.length === 0 ? (
-              <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-600">
+              <div className="bg-muted/50 rounded-lg p-6 text-center text-muted-foreground">
                 {t("attendance.noRecordsForSession")}
               </div>
             ) : (
@@ -237,20 +237,20 @@ export default async function AttendanceDetailPage({
                     <div className="flex-1">
                       <Link
                         href={`/${locale}/dashboard/students/${attendance.student?.id}`}
-                        className="font-semibold text-[#4F46E5] hover:underline"
+                        className="font-semibold text-primary hover:underline"
                       >
                         {attendance.student?.first_name}{" "}
                         {attendance.student?.last_name}
                       </Link>
                       {attendance.notes && (
-                        <p className="text-xs text-gray-600 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           {attendance.notes}
                         </p>
                       )}
                     </div>
 
                     <div className="text-right">
-                      <p className="text-xs font-semibold text-gray-600">
+                      <p className="text-xs font-semibold text-muted-foreground">
                         {attendance.is_present
                           ? t("attendance.present")
                           : t("attendance.absent")}

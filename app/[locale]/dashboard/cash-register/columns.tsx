@@ -44,8 +44,8 @@ export function getCashRegisterColumns({
               <Users className="text-purple-600 shrink-0" size={18} />
             )}
             <div>
-              <p className="font-medium text-[#111827]">{item.description}</p>
-              <p className="text-xs text-gray-600">{item.branches?.name || 'N/A'}</p>
+              <p className="font-medium text-foreground">{item.description}</p>
+              <p className="text-xs text-muted-foreground">{item.branches?.name || 'N/A'}</p>
             </div>
           </div>
         )
@@ -82,7 +82,7 @@ export function getCashRegisterColumns({
         const item = row.original
         // Only show delete button for transactions, not earnings
         if (item.type === 'earning') {
-          return <span className="text-xs text-gray-500">System</span>
+          return <span className="text-xs text-muted-foreground">System</span>
         }
         return (
           <Button

@@ -38,29 +38,29 @@ export default async function InstructorEarningsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-[#111827]">Instructor Earnings</h1>
-        <p className="text-gray-600 mt-1">Track instructor compensation and session payments</p>
+        <h1 className="text-3xl font-bold text-foreground">Instructor Earnings</h1>
+        <p className="text-muted-foreground mt-1">Track instructor compensation and session payments</p>
       </div>
 
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4">
-        <Card className="border-[#E5E7EB] p-6">
+        <Card className="border-border p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Total Earnings (Selected Period)</p>
-              <p className="text-3xl font-bold text-[#4F46E5]">{formatCurrency(totalEarnings, currency)}</p>
+              <p className="text-sm text-muted-foreground mb-1">Total Earnings (Selected Period)</p>
+              <p className="text-3xl font-bold text-primary">{formatCurrency(totalEarnings, currency)}</p>
             </div>
-            <DollarSign className="text-[#4F46E5]" size={32} />
+            <DollarSign className="text-primary" size={32} />
           </div>
         </Card>
 
-        <Card className="border-[#E5E7EB] p-6">
+        <Card className="border-border p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Total Sessions</p>
-              <p className="text-3xl font-bold text-[#4F46E5]">{sessionCount}</p>
+              <p className="text-sm text-muted-foreground mb-1">Total Sessions</p>
+              <p className="text-3xl font-bold text-primary">{sessionCount}</p>
             </div>
-            <TrendingUp className="text-[#4F46E5]" size={32} />
+            <TrendingUp className="text-primary" size={32} />
           </div>
         </Card>
       </div>

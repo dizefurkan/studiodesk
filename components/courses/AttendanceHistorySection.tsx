@@ -20,11 +20,11 @@ export function AttendanceHistorySection({
   if (attendanceHistory.length === 0) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-[#111827]">
+        <h2 className="text-2xl font-bold text-foreground">
           {t("courses.attendanceHistory")}
         </h2>
-        <Card className="border-[#E5E7EB] p-12 text-center">
-          <div className="text-gray-500">
+        <Card className="border-border p-12 text-center">
+          <div className="text-muted-foreground">
             <BookOpen size={48} className="mx-auto mb-4 opacity-50" />
             <p className="text-lg">{t("courses.noAttendanceRecords")}</p>
             <p className="text-sm mt-1">
@@ -38,7 +38,7 @@ export function AttendanceHistorySection({
 
   return (
     <div className="space-y-1">
-      <h2 className="text-2xl font-bold text-[#111827]">
+      <h2 className="text-2xl font-bold text-foreground">
         {t("courses.attendanceHistory")}
       </h2>
 
@@ -49,17 +49,17 @@ export function AttendanceHistorySection({
           return (
             <Card
               key={record.id}
-              className="border-[#E5E7EB] overflow-hidden hover:shadow-md transition-all duration-200 py-0"
+              className="border-border overflow-hidden hover:shadow-md transition-all duration-200 py-0"
             >
               {/* Summary - Single Line */}
               <div
                 onClick={() => setExpandedId(isExpanded ? null : record.id)}
-                className="flex items-center justify-between gap-1.5 p-2.5 sm:p-3 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                className="flex items-center justify-between gap-1.5 p-2.5 sm:p-3 hover:bg-muted/50 transition-colors cursor-pointer"
               >
                 <div className="flex-1 flex items-center justify-between gap-1.5 text-left">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
-                      <p className="font-semibold text-[#111827]">
+                      <p className="font-semibold text-foreground">
                         {(() => {
                           const date = new Date(record.session_date);
                           if (isToday(date)) {
@@ -70,14 +70,14 @@ export function AttendanceHistorySection({
                           return format(date, "EEE, MMM d");
                         })()}
                       </p>
-                      <span className="text-gray-500">
+                      <span className="text-muted-foreground">
                         {format(new Date(record.session_date), "HH:mm")}
                       </span>
                       {record.attendances?.length > 0 &&
                         record.attendances[0]?.studios?.name && (
                           <>
-                            <span className="text-gray-400">•</span>
-                            <span className="text-gray-600 truncate">
+                            <span className="text-muted-foreground/70">•</span>
+                            <span className="text-muted-foreground truncate">
                               {record.attendances[0].studios.name}
                             </span>
                           </>
@@ -93,7 +93,7 @@ export function AttendanceHistorySection({
                     </span>
                     <ChevronDown
                       size={18}
-                      className={`text-gray-400 transition-transform ${
+                      className={`text-muted-foreground/70 transition-transform ${
                         isExpanded ? "rotate-180" : ""
                       }`}
                     />
@@ -104,7 +104,7 @@ export function AttendanceHistorySection({
                 <Link
                   href={`/dashboard/attendance/${record.id}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="flex-shrink-0 px-2 py-1 text-xs font-medium text-[#4F46E5] hover:text-[#4338CA] hover:bg-blue-50 rounded-md transition-colors"
+                  className="flex-shrink-0 px-2 py-1 text-xs font-medium text-primary hover:text-primary/90 hover:bg-blue-50 rounded-md transition-colors"
                 >
                   {t("common.viewDetails")}
                 </Link>
@@ -112,15 +112,15 @@ export function AttendanceHistorySection({
 
               {/* Expandable Details */}
               {isExpanded && (
-                <div className="border-t border-[#E5E7EB] bg-gradient-to-b from-white to-gray-50 p-2.5 sm:p-3 animate-in fade-in duration-200">
+                <div className="border-t border-border bg-gradient-to-b from-white to-muted/50 p-2.5 sm:p-3 animate-in fade-in duration-200">
                   <div className="space-y-1.5">
                     {/* Instructor Info */}
                     {record.instructors && record.instructors.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
                           {t("common.instructor")}
                         </p>
-                        <p className="text-sm text-gray-700">
+                        <p className="text-sm text-foreground/80">
                           {record.instructors
                             .map((i: any) => `${i.first_name} ${i.last_name}`)
                             .join(", ")}
@@ -130,7 +130,7 @@ export function AttendanceHistorySection({
 
                     {/* Attendees List */}
                     <div>
-                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                         {t("common.attendees")} (
                         {record.attendances?.length || 0})
                       </p>
@@ -153,19 +153,19 @@ export function AttendanceHistorySection({
                               </span>
                               <Link
                                 href={`/dashboard/students/${att.student.id}`}
-                                className="text-[#4F46E5] hover:underline font-medium flex-1"
+                                className="text-primary hover:underline font-medium flex-1"
                               >
                                 {att.student.first_name} {att.student.last_name}
                               </Link>
                               {att.notes && (
-                                <span className="text-gray-500 text-xs">
+                                <span className="text-muted-foreground text-xs">
                                   {att.notes}
                                 </span>
                               )}
                             </div>
                           ))
                         ) : (
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             {t("attendance.noAttendance")}
                           </p>
                         )}

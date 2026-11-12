@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BookOpen, AlertCircle, Plus, Minus, X } from 'lucide-react'
 import { updateStudentPackageCredits } from '@/lib/actions/students.actions'
+import { toast } from 'sonner'
 
 interface StudentCreditsProps {
   packages: Array<{
@@ -25,7 +26,7 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
 
   const handleUpdateCredits = async (packageId: string, newAmount: number) => {
     if (!packageId) {
-      alert('Package ID is missing')
+      toast.error('Package ID is missing')
       return
     }
     if (newAmount < 0) return
@@ -34,13 +35,13 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
     try {
       const result = await updateStudentPackageCredits(packageId, newAmount)
       if (result.error) {
-        alert(`Error: ${result.error}`)
+        toast.error(`Error: ${result.error}`)
       } else {
         // Refresh page to see updates
         window.location.reload()
       }
     } catch (err) {
-      alert('Failed to update credits')
+      toast.error('Failed to update credits')
     } finally {
       setUpdating(null)
     }
@@ -48,11 +49,11 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
 
   if (loading) {
     return (
-      <Card className="border-[#E5E7EB] p-6">
+      <Card className="border-border p-6">
         <div className="animate-pulse space-y-3">
-          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-12 bg-gray-200 rounded"></div>
-          <div className="h-12 bg-gray-200 rounded"></div>
+          <div className="h-6 bg-muted rounded w-1/3"></div>
+          <div className="h-12 bg-muted rounded"></div>
+          <div className="h-12 bg-muted rounded"></div>
         </div>
       </Card>
     )
@@ -60,25 +61,25 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
 
   if (!packages || packages.length === 0) {
     return (
-      <Card className="border-[#E5E7EB] p-6">
+      <Card className="border-border p-6">
         <div className="flex items-center gap-3 mb-4">
-          <BookOpen className="text-[#4F46E5]" size={20} />
-          <h2 className="text-lg font-semibold text-[#111827]">Credits</h2>
+          <BookOpen className="text-primary" size={20} />
+          <h2 className="text-lg font-semibold text-foreground">Credits</h2>
         </div>
         <div className="text-center py-8">
-          <AlertCircle className="mx-auto text-[#D1D5DB] mb-2" size={32} />
-          <p className="text-[#6B7280]">No active packages</p>
+          <AlertCircle className="mx-auto text-input mb-2" size={32} />
+          <p className="text-muted-foreground">No active packages</p>
         </div>
       </Card>
     )
   }
 
   return (
-    <Card className="border-[#E5E7EB]">
+    <Card className="border-border">
       <div className="p-6">
         <div className="flex items-center gap-3 mb-6">
-          <BookOpen className="text-[#4F46E5]" size={20} />
-          <h2 className="text-lg font-semibold text-[#111827]">Credits</h2>
+          <BookOpen className="text-primary" size={20} />
+          <h2 className="text-lg font-semibold text-foreground">Credits</h2>
         </div>
 
         <div className="space-y-4">
@@ -96,11 +97,11 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
               percentage > 50 ? 'bg-green-100 text-green-800' : percentage > 25 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
 
             return (
-              <div key={idx} className={`p-4 rounded-lg border border-[#E5E7EB] ${statusColor}`}>
+              <div key={idx} className={`p-4 rounded-lg border border-border ${statusColor}`}>
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <p className="font-semibold text-[#111827]">{name}</p>
-                    <p className="text-sm text-[#6B7280]">{danceType}</p>
+                    <p className="font-semibold text-foreground">{name}</p>
+                    <p className="text-sm text-muted-foreground">{danceType}</p>
                   </div>
                   <div className={`px-3 py-1 rounded-full text-sm font-semibold ${badgeColor}`}>
                     {remaining} / {total}
@@ -108,14 +109,14 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
                 </div>
 
                 {/* Progress Bar */}
-                <div className="w-full bg-gray-300 rounded-full h-2 overflow-hidden mb-3">
+                <div className="w-full bg-input rounded-full h-2 overflow-hidden mb-3">
                   <div
-                    className="bg-[#4F46E5] h-full transition-all duration-300"
+                    className="bg-primary h-full transition-all duration-300"
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
 
-                <div className="text-xs text-[#6B7280] mb-4 flex items-center justify-between">
+                <div className="text-xs text-muted-foreground mb-4 flex items-center justify-between">
                   <span>{used} used • {remaining} left</span>
                   {editingPackageId === pkg.id ? (
                     <div className="flex items-center gap-2">
@@ -143,18 +144,17 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
                         variant="outline"
                         onClick={() => setEditingPackageId(null)}
                         disabled={updating === pkg.id}
-                        className="text-gray-500 border-gray-300 hover:bg-gray-50 h-7 px-2"
+                        className="text-muted-foreground border-input hover:bg-muted/50 h-7 px-2"
                       >
                         <X size={14} />
                       </Button>
                     </div>
                   ) : (
-                    <button
+                    <Button variant="link" size="sm" className="h-auto p-0"
                       onClick={() => setEditingPackageId(pkg.id)}
-                      className="text-[#4F46E5] text-sm font-semibold hover:underline"
                     >
                       Düzenle
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>

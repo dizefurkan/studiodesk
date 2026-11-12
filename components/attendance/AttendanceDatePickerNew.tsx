@@ -4,7 +4,7 @@ import * as React from "react"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { format, differenceInDays } from "date-fns"
 
-import { cn } from "@/lib/utils/cn"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -100,12 +100,12 @@ const AttendanceDatePicker = React.forwardRef<
             ref={ref}
             variant="outline"
             className={cn(
-              "inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-[#4F46E5] text-[#4F46E5] hover:bg-blue-100 transition-colors group",
+              "inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-primary text-primary hover:bg-blue-100 transition-colors group",
               className
             )}
           >
-            <CalendarIcon className="text-[#4F46E5] group-hover:text-blue-700" size={18} />
-            <span className="font-medium group-hover:text-blue-700">
+            <CalendarIcon className="text-primary group-hover:text-primary/90" size={18} />
+            <span className="font-medium group-hover:text-primary/90">
               {value ? formatDateDisplay(value) : "Pick a date"}
             </span>
           </Button>
@@ -116,8 +116,9 @@ const AttendanceDatePicker = React.forwardRef<
             selected={selectedDate}
             onSelect={handleSelectDate}
             disabled={isDateDisabled}
-            markedDates={markedDatesSet}
-            initialFocus
+            modifiers={{ marked: (d: Date) => markedDatesSet.has(format(d, "yyyy-MM-dd")) }}
+            modifiersClassNames={{ marked: "[&>button]:line-through [&>button]:text-muted-foreground" }}
+            autoFocus
           />
         </PopoverContent>
       </Popover>

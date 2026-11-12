@@ -26,7 +26,7 @@ export function getPackageColumns({
         return (
           <Link
             href={`/dashboard/packages/${pkg.id}/edit`}
-            className="text-[#4F46E5] hover:underline font-medium"
+            className="text-primary hover:underline font-medium"
           >
             {pkg.name}
           </Link>
@@ -61,7 +61,7 @@ export function getPackageColumns({
             <Link href={`/dashboard/packages/${row.original.id}/edit`}>
               <Button
                 size="sm"
-                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white h-8"
+                className="h-8"
               >
                 <Edit2 size={14} />
               </Button>

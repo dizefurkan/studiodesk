@@ -50,21 +50,21 @@ export function StudentHistory({
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <History size={24} className="text-[#4F46E5]" />
-          <h2 className="text-2xl font-bold text-[#111827]">History</h2>
+          <History size={24} className="text-primary" />
+          <h2 className="text-2xl font-bold text-foreground">History</h2>
         </div>
-        <p className="text-gray-600">View your attendance records and credit usage</p>
+        <p className="text-muted-foreground">View your attendance records and credit usage</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-[#E5E7EB]">
+      <div className="flex gap-2 border-b border-border">
         <Button
           onClick={() => setActiveTab('attendance')}
           variant="ghost"
           className={`px-4 py-2 font-medium ${
             activeTab === 'attendance'
-              ? 'text-[#4F46E5] border-b-2 border-[#4F46E5]'
-              : 'text-gray-600'
+              ? 'text-primary border-b-2 border-primary'
+              : 'text-muted-foreground'
           }`}
         >
           <Calendar size={16} className="mr-2" />
@@ -75,8 +75,8 @@ export function StudentHistory({
           variant="ghost"
           className={`px-4 py-2 font-medium ${
             activeTab === 'credits'
-              ? 'text-[#4F46E5] border-b-2 border-[#4F46E5]'
-              : 'text-gray-600'
+              ? 'text-primary border-b-2 border-primary'
+              : 'text-muted-foreground'
           }`}
         >
           <Zap size={16} className="mr-2" />
@@ -88,9 +88,9 @@ export function StudentHistory({
       {activeTab === 'attendance' && (
         <div className="space-y-4">
           {attendanceHistory.length === 0 ? (
-            <Card className="border-[#E5E7EB] p-8 text-center">
-              <Calendar size={32} className="mx-auto text-[#9CA3AF] mb-2" />
-              <p className="text-[#6B7280]">No attendance records yet</p>
+            <Card className="border-border p-8 text-center">
+              <Calendar size={32} className="mx-auto text-muted-foreground/70 mb-2" />
+              <p className="text-muted-foreground">No attendance records yet</p>
             </Card>
           ) : (
             <div className="space-y-3">
@@ -107,14 +107,14 @@ export function StudentHistory({
                   >
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
-                        <h4 className="font-semibold text-[#111827]">
+                        <h4 className="font-semibold text-foreground">
                           {course?.name || 'Unknown Course'}
                         </h4>
-                        <div className="text-sm text-gray-600 space-y-0.5">
+                        <div className="text-sm text-muted-foreground space-y-0.5">
                           {course?.dance_types?.name && (
                             <p>
                               Dance Type:{' '}
-                              <span className="text-[#111827]">
+                              <span className="text-foreground">
                                 {course.dance_types.name}
                               </span>
                             </p>
@@ -122,7 +122,7 @@ export function StudentHistory({
                           {course?.branches?.name && (
                             <p>
                               Branch:{' '}
-                              <span className="text-[#111827]">
+                              <span className="text-foreground">
                                 {course.branches.name}
                               </span>
                             </p>
@@ -134,7 +134,7 @@ export function StudentHistory({
                           ✓ Attended
                         </p>
                         {sessionDate && (
-                          <p className="text-xs text-gray-600">
+                          <p className="text-xs text-muted-foreground">
                             {sessionDate.toLocaleDateString()} at{' '}
                             {sessionDate.toLocaleTimeString([], {
                               hour: '2-digit',
@@ -156,9 +156,9 @@ export function StudentHistory({
       {activeTab === 'credits' && (
         <div className="space-y-4">
           {packageHistory.length === 0 ? (
-            <Card className="border-[#E5E7EB] p-8 text-center">
-              <Zap size={32} className="mx-auto text-[#9CA3AF] mb-2" />
-              <p className="text-[#6B7280]">No credit purchases yet</p>
+            <Card className="border-border p-8 text-center">
+              <Zap size={32} className="mx-auto text-muted-foreground/70 mb-2" />
+              <p className="text-muted-foreground">No credit purchases yet</p>
             </Card>
           ) : (
             <div className="space-y-3">
@@ -169,21 +169,21 @@ export function StudentHistory({
                 const creditsUsed = totalCredits - creditsRemaining
 
                 return (
-                  <Card key={pkg.id} className="border-[#E5E7EB] p-4">
+                  <Card key={pkg.id} className="border-border p-4">
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h4 className="font-semibold text-[#111827]">
+                          <h4 className="font-semibold text-foreground">
                             {pkg.package?.name || 'Unknown Package'}
                           </h4>
                           {pkg.package?.dance_types?.name && (
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-muted-foreground">
                               {pkg.package.dance_types.name}
                             </p>
                           )}
                         </div>
                         <div className="text-right text-sm">
-                          <p className="text-gray-600">
+                          <p className="text-muted-foreground">
                             Purchased:{' '}
                             {purchaseDate.toLocaleDateString()}
                           </p>
@@ -191,21 +191,21 @@ export function StudentHistory({
                       </div>
 
                       {/* Credit Stats */}
-                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#E5E7EB]">
+                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
                         <div className="text-center">
-                          <p className="text-xs text-gray-600 mb-1">Total</p>
-                          <p className="text-lg font-bold text-[#111827]">
+                          <p className="text-xs text-muted-foreground mb-1">Total</p>
+                          <p className="text-lg font-bold text-foreground">
                             {totalCredits}
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-xs text-gray-600 mb-1">Used</p>
+                          <p className="text-xs text-muted-foreground mb-1">Used</p>
                           <p className="text-lg font-bold text-amber-600">
                             {creditsUsed}
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-xs text-gray-600 mb-1">
+                          <p className="text-xs text-muted-foreground mb-1">
                             Remaining
                           </p>
                           <p
@@ -222,7 +222,7 @@ export function StudentHistory({
 
                       {/* Attendance count */}
                       {pkg.attendanceCount > 0 && (
-                        <div className="flex items-center gap-1 text-sm text-gray-600 pt-2 border-t border-[#E5E7EB]">
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground pt-2 border-t border-border">
                           <BookOpen size={14} />
                           <span>
                             {pkg.attendanceCount} class{' '}

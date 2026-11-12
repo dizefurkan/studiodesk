@@ -8,7 +8,11 @@ import { InstructorRatesTable } from '@/components/instructor-rates/InstructorRa
 import { AddInstructorRateDrawer } from '@/components/instructor-rates/AddInstructorRateDrawer'
 import { Card } from '@/components/ui/card'
 import Link from 'next/link'
-import { DollarSign } from 'lucide-react'
+import { Info, Plus } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/common/PageHeader'
+import { EmptyState } from '@/components/common/EmptyState'
 
 export default function InstructorRatesPage() {
   const t = useTranslations()
@@ -133,40 +137,44 @@ export default function InstructorRatesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link href="/dashboard" className="text-[#4F46E5] hover:underline mb-4 inline-block">
-          ← {t('common.back')} to Dashboard
-        </Link>
-        <h1 className="text-3xl font-bold text-[#111827]">{t('instructorRates.title')}</h1>
-        <p className="text-gray-600 mt-1">{t('instructorRates.description')}</p>
-      </div>
+      <PageHeader title={t('instructorRates.title')} description={t('instructorRates.description')} />
 
-      <Card className="border-[#E5E7EB] p-6 bg-linear-to-r from-amber-50 to-orange-50">
-        <div className="flex items-start gap-4">
-          <div className="p-3 bg-orange-100 rounded-lg">
-            <DollarSign className="text-orange-600" size={24} />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-[#111827]">{t('instructorRates.aboutTitle')}</h3>
-            <p className="text-sm text-gray-600 mt-2">
-              {t('instructorRates.aboutDescription')}
-            </p>
-            <ul className="list-disc list-inside text-sm text-gray-600 mt-3 space-y-1">
-              <li>{t('instructorRates.specificToInstructor')}</li>
-              <li>{t('instructorRates.earnAutomatically')}</li>
-              <li>{t('instructorRates.multipleRates')}</li>
-            </ul>
-          </div>
-        </div>
-      </Card>
+      <Alert>
+        <Info />
+        <AlertTitle>{t('instructorRates.aboutTitle')}</AlertTitle>
+        <AlertDescription>
+          <p>{t('instructorRates.aboutDescription')}</p>
+          <ul className="list-inside list-disc">
+            <li>{t('instructorRates.specificToInstructor')}</li>
+            <li>{t('instructorRates.earnAutomatically')}</li>
+            <li>{t('instructorRates.multipleRates')}</li>
+          </ul>
+        </AlertDescription>
+      </Alert>
 
-      <InstructorRatesTable 
-        rates={rates} 
-        instructors={drawerData?.instructors || []}
-        onRatesChange={handleRatesChange}
-        onOpenEdit={handleOpenEdit}
-        onOpenNewForInstructor={handleOpenNewForInstructor}
-      />
+      {!loading && (drawerData?.instructors || []).length === 0 ? (
+        <EmptyState
+          title={t('emptyStates.instructorRates.title')}
+          description={t('emptyStates.instructorRates.description')}
+          action={
+            <Button asChild>
+              <Link href="/dashboard/instructors/new">
+                <Plus /> {t('instructors.addNew')}
+              </Link>
+            </Button>
+          }
+        />
+      ) : (
+        <Card className="p-3 sm:p-4 md:p-6">
+          <InstructorRatesTable
+            rates={rates}
+            instructors={drawerData?.instructors || []}
+            onRatesChange={handleRatesChange}
+            onOpenEdit={handleOpenEdit}
+            onOpenNewForInstructor={handleOpenNewForInstructor}
+          />
+        </Card>
+      )}
 
       {/* Rate Form Drawer (for 'new' with instructor selected, or 'edit' mode) */}
       {!loading && drawerData && ((modalType === 'new' && selectedInstructor) || modalType === 'edit') && !editLoading && (

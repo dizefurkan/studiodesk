@@ -58,6 +58,22 @@ export async function sendTeamInvitation(
     return { error: 'Invalid role' }
   }
 
+  // Permission: owner, or a manager when the org allows managers to invite.
+  // Only the owner can add managers.
+  {
+    const admin = createAdminClient()
+    const { data: me } = await (admin as any)
+      .from('organization_users')
+      .select('role')
+      .eq('organization_id', organization.id)
+      .eq('user_id', currentUser.id)
+      .maybeSingle()
+    const myRole = me?.role as string | undefined
+    const canInvite = myRole === 'owner' || (myRole === 'manager' && (organization as any).allow_manager_invite)
+    if (!canInvite) return { error: 'You do not have permission to add team members' }
+    if (role === 'manager' && myRole !== 'owner') return { error: 'Only the owner can add managers' }
+  }
+
   try {
     const admin = createAdminClient()
 
@@ -117,104 +133,11 @@ export async function sendTeamInvitation(
     })
 
     if (authError) {
-      // If email already exists in Auth, try to find and add them to org
+      // The email belongs to an auth account without a profile. Never reset someone
+      // else's password from here (that was an account-takeover path); a platform
+      // admin can attach the account from /backoffice instead.
       if (authError.code === 'email_exists') {
-        console.log('Email exists in Auth, trying to fetch user...')
-        
-        // Generate temporary password for existing user
-        const tempPassword = generateTemporaryPassword()
-        
-        // Get user from Auth by email
-        const { data: authUsers, error: fetchError } = await (admin as any).auth.admin.listUsers()
-        
-        if (!fetchError && authUsers) {
-          const existingAuthUser = authUsers.users.find((u: any) => u.email === email.toLowerCase())
-          
-          if (existingAuthUser) {
-            console.log('Found existing Auth user:', existingAuthUser.id)
-            
-            // Update password for existing user
-            const { error: updateError } = await (admin as any).auth.admin.updateUserById(
-              existingAuthUser.id,
-              { password: tempPassword }
-            )
-            
-            if (updateError) {
-              console.error('Error updating password:', updateError)
-              // Continue anyway, user might already have a password set
-            }
-            
-            // Check if profile exists
-            const profileExistsResult = await admin
-              .from('profiles')
-              .select('id')
-              .eq('id', existingAuthUser.id)
-              .single()
-              .overrideTypes<Profile>() as any
-
-            const { data: profileExists } = profileExistsResult as { data: Profile | null; error: any }
-            
-            // Create profile if it doesn't exist
-            if (!profileExists) {
-              const { error: profileError } = await admin
-                .from('profiles')
-                .insert({
-                  id: existingAuthUser.id,
-                  email: email.toLowerCase(),
-                  full_name: email.split('@')[0],
-                } as any)
-                .overrideTypes<Profile>()
-              
-              if (profileError) {
-                console.error('❌ Error creating profile (existing user):', profileError)
-              } else {
-                console.log('✅ Profile created for existing user:', existingAuthUser.id)
-              }
-            }
-            
-            // Check if already in organization
-            const orgMember2Result = await admin
-              .from('organization_users')
-              .select('id')
-              .eq('user_id', existingAuthUser.id)
-              .eq('organization_id', organization.id)
-              .single()
-              .overrideTypes<OrganizationUser>() as any
-
-            const { data: orgMember2 } = orgMember2Result as { data: OrganizationUser | null; error: any }
-            
-            if (orgMember2) {
-              return { error: 'User is already a member of this organization' }
-            }
-            
-            // Add to organization
-            const { error: orgError } = await admin
-              .from('organization_users')
-              .insert({
-                organization_id: organization.id,
-                user_id: existingAuthUser.id,
-                role: role,
-              } as any)
-              .overrideTypes<OrganizationUser>()
-            
-            if (orgError) {
-              console.error('Error adding to organization:', orgError)
-              return { error: 'Failed to add user to organization' }
-            }
-            
-            revalidatePath('/dashboard/settings')
-            return {
-              success: true,
-              message: 'User created and added to organization',
-              email: email.toLowerCase(),
-              role: role,
-              temporaryPassword: tempPassword,
-              isNewUser: true,
-            }
-          }
-        }
-        
-        return { error: 'Email already registered. Contact support to add this user.' }
+        return { error: 'This email already has an account. Ask a StudioDesk admin to add it to your team.' }
       }
       
       console.error('Error creating auth user:')

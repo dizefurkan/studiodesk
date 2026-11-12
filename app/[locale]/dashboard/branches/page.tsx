@@ -3,7 +3,9 @@ import { getTranslations } from 'next-intl/server'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { MapPin, Plus } from 'lucide-react'
+import { PageHeader } from '@/components/common/PageHeader'
+import { EmptyState } from '@/components/common/EmptyState'
+import { Plus } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
 import { BranchesPageClient } from './branches-client'
 
@@ -29,39 +31,25 @@ export default async function BranchesPage({
   console.log('[BranchesPage] Branches to render:', branches)
   console.log('[BranchesPage] Branches length:', branches.length)
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#111827]">Branches</h1>
-          <p className="text-gray-600 mt-1">Manage your dance studio branches</p>
-        </div>
-        <Link href="/dashboard/branches/new">
-          <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
-            <Plus size={20} className="mr-2" />
-            Add Branch
-          </Button>
-        </Link>
-      </div>
+  const hasRecords = totalCount > 0 || !!searchQuery
+  const createAction = (
+    <Button asChild>
+      <Link href="/dashboard/branches/new">
+        <Plus /> {t('branches.addNew')}
+      </Link>
+    </Button>
+  )
 
-      {/* Content */}
-      {branches.length === 0 ? (
-        <Card className="border-[#E5E7EB]">
-          <div className="p-12 text-center">
-            <MapPin className="mx-auto text-[#9CA3AF] mb-4" size={48} />
-            <h3 className="text-lg font-semibold text-[#111827] mb-1">No branches yet</h3>
-            <p className="text-gray-600 mb-6">Get started by adding your first branch</p>
-            <Link href="/dashboard/branches/new">
-              <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
-                <Plus size={20} className="mr-2" />
-                Add First Branch
-              </Button>
-            </Link>
-          </div>
-        </Card>
-      ) : (
-        <Card className="border-[#E5E7EB] p-3 sm:p-4 md:p-6">
+  return (
+    <div className="space-y-4 md:space-y-6">
+      <PageHeader
+        title={t('branches.title')}
+        description={t('branches.description')}
+        action={hasRecords ? createAction : undefined}
+      />
+
+      {hasRecords ? (
+        <Card className="p-3 sm:p-4 md:p-6">
           <BranchesPageClient
             branches={branches}
             searchQuery={searchQuery}
@@ -70,6 +58,12 @@ export default async function BranchesPage({
             pageSize={PAGE_SIZE}
           />
         </Card>
+      ) : (
+        <EmptyState
+          title={t('emptyStates.branches.title')}
+          description={t('emptyStates.branches.description')}
+          action={createAction}
+        />
       )}
     </div>
   )

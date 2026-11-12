@@ -29,7 +29,7 @@ supabase push
 
 Alternatively, you can manually run the migration SQL from:
 ```
-supabase/migrations/20260419_add_history_logs_table.sql
+supabase/migrations/20261110000000_initial_schema.sql
 ```
 
 ### Step 2: Verify the Migration
@@ -127,7 +127,7 @@ await supabase.from('history_logs').insert({
 
 ## File Locations
 
-- Migration: `supabase/migrations/20260419_add_history_logs_table.sql`
+- Migration: `supabase/migrations/20261110000000_initial_schema.sql`
 - Actions: `lib/actions/history.actions.ts`
 - Component: `components/history/HistoryComponent.tsx`
 - Utilities: `lib/utils/history.ts`

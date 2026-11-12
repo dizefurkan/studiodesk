@@ -4,12 +4,12 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Trash2, DollarSign } from 'lucide-react'
 import { deleteTransaction } from '@/lib/actions/cash-register.actions'
 import { DataTable } from '@/components/table/data-table'
 import { getCashRegisterColumns, type CombinedCashItem } from './columns'
 import { CashRegisterFilters } from '@/components/cash-register/CashRegisterFilters'
 import { formatCurrency } from '@/lib/utils/format'
+import { useConfirm } from '@/components/common/ConfirmProvider'
 
 interface CashRegisterTableProps {
   items: CombinedCashItem[]
@@ -39,8 +39,10 @@ export function CashRegisterTable({
     search: '',
   })
 
+  const confirm = useConfirm()
+
   const handleDelete = async (transactionId: string) => {
-    if (!confirm('Are you sure you want to delete this transaction?')) return
+    if (!(await confirm({ title: 'Are you sure you want to delete this transaction?', destructive: true }))) return
 
     setIsDeletingId(transactionId)
     try {
@@ -76,7 +78,7 @@ export function CashRegisterTable({
   return (
     <>
       {/* Filters Card */}
-      <Card className="border-[#E5E7EB] p-6">
+      <Card className="border-border p-6">
         <CashRegisterFilters
           branches={branches}
           branchId={initialBranchId}
@@ -86,27 +88,16 @@ export function CashRegisterTable({
         />
       </Card>
 
-      {/* Table or Empty State */}
-      {filteredItems.length === 0 ? (
-        <Card className="border-[#E5E7EB] p-12 text-center">
-          <div className="text-gray-500">
-            <DollarSign size={48} className="mx-auto mb-4 opacity-50" />
-            <p className="text-lg">No records found</p>
-            <p className="text-sm mt-1">Record your first transaction to get started</p>
-          </div>
-        </Card>
-      ) : (
-        <Card className="border-[#E5E7EB] p-3 sm:p-4 md:p-6">
-          <DataTable<CombinedCashItem, any>
-            columns={columns}
-            data={filteredItems}
-            enablePagination={true}
-            enableFilters={false}
-            pageSize={10}
-            emptyMessage="No transactions found"
-          />
-        </Card>
-      )}
+      <Card className="p-3 sm:p-4 md:p-6">
+        <DataTable<CombinedCashItem, any>
+          columns={columns}
+          data={filteredItems}
+          enablePagination={true}
+          enableFilters={false}
+          pageSize={10}
+          emptyMessage={t('table.noResults')}
+        />
+      </Card>
     </>
   )
 }

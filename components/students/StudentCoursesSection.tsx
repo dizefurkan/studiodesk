@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { BookOpen, Calendar, Users, ArrowRight } from 'lucide-react'
 import { getStudentEnrolledCourses } from '@/lib/actions/course-students.actions'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface CourseWithStats {
   courseId: string
@@ -73,8 +74,8 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
 
   if (loading) {
     return (
-      <Card className="border-[#E5E7EB] p-6">
-        <div className="text-center text-gray-500">Loading courses...</div>
+      <Card className="border-border p-6">
+        <div className="text-center text-muted-foreground">Loading courses...</div>
       </Card>
     )
   }
@@ -91,56 +92,42 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
 
   if (totalCourses === 0) {
     return (
-      <Card className="border-[#E5E7EB] p-12 text-center">
+      <Card className="border-border p-12 text-center">
         <BookOpen size={48} className="mx-auto mb-4 opacity-50" />
-        <p className="text-gray-600 text-lg font-medium">No courses enrolled</p>
-        <p className="text-sm text-gray-500 mt-1">Student hasn't enrolled in any courses yet</p>
+        <p className="text-muted-foreground text-lg font-medium">No courses enrolled</p>
+        <p className="text-sm text-muted-foreground mt-1">Student hasn't enrolled in any courses yet</p>
       </Card>
     )
   }
 
   return (
-    <Card className="border-[#E5E7EB] p-6">
+    <Card className="border-border p-6">
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h3 className="text-lg font-semibold text-[#111827] flex items-center gap-2">
-            <BookOpen size={20} className="text-[#4F46E5]" />
+          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <BookOpen size={20} className="text-primary" />
             Enrolled Courses
           </h3>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {t('students.enrolledCourses', { total: totalCourses, active: activeCourses.length, completed: completedCourses.length })}
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 border-b border-[#E5E7EB]">
-          <button
-            onClick={() => setSelectedTab('active')}
-            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
-              selectedTab === 'active'
-                ? 'border-[#4F46E5] text-[#4F46E5]'
-                : 'border-transparent text-gray-600 hover:text-[#111827]'
-            }`}
-          >
-            {t('students.activeCourses', { count: activeCourses.length })}
-          </button>
-          <button
-            onClick={() => setSelectedTab('completed')}
-            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
-              selectedTab === 'completed'
-                ? 'border-[#4F46E5] text-[#4F46E5]'
-                : 'border-transparent text-gray-600 hover:text-[#111827]'
-            }`}
-          >
-            {t('students.completedCourses', { count: completedCourses.length })}
-          </button>
-        </div>
+        <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as typeof selectedTab)}>
+          <TabsList>
+            <TabsTrigger value="active">{t('students.activeCourses', { count: activeCourses.length })}</TabsTrigger>
+            <TabsTrigger value="completed">
+              {t('students.completedCourses', { count: completedCourses.length })}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         {/* Course List */}
         {courses.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               {selectedTab === 'active'
                 ? 'No active courses with remaining credits'
                 : 'No completed courses yet'}
@@ -151,13 +138,13 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
             {courses.map((course) => (
               <Link key={course.courseId} href={`/dashboard/courses/${course.courseId}`}>
                 <div
-                  className={`block p-4 rounded-lg border-2 transition-all hover:shadow-md hover:border-[#4F46E5] cursor-pointer ${getAttendanceColor(course.attendanceCount)}`}
+                  className={`block p-4 rounded-lg border-2 transition-all hover:shadow-md hover:border-primary cursor-pointer ${getAttendanceColor(course.attendanceCount)}`}
                 >
                   <div className="space-y-3">
                     {/* Header */}
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <h4 className="font-semibold text-[#111827] text-base hover:text-[#4F46E5]">
+                        <h4 className="font-semibold text-foreground text-base hover:text-primary">
                           {course.courseName}
                         </h4>
                         <div className="flex gap-2 mt-2 flex-wrap">
@@ -167,17 +154,17 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
                             </Badge>
                           )}
                           {course.branchName && (
-                            <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">
+                            <Badge className="bg-muted text-foreground/80 hover:bg-muted">
                               {course.branchName}
                             </Badge>
                           )}
                         </div>
                       </div>
-                      <ArrowRight className="text-gray-400 mt-1" size={20} />
+                      <ArrowRight className="text-muted-foreground/70 mt-1" size={20} />
                     </div>
 
                     {/* Schedule */}
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Calendar size={16} />
                       <span>
                         {DAYS[course.dayOfWeek]} • {course.startTime} - {course.endTime}
@@ -187,15 +174,15 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
                     {/* Attendance & Credits */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs text-gray-600 mb-1">Attendance</p>
+                        <p className="text-xs text-muted-foreground mb-1">Attendance</p>
                         <div className="flex items-baseline gap-1">
                           <span className={`text-2xl font-bold ${getAttendanceTextColor(course.attendanceCount)}`}>
                             {course.attendanceCount}
                           </span>
-                          <span className="text-sm text-gray-600">classes attended</span>
+                          <span className="text-sm text-muted-foreground">classes attended</span>
                         </div>
                         {course.attendanceDates.length > 0 && (
-                          <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                          <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
                             {course.attendanceDates
                               .filter((d) => d)
                               .slice(0, 3)
@@ -208,19 +195,19 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
 
                       {selectedTab === 'active' && (
                         <div>
-                          <p className="text-xs text-gray-600 mb-1">Remaining Credits</p>
+                          <p className="text-xs text-muted-foreground mb-1">Remaining Credits</p>
                           <div className="flex items-baseline gap-1">
-                            <span className="text-2xl font-bold text-[#4F46E5]">
+                            <span className="text-2xl font-bold text-primary">
                               {course.remainingCredits}
                             </span>
-                            <span className="text-sm text-gray-600">credits</span>
+                            <span className="text-sm text-muted-foreground">credits</span>
                           </div>
                         </div>
                       )}
                     </div>
 
                     {/* Enrolled Date */}
-                    <div className="text-xs text-gray-500 border-t border-current border-opacity-10 pt-2">
+                    <div className="text-xs text-muted-foreground border-t border-current border-opacity-10 pt-2">
                       Enrolled {new Date(course.enrolledAt).toLocaleDateString('tr-TR')}
                     </div>
                   </div>

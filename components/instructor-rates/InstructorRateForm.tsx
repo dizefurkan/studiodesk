@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createInstructorRate, updateInstructorRate } from '@/lib/actions/instructor-rates.actions'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
+import { Label } from '@/components/ui/label'
 
 interface Instructor {
   id: string
@@ -169,66 +171,66 @@ export function InstructorRateForm({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4">
         <div>
-          <label className="block text-sm font-medium text-[#374151] mb-2">
+          <Label className="block mb-2">
             Instructor *
-          </label>
-          <select
+          </Label>
+          <NativeSelect
             value={formData.instructorId}
             onChange={(e) => setFormData({ ...formData, instructorId: e.target.value })}
             disabled={!!initialRate || !!selectedInstructorId}
-            className="w-full border border-[#D1D5DB] rounded px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] disabled:bg-gray-100"
+            className="w-full"
           >
-            <option value="">Select instructor</option>
+            <NativeSelectOption value="">Select instructor</NativeSelectOption>
             {instructors.map((instructor) => (
-              <option key={instructor.id} value={instructor.id}>
+              <NativeSelectOption key={instructor.id} value={instructor.id}>
                 {instructor.first_name} {instructor.last_name}
-              </option>
+              </NativeSelectOption>
             ))}
-          </select>
+          </NativeSelect>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#374151] mb-2">
+          <Label className="block mb-2">
             Branch *
-          </label>
-          <select
+          </Label>
+          <NativeSelect
             value={formData.branchId}
             onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
             disabled={!!initialRate}
-            className="w-full border border-[#D1D5DB] rounded px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] disabled:bg-gray-100"
+            className="w-full"
           >
-            <option value="">Select branch</option>
+            <NativeSelectOption value="">Select branch</NativeSelectOption>
             {branches.map((branch) => (
-              <option key={branch.id} value={branch.id}>
+              <NativeSelectOption key={branch.id} value={branch.id}>
                 {branch.name}
-              </option>
+              </NativeSelectOption>
             ))}
-          </select>
+          </NativeSelect>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#374151] mb-2">
+          <Label className="block mb-2">
             Dance Type *
-          </label>
-          <select
+          </Label>
+          <NativeSelect
             value={formData.danceTypeId}
             onChange={(e) => setFormData({ ...formData, danceTypeId: e.target.value })}
             disabled={!!initialRate || !formData.branchId}
-            className="w-full border border-[#D1D5DB] rounded px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full"
           >
-            <option value="">Select dance type</option>
+            <NativeSelectOption value="">Select dance type</NativeSelectOption>
             {availableDanceTypes.map((danceType) => (
-              <option key={danceType.id} value={danceType.id}>
+              <NativeSelectOption key={danceType.id} value={danceType.id}>
                 {danceType.name}
-              </option>
+              </NativeSelectOption>
             ))}
-          </select>
+          </NativeSelect>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#374151] mb-2">
+          <Label className="block mb-2">
             Commission Ratio (%) *
-          </label>
+          </Label>
           <Input
             type="number"
             step="0.01"
@@ -237,7 +239,7 @@ export function InstructorRateForm({
             value={formData.ratio}
             onChange={(e) => setFormData({ ...formData, ratio: e.target.value })}
             placeholder="0.00"
-            className="border-[#D1D5DB]"
+            className="border-input"
           />
         </div>
       </div>
@@ -248,14 +250,14 @@ export function InstructorRateForm({
           variant="outline"
           onClick={handleCancel}
           disabled={loading}
-          className="border-[#D1D5DB] text-sm md:text-base h-9 md:h-10"
+          className="border-input text-sm md:text-base h-9 md:h-10"
         >
           Cancel
         </Button>
         <Button
           type="submit"
           disabled={loading}
-          className="bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm md:text-base h-9 md:h-10"
+          className="text-sm md:text-base h-9 md:h-10"
         >
           {loading ? 'Saving...' : initialRate ? 'Update Rate' : 'Add Rate'}
         </Button>

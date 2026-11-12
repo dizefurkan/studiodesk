@@ -1,4 +1,5 @@
 'use client'
+/* eslint-disable @typescript-eslint/no-explicit-any -- filter values are heterogeneous */
 
 import React, { useState } from 'react'
 import { useTranslations } from 'next-intl'
@@ -15,7 +16,6 @@ import {
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -25,7 +25,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Calendar, Settings2, X } from 'lucide-react'
+import { Settings2, X } from 'lucide-react'
 import { format } from 'date-fns'
 
 export type FilterType = 'select' | 'dateRange' | 'checkbox' | 'number'
@@ -62,7 +62,7 @@ export function DataTableFilters({
   ).length
 
   // Mobile Filter UI
-  const MobileFilterContent = () => (
+  const mobileFilterContent = (
     <div className="space-y-6">
       <div className="space-y-5">
         {filters.map((filter) => (
@@ -100,7 +100,7 @@ export function DataTableFilters({
   )
 
   // Desktop Filter UI
-  const DesktopFilterContent = () => (
+  const desktopFilterContent = (
     <div className="space-y-5">
       <div className="space-y-5">
         {filters.map((filter) => (
@@ -139,14 +139,14 @@ export function DataTableFilters({
               <Settings2 className="h-4 w-4" />
               {t('filters.title')}
               {activeFilters > 0 && (
-                <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-xs font-semibold text-white">
+                <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                   {activeFilters}
                 </span>
               )}
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start" className="w-72 p-4">
-            <DesktopFilterContent />
+            {desktopFilterContent}
           </PopoverContent>
         </Popover>
       </div>
@@ -158,7 +158,7 @@ export function DataTableFilters({
             <Button variant="outline" size="sm" className="gap-2 h-9">
               <Settings2 className="h-4 w-4" />
               {activeFilters > 0 && (
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-xs font-semibold text-white">
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                   {activeFilters}
                 </span>
               )}
@@ -169,7 +169,7 @@ export function DataTableFilters({
               <SheetTitle className="text-lg">{t('filters.title')}</SheetTitle>
             </SheetHeader>
             <div className="px-4 pb-6">
-              <MobileFilterContent />
+              {mobileFilterContent}
             </div>
           </SheetContent>
         </Sheet>
@@ -192,10 +192,10 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
     case 'select':
       return (
         <div className="space-y-2.5">
-          <Label className="text-sm font-semibold text-gray-700">{filter.label}</Label>
+          <Label className="text-sm font-semibold text-foreground/80">{filter.label}</Label>
           <div className="relative">
             <Select value={value || ''} onValueChange={(val) => onChange(val || undefined)}>
-              <SelectTrigger className={`h-9 w-full bg-white ${value ? 'pr-8' : ''}`}>
+              <SelectTrigger className={`h-9 w-full bg-background ${value ? 'pr-8' : ''}`}>
                 <SelectValue placeholder={filter.placeholder || t('common.selectOption')} />
               </SelectTrigger>
               <SelectContent>
@@ -223,13 +223,13 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
     case 'number':
       return (
         <div className="space-y-2.5">
-          <Label className="text-sm font-semibold text-gray-700">{filter.label}</Label>
+          <Label className="text-sm font-semibold text-foreground/80">{filter.label}</Label>
           <Input
             type="number"
             placeholder={filter.placeholder || t('common.selectOption')}
             value={value || ''}
             onChange={(e) => onChange(e.target.value ? Number(e.target.value) : '')}
-            className="h-9 w-full bg-white"
+            className="h-9 w-full bg-background"
           />
         </div>
       )
@@ -237,7 +237,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
     case 'dateRange':
       return (
         <div className="space-y-2.5">
-          <Label className="text-sm font-semibold text-gray-700">{filter.label}</Label>
+          <Label className="text-sm font-semibold text-foreground/80">{filter.label}</Label>
           <div className="space-y-2.5">
             <Input
               type="date"
@@ -250,7 +250,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
                     : undefined,
                 })
               }
-              className="h-9 w-full bg-white"
+              className="h-9 w-full bg-background"
               placeholder="From"
             />
             <Input
@@ -264,7 +264,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
                     : undefined,
                 })
               }
-              className="h-9 w-full bg-white"
+              className="h-9 w-full bg-background"
               placeholder="To"
             />
           </div>

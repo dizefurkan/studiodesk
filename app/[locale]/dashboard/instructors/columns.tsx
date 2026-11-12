@@ -58,7 +58,7 @@ export function getInstructorColumns({
       cell: ({ row }) => (
         <Link
           href={`/dashboard/instructors/${row.original.id}`}
-          className="font-medium text-[#111827] hover:text-[#4F46E5]"
+          className="font-medium text-foreground hover:text-primary"
         >
           {row.original.first_name} {row.original.last_name}
         </Link>
@@ -71,7 +71,7 @@ export function getInstructorColumns({
       accessorKey: 'email',
       header: 'Email',
       cell: ({ row }) => (
-        <span className="text-gray-600 truncate">{row.original.email}</span>
+        <span className="text-muted-foreground truncate">{row.original.email}</span>
       ),
     })
   }
@@ -84,12 +84,12 @@ export function getInstructorColumns({
         row.original.phone ? (
           <a
             href={`tel:${row.original.phone}`}
-            className="text-[#4F46E5] hover:underline"
+            className="text-primary hover:underline"
           >
             {row.original.phone}
           </a>
         ) : (
-          <span className="text-gray-400">-</span>
+          <span className="text-muted-foreground/70">-</span>
         )
       ),
     })
@@ -100,7 +100,7 @@ export function getInstructorColumns({
       accessorKey: 'courseCount',
       header: 'Courses',
       cell: ({ row }) => (
-        <Badge className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200">
+        <Badge className="bg-primary/10 text-primary">
           {row.original.courseCount}
         </Badge>
       ),
@@ -134,7 +134,7 @@ export function getInstructorColumns({
             </Badge>
           ))}
           {row.original.branches && row.original.branches.length > 2 && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted-foreground">
               +{row.original.branches.length - 2}
             </span>
           )}
@@ -148,7 +148,7 @@ export function getInstructorColumns({
       accessorKey: 'created_at',
       header: 'Joined',
       cell: ({ row }) => (
-        <span className="text-gray-600">
+        <span className="text-muted-foreground">
           {format(new Date(row.original.created_at), 'MMM dd, yyyy')}
         </span>
       ),
@@ -165,7 +165,7 @@ export function getInstructorColumns({
             <Button
               variant="ghost"
               size="sm"
-              className="text-[#4F46E5] hover:bg-[#EEF2FF]"
+              className="text-primary hover:bg-primary/10"
             >
               <Edit2 size={16} />
             </Button>

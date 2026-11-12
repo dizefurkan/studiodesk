@@ -6,7 +6,9 @@ import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Package as PackageIcon } from 'lucide-react'
+import { Plus } from 'lucide-react'
+import { PageHeader } from '@/components/common/PageHeader'
+import { EmptyState } from '@/components/common/EmptyState'
 import { deletePackage } from '@/lib/actions/packages.actions'
 import { DeleteConfirmModal } from '@/components/common/DeleteConfirmModal'
 import { DataTable } from '@/components/table/data-table'
@@ -82,31 +84,25 @@ export function PackagesPageContent({
     }
   }
 
-  return (
-    <div className="space-y-3 sm:space-y-4 md:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">{t('packages.title')}</h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">{t('packages.description')}</p>
-        </div>
-        <Link href="/dashboard/packages/new" className="inline-block w-fit">
-          <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 text-sm md:text-base h-9 md:h-10">
-            <Plus size={20} />
-            {t('packages.addNew')}
-          </Button>
-        </Link>
-      </div>
+  const hasRecords = totalCount > 0 || !!searchQuery
+  const createAction = (
+    <Button asChild>
+      <Link href="/dashboard/packages/new">
+        <Plus /> {t('packages.addNew')}
+      </Link>
+    </Button>
+  )
 
-      {packages.length === 0 ? (
-        <Card className="border-[#E5E7EB] p-6 sm:p-8 md:p-12 text-center">
-          <div className="text-gray-500">
-            <PackageIcon size={48} className="mx-auto mb-4 opacity-50" />
-            <p className="text-lg">{t('packages.noPackages')}</p>
-            <p className="text-sm mt-1">{t('packages.getStarted')}</p>
-          </div>
-        </Card>
-      ) : (
-        <Card className="border-[#E5E7EB] p-3 sm:p-4 md:p-6">
+  return (
+    <div className="space-y-4 md:space-y-6">
+      <PageHeader
+        title={t('packages.title')}
+        description={t('packages.description')}
+        action={hasRecords ? createAction : undefined}
+      />
+
+      {hasRecords ? (
+        <Card className="p-3 sm:p-4 md:p-6">
           <DataTable<Package, any>
             columns={getPackageColumns({
               onDelete: handleDeleteClick,
@@ -130,6 +126,12 @@ export function PackagesPageContent({
             emptyMessage={t('packages.noPackages')}
           />
         </Card>
+      ) : (
+        <EmptyState
+          title={t('emptyStates.packages.title')}
+          description={t('emptyStates.packages.description')}
+          action={createAction}
+        />
       )}
 
       <DeleteConfirmModal

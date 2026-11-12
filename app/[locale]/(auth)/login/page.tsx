@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { login } from '@/lib/actions/auth.actions'
 import { Loader2 } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 
 export default function LoginPage() {
   const t = useTranslations()
@@ -47,8 +47,10 @@ export default function LoginPage() {
       }
 
       // Redirect based on user state
-      if (result.nextStep === 'onboarding') {
-        router.push('/onboarding')
+      if (result.nextStep === 'backoffice') {
+        router.push('/backoffice')
+      } else if (result.nextStep === 'no-access') {
+        router.push('/no-access')
       } else {
         router.push('/dashboard')
       }
@@ -61,8 +63,8 @@ export default function LoginPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-[#111827] mb-2">{t('auth.login')}</h2>
-        <p className="text-gray-600">{t('auth.noAccount')}</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">{t('auth.login')}</h2>
+        <p className="text-muted-foreground">{t('auth.loginSubtitle')}</p>
       </div>
 
       {error && (
@@ -73,7 +75,7 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="email" className="text-[#111827]">{t('auth.emailAddress')}</Label>
+          <Label htmlFor="email" className="text-foreground">{t('auth.emailAddress')}</Label>
           <Input
             id="email"
             type="email"
@@ -88,7 +90,7 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <Label htmlFor="password" className="text-[#111827]">{t('auth.password')}</Label>
+          <Label htmlFor="password" className="text-foreground">{t('auth.password')}</Label>
           <Input
             id="password"
             type="password"
@@ -103,24 +105,20 @@ export default function LoginPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <input
+          <Checkbox onCheckedChange={(c) => setFormData((prev) => ({ ...prev, rememberMe: c === true }))}
             id="rememberMe"
-            type="checkbox"
-            name="rememberMe"
             checked={formData.rememberMe}
-            onChange={handleChange}
             disabled={loading}
-            className="w-4 h-4 rounded border-gray-300"
           />
-          <label htmlFor="rememberMe" className="text-sm text-gray-600 cursor-pointer">
+          <Label htmlFor="rememberMe" className="cursor-pointer">
             {t('auth.rememberMe')}
-          </label>
+          </Label>
         </div>
 
         <Button
           type="submit"
           disabled={loading}
-          className="w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white"
+          className="w-full"
         >
           {loading ? (
             <>
@@ -133,20 +131,6 @@ export default function LoginPage() {
         </Button>
       </form>
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-600">{t('auth.noAccount')}</span>
-        </div>
-      </div>
-
-      <Link href="/register">
-        <Button variant="outline" className="w-full border-[#4F46E5] text-[#4F46E5] hover:bg-[#4F46E5]/5">
-          {t('auth.register')}
-        </Button>
-      </Link>
     </div>
   )
 }

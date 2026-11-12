@@ -17,10 +17,10 @@ export default async function HistoryPage({
     <div className="space-y-4 md:space-y-6 lg:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
           {t('dashboard.recentActivity')}
         </h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           All activities and changes in your studio
         </p>
       </div>

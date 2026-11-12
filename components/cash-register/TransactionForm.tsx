@@ -13,6 +13,8 @@ import { createTransaction } from '@/lib/actions/cash-register.actions'
 import { getBranches } from '@/lib/actions/branches.actions'
 import { useEffect } from 'react'
 import type { Database } from '@/lib/types/database.types'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
+import { Textarea } from '@/components/ui/textarea'
 
 type Branch = Database['public']['Tables']['branches']['Row']
 
@@ -69,10 +71,10 @@ export function TransactionForm() {
   }
 
   return (
-    <Card className="border-[#E5E7EB] max-w-2xl">
+    <Card className="border-border max-w-2xl">
       <div className="p-3 sm:p-4 md:p-6 lg:p-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827] mb-2">Record Transaction</h1>
-        <p className="text-sm sm:text-base text-gray-600 mb-4 md:mb-6">Add a new income or expense record</p>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">Record Transaction</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mb-4 md:mb-6">Add a new income or expense record</p>
 
         {generalError && (
           <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">{generalError}</div>
@@ -87,18 +89,18 @@ export function TransactionForm() {
                 <FormItem>
                   <FormLabel>Branch</FormLabel>
                   <FormControl>
-                    <select
+                    <NativeSelect
                       disabled={isLoading}
-                      className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+                      className="w-full"
                       {...field}
                     >
-                      <option value="">Select a branch</option>
+                      <NativeSelectOption value="">Select a branch</NativeSelectOption>
                       {branches.map((branch) => (
-                        <option key={branch.id} value={branch.id}>
+                        <NativeSelectOption key={branch.id} value={branch.id}>
                           {branch.name}
-                        </option>
+                        </NativeSelectOption>
                       ))}
-                    </select>
+                    </NativeSelect>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -112,14 +114,14 @@ export function TransactionForm() {
                 <FormItem>
                   <FormLabel>Transaction Type</FormLabel>
                   <FormControl>
-                    <select
+                    <NativeSelect
                       disabled={isLoading}
-                      className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+                      className="w-full"
                       {...field}
                     >
-                      <option value="income">Income</option>
-                      <option value="expense">Expense</option>
-                    </select>
+                      <NativeSelectOption value="income">Income</NativeSelectOption>
+                      <NativeSelectOption value="expense">Expense</NativeSelectOption>
+                    </NativeSelect>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -153,10 +155,10 @@ export function TransactionForm() {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <textarea
+                    <Textarea
                       placeholder="e.g., Package sale, equipment purchase..."
                       disabled={isLoading}
-                      className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+                      className="w-full"
                       rows={4}
                       {...field}
                     />
@@ -170,7 +172,7 @@ export function TransactionForm() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
+                className="w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
                 {isLoading ? 'Recording...' : 'Record Transaction'}
               </Button>
@@ -179,7 +181,7 @@ export function TransactionForm() {
                 variant="outline"
                 onClick={() => router.back()}
                 disabled={isLoading}
-                className="border-[#E5E7EB] w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
+                className="border-border w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
                 Cancel
               </Button>

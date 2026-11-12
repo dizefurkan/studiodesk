@@ -29,6 +29,10 @@ import { getAvailableStudentsForCourse } from "@/lib/actions/course-students.act
 import { InstructorSelectionModal } from "./InstructorSelectionModal";
 import { formatTime } from "@/lib/utils/formatTime";
 import type { Database } from "@/lib/types/database.types";
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
+import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemTitle } from "@/components/ui/item";
 
 type Course = Database["public"]["Tables"]["courses"]["Row"];
 type Branch = Database["public"]["Tables"]["branches"]["Row"];
@@ -267,12 +271,12 @@ export function CourseForm({ course }: CourseFormProps) {
   }
 
   return (
-    <Card className="border-[#E5E7EB] max-w-4xl">
+    <Card className="border-border max-w-4xl">
       <div className="p-3 sm:p-4 md:p-6 lg:p-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827] mb-2">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">
           {course ? t("courses.editCourse") : t("courses.createNewCourse")}
         </h1>
-        <p className="text-sm sm:text-base text-gray-600 mb-4 md:mb-6">
+        <p className="text-sm sm:text-base text-muted-foreground mb-4 md:mb-6">
           {course
             ? t("courses.updateCourseDetails")
             : t("courses.setupNewCourse")}
@@ -322,18 +326,18 @@ export function CourseForm({ course }: CourseFormProps) {
                   <FormItem>
                     <FormLabel>{t("courses.branch")}</FormLabel>
                     <FormControl>
-                      <select
+                      <NativeSelect
                         disabled={isLoading}
-                        className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+                        className="w-full"
                         {...field}
                       >
-                        <option value="">{t("courses.selectBranch")}</option>
+                        <NativeSelectOption value="">{t("courses.selectBranch")}</NativeSelectOption>
                         {branches.map((branch) => (
-                          <option key={branch.id} value={branch.id}>
+                          <NativeSelectOption key={branch.id} value={branch.id}>
                             {branch.name}
-                          </option>
+                          </NativeSelectOption>
                         ))}
-                      </select>
+                      </NativeSelect>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -347,18 +351,18 @@ export function CourseForm({ course }: CourseFormProps) {
                   <FormItem>
                     <FormLabel>{t("courses.danceType")}</FormLabel>
                     <FormControl>
-                      <select
+                      <NativeSelect
                         disabled={isLoading || !!course}
-                        className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+                        className="w-full"
                         {...field}
                       >
-                        <option value="">{t("courses.selectDanceType")}</option>
+                        <NativeSelectOption value="">{t("courses.selectDanceType")}</NativeSelectOption>
                         {danceTypes.map((type) => (
-                          <option key={type.id} value={type.id}>
+                          <NativeSelectOption key={type.id} value={type.id}>
                             {type.name}
-                          </option>
+                          </NativeSelectOption>
                         ))}
-                      </select>
+                      </NativeSelect>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -369,21 +373,21 @@ export function CourseForm({ course }: CourseFormProps) {
             {/* Show Instructors section ONLY after dance type is selected */}
             {form.watch("danceTypeId") && (
               <div>
-                <label className="text-sm font-medium text-[#111827] block mb-2">
+                <Label className="block mb-2">
                   {t("courses.instructors")} (for{" "}
                   {
                     danceTypes.find((d) => d.id === form.watch("danceTypeId"))
                       ?.name
                   }
                   )
-                </label>
+                </Label>
 
                 {loadingInstructors ? (
-                  <div className="p-4 border border-[#E5E7EB] rounded-lg bg-gray-50 text-gray-600 text-sm">
+                  <div className="p-4 border border-border rounded-lg bg-muted/50 text-muted-foreground text-sm">
                     Loading instructors...
                   </div>
                 ) : instructors.length === 0 ? (
-                  <div className="p-4 border border-[#E5E7EB] rounded-lg bg-amber-50 text-amber-700 text-sm">
+                  <div className="p-4 border border-border rounded-lg bg-amber-50 text-amber-700 text-sm">
                     ⚠️ No instructors with rates for this dance type. Please set
                     up instructor rates first.
                   </div>
@@ -392,7 +396,7 @@ export function CourseForm({ course }: CourseFormProps) {
                     type="button"
                     onClick={() => setShowInstructorModal(true)}
                     variant="outline"
-                    className="w-full border-[#E5E7EB] text-left"
+                    className="w-full border-border text-left"
                   >
                     <span className="flex-1 text-left">
                       {form.watch("instructorIds") &&
@@ -415,17 +419,17 @@ export function CourseForm({ course }: CourseFormProps) {
                   <FormItem>
                     <FormLabel>{t("courses.dayOfWeek")}</FormLabel>
                     <FormControl>
-                      <select
+                      <NativeSelect
                         disabled={isLoading}
-                        className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+                        className="w-full"
                         {...field}
                       >
                         {DAYS.map((day, idx) => (
-                          <option key={idx} value={idx}>
+                          <NativeSelectOption key={idx} value={idx}>
                             {day}
-                          </option>
+                          </NativeSelectOption>
                         ))}
-                      </select>
+                      </NativeSelect>
                     </FormControl>
                     <FormMessage />
                     {!loadingCoursesOnDay &&
@@ -435,7 +439,7 @@ export function CourseForm({ course }: CourseFormProps) {
                           type="button"
                           variant="link"
                           onClick={() => setShowCoursesModal(true)}
-                          className="mt-2 text-[#4F46E5] text-xs md:text-sm p-0 h-auto"
+                          className="mt-2 text-primary text-xs md:text-sm p-0 h-auto"
                         >
                           {t("courses.viewCoursesOnThisDay")}{" "}
                           {t("courses.coursesOnDay", {
@@ -487,51 +491,35 @@ export function CourseForm({ course }: CourseFormProps) {
             </div>
 
             {/* Courses on this day modal */}
-            {showCoursesModal && (
-              <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-                <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
-                  <h2 className="text-lg font-bold mb-4 text-[#111827]">
-                    {t("courses.coursesOnThisDay")}
-                  </h2>
-                  {coursesOnDay && coursesOnDay.length > 0 ? (
-                    <div className="space-y-3">
-                      {coursesOnDay.map((c) => (
-                        <div
-                          key={c.id}
-                          className="p-3 border border-[#E5E7EB] rounded-lg bg-gray-50"
-                        >
-                          <div className="flex justify-between items-start gap-2 mb-2">
-                            <p className="font-semibold text-sm text-[#111827]">
-                              {c.name}
-                            </p>
-                            <p className="text-sm font-bold text-[#4F46E5] whitespace-nowrap">
-                              {formatTime(c.start_time)}
-                            </p>
-                          </div>
-                          <p className="text-xs text-[#374151]">
-                            {
-                              danceTypes.find((d) => d.id === c.dance_type_id)
-                                ?.name
-                            }
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-center text-[#6B7280] text-sm">
-                      {t("common.empty")}
-                    </p>
-                  )}
-                  <Button
-                    type="button"
-                    onClick={() => setShowCoursesModal(false)}
-                    className="mt-4 w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm"
-                  >
+            <Dialog open={showCoursesModal} onOpenChange={setShowCoursesModal}>
+              <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>{t("courses.coursesOnThisDay")}</DialogTitle>
+                </DialogHeader>
+                {coursesOnDay && coursesOnDay.length > 0 ? (
+                  <ItemGroup className="gap-2">
+                    {coursesOnDay.map((c) => (
+                      <Item key={c.id} variant="muted">
+                        <ItemContent>
+                          <ItemTitle>{c.name}</ItemTitle>
+                          <ItemDescription>
+                            {danceTypes.find((d) => d.id === c.dance_type_id)?.name}
+                          </ItemDescription>
+                        </ItemContent>
+                        <ItemActions className="font-semibold text-primary">{formatTime(c.start_time)}</ItemActions>
+                      </Item>
+                    ))}
+                  </ItemGroup>
+                ) : (
+                  <p className="text-center text-sm text-muted-foreground">{t("common.empty")}</p>
+                )}
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setShowCoursesModal(false)}>
                     {t("common.close")}
                   </Button>
-                </div>
-              </div>
-            )}
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             {/* Instructor Selection Modal */}
             <InstructorSelectionModal
@@ -551,7 +539,7 @@ export function CourseForm({ course }: CourseFormProps) {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
+                className="w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
                 {isLoading
                   ? t("common.saving")
@@ -564,7 +552,7 @@ export function CourseForm({ course }: CourseFormProps) {
                 variant="outline"
                 onClick={() => router.back()}
                 disabled={isLoading}
-                className="border-[#E5E7EB] w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
+                className="border-border w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
                 {t("common.cancel")}
               </Button>

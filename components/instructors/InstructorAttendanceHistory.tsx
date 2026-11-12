@@ -39,9 +39,9 @@ export function InstructorAttendanceHistory({
 
   if (loading) {
     return (
-      <div className="border-t border-[#E5E7EB] pt-8">
-        <h2 className="text-2xl font-bold text-[#111827] mb-4">Attendance History</h2>
-        <Card className="border-[#E5E7EB] p-6 text-center text-gray-500">
+      <div className="border-t border-border pt-8">
+        <h2 className="text-2xl font-bold text-foreground mb-4">Attendance History</h2>
+        <Card className="border-border p-6 text-center text-muted-foreground">
           Loading...
         </Card>
       </div>
@@ -50,9 +50,9 @@ export function InstructorAttendanceHistory({
 
   if (!sessions || sessions.length === 0) {
     return (
-      <div className="border-t border-[#E5E7EB] pt-8">
-        <h2 className="text-2xl font-bold text-[#111827] mb-4">Attendance History</h2>
-        <Card className="border-[#E5E7EB] p-6 text-center text-gray-500">
+      <div className="border-t border-border pt-8">
+        <h2 className="text-2xl font-bold text-foreground mb-4">Attendance History</h2>
+        <Card className="border-border p-6 text-center text-muted-foreground">
           No attendance records
         </Card>
       </div>
@@ -60,19 +60,19 @@ export function InstructorAttendanceHistory({
   }
 
   return (
-    <div className="border-t border-[#E5E7EB] pt-8">
-      <h2 className="text-2xl font-bold text-[#111827] mb-4">Attendance History</h2>
+    <div className="border-t border-border pt-8">
+      <h2 className="text-2xl font-bold text-foreground mb-4">Attendance History</h2>
 
       <div className="space-y-2">
         {sessions.map((session) => {
           const presentCount = session.attendance.filter((r: any) => r.is_present).length
           
           return (
-            <details key={session.sessionId} className="border border-[#E5E7EB] rounded-lg hover:border-[#4F46E5] transition-colors group">
-              <summary className="p-4 cursor-pointer hover:bg-gray-50 transition-colors flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <details key={session.sessionId} className="border border-border rounded-lg hover:border-primary transition-colors group">
+              <summary className="p-4 cursor-pointer hover:bg-muted/50 transition-colors flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                 <div className="flex-1">
                   <div className="flex flex-col gap-1">
-                    <p className="font-medium text-[#111827]">
+                    <p className="font-medium text-foreground">
                       {new Date(session.session_date).toLocaleDateString('tr-TR', {
                         year: 'numeric',
                         month: 'long',
@@ -82,19 +82,19 @@ export function InstructorAttendanceHistory({
                     </p>
                     {showCourseInfo && (
                       <>
-                        <p className="text-sm text-gray-700 font-semibold">📚 {session.course_name}</p>
+                        <p className="text-sm text-foreground/80 font-semibold">📚 {session.course_name}</p>
                         {session.dance_type && (
-                          <p className="text-sm text-gray-600">💃 {session.dance_type}</p>
+                          <p className="text-sm text-muted-foreground">💃 {session.dance_type}</p>
                         )}
                       </>
                     )}
                     {showInstructors && session.instructors && session.instructors.length > 0 && (
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         👥 {session.instructors.map((inst: any) => inst.name).join(', ')}
                       </p>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600 mt-2">
+                  <p className="text-sm text-muted-foreground mt-2">
                     {presentCount} present (out of {session.attendance.length} total)
                   </p>
                 </div>
@@ -107,15 +107,15 @@ export function InstructorAttendanceHistory({
                   </Link>
                 </div>
               </summary>
-              <div className="px-4 pb-4 border-t border-[#E5E7EB] pt-4 bg-gray-50">
-                <p className="text-sm font-semibold text-[#111827] mb-3">Attendance:</p>
+              <div className="px-4 pb-4 border-t border-border pt-4 bg-muted/50">
+                <p className="text-sm font-semibold text-foreground mb-3">Attendance:</p>
                 <div className="space-y-2">
                   {session.attendance.map((att: any, idx: number) => (
                     <div key={idx} className="flex items-center gap-3 text-sm">
                       <span className={`font-bold ${att.is_present ? 'text-green-600' : 'text-red-600'}`}>
                         {att.is_present ? '✓' : '✗'}
                       </span>
-                      <Link href={`/dashboard/students/${att.students?.id}`} className="text-[#4F46E5] hover:underline font-medium flex-1">
+                      <Link href={`/dashboard/students/${att.students?.id}`} className="text-primary hover:underline font-medium flex-1">
                         {att.students?.first_name} {att.students?.last_name}
                       </Link>
                       <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
@@ -125,7 +125,7 @@ export function InstructorAttendanceHistory({
                       }`}>
                         {att.is_present ? 'Present' : 'Absent'}
                       </span>
-                      {att.notes && <span className="text-gray-600">/{att.notes}</span>}
+                      {att.notes && <span className="text-muted-foreground">/{att.notes}</span>}
                     </div>
                   ))}
                 </div>

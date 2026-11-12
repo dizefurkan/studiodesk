@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
+import { ConfirmProvider } from '@/components/common/ConfirmProvider'
 import { SUPPORTED_LOCALES } from '@/lib/i18n/config'
 
 interface LocaleLayoutProps {
@@ -39,7 +40,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      {children}
+      <ConfirmProvider>{children}</ConfirmProvider>
     </NextIntlClientProvider>
   )
 }

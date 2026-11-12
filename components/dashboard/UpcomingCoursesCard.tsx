@@ -27,7 +27,7 @@ export function UpcomingCoursesCard({ upcomingCourses }: UpcomingCoursesCardProp
   const t = useTranslations()
 
   return (
-    <Card className="border-[#E5E7EB]">
+    <Card className="border-border">
       <CardHeader className="pb-3 md:pb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
         <div>
           <CardTitle className="text-lg sm:text-xl">{t('dashboard.upcomingCourses')}</CardTitle>
@@ -36,7 +36,7 @@ export function UpcomingCoursesCard({ upcomingCourses }: UpcomingCoursesCardProp
           </CardDescription>
         </div>
         <Link href="/dashboard/calendar">
-          <Button variant="outline" size="sm" className="border-[#E5E7EB] w-full sm:w-auto">
+          <Button variant="outline" size="sm" className="border-border w-full sm:w-auto">
             {t('common.viewDetails')}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
@@ -48,20 +48,20 @@ export function UpcomingCoursesCard({ upcomingCourses }: UpcomingCoursesCardProp
             {upcomingCourses.slice(0, 6).map((session) => (
               <div
                 key={session.id}
-                className="flex items-start gap-3 p-3 rounded-lg border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-gray-50 transition-colors"
+                className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-input hover:bg-muted/50 transition-colors"
               >
                 <div className="p-2 bg-orange-100 rounded-lg flex-shrink-0">
                   <Calendar className="w-4 h-4 text-orange-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-[#111827] truncate text-sm">
+                  <p className="font-medium text-foreground truncate text-sm">
                     {session.courses?.title || 'Unknown Course'}
                   </p>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-muted-foreground">
                     {format(new Date(session.session_date), 'MMM dd, yyyy')}
                   </p>
                   {session.courses?.instructors && session.courses.instructors.length > 0 && (
-                    <p className="text-xs text-gray-500 truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       {session.courses.instructors.map(i => i.name).join(', ')}
                     </p>
                   )}
@@ -71,8 +71,8 @@ export function UpcomingCoursesCard({ upcomingCourses }: UpcomingCoursesCardProp
           </div>
         ) : (
           <div className="text-center py-8">
-            <Calendar className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-            <p className="text-sm text-gray-600">{t('dashboard.noUpcomingCourses')}</p>
+            <Calendar className="w-8 h-8 text-muted-foreground/70 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">{t('dashboard.noUpcomingCourses')}</p>
           </div>
         )}
       </CardContent>

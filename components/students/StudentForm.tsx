@@ -98,12 +98,12 @@ export function StudentForm({ student }: StudentFormProps) {
   }
 
   return (
-    <Card className="border-[#E5E7EB] w-full max-w-2xl">
+    <Card className="border-border w-full max-w-2xl">
       <div className="p-3 sm:p-4 md:p-6 lg:p-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827] mb-2">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">
           {student ? t('students.editStudent') : t('students.addNew')}
         </h1>
-        <p className="text-sm sm:text-base text-gray-600 mb-4 md:mb-6">
+        <p className="text-sm sm:text-base text-muted-foreground mb-4 md:mb-6">
           {student ? t('students.updateInformationMessage') : t('students.addNewStudentMessage')}
         </p>
 
@@ -193,7 +193,7 @@ export function StudentForm({ student }: StudentFormProps) {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
+                className="w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
                 {isLoading ? t('common.saving') : student ? t('students.updateStudent') : t('students.createStudent')}
               </Button>
@@ -202,7 +202,7 @@ export function StudentForm({ student }: StudentFormProps) {
                 variant="outline"
                 onClick={() => router.back()}
                 disabled={isLoading}
-                className="border-[#E5E7EB] w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
+                className="border-border w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
                 {t('common.cancel')}
               </Button>

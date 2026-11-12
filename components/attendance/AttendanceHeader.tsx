@@ -28,7 +28,7 @@ export function AttendanceHeader({
   return (
     <div className="space-y-3">
       <div>
-        <Link href="/dashboard/attendance" className="text-[#4F46E5] hover:underline mb-4 inline-block text-sm">
+        <Link href="/dashboard/attendance" className="text-primary hover:underline mb-4 inline-block text-sm">
           ← {t('attendance.back')}
         </Link>
       </div>
@@ -36,8 +36,8 @@ export function AttendanceHeader({
       {/* Mobile: stacked, Desktop: side by side */}
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="flex-1">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#111827]">{courseName}</h1>
-          <p className="text-sm text-gray-600 mt-1">{t('attendance.recordAndManage')}</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{courseName}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('attendance.recordAndManage')}</p>
           
           {/* Minimalist Stats Row */}
           <div className="mt-3">

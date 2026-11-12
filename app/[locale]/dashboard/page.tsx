@@ -183,8 +183,8 @@ export default async function DashboardPage({
     <div className="space-y-4 md:space-y-6 lg:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111827]">{t('dashboard.welcome')}</h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">{t('dashboard.todaysOverview')}</p>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">{t('dashboard.welcome')}</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">{t('dashboard.todaysOverview')}</p>
       </div>
 
       {/* Stats Grid */}
@@ -192,14 +192,14 @@ export default async function DashboardPage({
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
-            <Card key={stat.label} className="border-[#E5E7EB] hover:shadow-md transition-shadow">
+            <Card key={stat.label} className="border-border hover:shadow-md transition-shadow">
               <CardContent className="pt-4 md:pt-6">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm text-gray-600 mb-1 truncate">{stat.label}</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-[#111827] break-words">{stat.value}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-1 truncate">{stat.label}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-foreground break-words">{stat.value}</p>
                   </div>
-                  <div className={`p-2 md:p-3 bg-gray-100 rounded-lg ${stat.color} flex-shrink-0`}>
+                  <div className={`p-2 md:p-3 bg-muted rounded-lg ${stat.color} flex-shrink-0`}>
                     <Icon className="w-5 h-5 md:w-6 md:h-6" />
                   </div>
                 </div>
@@ -212,7 +212,7 @@ export default async function DashboardPage({
       {/* Growth Rate & Revenue Chart Row */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         {/* Growth Rate Card */}
-        <Card className="border-[#E5E7EB] lg:col-span-1">
+        <Card className="border-border lg:col-span-1">
           <CardHeader className="pb-3 md:pb-6">
             <div className="flex items-center justify-between">
               <div>
@@ -232,9 +232,9 @@ export default async function DashboardPage({
             <p className={`text-3xl md:text-4xl font-bold ${growthRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {growthRate >= 0 ? '+' : ''}{growthRate.toFixed(1)}%
             </p>
-            <p className="text-xs sm:text-sm text-gray-600 mt-2">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
               {formatCurrency(lastMonthRevenue, organization?.currency || 'TRY')}
-              <span className="text-gray-400 mx-1">→</span>
+              <span className="text-muted-foreground/70 mx-1">→</span>
               {formatCurrency(revenue, organization?.currency || 'TRY')}
             </p>
           </CardContent>
@@ -252,7 +252,7 @@ export default async function DashboardPage({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
         {/* Quick Actions */}
         <div>
-          <Card className="border-[#E5E7EB]">
+          <Card className="border-border">
             <CardHeader className="pb-3 md:pb-6">
               <CardTitle className="text-lg sm:text-xl">{t('dashboard.quickActions')}</CardTitle>
               <CardDescription className="text-xs sm:text-sm">{t('dashboard.commonTasks')}</CardDescription>
@@ -264,7 +264,7 @@ export default async function DashboardPage({
                   <Link key={action.label} href={action.href}>
                     <Button
                       variant="outline"
-                      className="w-full justify-between border-[#E5E7EB] text-[#111827] hover:bg-gray-50 text-xs md:text-sm h-9 md:h-10"
+                      className="w-full justify-between border-border text-foreground hover:bg-muted/50 text-xs md:text-sm h-9 md:h-10"
                     >
                       <span className="flex items-center gap-2 min-w-0">
                         <Icon className="w-4 h-4 flex-shrink-0" />
@@ -281,7 +281,7 @@ export default async function DashboardPage({
 
         {/* Getting Started Checklist */}
         <div>
-          <Card className="border-[#E5E7EB]">
+          <Card className="border-border">
             <CardHeader className="pb-3 md:pb-6">
               <CardTitle className="text-lg sm:text-xl">{t('dashboard.gettingStarted')}</CardTitle>
               <CardDescription className="text-xs sm:text-sm">{t('dashboard.setupYourStudio')}</CardDescription>
@@ -290,13 +290,13 @@ export default async function DashboardPage({
               <div className="space-y-2 md:space-y-3">
                 {gettingStarted.map((item) => (
                   <Link key={item.title} href={item.href}>
-                    <div className="flex items-center gap-3 p-2 md:p-3 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-[#E5E7EB] transition-colors">
+                    <div className="flex items-center gap-3 p-2 md:p-3 rounded-lg hover:bg-muted/50 cursor-pointer border border-transparent hover:border-border transition-colors">
                       {item.completed ? (
                         <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
                       ) : (
-                        <Clock className="w-5 h-5 text-gray-400 shrink-0" />
+                        <Clock className="w-5 h-5 text-muted-foreground/70 shrink-0" />
                       )}
-                      <span className={`text-xs md:text-sm ${item.completed ? 'text-gray-500 line-through' : 'text-[#111827]'}`}>
+                      <span className={`text-xs md:text-sm ${item.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
                         {item.title}
                       </span>
                     </div>

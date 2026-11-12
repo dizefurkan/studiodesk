@@ -59,7 +59,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-[#6B7280] px-0 md:px-2 -ml-2 md:ml-0"
+              className="text-muted-foreground px-0 md:px-2 -ml-2 md:ml-0"
             >
               <ArrowLeft size={16} className="mr-2 shrink-0" />
               <span className="hidden md:inline">Back to Students</span>
@@ -68,10 +68,10 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
           </Link>
           
           {/* Student Name - Responsive size */}
-          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mt-3 truncate">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-3 truncate">
             {student.first_name} {student.last_name}
           </h1>
-          <p className="text-sm md:text-base text-gray-600 mt-1">Student Profile</p>
+          <p className="text-sm md:text-base text-muted-foreground mt-1">Student Profile</p>
         </div>
 
         {/* Right Section - Mobile: 2-column grid, Desktop: flex row */}
@@ -80,7 +80,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
             <StudentPurchaseDialog studentId={id} packages={availablePackages as any} currency={currency} />
           </div>
           <Link href={`/dashboard/students/${student.id}/edit`} className="col-span-1">
-            <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white w-full md:w-auto">
+            <Button className="w-full md:w-auto">
               <Edit2 size={16} className="mr-2 shrink-0" />
               <span className="hidden md:inline">Edit</span>
             </Button>
@@ -101,25 +101,25 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
       />
 
       {/* Main Info Card */}
-      <Card className="border-[#E5E7EB]">
+      <Card className="border-border">
         <div className="p-8">
-          <h2 className="text-lg font-semibold text-[#111827] mb-6">Contact Information</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-6">Contact Information</h2>
 
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <Mail className="text-[#4F46E5]" size={20} />
+              <Mail className="text-primary" size={20} />
               <div>
-                <p className="text-sm text-gray-600">Email</p>
-                <p className="font-medium text-[#111827]">{student.email}</p>
+                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="font-medium text-foreground">{student.email}</p>
               </div>
             </div>
 
             {student.phone && (
               <div className="flex items-center gap-4">
-                <Phone className="text-[#4F46E5]" size={20} />
+                <Phone className="text-primary" size={20} />
                 <div>
-                  <p className="text-sm text-gray-600">Phone</p>
-                  <p className="font-medium text-[#111827]">{student.phone}</p>
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <p className="font-medium text-foreground">{student.phone}</p>
                 </div>
               </div>
             )}
@@ -129,26 +129,26 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
 
       {/* Notes */}
       {student.notes && (
-        <Card className="border-[#E5E7EB]">
+        <Card className="border-border">
           <div className="p-8">
-            <h2 className="text-lg font-semibold text-[#111827] mb-4">Notes</h2>
-            <p className="text-gray-600 whitespace-pre-wrap">{student.notes}</p>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Notes</h2>
+            <p className="text-muted-foreground whitespace-pre-wrap">{student.notes}</p>
           </div>
         </Card>
       )}
 
       {/* Meta Info */}
-      <Card className="border-[#E5E7EB]">
+      <Card className="border-border">
         <div className="p-8">
-          <h2 className="text-lg font-semibold text-[#111827] mb-4">Information</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Information</h2>
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <p className="text-sm text-gray-600">Joined</p>
-              <p className="font-medium text-[#111827]">{new Date(student.created_at!).toLocaleDateString()}</p>
+              <p className="text-sm text-muted-foreground">Joined</p>
+              <p className="font-medium text-foreground">{new Date(student.created_at!).toLocaleDateString()}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Last Updated</p>
-              <p className="font-medium text-[#111827]">{new Date(student.updated_at!).toLocaleDateString()}</p>
+              <p className="text-sm text-muted-foreground">Last Updated</p>
+              <p className="font-medium text-foreground">{new Date(student.updated_at!).toLocaleDateString()}</p>
             </div>
           </div>
         </div>

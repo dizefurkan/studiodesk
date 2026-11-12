@@ -64,7 +64,7 @@ export function HistoryComponent({
 
   if (displayLogs.length === 0) {
     return (
-      <Card className="border-[#E5E7EB]">
+      <Card className="border-border">
         <CardHeader className="pb-3 md:pb-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1">
@@ -94,7 +94,7 @@ export function HistoryComponent({
           </div>
         </CardHeader>
         <CardContent className="text-center py-8">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {t("dashboard.noRecentActivity")}
           </p>
         </CardContent>
@@ -103,7 +103,7 @@ export function HistoryComponent({
   }
 
   return (
-    <Card className={`border-[#E5E7EB] ${showFullPage ? "h-full" : ""}`}>
+    <Card className={`border-border ${showFullPage ? "h-full" : ""}`}>
       <CardHeader className="pb-3 md:pb-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1">
@@ -139,8 +139,8 @@ export function HistoryComponent({
           ))}
         </div>
         {maxItems && logs.length > maxItems && (
-          <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
-            <p className="text-xs text-gray-500 text-center">
+          <div className="mt-4 pt-4 border-t border-border">
+            <p className="text-xs text-muted-foreground text-center">
               {logs.length - maxItems} more activities
             </p>
           </div>
@@ -165,10 +165,10 @@ function HistoryItem({ log }: { log: HistoryLog }) {
   );
 
   return (
-    <div className="flex gap-3 pb-3 border-b border-[#E5E7EB] last:border-0 last:pb-0">
+    <div className="flex gap-3 pb-3 border-b border-border last:border-0 last:pb-0">
       <div className="flex-shrink-0 text-lg">{actionIcon}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[#111827] break-words">
+        <p className="text-sm font-medium text-foreground break-words">
           {message}
         </p>
         <div className="flex flex-wrap gap-2 mt-2">
@@ -178,12 +178,12 @@ function HistoryItem({ log }: { log: HistoryLog }) {
           >
             {log.entity}
           </Badge>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-muted-foreground">
             {format(new Date(log.created_at), "MMM dd, yyyy HH:mm")}
           </span>
         </div>
         {log.data?.summary && (
-          <p className="text-xs text-gray-600 mt-1 break-words">
+          <p className="text-xs text-muted-foreground mt-1 break-words">
             {log.data.summary}
           </p>
         )}

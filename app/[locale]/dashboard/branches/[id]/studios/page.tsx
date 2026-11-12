@@ -5,8 +5,11 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { Trash2, Edit2, Plus, X } from 'lucide-react'
+import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
+import { Trash2, Edit2, Plus, X, CircleAlert } from 'lucide-react'
 import { getStudios, createStudio, updateStudio, deleteStudio } from '@/lib/actions/studios.actions'
+import { useConfirm } from '@/components/common/ConfirmProvider'
+import { Label } from '@/components/ui/label'
 
 interface Studio {
   id: string
@@ -112,8 +115,10 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
     }
   }
 
+  const confirm = useConfirm()
+
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this studio?')) {
+    if ((await confirm({ title: 'Are you sure you want to delete this studio?', destructive: true }))) {
       const result = await deleteStudio(id)
       if (result.error) {
         setError(result.error)
@@ -136,16 +141,14 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#111827]">Studios</h1>
-          <p className="text-gray-600 mt-1">Manage dance studios in this branch</p>
+          <h1 className="text-3xl font-bold text-foreground">Studios</h1>
+          <p className="text-muted-foreground mt-1">Manage dance studios in this branch</p>
         </div>
         <Button
           onClick={() => {
             resetForm()
             setShowForm(true)
-          }}
-          className="bg-[#4F46E5] hover:bg-[#4338CA] text-white"
-        >
+          }}>
           <Plus size={20} className="mr-2" />
           Add Studio
         </Button>
@@ -153,27 +156,28 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
 
       {/* Error Message */}
       {error && (
-        <Card className="border-red-500 bg-red-50 p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-red-900">{error}</p>
-            <button onClick={() => setError(null)}>
-              <X size={20} className="text-red-900" />
-            </button>
-          </div>
-        </Card>
+        <Alert variant="destructive">
+          <CircleAlert />
+          <AlertDescription>{error}</AlertDescription>
+          <AlertAction>
+            <Button variant="ghost" size="icon-xs" aria-label="Dismiss" onClick={() => setError(null)}>
+              <X />
+            </Button>
+          </AlertAction>
+        </Alert>
       )}
 
       {/* Form */}
       {showForm && (
-        <Card className="border-[#E5E7EB] p-6">
-          <h2 className="text-lg font-semibold mb-4 text-[#111827]">
+        <Card className="border-border p-6">
+          <h2 className="text-lg font-semibold mb-4 text-foreground">
             {editingId ? 'Edit Studio' : 'New Studio'}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">
+              <Label className="block mb-1">
                 Studio Name *
-              </label>
+              </Label>
               <Input
                 type="text"
                 value={formData.name}
@@ -185,9 +189,9 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">
+              <Label className="block mb-1">
                 Description
-              </label>
+              </Label>
               <Input
                 type="text"
                 value={formData.description}
@@ -198,9 +202,9 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">
+              <Label className="block mb-1">
                 Capacity (Students)
-              </label>
+              </Label>
               <Input
                 type="number"
                 value={formData.capacity}
@@ -212,9 +216,9 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">
+              <Label className="block mb-1">
                 Image URL (for future)
-              </label>
+              </Label>
               <Input
                 type="url"
                 value={formData.image_url}
@@ -225,7 +229,7 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
             </div>
 
             <div className="flex gap-2 pt-4">
-              <Button type="submit" className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
+              <Button type="submit" >
                 {editingId ? 'Update' : 'Create'}
               </Button>
               <Button
@@ -245,8 +249,8 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
 
       {/* Studios List */}
       {studios.length === 0 ? (
-        <Card className="border-[#E5E7EB] p-12 text-center">
-          <div className="text-gray-500">
+        <Card className="border-border p-12 text-center">
+          <div className="text-muted-foreground">
             <p className="text-lg">No studios yet</p>
             <p className="text-sm mt-1">Create your first studio to organize dance classes</p>
           </div>
@@ -254,20 +258,20 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
       ) : (
         <div className="grid gap-4">
           {studios.map((studio) => (
-            <Card key={studio.id} className="border-[#E5E7EB] p-6">
+            <Card key={studio.id} className="border-border p-6">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-[#111827]">{studio.name}</h3>
+                  <h3 className="text-xl font-semibold text-foreground">{studio.name}</h3>
                   {studio.description && (
-                    <p className="text-gray-600 text-sm mt-1">{studio.description}</p>
+                    <p className="text-muted-foreground text-sm mt-1">{studio.description}</p>
                   )}
                   {studio.capacity && (
-                    <p className="text-gray-600 text-sm mt-1">
+                    <p className="text-muted-foreground text-sm mt-1">
                       Capacity: <span className="font-medium">{studio.capacity} students</span>
                     </p>
                   )}
                   {studio.image_url && (
-                    <p className="text-gray-600 text-sm mt-1">Has image (future use)</p>
+                    <p className="text-muted-foreground text-sm mt-1">Has image (future use)</p>
                   )}
                 </div>
                 <div className="flex gap-2 ml-4">
@@ -275,7 +279,7 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
                     onClick={() => handleEditClick(studio)}
                     variant="outline"
                     size="sm"
-                    className="border-gray-300 hover:bg-gray-100"
+                    className="border-input hover:bg-muted"
                   >
                     <Edit2 size={16} />
                   </Button>

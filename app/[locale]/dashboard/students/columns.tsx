@@ -72,7 +72,7 @@ export function getStudentColumns({
       cell: ({ row }) => (
         <Link
           href={`/dashboard/students/${row.original.id}`}
-          className="font-medium text-[#111827] hover:text-[#4F46E5]"
+          className="font-medium text-foreground hover:text-primary"
         >
           {row.original.first_name} {row.original.last_name}
         </Link>
@@ -85,7 +85,7 @@ export function getStudentColumns({
       accessorKey: 'email',
       header: 'Email',
       cell: ({ row }) => (
-        <span className="text-gray-600 truncate">{row.original.email}</span>
+        <span className="text-muted-foreground truncate">{row.original.email}</span>
       ),
     })
   }
@@ -98,12 +98,12 @@ export function getStudentColumns({
         row.original.phone ? (
           <a
             href={`tel:${row.original.phone}`}
-            className="text-[#4F46E5] hover:underline"
+            className="text-primary hover:underline"
           >
             {row.original.phone}
           </a>
         ) : (
-          <span className="text-gray-400">-</span>
+          <span className="text-muted-foreground/70">-</span>
         )
       ),
     })
@@ -154,7 +154,7 @@ export function getStudentColumns({
       accessorKey: 'created_at',
       header: 'Joined',
       cell: ({ row }) => (
-        <span className="text-gray-600">
+        <span className="text-muted-foreground">
           {format(new Date(row.original.created_at), 'MMM dd, yyyy')}
         </span>
       ),
@@ -171,7 +171,7 @@ export function getStudentColumns({
             <Button
               variant="ghost"
               size="sm"
-              className="text-[#4F46E5] hover:bg-[#EEF2FF]"
+              className="text-primary hover:bg-primary/10"
             >
               <Edit2 size={16} />
             </Button>

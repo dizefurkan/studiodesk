@@ -171,35 +171,35 @@ function CalendarPage({
   const renderMonthView = () => (
     <div className="space-y-4">
       {/* Info banner for mobile */}
-      <div className="md:hidden bg-blue-50 border border-[#4F46E5] border-opacity-30 rounded-lg p-3 flex gap-3">
-        <Info size={20} className="text-[#4F46E5] shrink-0 mt-0.5" />
-        <p className="text-sm text-[#374151]">
+      <div className="md:hidden bg-blue-50 border border-primary border-opacity-30 rounded-lg p-3 flex gap-3">
+        <Info size={20} className="text-primary shrink-0 mt-0.5" />
+        <p className="text-sm text-foreground/80">
           {t('courses.selectDayViewClasses')}
         </p>
       </div>
 
-      <Card className="border-[#E5E7EB] p-4 md:p-6">
+      <Card className="border-border p-4 md:p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <h2 className="text-xl md:text-2xl font-bold text-[#111827]">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground">
             {MONTHS[month - 1]} {year}
           </h2>
           <div className="flex gap-2 flex-wrap">
             <Button
               variant="outline"
-              className="border-[#E5E7EB] text-sm"
+              className="border-border text-sm"
               onClick={goToPrevMonth}
             >
               {t('calendar.previous')}
             </Button>
             <Button
-              className="bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm"
+              className="text-sm"
               onClick={goToToday}
             >
               {t('calendar.today')}
             </Button>
             <Button
               variant="outline"
-              className="border-[#E5E7EB] text-sm"
+              className="border-border text-sm"
               onClick={goToNextMonth}
             >
               {t('calendar.next')}
@@ -212,7 +212,7 @@ function CalendarPage({
         <div className="grid grid-cols-7 gap-1 md:gap-2 min-w-fit md:min-w-none">
           {/* Day headers */}
           {DAYS.map((day) => (
-            <div key={day} className="text-center font-medium text-[#111827] py-2 text-xs md:text-sm">
+            <div key={day} className="text-center font-medium text-foreground py-2 text-xs md:text-sm">
               {day.slice(0, 3)}
             </div>
           ))}
@@ -233,22 +233,22 @@ function CalendarPage({
                 key={idx}
                 className={`p-2 md:p-4 rounded-lg border-2 min-h-20 md:min-h-30 flex flex-col relative ${
                   day === null
-                    ? 'bg-gray-50 border-gray-100'
+                    ? 'bg-muted/50 border-border'
                     : isToday
-                    ? 'border-[#4F46E5] bg-blue-50 hover:border-[#4338CA] hover:bg-blue-100 transition-all cursor-pointer'
-                    : 'border-[#E5E7EB] bg-white hover:border-[#4F46E5] hover:bg-blue-50 transition-all cursor-pointer'
+                    ? 'border-primary bg-blue-50 hover:border-primary/90 hover:bg-blue-100 transition-all cursor-pointer'
+                    : 'border-border bg-background hover:border-primary hover:bg-blue-50 transition-all cursor-pointer'
                 }`}
               >
                 {day !== null && (
                   <div className="h-full overflow-hidden flex flex-col">
-                    <p className={`font-bold mb-1 text-sm md:text-base ${isToday ? 'text-[#4F46E5]' : 'text-[#111827]'}`}>{day}</p>
+                    <p className={`font-bold mb-1 text-sm md:text-base ${isToday ? 'text-primary' : 'text-foreground'}`}>{day}</p>
 
                     {/* Desktop View: Course names */}
                     <div className="hidden md:flex flex-col flex-1 space-y-1">
                       {visibleCourses.map((course: any) => (
                         <div
                           key={course.id}
-                          className="text-xs bg-[#4F46E5] text-white p-1 rounded truncate hover:bg-[#4338CA] transition-all"
+                          className="text-xs bg-primary text-primary-foreground p-1 rounded truncate hover:bg-primary/90 transition-all"
                           title={`${course.name} - ${formatTime(course.start_time)}`}
                         >
                           {course.name}
@@ -261,23 +261,22 @@ function CalendarPage({
                       {dayCoursesForDay.length > 0 ? (
                         <Popover>
                           <PopoverTrigger asChild>
-                            <button
-                              className="text-lg font-bold text-[#4F46E5] hover:text-[#4338CA] transition-colors"
+                            <Button variant="link" className="h-auto p-0 text-lg font-bold"
                               title={`${dayCoursesForDay.length} class(es)`}
                             >
                               +{dayCoursesForDay.length}
-                            </button>
+                            </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-80">
                             <div className="space-y-3">
-                              <h4 className="font-bold text-[#111827] text-sm">{t('calendar.classesOnDay', { count: dayCoursesForDay.length, date: day })}</h4>
+                              <h4 className="font-bold text-foreground text-sm">{t('calendar.classesOnDay', { count: dayCoursesForDay.length, date: day })}</h4>
                               {dayCoursesForDay.map((course: any) => (
                                 <div
                                   key={course.id}
-                                  className="p-3 bg-white border border-[#E5E7EB] rounded-lg"
+                                  className="p-3 bg-background border border-border rounded-lg"
                                 >
-                                  <p className="font-semibold text-[#111827] text-sm">{course.name}</p>
-                                  <div className="flex justify-between items-center mt-2 text-xs text-[#6B7280]">
+                                  <p className="font-semibold text-foreground text-sm">{course.name}</p>
+                                  <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
                                     <span>
                                       {formatTime(course.start_time)} - {formatTime(course.end_time)}
                                     </span>
@@ -291,27 +290,25 @@ function CalendarPage({
                           </PopoverContent>
                         </Popover>
                       ) : (
-                        <span className="text-xs text-[#D1D5DB]">—</span>
+                        <span className="text-xs text-input">—</span>
                       )}
                     </div>
 
                     {/* Desktop: Show more button */}
                     <div className="hidden md:block">
                       {remainingCount > 0 && !isExpanded && (
-                        <button
+                        <Button variant="link" size="xs" className="mt-1 h-auto p-0"
                           onClick={() => setExpandedDay(dayKey)}
-                          className="text-xs text-[#4F46E5] font-semibold mt-1 hover:text-[#4338CA] transition-colors"
                         >
                           +{remainingCount} {t('calendar.moreClasses')}
-                        </button>
+                        </Button>
                       )}
                       {isExpanded && remainingCount > 0 && (
-                        <button
+                        <Button variant="link" size="xs" className="mt-1 h-auto p-0"
                           onClick={() => setExpandedDay(null)}
-                          className="text-xs text-[#4F46E5] font-semibold mt-1 hover:text-[#4338CA] transition-colors"
                         >
                           {t('calendar.showLess')}
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -331,28 +328,28 @@ function CalendarPage({
     const weekEnd = new Date(weekDays[6])
 
     return (
-      <Card className="border-[#E5E7EB] p-4 md:p-6">
+      <Card className="border-border p-4 md:p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <h2 className="text-xl md:text-2xl font-bold text-[#111827]">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground">
             Week {weekStart.getDate()} - {weekEnd.getDate()} {MONTHS[weekEnd.getMonth()]} {weekEnd.getFullYear()}
           </h2>
           <div className="flex gap-2 flex-wrap">
             <Button
               variant="outline"
-              className="border-[#E5E7EB] text-sm"
+              className="border-border text-sm"
               onClick={goToPrevWeek}
             >
               {t('calendar.previous')}
             </Button>
             <Button
-              className="bg-[#4F46E5] hover:bg-[#4338CA] text-white text-sm"
+              className="text-sm"
               onClick={goToToday}
             >
               {t('calendar.today')}
             </Button>
             <Button
               variant="outline"
-              className="border-[#E5E7EB] text-sm"
+              className="border-border text-sm"
               onClick={goToNextWeek}
             >
               {t('calendar.next')}
@@ -369,27 +366,27 @@ function CalendarPage({
               return (
                 <div
                   key={idx}
-                  className="flex-1 min-w-0 border-2 border-[#E5E7EB] rounded-lg p-3 hover:border-[#4F46E5] transition-all"
+                  className="flex-1 min-w-0 border-2 border-border rounded-lg p-3 hover:border-primary transition-all"
                 >
                   <div className="text-center mb-3">
-                    <p className="text-xs md:text-sm font-medium text-[#6B7280]">
+                    <p className="text-xs md:text-sm font-medium text-muted-foreground">
                       {DAYS[day.getDay()].slice(0, 3)}
                     </p>
-                    <p className="text-lg md:text-xl font-bold text-[#111827]">{day.getDate()}</p>
+                    <p className="text-lg md:text-xl font-bold text-foreground">{day.getDate()}</p>
                   </div>
                   <div className="space-y-2">
                     {getCoursesForDay(day.getDay()).map((course: any) => (
                       <Link
                         key={course.id}
                         href={`/dashboard/courses/${course.id}`}
-                        className="block p-2 bg-[#4F46E5] text-white rounded text-xs hover:bg-[#4338CA] transition-all"
+                        className="block p-2 bg-primary text-primary-foreground rounded text-xs hover:bg-primary/90 transition-all"
                       >
                         <p className="font-semibold truncate">{course.name}</p>
                         <p className="text-[11px] text-blue-100">{formatTime(course.start_time)}</p>
                       </Link>
                     ))}
                     {dayCoursesCount === 0 && (
-                      <p className="text-xs text-[#D1D5DB] text-center py-2">{t('calendar.noClasses')}</p>
+                      <p className="text-xs text-input text-center py-2">{t('calendar.noClasses')}</p>
                     )}
                   </div>
                 </div>
@@ -415,9 +412,9 @@ function CalendarPage({
 
         return (
           <div key={day.toISOString()}>
-            <h3 className="text-lg font-bold text-[#111827] mb-3">{dayFormatted}</h3>
+            <h3 className="text-lg font-bold text-foreground mb-3">{dayFormatted}</h3>
             {dayCoursesForDay.length === 0 ? (
-              <Card className="border-[#E5E7EB] p-4 text-center text-gray-500">
+              <Card className="border-border p-4 text-center text-muted-foreground">
                 <p className="text-sm">{t('calendar.noClassesScheduled')}</p>
               </Card>
             ) : (
@@ -429,21 +426,21 @@ function CalendarPage({
                     return timeA - timeB
                   })
                   .map((course: any) => (
-                    <Card key={course.id} className="border-[#E5E7EB] p-4 hover:shadow-md transition-shadow">
+                    <Card key={course.id} className="border-border p-4 hover:shadow-md transition-shadow">
                       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div className="flex-1 w-full md:w-auto">
                           <Link href={`/dashboard/courses/${course.id}`}>
-                            <h4 className="font-semibold text-[#111827] hover:text-[#4F46E5] text-base md:text-lg">
+                            <h4 className="font-semibold text-foreground hover:text-primary text-base md:text-lg">
                               {course.name}
                             </h4>
                           </Link>
-                          <p className="text-sm text-gray-600 mt-1">{course.branches?.name}</p>
+                          <p className="text-sm text-muted-foreground mt-1">{course.branches?.name}</p>
                           <div className="flex gap-4 mt-3 text-sm flex-wrap">
-                            <div className="flex items-center gap-1 text-gray-600">
+                            <div className="flex items-center gap-1 text-muted-foreground">
                               <Clock size={14} />
                               {formatTime(course.start_time)} - {formatTime(course.end_time)}
                             </div>
-                            <div className="flex items-center gap-1 text-gray-600">
+                            <div className="flex items-center gap-1 text-muted-foreground">
                               <Users size={14} />
                               {course.instructorCount || 0} {t('calendar.instructors')}
                             </div>
@@ -469,8 +466,8 @@ function CalendarPage({
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-[#111827]">{t('calendar.title')}</h1>
-          <p className="text-gray-600 mt-1 text-sm md:text-base">{t('calendar.description')}</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('calendar.title')}</h1>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">{t('calendar.description')}</p>
         </div>
       </div>
 
@@ -480,8 +477,8 @@ function CalendarPage({
           onClick={() => setViewMode('month')}
           className={`gap-2 text-sm ${
             viewMode === 'month'
-              ? 'bg-[#4F46E5] text-white hover:bg-[#4338CA]'
-              : 'border-[#E5E7EB] text-[#111827] hover:bg-gray-50'
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+              : 'border-border text-foreground hover:bg-muted/50'
           }`}
           variant={viewMode === 'month' ? 'default' : 'outline'}
         >
@@ -492,8 +489,8 @@ function CalendarPage({
           onClick={() => setViewMode('week')}
           className={`gap-2 text-sm ${
             viewMode === 'week'
-              ? 'bg-[#4F46E5] text-white hover:bg-[#4338CA]'
-              : 'border-[#E5E7EB] text-[#111827] hover:bg-gray-50'
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+              : 'border-border text-foreground hover:bg-muted/50'
           }`}
           variant={viewMode === 'week' ? 'default' : 'outline'}
         >
@@ -504,8 +501,8 @@ function CalendarPage({
           onClick={() => setViewMode('agenda')}
           className={`gap-2 text-sm ${
             viewMode === 'agenda'
-              ? 'bg-[#4F46E5] text-white hover:bg-[#4338CA]'
-              : 'border-[#E5E7EB] text-[#111827] hover:bg-gray-50'
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+              : 'border-border text-foreground hover:bg-muted/50'
           }`}
           variant={viewMode === 'agenda' ? 'default' : 'outline'}
         >
@@ -516,8 +513,8 @@ function CalendarPage({
 
       {/* Loading State */}
       {loading && (
-        <Card className="border-[#E5E7EB] p-12 text-center">
-          <div className="text-gray-500">
+        <Card className="border-border p-12 text-center">
+          <div className="text-muted-foreground">
             <Calendar size={48} className="mx-auto mb-4 opacity-50 animate-pulse" />
             <p className="text-lg">{t('calendar.loading')}</p>
           </div>
@@ -535,8 +532,8 @@ function CalendarPage({
 
       {/* Empty State */}
       {!loading && courses.length === 0 && (
-        <Card className="border-[#E5E7EB] p-12 text-center">
-          <div className="text-gray-500">
+        <Card className="border-border p-12 text-center">
+          <div className="text-muted-foreground">
             <Calendar size={48} className="mx-auto mb-4 opacity-50" />
             <p className="text-lg">{t('calendar.noCoursesScheduled')}</p>
             <p className="text-sm mt-1">{t('calendar.createCoursesMessage')}</p>

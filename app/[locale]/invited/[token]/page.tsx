@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, CheckCircle, Loader2, Mail } from 'lucide-react'
 import { getInvitationByToken, acceptInvitation } from '@/lib/actions/invitations.actions'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export default function InvitationPage() {
   const router = useRouter()
@@ -89,10 +91,10 @@ export default function InvitationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#F3F4F6] to-[#E5E7EB] p-4">
-        <Card className="w-full max-w-md border-[#E5E7EB] p-8 text-center">
-          <Loader2 className="mx-auto animate-spin text-[#4F46E5] mb-4" size={32} />
-          <p className="text-gray-600">Loading invitation...</p>
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-muted to-border p-4">
+        <Card className="w-full max-w-md border-border p-8 text-center">
+          <Loader2 className="mx-auto animate-spin text-primary mb-4" size={32} />
+          <p className="text-muted-foreground">Loading invitation...</p>
         </Card>
       </div>
     )
@@ -100,21 +102,20 @@ export default function InvitationPage() {
 
   if (error && step === 'load') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#F3F4F6] to-[#E5E7EB] p-4">
-        <Card className="w-full max-w-md border-[#E5E7EB] p-8">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-muted to-border p-4">
+        <Card className="w-full max-w-md border-border p-8">
           <div className="flex items-center justify-center mb-6">
             <div className="bg-red-50 p-3 rounded-lg">
               <AlertCircle className="text-red-600" size={24} />
             </div>
           </div>
 
-          <h1 className="text-2xl font-bold text-[#111827] text-center mb-3">Invalid Invitation</h1>
-          <p className="text-gray-600 text-center mb-6">{error}</p>
+          <h1 className="text-2xl font-bold text-foreground text-center mb-3">Invalid Invitation</h1>
+          <p className="text-muted-foreground text-center mb-6">{error}</p>
 
           <Button
             onClick={() => router.push('/login')}
-            className="w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white"
-          >
+            className="w-full">
             Back to Login
           </Button>
         </Card>
@@ -124,26 +125,25 @@ export default function InvitationPage() {
 
   if (step === 'success') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#F3F4F6] to-[#E5E7EB] p-4">
-        <Card className="w-full max-w-md border-[#E5E7EB] p-8">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-muted to-border p-4">
+        <Card className="w-full max-w-md border-border p-8">
           <div className="flex items-center justify-center mb-6">
             <div className="bg-green-50 p-3 rounded-lg">
               <CheckCircle className="text-green-600" size={32} />
             </div>
           </div>
 
-          <h1 className="text-2xl font-bold text-[#111827] text-center mb-3">Account Created!</h1>
-          <p className="text-gray-600 text-center mb-2">
+          <h1 className="text-2xl font-bold text-foreground text-center mb-3">Account Created!</h1>
+          <p className="text-muted-foreground text-center mb-2">
             Welcome to {invitation?.organizations?.name}
           </p>
-          <p className="text-sm text-gray-500 text-center mb-6">
+          <p className="text-sm text-muted-foreground text-center mb-6">
             Redirecting you to login page...
           </p>
 
           <Button
             onClick={() => router.push('/login')}
-            className="w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white"
-          >
+            className="w-full">
             Go to Login
           </Button>
         </Card>
@@ -152,10 +152,10 @@ export default function InvitationPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#F3F4F6] to-[#E5E7EB] p-4">
-      <Card className="w-full max-w-md border-[#E5E7EB]">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-muted to-border p-4">
+      <Card className="w-full max-w-md border-border">
         {/* Header */}
-        <div className="bg-linear-to-r from-[#4F46E5] to-[#4338CA] p-8 text-white">
+        <div className="bg-linear-to-r from-primary to-primary/90 p-8 text-white">
           <div className="flex items-center justify-center mb-3">
             <Mail size={32} />
           </div>
@@ -186,46 +186,46 @@ export default function InvitationPage() {
           <form onSubmit={handleSignup} className="space-y-4">
             {/* Full Name */}
             <div>
-              <label className="block text-sm font-medium text-[#111827] mb-1">
+              <Label className="block mb-1">
                 Full Name
-              </label>
-              <input
+              </Label>
+              <Input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="John Doe"
-                className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
+                className="w-full"
               />
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-[#111827] mb-1">
+              <Label className="block mb-1">
                 Password
-              </label>
-              <input
+              </Label>
+              <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
+                className="w-full"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 At least 8 characters, containing uppercase, lowercase, and numbers
               </p>
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium text-[#111827] mb-1">
+              <Label className="block mb-1">
                 Confirm Password
-              </label>
-              <input
+              </Label>
+              <Input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent"
+                className="w-full"
               />
             </div>
 
@@ -233,7 +233,7 @@ export default function InvitationPage() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white font-semibold py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full font-semibold py-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
@@ -246,7 +246,7 @@ export default function InvitationPage() {
             </Button>
           </form>
 
-          <p className="text-xs text-gray-500 text-center mt-6">
+          <p className="text-xs text-muted-foreground text-center mt-6">
             By signing up, you agree to the Terms of Service
           </p>
         </div>

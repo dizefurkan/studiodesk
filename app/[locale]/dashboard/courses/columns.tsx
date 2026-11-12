@@ -60,7 +60,7 @@ export function getCourseColumns({
       cell: ({ row }) => (
         <Link
           href={`/dashboard/courses/${row.original.id}`}
-          className="font-medium text-[#111827] hover:text-[#4F46E5]"
+          className="font-medium text-foreground hover:text-primary"
         >
           {row.original.name}
         </Link>
@@ -73,7 +73,7 @@ export function getCourseColumns({
       accessorKey: 'branch_id',
       header: 'Branch',
       cell: ({ row }) => (
-        <Badge className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200">
+        <Badge className="bg-primary/10 text-primary">
           {row.original.branches?.name || '-'}
         </Badge>
       ),
@@ -97,7 +97,7 @@ export function getCourseColumns({
       id: 'schedule',
       header: 'Schedule',
       cell: ({ row }) => (
-        <span className="text-gray-600 text-sm">
+        <span className="text-muted-foreground text-sm">
           {DAYS[row.original.day_of_week]} {formatTime(row.original.start_time)} - {formatTime(row.original.end_time)}
         </span>
       ),
@@ -125,15 +125,15 @@ export function getCourseColumns({
         return (
           <div className="flex flex-wrap gap-1">
             {instructors.slice(0, 1).map((ci, idx) => (
-              <span key={idx} className="text-xs text-gray-600">
+              <span key={idx} className="text-xs text-muted-foreground">
                 {ci.instructors?.first_name} {ci.instructors?.last_name}
               </span>
             ))}
             {instructors.length > 1 && (
-              <span className="text-xs text-gray-500">+{instructors.length - 1}</span>
+              <span className="text-xs text-muted-foreground">+{instructors.length - 1}</span>
             )}
             {instructors.length === 0 && (
-              <span className="text-xs text-gray-400">-</span>
+              <span className="text-xs text-muted-foreground/70">-</span>
             )}
           </div>
         )
@@ -146,7 +146,7 @@ export function getCourseColumns({
       accessorKey: 'attendanceCount',
       header: 'Attendance',
       cell: ({ row }) => (
-        <span className="text-gray-600 text-sm">{row.original.attendanceCount || 0}</span>
+        <span className="text-muted-foreground text-sm">{row.original.attendanceCount || 0}</span>
       ),
     })
   }
@@ -161,7 +161,7 @@ export function getCourseColumns({
             <Button
               variant="ghost"
               size="sm"
-              className="text-[#4F46E5] hover:bg-[#EEF2FF]"
+              className="text-primary hover:bg-primary/10"
             >
               <Edit2 size={16} />
             </Button>

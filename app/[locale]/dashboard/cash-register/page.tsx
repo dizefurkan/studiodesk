@@ -75,11 +75,11 @@ export default async function CashRegisterPage({
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-[#111827]">Cash Register</h1>
-            <p className="text-gray-600 mt-1">Track all financial transactions</p>
+            <h1 className="text-3xl font-bold text-foreground">Cash Register</h1>
+            <p className="text-muted-foreground mt-1">Track all financial transactions</p>
           </div>
           <Link href="/dashboard/cash-register/new">
-            <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
+            <Button className="gap-2">
               <Plus size={20} />
               New Transaction
             </Button>
@@ -88,49 +88,49 @@ export default async function CashRegisterPage({
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-[#E5E7EB] p-6">
+          <Card className="border-border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Income</p>
+                <p className="text-sm text-muted-foreground mb-1">Income</p>
                 <p className="text-3xl font-bold text-green-600">{formatCurrency(income, currency)}</p>
               </div>
               <TrendingUp className="text-green-600" size={32} />
             </div>
           </Card>
 
-          <Card className="border-[#E5E7EB] p-6">
+          <Card className="border-border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Expenses</p>
+                <p className="text-sm text-muted-foreground mb-1">Expenses</p>
                 <p className="text-3xl font-bold text-red-600">{formatCurrency(expenses, currency)}</p>
               </div>
               <TrendingDown className="text-red-600" size={32} />
             </div>
           </Card>
 
-          <Card className="border-[#E5E7EB] p-6">
+          <Card className="border-border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Instructor Pay</p>
+                <p className="text-sm text-muted-foreground mb-1">Instructor Pay</p>
                 <p className="text-3xl font-bold text-purple-600">{formatCurrency(totalEarnings, currency)}</p>
               </div>
               <Users className="text-purple-600" size={32} />
             </div>
           </Card>
 
-          <Card className="border-[#E5E7EB] p-6">
+          <Card className="border-border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Net Balance</p>
+                <p className="text-sm text-muted-foreground mb-1">Net Balance</p>
                 <p
                   className={`text-3xl font-bold ${
-                    netBalance >= 0 ? 'text-[#4F46E5]' : 'text-red-600'
+                    netBalance >= 0 ? 'text-primary' : 'text-red-600'
                   }`}
                 >
                   {formatCurrency(netBalance, currency)}
                 </p>
               </div>
-              <DollarSign className="text-[#4F46E5]" size={32} />
+              <DollarSign className="text-primary" size={32} />
             </div>
           </Card>
         </div>
@@ -152,7 +152,7 @@ export default async function CashRegisterPage({
     return (
       <div className="p-8 text-center">
         <p className="text-red-600 font-semibold mb-2">Error loading cash register</p>
-        <p className="text-gray-600 text-sm">Please try refreshing the page</p>
+        <p className="text-muted-foreground text-sm">Please try refreshing the page</p>
       </div>
     )
   }

@@ -1,9 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { RotateCcw, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Settings, X } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { StudentColumns } from '@/hooks/useStudentColumns'
 
 interface StudentColumnSettingsProps {
@@ -12,87 +19,43 @@ interface StudentColumnSettingsProps {
   onReset: () => void
 }
 
-export function StudentColumnSettings({
-  columns,
-  onToggle,
-  onReset,
-}: StudentColumnSettingsProps) {
-  const [isOpen, setIsOpen] = useState(false)
+const LABELS: Record<keyof StudentColumns, string> = {
+  name: 'Name',
+  email: 'Email',
+  phone: 'Phone',
+  credits: 'Credits',
+  courses: 'Courses',
+  joined: 'Joined Date',
+  actions: 'Actions',
+}
 
-  const columnLabels: Record<keyof StudentColumns, string> = {
-    name: 'Name',
-    email: 'Email',
-    phone: 'Phone',
-    credits: 'Credits',
-    courses: 'Courses',
-    joined: 'Joined Date',
-    actions: 'Actions',
-  }
-
+export function StudentColumnSettings({ columns, onToggle, onReset }: StudentColumnSettingsProps) {
   return (
-    <div className="relative">
-      <Button
-        variant="outline"
-        size="sm"
-        className="border-[#E5E7EB] h-10"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <Settings size={16} className="mr-2" />
-        Columns
-      </Button>
-
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-2 z-50">
-          <Card className="border-[#E5E7EB] p-4 w-56 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-[#111827]">Show Columns</h3>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-gray-200 rounded"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="space-y-2 mb-4">
-              {(Object.keys(columnLabels) as Array<keyof StudentColumns>).map(
-                (column) => (
-                  <label
-                    key={column}
-                    className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={columns[column]}
-                      onChange={() => onToggle(column)}
-                      className="rounded"
-                      disabled={
-                        (column === 'name' || column === 'actions') &&
-                        columns[column]
-                      }
-                    />
-                    <span className="text-sm text-[#111827]">
-                      {columnLabels[column]}
-                    </span>
-                  </label>
-                )
-              )}
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full border-[#E5E7EB] text-xs"
-              onClick={() => {
-                onReset()
-                setIsOpen(false)
-              }}
-            >
-              Reset to Default
-            </Button>
-          </Card>
-        </div>
-      )}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline">
+          <Settings /> Columns
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>Show Columns</DropdownMenuLabel>
+        {(Object.keys(LABELS) as Array<keyof StudentColumns>).map((column) => (
+          <DropdownMenuCheckboxItem
+            key={column}
+            checked={columns[column]}
+            // name & actions can't be hidden
+            disabled={(column === 'name' || column === 'actions') && columns[column]}
+            onCheckedChange={() => onToggle(column)}
+            onSelect={(e) => e.preventDefault()}
+          >
+            {LABELS[column]}
+          </DropdownMenuCheckboxItem>
+        ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={onReset}>
+          <RotateCcw /> Reset to Default
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

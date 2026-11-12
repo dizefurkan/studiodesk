@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { getInstructorsAndBranchesAndDanceTypes, getInstructorRate, getInstructorRates } from '@/lib/actions/instructor-rates.actions'
 import { AddInstructorRateDrawer } from '@/components/instructor-rates/AddInstructorRateDrawer'
 
@@ -11,6 +12,7 @@ interface EditInstructorRatePageProps {
 }
 
 export default function EditInstructorRatePage({ params }: EditInstructorRatePageProps) {
+  const router = useRouter()
   const [id, setId] = useState<string>('')
   const [data, setData] = useState<any>(null)
   const [rate, setRate] = useState<any>(null)
@@ -48,9 +50,7 @@ export default function EditInstructorRatePage({ params }: EditInstructorRatePag
     load()
   }, [id])
 
-  if (loading) {
-    return <div className="fixed inset-0 bg-black/50 z-40" />
-  }
+  if (loading) return null
 
   return (
     <AddInstructorRateDrawer
@@ -59,7 +59,9 @@ export default function EditInstructorRatePage({ params }: EditInstructorRatePag
       danceTypes={data?.danceTypes || []}
       rates={rates}
       isOpen={true}
-      onOpenChange={() => {}}
+      onOpenChange={(open) => {
+        if (!open) router.push('/dashboard/instructor-rates')
+      }}
       initialRate={rate}
     />
   )

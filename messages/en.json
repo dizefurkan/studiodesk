@@ -41,20 +41,15 @@
     "searchInstructor": "Search instructor...",
     "searchBranch": "Search branch...",
     "selectOption": "Select an option...",
-    "noOptions": "No options available",    "apply": "Apply",    "name": "Name",
+    "noOptions": "No options available",
+    "apply": "Apply",
+    "name": "Name",
     "email": "Email",
     "phone": "Phone",
     "status": "Status",
     "actions": "Actions",
     "createdAt": "Created At",
     "updatedAt": "Updated At",
-    "selectOption": "Select an option...",
-    "noOptions": "No options available",
-    "name": "Name",
-    "email": "Email",
-    "phone": "Phone",
-    "status": "Status",
-    "actions": "Actions",
     "select": "Select",
     "instructorName": "Instructor Name",
     "rateStatus": "Rate Status",
@@ -118,7 +113,16 @@
     "instructorName": "Instructor Name",
     "rateStatus": "Rate Status",
     "total": "total",
-    "results": "results"
+    "results": "results",
+    "pageOf": "Page {page} of {total}",
+    "rowsOf": "{shown} of {total} rows",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "noResults": "No results",
+    "noResultsHint": "Try changing your search or filters.",
+    "clearFilters": "Clear filters",
+    "expand": "Expand",
+    "collapse": "Collapse"
   },
   "auth": {
     "login": "Login",
@@ -145,7 +149,8 @@
     "signIn": "Sign In",
     "getStarted": "Get Started",
     "startFreeTrial": "Start Free Trial",
-    "learnMore": "Learn More"
+    "learnMore": "Learn More",
+    "loginSubtitle": "Accounts are created by your StudioDesk admin. Sign in with your credentials."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -321,8 +326,8 @@
     "courseName": "Course Name",
     "startTime": "Start Time",
     "endTime": "End Time",
-    "instructors": "Instructors",
-    "students": "Students",
+    "instructors": "Instructor",
+    "students": "Student",
     "selectBranch": "Select a branch",
     "selectDanceType": "Select a dance type",
     "selectInstructors": "Select instructors",
@@ -344,10 +349,7 @@
     "addStudentsTitle": "Add Students to Course",
     "credits": "Credits",
     "viewMode": "View",
-    "students": "Student",
-    "instructors": "Instructor",
     "attendanceRecords": "Attendance",
-    "noCourses": "No courses found",
     "createFirstCourse": "Create your first course to get started",
     "duplicateCourseWarning": "A course for this dance type already exists on this day.",
     "coursesOnThisDay": "Courses on this day",
@@ -481,7 +483,7 @@
   },
   "danceTypes": {
     "title": "Dance Types",
-    "description": "Manage your dance types",
+    "description": "Description",
     "addNew": "Add New Dance Type",
     "editType": "Edit Dance Type",
     "deleteType": "Delete Dance Type",
@@ -489,7 +491,6 @@
     "deleteDescription": "This action cannot be undone. The dance type will be permanently removed from the system.",
     "getStarted": "Get started by adding your first dance type",
     "name": "Name",
-    "description": "Description",
     "createdAt": "Created",
     "noDanceTypes": "No dance types found",
     "typeAdded": "Dance type added successfully",
@@ -548,7 +549,119 @@
     "descriptionTimezone": "Used for date calculations and session generation",
     "descriptionVirtualSessions": "How many weeks ahead to show planned sessions in calendar (calculated, not stored in DB)",
     "descriptionAttendancePerWeek": "Maximum times a course can have attendance recorded per week (usually 1)",
-    "descriptionMakeupSessions": "Allow instructors to schedule makeup sessions for missed classes"
+    "descriptionMakeupSessions": "Allow instructors to schedule makeup sessions for missed classes",
+    "subtitle": "Manage your organization, team and account",
+    "readOnly": "Only owners and managers can change these settings.",
+    "save": "Save",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "cancel": "Cancel",
+    "close": "Close",
+    "copy": "Copy",
+    "copied": "Copied",
+    "sections": {
+      "general": {
+        "title": "General",
+        "description": "Organization name, timezone and week start"
+      },
+      "account": {
+        "title": "My account",
+        "description": "Your name and password"
+      },
+      "team": {
+        "title": "Team",
+        "description": "Members, roles and password resets"
+      },
+      "permissions": {
+        "title": "Team permissions",
+        "description": "What managers can do with the team"
+      },
+      "currency": {
+        "title": "Currency",
+        "description": "Currency used for prices and the cash register"
+      },
+      "attendance": {
+        "title": "Attendance",
+        "description": "Virtual sessions, weekly limit and make-up classes"
+      }
+    },
+    "generalForm": {
+      "name": "Organization name",
+      "timezone": "Timezone",
+      "timezoneHint": "Dates and generated sessions use this timezone.",
+      "weekStart": "Week starts on",
+      "weekStartHint": "Calendar and the weekly attendance limit are based on this day."
+    },
+    "days": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
+    },
+    "accountForm": {
+      "profileTitle": "Profile",
+      "email": "Email",
+      "fullName": "Full name",
+      "passwordTitle": "Change password",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "newPasswordHint": "At least 8 characters.",
+      "confirmPassword": "Confirm new password",
+      "mismatch": "Passwords don't match",
+      "passwordChanged": "Your password was updated",
+      "changePassword": "Update password"
+    },
+    "teamPage": {
+      "members": "{count} members",
+      "add": "Add member",
+      "addTitle": "Add a team member",
+      "addDescription": "If they don't have an account yet, one is created with a temporary password.",
+      "email": "Email",
+      "role": "Role",
+      "create": "Add",
+      "empty": "No team members yet",
+      "emptyHint": "Add your first member to get started.",
+      "you": "You",
+      "resetPassword": "Reset password",
+      "remove": "Remove from team",
+      "removeTitle": "Remove {name} from the team?",
+      "removeDescription": "They lose access to this organization. Their account isn't deleted.",
+      "removed": "Member removed",
+      "roleUpdated": "Role updated",
+      "added": "Member added",
+      "credentialsTitle": "Sign-in details",
+      "credentialsDescription": "Share these with the person; the password won't be shown again. They should change it after first sign-in.",
+      "password": "Temporary password",
+      "noPermission": "Only the owner (and managers, if allowed) can manage the team."
+    },
+    "permissionsForm": {
+      "managerInvite": "Managers can add members",
+      "managerInviteHint": "Managers can add new people to the team.",
+      "roleChange": "Roles can be changed",
+      "roleChangeHint": "Team admins can change members' roles.",
+      "memberDelete": "Members can be removed",
+      "memberDeleteHint": "Team admins can remove members from the organization."
+    },
+    "currencyForm": {
+      "current": "Current: {name}"
+    },
+    "attendanceForm": {
+      "lookahead": "Virtual session horizon (weeks)",
+      "lookaheadHint": "How many weeks ahead the calendar shows planned sessions.",
+      "weeklyLimit": "Weekly attendance limit per course",
+      "weeklyLimitHint": "How many times attendance can be taken per course per week (usually 1).",
+      "makeup": "Allow make-up classes",
+      "makeupHint": "Make-up sessions can be scheduled for missed classes."
+    },
+    "roles": {
+      "owner": "Owner",
+      "manager": "Manager",
+      "instructor": "Instructor",
+      "staff": "Staff"
+    }
   },
   "filters": {
     "title": "Filters",
@@ -652,5 +765,153 @@
     "savingFailed": "Failed to save changes",
     "deletingFailed": "Failed to delete item",
     "operationFailed": "Operation failed"
+  },
+  "backoffice": {
+    "badge": "Backoffice",
+    "nav": {
+      "stores": "Stores",
+      "accounts": "Accounts",
+      "dashboard": "Dashboard",
+      "logout": "Log out"
+    },
+    "common": {
+      "save": "Save",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "close": "Close",
+      "status": "Status",
+      "actions": "Actions",
+      "saved": "Saved",
+      "deleted": "Deleted",
+      "updated": "Updated"
+    },
+    "stores": {
+      "title": "Stores",
+      "subtitle": "All studios, their branches and teams",
+      "new": "New store",
+      "newSubtitle": "Creates the store, its first branch and its owner together.",
+      "search": "Search stores...",
+      "name": "Store name",
+      "owner": "Owner",
+      "selectOwner": "Select owner",
+      "noAccounts": "No accounts yet. Create one first:",
+      "firstBranch": "First branch name",
+      "currency": "Currency",
+      "timezone": "Timezone",
+      "create": "Create store",
+      "empty": "No stores yet",
+      "active": "Active",
+      "suspended": "Suspended",
+      "status": "Store status",
+      "suspendHint": "Users of a suspended store can't open the dashboard or access its data.",
+      "suspend": "Suspend",
+      "activate": "Activate",
+      "suspendConfirm": "Suspend this store? All of its users lose access.",
+      "createdAt": "Created"
+    },
+    "branches": {
+      "title": "Branches",
+      "add": "Add branch",
+      "edit": "Edit branch",
+      "name": "Branch name",
+      "address": "Address",
+      "phone": "Phone",
+      "empty": "No branches",
+      "archived": "Archived",
+      "archive": "Archive",
+      "restore": "Restore",
+      "archiveConfirm": "Archive branch \"{name}\"?"
+    },
+    "members": {
+      "title": "Team",
+      "selectAccount": "Select account",
+      "add": "Add",
+      "role": "Role",
+      "empty": "Nobody in this store yet",
+      "remove": "Remove",
+      "removeConfirm": "Remove {name} from this store?"
+    },
+    "roles": {
+      "owner": "Owner",
+      "manager": "Manager",
+      "instructor": "Instructor",
+      "staff": "Staff"
+    },
+    "accounts": {
+      "title": "Accounts",
+      "subtitle": "Every user account. Sign-up is closed; accounts are created here.",
+      "search": "Search name or email...",
+      "create": "Create account",
+      "createdHint": "Account created. Share these credentials with the user; the password won't be shown again.",
+      "name": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "newPassword": "New password",
+      "generate": "Generate",
+      "setPassword": "Set password",
+      "passwordUpdated": "Password updated. New password:",
+      "stores": "Stores",
+      "lastSignIn": "Last sign-in",
+      "never": "Never",
+      "disabled": "Disabled",
+      "platformAdmin": "Backoffice admin",
+      "removeAdmin": "Remove admin",
+      "makeAdmin": "Make admin",
+      "enable": "Enable",
+      "disable": "Disable",
+      "disableConfirm": "Disable {email}? They won't be able to sign in.",
+      "empty": "No accounts found"
+    },
+    "noAccess": {
+      "title": "No access",
+      "text": "Your account isn't linked to a store yet. Please contact your administrator.",
+      "suspendedTitle": "Store suspended",
+      "suspendedText": "The store you belong to is currently suspended. Please contact your administrator.",
+      "logout": "Log out"
+    }
+  },
+  "confirmDialog": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "areYouSure": "Are you sure?",
+    "careful": "Be careful",
+    "willRemove": "This will remove: {name}",
+    "reason": "Deletion reason",
+    "optional": "optional",
+    "reasonPlaceholder": "Why are you deleting this? (optional)",
+    "clearSearch": "Clear search",
+    "search": "Search"
+  },
+  "emptyStates": {
+    "students": {
+      "title": "No students yet",
+      "description": "Add your first student; packages, courses and attendance are managed from here."
+    },
+    "courses": {
+      "title": "No courses yet",
+      "description": "Add your first course to build your weekly schedule."
+    },
+    "instructors": {
+      "title": "No instructors yet",
+      "description": "Add your instructors to assign them to courses and track their earnings."
+    },
+    "branches": {
+      "title": "No branches yet",
+      "description": "Courses and the cash register belong to a branch, so add one first."
+    },
+    "danceTypes": {
+      "title": "No dance types yet",
+      "description": "Salsa, bachata, tango… Courses and packages are grouped by dance type."
+    },
+    "packages": {
+      "title": "No packages yet",
+      "description": "Create the credit packages you sell to students."
+    },
+    "instructorRates": {
+      "title": "No instructor rates yet",
+      "description": "Set what each instructor earns per branch and dance type."
+    }
   }
 }

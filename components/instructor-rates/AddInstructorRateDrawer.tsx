@@ -1,10 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { X, Plus } from 'lucide-react'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { InstructorRateForm } from './InstructorRateForm'
 
 interface Instructor {
@@ -55,77 +52,15 @@ export function AddInstructorRateDrawer({
   onSuccess,
 }: AddInstructorRateDrawerProps) {
   const router = useRouter()
-  const [isClosing, setIsClosing] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
-
-  const handleClose = () => {
-    setIsClosing(true)
-    setTimeout(() => {
-      onOpenChange(false)
-    }, 300)
-  }
-
-  useEffect(() => {
-    if (isOpen) {
-      setIsClosing(false)
-      setIsAnimating(false)
-      // Use requestAnimationFrame to ensure the browser paints the initial state first
-      requestAnimationFrame(() => {
-        setIsAnimating(true)
-      })
-    }
-  }, [isOpen])
-
-  const handleSuccess = () => {
-    setIsClosing(true)
-    setTimeout(() => {
-      onOpenChange(false)
-      onSuccess?.()
-    }, 300)
-  }
-
-  const handleCancel = () => {
-    setIsClosing(true)
-    // Animate close then navigate
-    setTimeout(() => {
-      router.push('/dashboard/instructor-rates')
-    }, 300)
-  }
-
-  if (!isOpen && !isClosing) return null
 
   return (
-    <>
-      {/* Overlay */}
-      <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ease-out ${
-          isClosing || !isAnimating ? 'opacity-0 pointer-events-none' : 'opacity-100'
-        }`}
-        onClick={handleClose}
-      />
-
-      {/* Drawer */}
-      <div
-        className={`fixed right-0 top-0 h-full w-full md:w-96 bg-white z-50 shadow-lg overflow-y-auto transition-all duration-300 ease-out ${
-          isClosing || !isAnimating ? 'translate-x-full' : 'translate-x-0'
-        }`}
-      >
-        <div className="p-6 space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-[#111827]">
-              {initialRate ? 'Edit Rate' : 'Add New Rate'}
-            </h2>
-            <button
-              onClick={handleClose}
-              className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
-              aria-label="Close"
-            >
-              <X size={20} className="text-gray-600" />
-            </button>
-          </div>
-
-          {/* Form */}
+    <Sheet open={isOpen} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full overflow-y-auto sm:max-w-md">
+        <SheetHeader>
+          <SheetTitle>{initialRate ? 'Edit Rate' : 'Add New Rate'}</SheetTitle>
+          <SheetDescription className="sr-only">Instructor rate per branch and dance type</SheetDescription>
+        </SheetHeader>
+        <div className="px-4 pb-4">
           <InstructorRateForm
             instructors={instructors}
             branches={branches}
@@ -133,11 +68,17 @@ export function AddInstructorRateDrawer({
             rates={rates}
             initialRate={initialRate}
             selectedInstructorId={selectedInstructorId}
-            onSuccess={handleSuccess}
-            onCancel={handleCancel}
+            onSuccess={() => {
+              onOpenChange(false)
+              onSuccess?.()
+            }}
+            onCancel={() => {
+              onOpenChange(false)
+              router.push('/dashboard/instructor-rates')
+            }}
           />
         </div>
-      </div>
-    </>
+      </SheetContent>
+    </Sheet>
   )
 }

@@ -5,6 +5,8 @@ import { updateInstructorEarnings, deleteInstructorEarnings } from '@/lib/action
 import { Button } from '@/components/ui/button'
 import { Edit2, Trash2, X, Check } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useConfirm } from '@/components/common/ConfirmProvider'
+import { Input } from '@/components/ui/input'
 
 interface EarningsEditButtonProps {
   earningsId: string
@@ -58,8 +60,10 @@ export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: Earn
     }
   }
 
+  const confirm = useConfirm()
+
   const handleDelete = async () => {
-    if (!window.confirm(t('common.deleteConfirm'))) {
+    if (!(await confirm({ title: t('common.deleteConfirm'), destructive: true }))) {
       return
     }
 
@@ -101,34 +105,32 @@ export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: Earn
   if (isEditing) {
     return (
       <div className="flex items-center gap-2">
-        <input
+        <Input
           type="number"
           step="0.01"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          className="w-24 px-2 py-1 border border-gray-300 rounded text-right font-semibold"
+          className="w-24 text-right"
           disabled={isLoading}
         />
-        <button
+        <Button variant="ghost" size="icon-sm" className="text-green-600" aria-label="Kaydet"
           onClick={handleSave}
           disabled={isLoading}
-          className="p-1 text-green-600 hover:bg-green-50 rounded disabled:opacity-50"
           title="Kaydet"
         >
           <Check size={18} />
-        </button>
-        <button
+        </Button>
+        <Button variant="ghost" size="icon-sm" aria-label="İptal"
           onClick={() => {
             setIsEditing(false)
             setAmount(currentAmount.toString())
             setError(null)
           }}
           disabled={isLoading}
-          className="p-1 text-gray-400 hover:bg-gray-100 rounded disabled:opacity-50"
           title="İptal"
         >
           <X size={18} />
-        </button>
+        </Button>
         {error && <span className="text-red-600 text-sm">{error}</span>}
       </div>
     )
@@ -136,21 +138,19 @@ export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: Earn
 
   return (
     <div className="flex items-center gap-2">
-      <button
+      <Button variant="ghost" size="icon-sm" className="text-primary" aria-label="Düzenle"
         onClick={() => setIsEditing(true)}
-        className="p-1 text-[#4F46E5] hover:bg-blue-50 rounded transition-colors"
         title="Düzenle"
       >
         <Edit2 size={18} />
-      </button>
-      <button
+      </Button>
+      <Button variant="ghost" size="icon-sm" className="text-destructive" aria-label="Sil"
         onClick={handleDelete}
         disabled={isLoading}
-        className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
         title="Sil"
       >
         <Trash2 size={18} />
-      </button>
+      </Button>
     </div>
   )
 }

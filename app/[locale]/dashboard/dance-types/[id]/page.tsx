@@ -22,21 +22,21 @@ export default async function DanceTypeDetailPage({ params }: DanceTypeDetailPag
   const danceType = result.data!
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-8">
+    <div className="min-h-screen bg-linear-to-b from-muted/50 to-white p-8">
       <div className="max-w-2xl">
-        <Link href="/dashboard/dance-types" className="text-[#4F46E5] hover:underline mb-6 inline-block">
+        <Link href="/dashboard/dance-types" className="text-primary hover:underline mb-6 inline-block">
           ← Back to Dance Types
         </Link>
 
-        <Card className="border-[#E5E7EB]">
+        <Card className="border-border">
           <div className="p-8">
             <div className="flex justify-between items-start mb-8">
               <div>
-                <h1 className="text-3xl font-bold text-[#111827] mb-2">{danceType.name}</h1>
-                <p className="text-gray-600">Dance Style</p>
+                <h1 className="text-3xl font-bold text-foreground mb-2">{danceType.name}</h1>
+                <p className="text-muted-foreground">Dance Style</p>
               </div>
               <Link href={`/dashboard/dance-types/${danceType.id}/edit`}>
-                <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
+                <Button className="gap-2">
                   <Edit2 size={18} />
                   Edit
                 </Button>
@@ -44,10 +44,10 @@ export default async function DanceTypeDetailPage({ params }: DanceTypeDetailPag
             </div>
 
             {danceType.description && (
-              <div className="space-y-4 border-t border-[#E5E7EB] pt-6">
+              <div className="space-y-4 border-t border-border pt-6">
                 <div>
-                  <p className="text-sm text-gray-600 mb-2">Description</p>
-                  <p className="text-gray-700 text-base leading-relaxed">{danceType.description}</p>
+                  <p className="text-sm text-muted-foreground mb-2">Description</p>
+                  <p className="text-foreground/80 text-base leading-relaxed">{danceType.description}</p>
                 </div>
               </div>
             )}

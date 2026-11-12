@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { X } from 'lucide-react'
-import { cn } from '@/lib/utils/cn'
+import { cn } from '@/lib/utils'
 
 interface DrawerProps {
   open: boolean
@@ -60,16 +60,16 @@ export function Drawer({
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between border-b border-[#E5E7EB] h-14 px-4 sm:px-6">
+          <div className="flex items-center justify-between border-b border-border h-14 px-4 sm:px-6">
             <div className="flex-1 min-w-0">
-              <h2 className="text-base font-semibold text-[#111827] truncate">{title}</h2>
+              <h2 className="text-base font-semibold text-foreground truncate">{title}</h2>
               {description && (
-                <p className="text-xs text-[#6B7280] truncate">{description}</p>
+                <p className="text-xs text-muted-foreground truncate">{description}</p>
               )}
             </div>
             <button
               onClick={() => onOpenChange(false)}
-              className="inline-flex items-center justify-center rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors ml-2 shrink-0"
+              className="inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground/70 hover:bg-muted hover:text-muted-foreground transition-colors ml-2 shrink-0"
               aria-label="Close drawer"
             >
               <X size={20} />

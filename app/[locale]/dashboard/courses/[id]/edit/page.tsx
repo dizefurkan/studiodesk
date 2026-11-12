@@ -19,7 +19,7 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
   const course = result.data
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white p-4 sm:p-6 md:p-8">
+    <div className="min-h-screen bg-linear-to-b from-muted/50 to-white p-4 sm:p-6 md:p-8">
       <CourseForm course={course} />
     </div>
   )

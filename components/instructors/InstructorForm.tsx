@@ -93,12 +93,12 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
   }
 
   return (
-    <Card className="border-[#E5E7EB]">
+    <Card className="border-border">
       <div className="p-4 sm:p-6 md:p-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827] mb-2">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">
           {instructor ? 'Edit Instructor' : 'Add New Instructor'}
         </h1>
-        <p className="text-sm sm:text-base text-gray-600 mb-4 md:mb-6">
+        <p className="text-sm sm:text-base text-muted-foreground mb-4 md:mb-6">
           {instructor ? 'Update instructor information' : 'Add a new instructor to your studio'}
         </p>
 
@@ -169,7 +169,7 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
+                className="w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
                 {isLoading ? 'Saving...' : instructor ? 'Update Instructor' : 'Create Instructor'}
               </Button>
@@ -178,7 +178,7 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
                 variant="outline"
                 onClick={() => router.back()}
                 disabled={isLoading}
-                className="border-[#E5E7EB] w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
+                className="border-border w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
                 Cancel
               </Button>

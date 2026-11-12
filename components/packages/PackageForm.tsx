@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { createPackage, updatePackage } from '@/lib/actions/packages.actions'
 import { getDanceTypes } from '@/lib/actions/dance-types.actions'
 import type { Database } from '@/lib/types/database.types'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 
 type Package = Database['public']['Tables']['packages']['Row']
 type DanceType = Database['public']['Tables']['dance_types']['Row']
@@ -92,12 +93,12 @@ export function PackageForm({ package: pkgProp }: PackageFormProps) {
   }
 
   return (
-    <Card className="border-[#E5E7EB] max-w-2xl">
+    <Card className="border-border max-w-2xl">
       <div className="p-3 sm:p-4 md:p-6 lg:p-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827] mb-2">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">
           {pkgProp ? t('packages.editPackage') : t('packages.addNew')}
         </h1>
-        <p className="text-sm sm:text-base text-gray-600 mb-4 md:mb-6">
+        <p className="text-sm sm:text-base text-muted-foreground mb-4 md:mb-6">
           {pkgProp ? t('packages.updateInformationMessage') : t('packages.addNewPackageMessage')}
         </p>
 
@@ -132,18 +133,18 @@ export function PackageForm({ package: pkgProp }: PackageFormProps) {
                 <FormItem>
                   <FormLabel>{t('packages.danceType')}</FormLabel>
                   <FormControl>
-                    <select
+                    <NativeSelect
                       disabled={isLoading}
-                      className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+                      className="w-full"
                       {...field}
                     >
-                      <option value="">{t('packages.placeholderSelectDanceType')}</option>
+                      <NativeSelectOption value="">{t('packages.placeholderSelectDanceType')}</NativeSelectOption>
                       {danceTypes.map((type) => (
-                        <option key={type.id} value={type.id}>
+                        <NativeSelectOption key={type.id} value={type.id}>
                           {type.name}
-                        </option>
+                        </NativeSelectOption>
                       ))}
-                    </select>
+                    </NativeSelect>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -195,7 +196,7 @@ export function PackageForm({ package: pkgProp }: PackageFormProps) {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
+                className="w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
                 {isLoading ? t('packages.saving') : pkgProp ? t('packages.updatePackage') : t('packages.createPackage')}
               </Button>
@@ -204,7 +205,7 @@ export function PackageForm({ package: pkgProp }: PackageFormProps) {
                 variant="outline"
                 onClick={() => router.back()}
                 disabled={isLoading}
-                className="border-[#E5E7EB] w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
+                className="border-border w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
                 {t('common.cancel')}
               </Button>

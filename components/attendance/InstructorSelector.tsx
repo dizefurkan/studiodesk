@@ -2,8 +2,14 @@
 
 import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
-import { X, Search } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { Search } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 interface Instructor {
   id: string
@@ -104,150 +110,117 @@ export function InstructorSelector({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl mx-4 my-8">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-[#111827]">
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>
             Replace Instructor: {editingInstructor?.first_name} {editingInstructor?.last_name}
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <X size={20} />
-          </button>
-        </div>
+          </DialogTitle>
+          <DialogDescription>
+            Select a different instructor to replace {editingInstructor?.first_name} for this session.
+          </DialogDescription>
+        </DialogHeader>
 
-        <p className="text-sm text-gray-600 mb-4">
-          Select a different instructor to replace {editingInstructor?.first_name} for this session.
-        </p>
-
-        {/* Search Filter */}
-        <div className="mb-4 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            type="text"
+        <InputGroup>
+          <InputGroupAddon>
+            <Search />
+          </InputGroupAddon>
+          <InputGroupInput
+            type="search"
             placeholder="Search by instructor name..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value)
               setCurrentPage(1)
             }}
-            className="w-full pl-10 pr-4 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
           />
-        </div>
+        </InputGroup>
 
-        {/* Data Table */}
-        <div className="overflow-x-auto mb-4 border border-[#E5E7EB] rounded-lg">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-[#E5E7EB]">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">{t('table.select')}</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">{t('table.instructorName')}</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-[#111827]">{t('table.rateStatus')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E5E7EB]">
+        <RadioGroup
+          value={tempSelectedId ?? ''}
+          onValueChange={setTempSelectedId}
+          className="block min-h-0 flex-1 overflow-y-auto rounded-lg border"
+        >
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-16">{t('table.select')}</TableHead>
+                <TableHead>{t('table.instructorName')}</TableHead>
+                <TableHead>{t('table.rateStatus')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {paginatedInstructors.length > 0 ? (
                 paginatedInstructors.map((instructor) => {
                   const rateExists = hasRate(instructor.id)
                   const rateAmount = getRateAmount(instructor.id)
-
+                  const id = `replace-${instructor.id}`
                   return (
-                    <tr
+                    <TableRow
                       key={instructor.id}
-                      className={`hover:bg-gray-50 transition-colors cursor-pointer ${
-                        tempSelectedId === instructor.id ? 'bg-blue-50' : ''
-                      }`}
+                      data-state={tempSelectedId === instructor.id ? 'selected' : undefined}
+                      className="cursor-pointer"
                       onClick={() => setTempSelectedId(instructor.id)}
                     >
-                      <td className="px-4 py-3 text-center">
-                        <input
-                          type="radio"
-                          name="instructor"
-                          value={instructor.id}
-                          checked={tempSelectedId === instructor.id}
-                          onChange={() => setTempSelectedId(instructor.id)}
-                          className="w-4 h-4 text-[#4F46E5] cursor-pointer"
-                        />
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        <span className="text-[#111827] font-medium">
+                      <TableCell>
+                        <RadioGroupItem value={instructor.id} id={id} />
+                      </TableCell>
+                      <TableCell>
+                        <Label htmlFor={id} className="cursor-pointer">
                           {instructor.first_name} {instructor.last_name}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
+                        </Label>
+                      </TableCell>
+                      <TableCell>
                         {rateExists ? (
-                          <span className="text-xs text-green-700 font-medium">
-                            ✓ Has rate {rateAmount !== null && `(%${rateAmount})`}
-                          </span>
+                          <Badge className="bg-green-100 text-green-700">
+                            Has rate {rateAmount !== null && `(%${rateAmount})`}
+                          </Badge>
                         ) : (
-                          <span className="text-xs text-red-700 font-medium">🔴 No rate</span>
+                          <Badge variant="destructive">No rate</Badge>
                         )}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )
                 })
               ) : (
-                <tr>
-                  <td colSpan={3} className="px-4 py-8 text-center text-sm text-gray-600">
+                <TableRow>
+                  <TableCell colSpan={3} className="py-8 text-center text-muted-foreground">
                     {availableInstructors.length === 0
                       ? 'No available instructors. Either all are assigned to this course or all have been selected as replacements.'
                       : 'No instructors matching your search'}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </RadioGroup>
 
-        {/* Pagination */}
         {filteredInstructors.length > 0 && (
-          <div className="flex items-center justify-between mb-4 text-sm text-gray-600">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
-              Page {currentPage} of {totalPages} • Showing {paginatedInstructors.length} of {filteredInstructors.length} results
+              Page {currentPage} of {totalPages} • Showing {paginatedInstructors.length} of {filteredInstructors.length}{' '}
+              results
             </span>
             <div className="flex gap-2">
-              <Button
-                onClick={handlePreviousPage}
-                disabled={currentPage === 1}
-                variant="outline"
-                size="sm"
-                className="border-[#D1D5DB]"
-              >
+              <Button onClick={handlePreviousPage} disabled={currentPage === 1} variant="outline" size="sm">
                 Previous
               </Button>
-              <Button
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-                variant="outline"
-                size="sm"
-                className="border-[#D1D5DB]"
-              >
+              <Button onClick={handleNextPage} disabled={currentPage === totalPages} variant="outline" size="sm">
                 Next
               </Button>
             </div>
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex gap-2 justify-end">
-          <Button
-            onClick={onClose}
-            variant="outline"
-            className="border-[#D1D5DB] text-[#111827]"
-          >
+        <DialogFooter>
+          <Button onClick={onClose} variant="outline">
             Cancel
           </Button>
-          <Button
-            onClick={handleSave}
-            disabled={!tempSelectedId}
-            className="bg-[#4F46E5] hover:bg-[#4338CA] text-white disabled:bg-gray-400"
-          >
+          <Button onClick={handleSave} disabled={!tempSelectedId}>
             Confirm
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

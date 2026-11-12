@@ -116,9 +116,11 @@ lib/
   ├── types/           # TypeScript type definitions
   └── utils/           # Helper utilities
 
+supabase/migrations/   # Schema + RLS (source of truth, see database/README.md)
 database/
-  ├── schema.sql       # Database schema
-  └── rls-policies.sql # Row-level security policies
+  ├── README.md          # Setup & region migration guide
+  ├── verify_schema.sql  # Diff helper between two projects
+  └── _legacy/           # Old scripts, reference only
 ```
 
 ## 🔐 Authentication Flow

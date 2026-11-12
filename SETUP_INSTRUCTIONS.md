@@ -18,7 +18,7 @@ Fill in the following:
 - **Name**: `studiodesk` (or your preferred name)
 - **Database Password**: Create a strong password and **SAVE IT** (you'll need it)
   - Example: `StudioDeskP@ssw0rd2024`
-- **Region**: Select closest to your location (US Easy = us-east-1, EU = eu-west-1)
+- **Region**: Select closest to your location (US Easy = us-east-1, EU = eu-central-1)
 - **Pricing Plan**: Free tier is fine for development
 
 ### 1.3 Wait for Database Initialization
@@ -78,21 +78,20 @@ NODE_ENV=development
 
 ## Step 4: Initialize Database Schema
 
-### 4.1 In Supabase Dashboard SQL Editor
-1. Go to your Supabase project
-2. Click **SQL Editor** (left sidebar)
-3. Click **New Query**
-4. Copy the entire content from: `database/schema.sql`
-5. Paste into the SQL Editor
-6. Click **Run**
-7. Wait for all queries to execute (green checkmarks appear)
+Run the migrations in `supabase/migrations/` in order (see `database/README.md`).
 
-### 4.2 Set Up RLS Policies
-1. Click **New Query** again
-2. Copy the entire content from: `database/rls-policies.sql`
-3. Paste into the SQL Editor
-4. Click **Run**
-5. Wait for completion
+### 4.1 Schema
+1. Go to your Supabase project → **SQL Editor** → **New Query**
+2. Paste the content of `supabase/migrations/20261110000000_initial_schema.sql`
+3. Click **Run**
+
+### 4.2 RLS Policies
+1. **New Query** again
+2. Paste the content of `supabase/migrations/20261110000100_rls_policies.sql`
+3. Click **Run**
+4. Then run `supabase/migrations/20261110000200_cleanup_legacy.sql` the same way
+
+(Or with the CLI: `npx supabase link --project-ref <ref> && npx supabase db push`.)
 
 ---
 
@@ -158,13 +157,13 @@ For now (development), the default is fine.
 ## Troubleshooting
 
 ### ❌ "Failed to create tables"
-- Make sure you copied the entire `schema.sql` content
+- Make sure you copied the entire `20261110000000_initial_schema.sql` content
 - Check if there are any red error messages
 - Database might have issues - try again in 1-2 minutes
 
 ### ❌ "Policy errors"
 - Policies depend on tables existing first
-- Make sure you ran `schema.sql` before `rls-policies.sql`
+- Make sure you ran `20261110000000_initial_schema.sql` before `20261110000100_rls_policies.sql`
 
 ### ❌ "Cannot connect to database"
 - Check your `.env.local` file
@@ -199,8 +198,8 @@ Once you've done all these steps:
 1. ✅ Created Supabase project
 2. ✅ Got your API credentials
 3. ✅ Created `.env.local` file
-4. ✅ Ran `schema.sql` in SQL Editor
-5. ✅ Ran `rls-policies.sql` in SQL Editor
+4. ✅ Ran `20261110000000_initial_schema.sql` in SQL Editor
+5. ✅ Ran `20261110000100_rls_policies.sql` in SQL Editor
 6. ✅ Ran `npm install`
 7. ✅ Started dev server with `npm run dev`
 

@@ -113,7 +113,16 @@
     "instructorName": "Eğitmen Adı",
     "rateStatus": "Ücret Durumu",
     "total": "toplam",
-    "results": "sonuç"
+    "results": "sonuç",
+    "pageOf": "Sayfa {page} / {total}",
+    "rowsOf": "{shown} / {total} kayıt",
+    "previousPage": "Önceki sayfa",
+    "nextPage": "Sonraki sayfa",
+    "noResults": "Sonuç bulunamadı",
+    "noResultsHint": "Aramanı ya da filtrelerini değiştirmeyi dene.",
+    "clearFilters": "Filtreleri temizle",
+    "expand": "Genişlet",
+    "collapse": "Daralt"
   },
   "auth": {
     "login": "Giriş Yap",
@@ -140,7 +149,8 @@
     "signIn": "Giriş Yap",
     "getStarted": "Başla",
     "startFreeTrial": "Ücretsiz Denemeyı Başlat",
-    "learnMore": "Daha Fazla Bilgi"
+    "learnMore": "Daha Fazla Bilgi",
+    "loginSubtitle": "Hesabın StudioDesk yöneticisi tarafından açılır. Bilgilerinle giriş yap."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -316,8 +326,8 @@
     "courseName": "Kurs Adı",
     "startTime": "Başlama Saati",
     "endTime": "Bitiş Saati",
-    "instructors": "Eğitmenler",
-    "students": "Öğrenciler",
+    "instructors": "Eğitmen",
+    "students": "Öğrenci",
     "selectBranch": "Bir şube seçin",
     "selectDanceType": "Bir dans türü seçin",
     "selectInstructors": "Eğitmenleri seçin",
@@ -339,10 +349,7 @@
     "addStudentsTitle": "Kursa Öğrenci Ekle",
     "credits": "Kredi",
     "viewMode": "Görünüm",
-    "students": "Öğrenci",
-    "instructors": "Eğitmen",
     "attendanceRecords": "Yoklama",
-    "noCourses": "Kurs bulunamadı",
     "createFirstCourse": "Başlangıç yapmak için ilk kursunuzu oluşturun",
     "duplicateCourseWarning": "Bu dans türü için aynı gün zaten bir kurs mevcut.",
     "coursesOnThisDay": "Bu gün ki kurslar",
@@ -476,12 +483,11 @@
   },
   "danceTypes": {
     "title": "Dans Türleri",
-    "description": "Dans türlerinizi yönetin",
+    "description": "Açıklama",
     "addNew": "Yeni Dans Türü Ekle",
     "editType": "Dans Türünü Düzenle",
     "deleteType": "Dans Türünü Sil",
     "name": "Adı",
-    "description": "Açıklama",
     "createdAt": "Oluşturuldu",
     "noDanceTypes": "Dans türü bulunamadı",
     "typeAdded": "Dans türü başarıyla eklendi",
@@ -491,7 +497,8 @@
     "deleteTitle": "Dans Türünü Sil",
     "deleteDescription": "Bu işlem geri alınamaz. Dans türü sistemden kalıcı olarak silinecektir.",
     "getStarted": "İlk dans türünüzü ekleyerek başlayın"
-  },  "instructorRates": {
+  },
+  "instructorRates": {
     "title": "Eğitmen Oranları",
     "description": "Her eğitmenin her sınıf için ne kadar kazandığını belirle",
     "aboutTitle": "Eğitmen Oranları Hakkında",
@@ -522,7 +529,8 @@
       "rates": "Oranlar",
       "actions": "İşlemler"
     }
-  },  "settings": {
+  },
+  "settings": {
     "title": "Ayarlar",
     "general": "Genel Ayarlar",
     "attendance": "Yoklama Ayarları",
@@ -541,7 +549,119 @@
     "descriptionTimezone": "Tarih hesaplamaları ve oturum oluşturma için kullanılır",
     "descriptionVirtualSessions": "Takvimde planlanan oturumları kaç hafta önceden göster (hesaplanır, DB'de depolanmaz)",
     "descriptionAttendancePerWeek": "Bir kursun haftada kaç kez yoklama alınabileceği (genellikle 1)",
-    "descriptionMakeupSessions": "Eğitmenlerin kaçırılan dersler için telafi oturumları planlamasını sağla"
+    "descriptionMakeupSessions": "Eğitmenlerin kaçırılan dersler için telafi oturumları planlamasını sağla",
+    "subtitle": "Organizasyonunu, ekibini ve hesabını yönet",
+    "readOnly": "Bu ayarları sadece owner ve yöneticiler değiştirebilir.",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "saved": "Kaydedildi",
+    "cancel": "İptal",
+    "close": "Kapat",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı",
+    "sections": {
+      "general": {
+        "title": "Genel",
+        "description": "Organizasyon adı, saat dilimi ve haftanın başlangıcı"
+      },
+      "account": {
+        "title": "Hesabım",
+        "description": "Adın ve şifren"
+      },
+      "team": {
+        "title": "Ekip",
+        "description": "Üyeler, roller ve şifre sıfırlama"
+      },
+      "permissions": {
+        "title": "Ekip izinleri",
+        "description": "Yöneticilerin ekip üzerinde neler yapabileceği"
+      },
+      "currency": {
+        "title": "Para birimi",
+        "description": "Fiyatlar ve kasa için kullanılan para birimi"
+      },
+      "attendance": {
+        "title": "Yoklama",
+        "description": "Sanal oturumlar, haftalık limit ve telafi dersleri"
+      }
+    },
+    "generalForm": {
+      "name": "Organizasyon adı",
+      "timezone": "Saat dilimi",
+      "timezoneHint": "Tarih hesapları ve oturum oluşturma bu saat dilimine göre yapılır.",
+      "weekStart": "Haftanın başlangıç günü",
+      "weekStartHint": "Takvim ve haftalık yoklama limiti bu güne göre hesaplanır."
+    },
+    "days": {
+      "0": "Pazar",
+      "1": "Pazartesi",
+      "2": "Salı",
+      "3": "Çarşamba",
+      "4": "Perşembe",
+      "5": "Cuma",
+      "6": "Cumartesi"
+    },
+    "accountForm": {
+      "profileTitle": "Profil",
+      "email": "E-posta",
+      "fullName": "Ad soyad",
+      "passwordTitle": "Şifre değiştir",
+      "currentPassword": "Mevcut şifre",
+      "newPassword": "Yeni şifre",
+      "newPasswordHint": "En az 8 karakter.",
+      "confirmPassword": "Yeni şifre (tekrar)",
+      "mismatch": "Şifreler eşleşmiyor",
+      "passwordChanged": "Şifren güncellendi",
+      "changePassword": "Şifreyi güncelle"
+    },
+    "teamPage": {
+      "members": "{count} üye",
+      "add": "Üye ekle",
+      "addTitle": "Ekibe üye ekle",
+      "addDescription": "Hesap yoksa geçici bir şifreyle oluşturulur.",
+      "email": "E-posta",
+      "role": "Rol",
+      "create": "Ekle",
+      "empty": "Henüz ekip üyesi yok",
+      "emptyHint": "İlk üyeni ekleyerek başla.",
+      "you": "Sen",
+      "resetPassword": "Şifreyi sıfırla",
+      "remove": "Ekipten çıkar",
+      "removeTitle": "{name} ekipten çıkarılsın mı?",
+      "removeDescription": "Bu kişi organizasyona erişimini kaybeder. Hesabı silinmez.",
+      "removed": "Üye çıkarıldı",
+      "roleUpdated": "Rol güncellendi",
+      "added": "Üye eklendi",
+      "credentialsTitle": "Giriş bilgileri",
+      "credentialsDescription": "Bu bilgileri kişiyle paylaş; şifre bir daha gösterilmeyecek. İlk girişten sonra şifresini değiştirmeli.",
+      "password": "Geçici şifre",
+      "noPermission": "Ekibi sadece owner (ve izin verilmişse yöneticiler) yönetebilir."
+    },
+    "permissionsForm": {
+      "managerInvite": "Yöneticiler üye ekleyebilir",
+      "managerInviteHint": "Yöneticiler ekibe yeni kişi ekleyebilir.",
+      "roleChange": "Roller değiştirilebilir",
+      "roleChangeHint": "Ekip yöneticileri üyelerin rolünü değiştirebilir.",
+      "memberDelete": "Üyeler çıkarılabilir",
+      "memberDeleteHint": "Ekip yöneticileri üyeleri organizasyondan çıkarabilir."
+    },
+    "currencyForm": {
+      "current": "Mevcut: {name}"
+    },
+    "attendanceForm": {
+      "lookahead": "Sanal oturum ufku (hafta)",
+      "lookaheadHint": "Takvimde kaç hafta ilerisinin planlanmış oturumlarını göster.",
+      "weeklyLimit": "Kurs başına haftalık yoklama limiti",
+      "weeklyLimitHint": "Bir kursta haftada kaç kez yoklama alınabilir (genellikle 1).",
+      "makeup": "Telafi derslerine izin ver",
+      "makeupHint": "Kaçırılan dersler için telafi oturumu planlanabilir."
+    },
+    "roles": {
+      "owner": "Owner",
+      "manager": "Yönetici",
+      "instructor": "Eğitmen",
+      "staff": "Personel"
+    }
   },
   "filters": {
     "title": "Filtreler",
@@ -645,5 +765,153 @@
     "savingFailed": "Değişiklikleri kaydetme başarısız",
     "deletingFailed": "Öğeyi silme başarısız",
     "operationFailed": "İşlem başarısız"
+  },
+  "backoffice": {
+    "badge": "Backoffice",
+    "nav": {
+      "stores": "Store'lar",
+      "accounts": "Hesaplar",
+      "dashboard": "Dashboard",
+      "logout": "Çıkış"
+    },
+    "common": {
+      "save": "Kaydet",
+      "saving": "Kaydediliyor...",
+      "cancel": "İptal",
+      "close": "Kapat",
+      "status": "Durum",
+      "actions": "İşlemler",
+      "saved": "Kaydedildi",
+      "deleted": "Silindi",
+      "updated": "Güncellendi"
+    },
+    "stores": {
+      "title": "Store'lar",
+      "subtitle": "Tüm stüdyolar, şubeleri ve ekipleri",
+      "new": "Yeni store",
+      "newSubtitle": "Store, ilk şubesi ve owner'ı birlikte oluşturulur.",
+      "search": "Store ara...",
+      "name": "Store adı",
+      "owner": "Owner",
+      "selectOwner": "Owner seçin",
+      "noAccounts": "Henüz hesap yok. Önce bir hesap oluşturun:",
+      "firstBranch": "İlk şube adı",
+      "currency": "Para birimi",
+      "timezone": "Saat dilimi",
+      "create": "Store oluştur",
+      "empty": "Henüz store yok",
+      "active": "Aktif",
+      "suspended": "Askıda",
+      "status": "Store durumu",
+      "suspendHint": "Askıdaki store'un kullanıcıları dashboard'a giremez ve verilerine erişemez.",
+      "suspend": "Askıya al",
+      "activate": "Aktifleştir",
+      "suspendConfirm": "Bu store askıya alınsın mı? Tüm kullanıcıları erişimini kaybeder.",
+      "createdAt": "Oluşturulma"
+    },
+    "branches": {
+      "title": "Şubeler",
+      "add": "Şube ekle",
+      "edit": "Şubeyi düzenle",
+      "name": "Şube adı",
+      "address": "Adres",
+      "phone": "Telefon",
+      "empty": "Şube yok",
+      "archived": "Arşivde",
+      "archive": "Arşivle",
+      "restore": "Geri al",
+      "archiveConfirm": "\"{name}\" şubesi arşivlensin mi?"
+    },
+    "members": {
+      "title": "Ekip",
+      "selectAccount": "Hesap seçin",
+      "add": "Ekle",
+      "role": "Rol",
+      "empty": "Bu store'da kimse yok",
+      "remove": "Çıkar",
+      "removeConfirm": "{name} bu store'dan çıkarılsın mı?"
+    },
+    "roles": {
+      "owner": "Owner",
+      "manager": "Yönetici",
+      "instructor": "Eğitmen",
+      "staff": "Personel"
+    },
+    "accounts": {
+      "title": "Hesaplar",
+      "subtitle": "Tüm kullanıcı hesapları. Kayıt kapalı; hesaplar buradan açılır.",
+      "search": "İsim veya e-posta ara...",
+      "create": "Hesap oluştur",
+      "createdHint": "Hesap oluşturuldu. Bu bilgileri kullanıcıya iletin; şifre bir daha gösterilmez.",
+      "name": "Ad soyad",
+      "email": "E-posta",
+      "password": "Şifre",
+      "newPassword": "Yeni şifre",
+      "generate": "Üret",
+      "setPassword": "Şifre belirle",
+      "passwordUpdated": "Şifre güncellendi. Yeni şifre:",
+      "stores": "Store'lar",
+      "lastSignIn": "Son giriş",
+      "never": "Hiç",
+      "disabled": "Devre dışı",
+      "platformAdmin": "Backoffice admini",
+      "removeAdmin": "Admin'liği kaldır",
+      "makeAdmin": "Admin yap",
+      "enable": "Etkinleştir",
+      "disable": "Devre dışı bırak",
+      "disableConfirm": "{email} devre dışı bırakılsın mı? Giriş yapamaz.",
+      "empty": "Hesap bulunamadı"
+    },
+    "noAccess": {
+      "title": "Erişiminiz yok",
+      "text": "Hesabınız henüz bir store'a bağlı değil. Yöneticinizle iletişime geçin.",
+      "suspendedTitle": "Store askıya alındı",
+      "suspendedText": "Bağlı olduğunuz store şu anda askıda. Yöneticinizle iletişime geçin.",
+      "logout": "Çıkış yap"
+    }
+  },
+  "confirmDialog": {
+    "confirm": "Onayla",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "deleting": "Siliniyor...",
+    "areYouSure": "Emin misin?",
+    "careful": "Dikkat",
+    "willRemove": "Kaldırılacak: {name}",
+    "reason": "Silme nedeni",
+    "optional": "opsiyonel",
+    "reasonPlaceholder": "Neden siliyorsun? (opsiyonel)",
+    "clearSearch": "Aramayı temizle",
+    "search": "Ara"
+  },
+  "emptyStates": {
+    "students": {
+      "title": "Henüz öğrenci yok",
+      "description": "İlk öğrencini ekle; paketler, kurslar ve yoklamalar buradan yönetilir."
+    },
+    "courses": {
+      "title": "Henüz kurs yok",
+      "description": "Haftalık programını oluşturmak için ilk kursunu ekle."
+    },
+    "instructors": {
+      "title": "Henüz eğitmen yok",
+      "description": "Eğitmenlerini ekle; kurslara atayıp kazançlarını takip edebilirsin."
+    },
+    "branches": {
+      "title": "Henüz şube yok",
+      "description": "Kurslar ve kasa şubeye bağlıdır; önce bir şube ekle."
+    },
+    "danceTypes": {
+      "title": "Henüz dans türü yok",
+      "description": "Salsa, bachata, tango… Kurslar ve paketler dans türüne göre gruplanır."
+    },
+    "packages": {
+      "title": "Henüz paket yok",
+      "description": "Öğrencilerine satacağın kredi paketlerini oluştur."
+    },
+    "instructorRates": {
+      "title": "Henüz eğitmen oranı yok",
+      "description": "Eğitmenlerin şube ve dans türüne göre ne kadar kazandığını belirle."
+    }
   }
 }

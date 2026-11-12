@@ -1,7 +1,9 @@
 'use client'
 
-import { DatePicker } from '@/components/ui/date-picker'
+import { DatePicker } from '@/components/common/DatePicker'
 import { format, parse } from 'date-fns'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
+import { Label } from '@/components/ui/label'
 
 interface InstructorEarningsFiltersProps {
   instructors: Array<{ id: string; first_name: string; last_name: string }>
@@ -49,23 +51,23 @@ export function InstructorEarningsFilters({
   return (
     <div className="flex gap-4 flex-wrap items-end">
       <div className="flex-1 min-w-50">
-        <label className="text-sm font-medium text-[#111827] block mb-2">Instructor</label>
-        <select
+        <Label className="block mb-2">Instructor</Label>
+        <NativeSelect
           defaultValue={instructorId || ''}
           onChange={(e) => handleInstructorChange(e.target.value)}
-          className="w-full px-4 py-2 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
+          className="w-full"
         >
-          <option value="">All Instructors</option>
+          <NativeSelectOption value="">All Instructors</NativeSelectOption>
           {instructors.map((instructor) => (
-            <option key={instructor.id} value={instructor.id}>
+            <NativeSelectOption key={instructor.id} value={instructor.id}>
               {instructor.first_name} {instructor.last_name}
-            </option>
+            </NativeSelectOption>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       <div className="flex-1 min-w-50">
-        <label className="text-sm font-medium text-[#111827] block mb-2">From Date</label>
+        <Label className="block mb-2">From Date</Label>
         <DatePicker
           value={fromDateObj}
           onDateChange={handleFromDateChange}
@@ -75,7 +77,7 @@ export function InstructorEarningsFilters({
       </div>
 
       <div className="flex-1 min-w-50">
-        <label className="text-sm font-medium text-[#111827] block mb-2">To Date</label>
+        <Label className="block mb-2">To Date</Label>
         <DatePicker
           value={toDateObj}
           onDateChange={handleToDateChange}

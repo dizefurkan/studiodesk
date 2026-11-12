@@ -21,7 +21,7 @@ export function TopBarClient({ children }: TopBarClientProps) {
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className="text-[#111827] h-8 w-8 hover:bg-[#F3F4F6]"
+          className="text-foreground h-8 w-8 hover:bg-muted"
           title={t('dashboard.toggleMenu')}
         >
           {isOpen ? <X size={20} /> : <Menu size={20} />}

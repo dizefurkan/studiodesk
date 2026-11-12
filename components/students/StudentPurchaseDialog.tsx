@@ -1,14 +1,26 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { CircleAlert, ShoppingCart } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Field, FieldContent, FieldDescription, FieldLabel, FieldSet, FieldLegend, FieldTitle } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { ShoppingCart, AlertCircle } from 'lucide-react'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Separator } from '@/components/ui/separator'
+import { Spinner } from '@/components/ui/spinner'
 import { formatCurrency } from '@/lib/utils/format'
 import { purchasePackage } from '@/lib/actions/students.actions'
-import { useRouter } from 'next/navigation'
 
 interface StudentPurchaseDialogProps {
   studentId: string
@@ -23,165 +35,144 @@ interface StudentPurchaseDialogProps {
 }
 
 export function StudentPurchaseDialog({ studentId, packages, currency = 'TRY' }: StudentPurchaseDialogProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [selectedPackageId, setSelectedPackageId] = useState<string>('')
-  const [customPrice, setCustomPrice] = useState<string>('')
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const [selectedPackageId, setSelectedPackageId] = useState('')
+  const [customPrice, setCustomPrice] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const router = useRouter()
 
-  const selectedPackage = packages.find((p) => p.id === selectedPackageId)
+  const selected = packages.find((p) => p.id === selectedPackageId)
+  const total = customPrice ? parseFloat(customPrice) : selected?.price
+
+  const reset = () => {
+    setSelectedPackageId('')
+    setCustomPrice('')
+    setError('')
+  }
 
   const handlePurchase = async () => {
     if (!selectedPackageId) {
       setError('Please select a package')
       return
     }
-
     setLoading(true)
     setError('')
-
     try {
       const result = await purchasePackage({
         studentId,
         packageId: selectedPackageId,
         price: customPrice ? parseFloat(customPrice) : undefined,
       })
-
       if (result.error) {
         setError(result.error)
       } else {
-        setIsOpen(false)
-        setSelectedPackageId('')
-        setCustomPrice('')
+        setOpen(false)
+        reset()
         router.refresh()
       }
-    } catch (err) {
+    } catch {
       setError('Failed to process purchase')
     } finally {
       setLoading(false)
     }
   }
 
-  if (!isOpen) {
-    return (
-      <Button onClick={() => setIsOpen(true)} className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2">
-        <ShoppingCart size={16} />
-        Purchase Package
-      </Button>
-    )
-  }
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-lg border-[#E5E7EB]">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <ShoppingCart className="text-[#4F46E5]" size={24} />
-              <h2 className="text-2xl font-bold text-[#111827]">Purchase Package</h2>
-            </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-[#6B7280] hover:text-[#111827] text-2xl leading-none"
-            >
-              ×
-            </button>
-          </div>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o)
+        if (!o) reset()
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button>
+          <ShoppingCart /> Purchase Package
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Purchase Package</DialogTitle>
+          <DialogDescription>Choose a package for this student.</DialogDescription>
+        </DialogHeader>
 
-          {/* Error */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <AlertCircle className="text-red-600 mt-0.5" size={20} />
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          )}
+        {error && (
+          <Alert variant="destructive">
+            <CircleAlert />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-          {/* Package Selection */}
-          <div className="pb-4 border-b border-[#E5E7EB]">
-            <Label className="text-sm font-semibold text-[#111827] mb-3 block">Select Package</Label>
-            <div className="space-y-2">
-              {packages.map((pkg) => (
-                <button
-                  key={pkg.id}
-                  onClick={() => {
-                    setSelectedPackageId(pkg.id)
-                    setCustomPrice('')
-                  }}
-                  className={`w-full p-3 border rounded-lg text-left transition-colors ${
-                    selectedPackageId === pkg.id
-                      ? 'border-[#4F46E5] bg-[#EEF2FF]'
-                      : 'border-[#E5E7EB] hover:border-[#4F46E5]'
-                  }`}
-                >
-                  <p className="font-semibold text-[#111827]">{pkg.name}</p>
-                  <p className="text-sm text-[#6B7280]">
-                    {pkg.total_credits} credits • {pkg.dance_types?.name}
-                  </p>
-                  <p className="text-sm font-medium text-[#4F46E5] mt-1">Price: {formatCurrency(pkg.price, currency)}</p>
-                </button>
-              ))}
-            </div>
-          </div>
+        <FieldSet>
+          <FieldLegend variant="label">Select Package</FieldLegend>
+          <RadioGroup
+            value={selectedPackageId}
+            onValueChange={(v) => {
+              setSelectedPackageId(v)
+              setCustomPrice('')
+            }}
+            className="max-h-72 overflow-y-auto"
+          >
+            {packages.map((pkg) => (
+              <FieldLabel key={pkg.id} htmlFor={`pkg-${pkg.id}`}>
+                <Field orientation="horizontal">
+                  <FieldContent>
+                    <FieldTitle>{pkg.name}</FieldTitle>
+                    <FieldDescription>
+                      {pkg.total_credits} credits{pkg.dance_types?.name ? ` • ${pkg.dance_types.name}` : ''} •{' '}
+                      {formatCurrency(pkg.price, currency)}
+                    </FieldDescription>
+                  </FieldContent>
+                  <RadioGroupItem value={pkg.id} id={`pkg-${pkg.id}`} />
+                </Field>
+              </FieldLabel>
+            ))}
+          </RadioGroup>
+        </FieldSet>
 
-          {/* Price Override */}
-          {selectedPackage && (
-            <div className="py-4 border-b border-[#E5E7EB]">
-              <Label htmlFor="custom-price" className="text-sm font-semibold text-[#111827] block mb-2">
-                Price (optional override)
-              </Label>
+        {selected && (
+          <>
+            <Field>
+              <FieldLabel htmlFor="custom-price">Price (optional override)</FieldLabel>
               <Input
                 id="custom-price"
                 type="number"
-                placeholder={`${selectedPackage.price} TL`}
+                min={0}
+                placeholder={String(selected.price)}
                 value={customPrice}
                 onChange={(e) => setCustomPrice(e.target.value)}
-                className="border-[#E5E7EB] focus:border-[#4F46E5]"
               />
-              <p className="text-xs text-[#6B7280] mt-1">Leave empty to use package price</p>
-            </div>
-          )}
-
-          {/* Summary */}
-          {selectedPackage && (
-            <div className="py-4 bg-[#F9FAFB] rounded-lg p-4 space-y-2">
+              <FieldDescription>Leave empty to use the package price.</FieldDescription>
+            </Field>
+            <div className="space-y-2 rounded-lg bg-muted/50 p-4 text-sm">
               <div className="flex justify-between">
-                <span className="text-sm text-[#6B7280]">Package:</span>
-                <span className="font-medium text-[#111827]">{selectedPackage.name}</span>
+                <span className="text-muted-foreground">Package</span>
+                <span className="font-medium">{selected.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-[#6B7280]">Credits:</span>
-                <span className="font-medium text-[#111827]">{selectedPackage.total_credits}</span>
+                <span className="text-muted-foreground">Credits</span>
+                <span className="font-medium">{selected.total_credits}</span>
               </div>
-              <div className="flex justify-between pt-2 border-t border-[#E5E7EB]">
-                <span className="text-sm font-semibold text-[#111827]">Total:</span>
-                <span className="font-bold text-[#4F46E5] text-lg">
-                  {customPrice || selectedPackage.price} TL
-                </span>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="font-semibold">Total</span>
+                <span className="text-lg font-bold text-primary">{formatCurrency(total ?? 0, currency)}</span>
               </div>
             </div>
-          )}
+          </>
+        )}
 
-          {/* Actions */}
-          <div className="flex gap-2 mt-6">
-            <Button
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              className="border-[#E5E7EB] text-[#111827]"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handlePurchase}
-              disabled={!selectedPackageId || loading}
-              className="flex-1 bg-[#4F46E5] hover:bg-[#4338CA] text-white"
-            >
-              {loading ? 'Processing...' : 'Confirm Purchase'}
-            </Button>
-          </div>
-        </div>
-      </Card>
-    </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handlePurchase} disabled={!selectedPackageId || loading}>
+            {loading && <Spinner />}
+            {loading ? 'Processing...' : 'Confirm Purchase'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

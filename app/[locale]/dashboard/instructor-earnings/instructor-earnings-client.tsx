@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
-import { TrendingUp } from 'lucide-react'
 import { DataTable } from '@/components/table/data-table'
 import { getEarningsColumns, type EarningRecord } from './columns'
 import { InstructorEarningsFilters } from '@/components/instructor-earnings/EarningsFilters'
@@ -51,33 +50,22 @@ export function InstructorEarningsTable({
 
   return (
     <>
-      {/* Table or Empty State */}
-      {initialEarnings.length === 0 ? (
-        <Card className="border-[#E5E7EB] p-12 text-center">
-          <div className="text-gray-500">
-            <TrendingUp size={48} className="mx-auto mb-4 opacity-50" />
-            <p className="text-lg">No earnings records found</p>
-            <p className="text-sm mt-1">Complete course sessions to generate instructor earnings</p>
-          </div>
-        </Card>
-      ) : (
-        <Card className="border-[#E5E7EB] p-3 sm:p-4 md:p-6">
-          <DataTable<EarningRecord, any>
-            columns={columns}
-            data={initialEarnings}
-            enablePagination={true}
-            enableFilters={false}
-            currentPage={currentPage}
-            totalItems={totalCount}
-            pageSize={pageSize}
-            onPageChange={handlePageChange}
-            searchValue={searchValue}
-            onSearchChange={handleSearchChange}
-            searchPlaceholder="Search instructors..."
-            emptyMessage="No earnings found"
-          />
-        </Card>
-      )}
+      <Card className="p-3 sm:p-4 md:p-6">
+        <DataTable<EarningRecord, any>
+          columns={columns}
+          data={initialEarnings}
+          enablePagination={true}
+          enableFilters={false}
+          currentPage={currentPage}
+          totalItems={totalCount}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          searchValue={searchValue}
+          onSearchChange={handleSearchChange}
+          searchPlaceholder="Search instructors..."
+          emptyMessage="No earnings found"
+        />
+      </Card>
     </>
   )
 }

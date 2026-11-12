@@ -1,10 +1,21 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { useTranslations } from 'next-intl'
+import { useMemo, useState } from 'react'
+import { Search } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { X, Search } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Empty, EmptyDescription, EmptyHeader } from '@/components/ui/empty'
+import { Field, FieldContent, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 
 interface Instructor {
   id: string
@@ -35,131 +46,98 @@ export function InstructorSelectionModal({
   onSelect,
   danceTypeName,
 }: InstructorSelectionModalProps) {
-  const t = useTranslations()
   const [searchQuery, setSearchQuery] = useState('')
   const [tempSelected, setTempSelected] = useState<string[]>(selectedIds)
 
-  // Filter instructors by search query
-  const filteredInstructors = useMemo(() => {
-    if (!searchQuery.trim()) return instructors
+  // reset the working selection every time the dialog opens
+  const [wasOpen, setWasOpen] = useState(isOpen)
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen)
+    if (isOpen) setTempSelected(selectedIds)
+  }
 
-    const query = searchQuery.toLowerCase()
-    return instructors.filter((instructor) =>
-      `${instructor.first_name} ${instructor.last_name}`.toLowerCase().includes(query)
-    )
+  const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return instructors
+    return instructors.filter((i) => `${i.first_name} ${i.last_name}`.toLowerCase().includes(q))
   }, [instructors, searchQuery])
 
-  const handleToggle = (instructorId: string) => {
-    setTempSelected((prev) =>
-      prev.includes(instructorId) ? prev.filter((id) => id !== instructorId) : [...prev, instructorId]
-    )
-  }
-
-  const handleConfirm = () => {
-    onSelect(tempSelected)
-    onOpenChange(false)
-  }
-
-  const handleCancel = () => {
-    setTempSelected(selectedIds)
-    onOpenChange(false)
-  }
-
-  if (!isOpen) return null
+  const toggle = (id: string, checked: boolean) =>
+    setTempSelected((prev) => (checked ? [...new Set([...prev, id])] : prev.filter((x) => x !== id)))
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[#E5E7EB]">
-          <div>
-            <h2 className="text-lg font-bold text-[#111827]">Select Instructors</h2>
-            {danceTypeName && <p className="text-sm text-[#6B7280] mt-1">for {danceTypeName}</p>}
-          </div>
-          <button
-            onClick={handleCancel}
-            className="text-[#6B7280] hover:text-[#111827] transition-colors"
-            title="Close"
-          >
-            <X size={24} />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Select Instructors</DialogTitle>
+          {danceTypeName && <DialogDescription>for {danceTypeName}</DialogDescription>}
+        </DialogHeader>
 
-        {/* Search Input */}
-        <div className="p-6 border-b border-[#E5E7EB]">
-          <div className="relative">
-            <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#9CA3AF]" />
-            <Input
-              type="text"
-              placeholder="Search instructors..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
+        <InputGroup>
+          <InputGroupAddon>
+            <Search />
+          </InputGroupAddon>
+          <InputGroupInput
+            type="search"
+            placeholder="Search instructors..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </InputGroup>
 
-        {/* Instructors List */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {instructors.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-600 text-sm">No instructors available for this dance type</p>
-            </div>
-          ) : filteredInstructors.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-600 text-sm">No instructors found matching your search</p>
-            </div>
+        <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1">
+          {filtered.length === 0 ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyDescription>
+                  {instructors.length === 0
+                    ? 'No instructors available for this dance type'
+                    : 'No instructors found matching your search'}
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
-            <div className="space-y-2">
-              {filteredInstructors.map((instructor) => {
-                const pricePerClass = instructor.instructor_rates?.[0]?.ratio_per_class
-                const isSelected = tempSelected.includes(instructor.id)
-
+            <FieldGroup className="gap-2">
+              {filtered.map((instructor) => {
+                const ratio = instructor.instructor_rates?.[0]?.ratio_per_class
+                const id = `instructor-${instructor.id}`
                 return (
-                  <label
-                    key={instructor.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-[#E5E7EB] hover:bg-gray-50 cursor-pointer transition-colors"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleToggle(instructor.id)}
-                      className="w-4 h-4 rounded border-[#E5E7EB] cursor-pointer"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium text-sm text-[#111827]">
-                        {instructor.first_name} {instructor.last_name}
-                      </p>
-                    </div>
-                    <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded whitespace-nowrap">
-                      ₺{pricePerClass}/session
-                    </span>
-                  </label>
+                  <FieldLabel key={instructor.id} htmlFor={id}>
+                    <Field orientation="horizontal">
+                      <Checkbox
+                        id={id}
+                        checked={tempSelected.includes(instructor.id)}
+                        onCheckedChange={(c) => toggle(instructor.id, c === true)}
+                      />
+                      <FieldContent>
+                        <span className="text-sm font-medium">
+                          {instructor.first_name} {instructor.last_name}
+                        </span>
+                      </FieldContent>
+                      {ratio !== undefined && <Badge variant="secondary">%{ratio}</Badge>}
+                    </Field>
+                  </FieldLabel>
                 )
               })}
-            </div>
+            </FieldGroup>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex gap-2 p-6 border-t border-[#E5E7EB] justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleCancel}
-            className="border-[#E5E7EB]"
-          >
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button
             type="button"
-            onClick={handleConfirm}
-            className="bg-[#4F46E5] hover:bg-[#4338CA] text-white"
+            onClick={() => {
+              onSelect(tempSelected)
+              onOpenChange(false)
+            }}
           >
             Confirm ({tempSelected.length})
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -38,32 +38,32 @@ export default async function SessionsPage({ params }: SessionsPageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <Link href={`/dashboard/courses/${course.id}`} className="text-[#4F46E5] hover:underline mb-4 inline-block">
+        <Link href={`/dashboard/courses/${course.id}`} className="text-primary hover:underline mb-4 inline-block">
           ← Back to Course
         </Link>
-        <h1 className="text-3xl font-bold text-[#111827]">Sessions</h1>
-        <p className="text-gray-600 mt-1">
+        <h1 className="text-3xl font-bold text-foreground">Sessions</h1>
+        <p className="text-muted-foreground mt-1">
           {course.name} • {course.branches?.name}
         </p>
       </div>
 
       {/* Course Info */}
-      <Card className="border-[#E5E7EB] p-6">
+      <Card className="border-border p-6">
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <p className="text-sm text-gray-600 mb-2">Schedule</p>
+            <p className="text-sm text-muted-foreground mb-2">Schedule</p>
             <div className="flex items-center gap-2">
-              <Clock size={18} className="text-[#4F46E5]" />
-              <span className="font-medium text-[#111827]">
+              <Clock size={18} className="text-primary" />
+              <span className="font-medium text-foreground">
                 {DAYS[course.day_of_week]} {formatTime(course.start_time)} - {formatTime(course.end_time)}
               </span>
             </div>
           </div>
           <div>
-            <p className="text-sm text-gray-600 mb-2">Total Sessions</p>
+            <p className="text-sm text-muted-foreground mb-2">Total Sessions</p>
             <div className="flex items-center gap-2">
-              <Calendar size={18} className="text-[#4F46E5]" />
-              <span className="font-medium text-[#111827]">{sessions.length} sessions</span>
+              <Calendar size={18} className="text-primary" />
+              <span className="font-medium text-foreground">{sessions.length} sessions</span>
             </div>
           </div>
         </div>
@@ -71,8 +71,8 @@ export default async function SessionsPage({ params }: SessionsPageProps) {
 
       {/* Sessions List */}
       {sessions.length === 0 ? (
-        <Card className="border-[#E5E7EB] p-12 text-center">
-          <div className="text-gray-500">
+        <Card className="border-border p-12 text-center">
+          <div className="text-muted-foreground">
             <BookOpen size={48} className="mx-auto mb-4 opacity-50" />
             <p className="text-lg">No sessions scheduled</p>
             <p className="text-sm mt-1">Sessions will be auto-generated on the schedule day</p>
@@ -81,14 +81,14 @@ export default async function SessionsPage({ params }: SessionsPageProps) {
       ) : (
         <div className="space-y-3">
           {sessions.map((session) => (
-            <Card key={session.id} className="border-[#E5E7EB] p-4 hover:border-[#4F46E5] hover:shadow-sm transition-all">
+            <Card key={session.id} className="border-border p-4 hover:border-primary hover:shadow-sm transition-all">
               <div className="flex justify-between items-center">
                 <div className="flex-1">
                   <div className="flex items-center gap-4">
-                    <Calendar className="text-[#4F46E5]" size={20} />
+                    <Calendar className="text-primary" size={20} />
                     <div>
-                      <p className="font-medium text-[#111827]">{session.session_date}</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="font-medium text-foreground">{session.session_date}</p>
+                      <p className="text-sm text-muted-foreground">
                         {DAYS[new Date(session.session_date).getDay()]} • {formatTime(course.start_time)}
                       </p>
                     </div>
@@ -96,7 +96,7 @@ export default async function SessionsPage({ params }: SessionsPageProps) {
                 </div>
 
                 <Link href={`/dashboard/attendance?session=${session.id}`}>
-                  <Button size="sm" className="bg-[#4F46E5] hover:bg-[#4338CA] text-white">
+                  <Button size="sm" >
                     Mark Attendance
                   </Button>
                 </Link>

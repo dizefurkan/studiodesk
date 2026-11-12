@@ -34,7 +34,7 @@ export function getDanceTypeColumns({
       cell: ({ row }) => (
         <Link
           href={`/dashboard/dance-types/${row.original.id}`}
-          className="font-medium text-[#111827] hover:text-[#4F46E5]"
+          className="font-medium text-foreground hover:text-primary"
         >
           {row.original.name}
         </Link>
@@ -47,11 +47,11 @@ export function getDanceTypeColumns({
       accessorKey: 'description',
       header: 'Description',
       cell: ({ row }) => (
-        <span className="text-gray-600 text-sm">
+        <span className="text-muted-foreground text-sm">
           {row.original.description ? (
             <span className="line-clamp-2">{row.original.description}</span>
           ) : (
-            <span className="text-gray-400">-</span>
+            <span className="text-muted-foreground/70">-</span>
           )}
         </span>
       ),
@@ -68,7 +68,7 @@ export function getDanceTypeColumns({
             <Button
               variant="ghost"
               size="sm"
-              className="text-[#4F46E5] hover:bg-[#EEF2FF]"
+              className="text-primary hover:bg-primary/10"
             >
               <Edit2 size={16} />
             </Button>

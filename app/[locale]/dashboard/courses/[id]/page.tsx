@@ -43,19 +43,19 @@ export default async function CourseDetailPage({
     <div className="space-y-6">
       <Link
         href="/dashboard/courses"
-        className="text-[#4F46E5] hover:underline inline-block"
+        className="text-primary hover:underline inline-block"
       >
         ← {t("common.backToCourses")}
       </Link>
 
-      <Card className="border-[#E5E7EB]">
+      <Card className="border-border">
         <div className="p-4 sm:p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 md:gap-8 mb-8">
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
                 {course.name}
               </h1>
-              <p className="text-gray-600 text-sm sm:text-base">
+              <p className="text-muted-foreground text-sm sm:text-base">
                 {course.branches?.name} • {course.dance_types?.name}
               </p>
             </div>
@@ -73,7 +73,7 @@ export default async function CourseDetailPage({
                 href={`/dashboard/courses/${course.id}/edit`}
                 className="w-full sm:w-auto"
               >
-                <Button className="bg-[#4F46E5] hover:bg-[#4338CA] text-white gap-2 w-full sm:w-auto">
+                <Button className="gap-2 w-full sm:w-auto">
                   <Edit2 size={18} />
                   {t("common.edit")}
                 </Button>
@@ -81,13 +81,13 @@ export default async function CourseDetailPage({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 border-t border-[#E5E7EB] pt-8">
+          <div className="grid grid-cols-1 gap-6 border-t border-border pt-8">
             <div>
-              <p className="text-sm text-gray-600 mb-2">
+              <p className="text-sm text-muted-foreground mb-2">
                 {t("courses.schedule")}
               </p>
-              <div className="flex items-center gap-2 text-lg font-medium text-[#111827]">
-                <Clock size={20} className="text-[#4F46E5]" />
+              <div className="flex items-center gap-2 text-lg font-medium text-foreground">
+                <Clock size={20} className="text-primary" />
                 {t(
                   `data.days.${["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"][course.day_of_week]}`
                 )}{" "}
@@ -98,8 +98,8 @@ export default async function CourseDetailPage({
 
           {course.course_instructors &&
             course.course_instructors.length > 0 && (
-              <div className="mt-8 pt-8 border-t border-[#E5E7EB]">
-                <p className="text-sm text-gray-600 mb-4">
+              <div className="mt-8 pt-8 border-t border-border">
+                <p className="text-sm text-muted-foreground mb-4">
                   {t("courses.assignedInstructors")}
                 </p>
                 <div className="flex gap-2 flex-wrap">
@@ -115,7 +115,7 @@ export default async function CourseDetailPage({
                         href={`/dashboard/instructors/${ci.instructor_id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="bg-[#4F46E5] text-white px-4 py-2 rounded-full text-sm hover:bg-[#4338CA] transition-colors cursor-pointer font-medium"
+                        className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm hover:bg-primary/90 transition-colors cursor-pointer font-medium"
                       >
                         {instructorName}
                       </a>
@@ -137,7 +137,7 @@ export default async function CourseDetailPage({
       />
 
       {/* Activity Timeline */}
-      <div className="mt-12 pt-8 border-t border-[#E5E7EB]">
+      <div className="mt-12 pt-8 border-t border-border">
         <ActivityTimelineWrapper
           entity="course"
           entityId={course.id}
