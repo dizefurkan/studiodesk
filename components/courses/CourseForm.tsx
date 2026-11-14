@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Card } from "@/components/ui/card";
@@ -25,7 +25,6 @@ import {
 import { getBranches } from "@/lib/actions/branches.actions";
 import { getDanceTypes } from "@/lib/actions/dance-types.actions";
 import { getInstructorsForDanceType } from "@/lib/actions/instructors.actions";
-import { getAvailableStudentsForCourse } from "@/lib/actions/course-students.actions";
 import { InstructorSelectionModal } from "./InstructorSelectionModal";
 import { formatTime } from "@/lib/utils/formatTime";
 import type { Database } from "@/lib/types/database.types";
@@ -38,12 +37,6 @@ type Course = Database["public"]["Tables"]["courses"]["Row"];
 type Branch = Database["public"]["Tables"]["branches"]["Row"];
 type DanceType = Database["public"]["Tables"]["dance_types"]["Row"];
 type Instructor = Database["public"]["Tables"]["instructors"]["Row"];
-
-interface Student {
-  id: string;
-  first_name: string;
-  last_name: string;
-}
 
 const DAYS = [
   "Sunday",
@@ -63,7 +56,6 @@ const courseSchema = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/, "Time must be in HH:mm format"),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, "Time must be in HH:mm format"),
   instructorIds: z.array(z.string()).optional(),
-  studentIds: z.array(z.string()).optional(),
 });
 
 type CourseFormValues = z.infer<typeof courseSchema>;
@@ -91,7 +83,6 @@ export function CourseForm({ course }: CourseFormProps) {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [danceTypes, setDanceTypes] = useState<DanceType[]>([]);
   const [instructors, setInstructors] = useState<InstructorWithRates[]>([]);
-  const [availableStudents, setAvailableStudents] = useState<Student[]>([]);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [loadingInstructors, setLoadingInstructors] = useState(false);
   const [coursesOnDay, setCoursesOnDay] = useState<Course[] | null>(null);
@@ -110,9 +101,14 @@ export function CourseForm({ course }: CourseFormProps) {
       endTime: formatTime(course?.end_time) || "",
       instructorIds:
         course?.course_instructors?.map((ci) => ci.instructor_id) || [],
-      studentIds: [],
     },
   });
+
+  const danceTypeId = useWatch({ control: form.control, name: "danceTypeId" });
+  const branchId = useWatch({ control: form.control, name: "branchId" });
+  const dayOfWeek = useWatch({ control: form.control, name: "dayOfWeek" });
+  const instructorIds =
+    useWatch({ control: form.control, name: "instructorIds" }) || [];
 
   useEffect(() => {
     async function loadData() {
@@ -131,8 +127,6 @@ export function CourseForm({ course }: CourseFormProps) {
 
   // Watch for danceTypeId changes and fetch instructors accordingly
   useEffect(() => {
-    const danceTypeId = form.watch("danceTypeId");
-
     if (!danceTypeId) {
       setInstructors([]);
       setLoadingInstructors(false);
@@ -140,66 +134,44 @@ export function CourseForm({ course }: CourseFormProps) {
       return;
     }
 
+    // Ignore a response that arrives after the dance type changed again
+    let cancelled = false;
+
     async function loadInstructorsForDanceType() {
       setLoadingInstructors(true);
       try {
         const result = await getInstructorsForDanceType(danceTypeId);
+        if (cancelled) return;
         if (result.error) {
           console.error("[Instructors] Backend error:", result.error);
           setGeneralError(`Failed to load instructors: ${result.error}`);
           setInstructors([]);
         } else {
-          console.log(
-            "[Instructors] Loaded:",
-            result.data?.length || 0,
-            "instructors for dance type",
-            danceTypeId
-          );
           setInstructors(result.data || []);
         }
       } catch (error) {
+        if (cancelled) return;
         console.error("[Instructors] Exception:", error);
         setGeneralError("An error occurred while loading instructors");
         setInstructors([]);
       } finally {
-        setLoadingInstructors(false);
+        if (!cancelled) setLoadingInstructors(false);
       }
     }
 
     loadInstructorsForDanceType();
-  }, [form.watch("danceTypeId")]);
-
-  // Load available students when dance type changes
-  useEffect(() => {
-    const danceTypeId = form.getValues("danceTypeId");
-    if (!danceTypeId) {
-      setAvailableStudents([]);
-      return;
-    }
-
-    async function loadStudents() {
-      // If editing a course, pass the course ID to exclude already enrolled students
-      const result = await getAvailableStudentsForCourse(
-        course?.id || "",
-        danceTypeId
-      );
-      if (result.data) {
-        setAvailableStudents(result.data);
-      }
-    }
-
-    loadStudents();
-  }, [form.watch("danceTypeId")]);
+    return () => {
+      cancelled = true;
+    };
+  }, [danceTypeId]);
 
   // Load courses on selected day (only when creating a new course)
   useEffect(() => {
     if (course) return; // Skip check when editing
 
-    const loadCoursesOnDay = async () => {
-      const branchId = form.getValues("branchId");
-      const danceTypeId = form.getValues("danceTypeId");
-      const dayOfWeek = form.getValues("dayOfWeek");
+    let cancelled = false;
 
+    const loadCoursesOnDay = async () => {
       if (!branchId || !danceTypeId) {
         setCoursesOnDay(null);
         return;
@@ -211,6 +183,7 @@ export function CourseForm({ course }: CourseFormProps) {
         danceTypeId,
         dayOfWeek
       );
+      if (cancelled) return;
       setLoadingCoursesOnDay(false);
 
       if (result.data && result.data.length > 0) {
@@ -220,14 +193,13 @@ export function CourseForm({ course }: CourseFormProps) {
       }
     };
 
+    // Debounced: only check once the branch/type/day selection settles
     const timer = setTimeout(loadCoursesOnDay, 500);
-    return () => clearTimeout(timer);
-  }, [
-    form.watch("branchId"),
-    form.watch("danceTypeId"),
-    form.watch("dayOfWeek"),
-    course,
-  ]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [branchId, danceTypeId, dayOfWeek, course]);
 
   async function onSubmit(data: CourseFormValues) {
     setIsLoading(true);
@@ -241,7 +213,8 @@ export function CourseForm({ course }: CourseFormProps) {
             startTime: data.startTime,
             endTime: data.endTime,
             instructorIds: data.instructorIds,
-            studentIds: data.studentIds,
+            // Enrolments are managed on the course page (AddStudentDialog), never here:
+            // sending studentIds would replace them.
           })
         : await createCourse({
             name: data.name,
@@ -251,15 +224,11 @@ export function CourseForm({ course }: CourseFormProps) {
             startTime: data.startTime,
             endTime: data.endTime,
             instructorIds: data.instructorIds,
-            // Don't pass studentIds when creating - students should be added via AddStudentDialog
-            studentIds: [],
           });
 
       if (result.error) {
         setGeneralError(result.error);
       } else if (result.success) {
-        console.log("Course form result:", result);
-        console.log("Redirecting to /dashboard/courses");
         router.push("/dashboard/courses");
       }
     } catch (error) {
@@ -371,12 +340,12 @@ export function CourseForm({ course }: CourseFormProps) {
             </div>
 
             {/* Show Instructors section ONLY after dance type is selected */}
-            {form.watch("danceTypeId") && (
+            {danceTypeId && (
               <div>
                 <Label className="block mb-2">
                   {t("courses.instructors")} (for{" "}
                   {
-                    danceTypes.find((d) => d.id === form.watch("danceTypeId"))
+                    danceTypes.find((d) => d.id === danceTypeId)
                       ?.name
                   }
                   )
@@ -399,10 +368,9 @@ export function CourseForm({ course }: CourseFormProps) {
                     className="w-full border-border text-left"
                   >
                     <span className="flex-1 text-left">
-                      {form.watch("instructorIds") &&
-                      form.watch("instructorIds")!.length > 0
+                      {instructorIds.length > 0
                         ? t("courses.instructorsSelected", {
-                            count: form.watch("instructorIds")!.length,
+                            count: instructorIds.length,
                           })
                         : "Select instructors..."}
                     </span>
@@ -524,14 +492,14 @@ export function CourseForm({ course }: CourseFormProps) {
             {/* Instructor Selection Modal */}
             <InstructorSelectionModal
               instructors={instructors}
-              selectedIds={form.watch("instructorIds") || []}
+              selectedIds={instructorIds}
               isOpen={showInstructorModal}
               onOpenChange={setShowInstructorModal}
               onSelect={(instructorIds) =>
                 form.setValue("instructorIds", instructorIds)
               }
               danceTypeName={
-                danceTypes.find((d) => d.id === form.watch("danceTypeId"))?.name
+                danceTypes.find((d) => d.id === danceTypeId)?.name
               }
             />
 

@@ -7,69 +7,6 @@ import { getOrganization } from '@/lib/auth/getOrganization'
 import { logOperation } from '@/lib/actions/history.actions'
 
 /**
- * Get students with active packages for a dance type (not yet enrolled in the course)
- */
-export async function getAvailableStudentsForCourse(courseId: string, danceTypeId: string) {
-  const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
-
-  const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
-
-  try {
-    const adminSupabase = createAdminClient()
-
-    // Get all students with active packages for this dance type
-    // Join: student_packages -> packages -> dance_type
-    const { data: studentsWithPackages, error: packagesError } = await (adminSupabase
-      .from('student_packages'))
-      .select('student_id, students!inner(id, first_name, last_name, organization_id), packages!inner(dance_type_id)')
-      .eq('students.organization_id', organization.id)
-      .eq('packages.dance_type_id', danceTypeId)
-      .gt('remaining_credits', 0)
-
-    if (packagesError) {
-      console.error('Error fetching students with packages:', packagesError)
-      return { error: 'Failed to fetch available students' }
-    }
-
-    // Get students already enrolled in this course (only if courseId is valid)
-    let enrolledStudentIds = new Set()
-    
-    if (courseId) {
-      const { data: enrolledStudents, error: enrolledError } = await (adminSupabase
-        .from('course_students'))
-        .select('student_id')
-        .eq('course_id', courseId)
-
-      if (enrolledError) {
-        console.error('Error fetching enrolled students:', enrolledError)
-      }
-
-      enrolledStudentIds = new Set((enrolledStudents || []).map((cs) => cs.student_id))
-    }
-
-    // Filter out already enrolled students and deduplicate
-    const uniqueStudents = new Map()
-    for (const record of studentsWithPackages || []) {
-      const student = record.students
-      if (student && !enrolledStudentIds.has(student.id)) {
-        uniqueStudents.set(student.id, {
-          id: student.id,
-          first_name: student.first_name,
-          last_name: student.last_name,
-        })
-      }
-    }
-
-    return { data: Array.from(uniqueStudents.values()) }
-  } catch (error) {
-    console.error('Unexpected error in getAvailableStudentsForCourse:', error)
-    return { error: 'An unexpected error occurred' }
-  }
-}
-
-/**
  * Get all students enrolled in a course
  */
 export async function getCourseStudents(courseId: string) {
