@@ -39,7 +39,7 @@ export function SiteHeader() {
         )}
       >
         <div className="flex h-14 items-center justify-between gap-3 pl-3 pr-2 sm:pl-4">
-          <Link href="/" className="rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight">
+          <Link href="/" className="inline-flex items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight">
             <Logo inverted />
           </Link>
 
