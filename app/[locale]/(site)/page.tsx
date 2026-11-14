@@ -12,10 +12,19 @@ import { StackSteps } from '@/components/site/StackSteps'
 import { FanCards } from '@/components/site/FanCards'
 import { Pricing } from '@/components/site/Pricing'
 import { DemoRequestForm } from '@/components/site/DemoRequestForm'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { absoluteUrl, samePathAlternates, SITE_URL } from '@/lib/seo'
 
-export async function generateMetadata() {
-  const t = await getTranslations('site.meta')
-  return { title: { absolute: t('title') }, description: t('description') }
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'site.meta' })
+  return {
+    title: { absolute: t('title') },
+    description: t('description'),
+    keywords: t('keywords'),
+    alternates: samePathAlternates(locale),
+    openGraph: { title: t('title'), description: t('description'), url: absoluteUrl(locale), type: 'website', siteName: 'StudioDesk' },
+  }
 }
 
 const FAQ = ['setup', 'devices', 'students', 'data', 'branches', 'price'] as const
@@ -43,11 +52,33 @@ function SectionHead({ eyebrow, title, lead }: { eyebrow: string; title: string;
   )
 }
 
-export default async function HomePage() {
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
   const t = await getTranslations('site')
 
   return (
     <>
+      <JsonLd
+        data={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'StudioDesk',
+            url: SITE_URL,
+            logo: `${SITE_URL}/brand/icon-512.png`,
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'SoftwareApplication',
+            name: 'StudioDesk',
+            applicationCategory: 'BusinessApplication',
+            operatingSystem: 'Web, iOS, Android',
+            inLanguage: ['tr', 'en'],
+            description: t('meta.description'),
+            url: absoluteUrl(locale),
+          },
+        ]}
+      />
       {/* Hero */}
       <section className="relative -mt-[4.5rem] overflow-hidden pt-[4.5rem]">
         <div

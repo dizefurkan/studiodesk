@@ -539,11 +539,11 @@
   },
   "instructorRates": {
     "title": "Eğitmen Ücretleri",
-    "description": "Her eğitmenin her sınıf için ne kadar kazandığını belirleyin",
+    "description": "Eğitmenlerin her dersin değerinden alacağı payı belirleyin",
     "aboutTitle": "Eğitmen ücretleri hakkında",
-    "aboutDescription": "Her eğitmen için dans türü ve şube kombinasyonuna göre saatlik ücreti belirleyin. Yoklama alındığında eğitmen otomatik olarak bu ücreti kazanır.",
+    "aboutDescription": "Kredisi düşülen her öğrenci, paketinin ders değerini (ödediği tutar ÷ ders sayısı) derse ekler. Eğitmen bu toplamdan kendi oranı kadar kazanır. Kredisi düşülmeyen öğrenciler hakedişe sayılmaz.",
     "specificToInstructor": "Oranlar Eğitmen + Şube + Dans Türü kombinasyonuna özgüdür",
-    "earnAutomatically": "Yoklama alındığında, eğitmen otomatik olarak bu ücreti kazanır",
+    "earnAutomatically": "Hakediş yoklama kaydedildiğinde hesaplanır, bir kayıt silindiğinde güncellenir",
     "multipleRates": "Aynı eğitmenin farklı şubeler ve dans türleri arasında birden fazla oranı yapılandırılabilir",
     "addNew": "Yeni Oran Ekle",
     "editRate": "Oranı Düzenle",
@@ -1192,12 +1192,13 @@
     "selectBranch": "Şube seç",
     "danceType": "Dans türü *",
     "selectDanceType": "Dans türü seç",
-    "ratio": "Komisyon oranı (%) *",
+    "ratio": "Ders değerinden pay (%) *",
     "allRequired": "Tüm alanlar zorunlu",
     "ratioRange": "Oran 0 ile 100 arasında bir yüzde olmalı",
     "saveFailed": "Ücret kaydedilemedi",
     "update": "Ücreti güncelle",
-    "add": "Ücret ekle"
+    "add": "Ücret ekle",
+    "ratioHint": "Kredisi düşülen her öğrenci için ders değeri: paket için ödediği tutar ÷ paketteki ders sayısı. Eğitmen, dersteki bu değerlerin toplamından bu yüzde kadar kazanır."
   },
   "purchaseDialog": {
     "title": "Paket satın al",
@@ -1377,7 +1378,7 @@
   },
   "meta": {
     "defaultTitle": "StudioDesk — Dans stüdyosu yönetimi",
-    "description": "Dans stüdyolarını yönetmek için hepsi bir arada platform",
+    "description": "Dans stüdyosu ve dans okulu programı: yoklama, ders paketi, ders programı, eğitmen hakedişi ve kasa tek yerde.",
     "keywords": "dans stüdyosu, yönetim, ders programı, öğrenciler, eğitmenler"
   },
   "attendanceDatePicker": {
@@ -1744,7 +1745,9 @@
   "site": {
     "meta": {
       "title": "StudioDesk: dans stüdyoları için yoklama, ders paketi ve eğitmen hakedişi",
-      "description": "Ders paketlerini satın, haftalık programı yönetin, yoklamayı telefondan alın ve ayı eğitmen hakedişleri hesaplanmış olarak kapatın."
+      "description": "Ders paketlerini satın, haftalık programı yönetin, yoklamayı telefondan alın ve ayı eğitmen hakedişleri hesaplanmış olarak kapatın.",
+      "keywords": "dans stüdyosu programı, stüdyo programı, dans okulu programı, öğrenci kayıt takip programı, yoklama programı, ders paketi takibi, eğitmen hakediş, stüdyo yönetim yazılımı",
+      "ogTitle": "Dans stüdyoları için yoklama, ders paketi ve eğitmen hakedişi"
     },
     "skip": "İçeriğe geç",
     "nav": {
@@ -2005,13 +2008,14 @@
     },
     "blog": {
       "title": "Blog",
-      "lead": "Dans stüdyosu işletmek üzerine pratik yazılar: yoklama, paketler, eğitmenler ve kasa.",
+      "lead": "Dans stüdyosu işletmek üzerine pratik rehberler: yoklama, ders paketleri, ders programı, eğitmen hakedişi, öğrenci bağlılığı ve program seçimi.",
       "minutes": "{count} dk okuma",
       "back": "Tüm yazılar",
       "ctaTitle": "Kendi stüdyonuzla deneyin",
       "ctaText": "StudioDesk'i kendi ders ve paketlerinizle, görüşerek birlikte kuruyoruz.",
       "ctaButton": "Demo iste",
-      "more": "Diğer yazılar"
+      "more": "Diğer yazılar",
+      "metaTitle": "Dans stüdyosu yönetimi blogu"
     },
     "marquee": {
       "title": "Her türden dans stüdyosu için",

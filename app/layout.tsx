@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Geist, Geist_Mono } from "next/font/google";
 import { ConsentAnalytics } from "@/components/consent/ConsentAnalytics";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,13 +30,13 @@ export const metadata: Metadata = {
   keywords: "dance studio, management, scheduling, students, instructors",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html suppressHydrationWarning>
+    <html lang={await getLocale()} suppressHydrationWarning>
       <body
         className={`${inter.variable} ${geistMono.variable} ${display.variable} antialiased`}
         suppressHydrationWarning

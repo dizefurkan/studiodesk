@@ -539,11 +539,11 @@
   },
   "instructorRates": {
     "title": "Instructor Rates",
-    "description": "Configure how much each instructor earns per class",
+    "description": "Set the share of each class's value that instructors earn",
     "aboutTitle": "About Instructor Rates",
-    "aboutDescription": "Define the rate each instructor earns per class for each dance type and branch combination. These rates are used to automatically calculate earnings when attendance is recorded.",
+    "aboutDescription": "Each student whose credit is taken adds the lesson value of their package (what they paid ÷ number of lessons) to the class. The instructor earns their percentage of that total. Students who came without a credit being taken add nothing.",
     "specificToInstructor": "Rates are specific to Instructor + Branch + Dance Type combination",
-    "earnAutomatically": "When attendance is recorded, the instructor automatically earns this rate",
+    "earnAutomatically": "Earnings are calculated when attendance is saved and updated when a record is removed",
     "multipleRates": "Multiple rates can be configured for the same instructor across different branches/dance types",
     "addNew": "Add New Rate",
     "editRate": "Edit Rate",
@@ -1192,12 +1192,13 @@
     "selectBranch": "Select branch",
     "danceType": "Dance type *",
     "selectDanceType": "Select dance type",
-    "ratio": "Commission ratio (%) *",
+    "ratio": "Share of lesson value (%) *",
     "allRequired": "All fields are required",
     "ratioRange": "Ratio must be a percentage between 0 and 100",
     "saveFailed": "Failed to save the rate",
     "update": "Update rate",
-    "add": "Add rate"
+    "add": "Add rate",
+    "ratioHint": "For each student whose credit is taken, a lesson is worth what they paid for the package ÷ its number of lessons. The instructor earns this percentage of the class total."
   },
   "purchaseDialog": {
     "title": "Purchase package",
@@ -1377,7 +1378,7 @@
   },
   "meta": {
     "defaultTitle": "StudioDesk — Dance studio management",
-    "description": "All-in-one platform for managing dance studios",
+    "description": "Dance studio management software: attendance, class packages, timetable, instructor pay and cash in one place.",
     "keywords": "dance studio, management, scheduling, students, instructors"
   },
   "attendanceDatePicker": {
@@ -1744,7 +1745,9 @@
   "site": {
     "meta": {
       "title": "StudioDesk: attendance, class packages and instructor pay for dance studios",
-      "description": "Sell class packages, run your weekly timetable, take attendance from your phone and close the month with instructor pay already calculated."
+      "description": "Sell class packages, run your weekly timetable, take attendance from your phone and close the month with instructor pay already calculated.",
+      "keywords": "dance studio software, dance studio management software, studio management software, student registration software, class attendance app, dance school software, class package tracking, instructor payroll",
+      "ogTitle": "Attendance, class packages and instructor pay for dance studios"
     },
     "skip": "Skip to content",
     "nav": {
@@ -2005,13 +2008,14 @@
     },
     "blog": {
       "title": "Blog",
-      "lead": "Practical writing on running a dance studio: attendance, packages, instructors and cash.",
+      "lead": "Practical guides to running a dance studio: attendance, class packages, scheduling, instructor pay, student retention and choosing software.",
       "minutes": "{count} min read",
       "back": "All posts",
       "ctaTitle": "Try it with your own studio",
       "ctaText": "We set StudioDesk up with you on a call, with your own classes and packages.",
       "ctaButton": "Request a demo",
-      "more": "More posts"
+      "more": "More posts",
+      "metaTitle": "Dance studio management blog"
     },
     "marquee": {
       "title": "Built for every kind of dance studio",

@@ -9,15 +9,11 @@ import { logOperation } from "@/lib/actions/history.actions";
 import type { Database } from "@/lib/types/database.types";
 import type { PostgrestError } from '@supabase/supabase-js'
 import { actionError } from '@/lib/i18n/actionError'
+import { recalculateSessionEarnings } from "@/lib/earnings/sessionEarnings";
 
 type Attendance = Database["public"]["Tables"]["attendances"]["Row"];
 type CourseSession = Database["public"]["Tables"]["course_sessions"]["Row"];
-type Course = Database["public"]["Tables"]["courses"]["Row"];
 type StudentPackage = Database["public"]["Tables"]["student_packages"]["Row"];
-type InstructorRate = Database["public"]["Tables"]["instructor_rates"]["Row"];
-type InstructorEarning =
-  Database["public"]["Tables"]["instructor_earnings"]["Row"];
-type Package = Database["public"]["Tables"]["packages"]["Row"];
 
 
 export async function removeAttendance(
@@ -66,6 +62,12 @@ export async function removeAttendance(
     if (error) {
       console.error("Error removing attendance:", error);
       return { error: await actionError('removeAttendanceFailed') };
+    }
+
+    // The removed record may have counted towards the instructor's earnings
+    if (beforeAttendance?.session_id) {
+      const earnings = await recalculateSessionEarnings(beforeAttendance.session_id);
+      if (earnings.error) console.error("[removeAttendance] Failed to recalculate earnings:", earnings.error);
     }
 
     // Log the attendance record deletion
@@ -630,100 +632,10 @@ export async function recordBatchAttendance(
         }
       }
 
-      if (instructorsToProcess && instructorsToProcess.length > 0) {
-        // Get course details for rate calculation
-        const { data: courseData } = (await supabase
-          .from("courses")
-          .select("branch_id, dance_type_id")
-          .eq("id", sessionData.course_id)
-          .single()
-          .overrideTypes<Course>());
-
-        if (courseData) {
-          // Get package price for this dance type
-          const { data: packageData } = (await supabase
-            .from("packages")
-            .select("price")
-            .eq("dance_type_id", courseData.dance_type_id)
-            .single()) as { data: Package; error: null };
-
-          const packagePrice = packageData?.price || 0;
-          console.log(
-            `[recordBatchAttendance] Package price for dance type: ₺${packagePrice}`
-          );
-
-          const earningsCreated = [];
-
-          // Calculate earnings for each instructor (only once per session)
-          for (const ci of instructorsToProcess) {
-            const { data: rateData } = (await supabase
-              .from("instructor_rates")
-              .select("ratio_per_class")
-              .eq("instructor_id", ci.instructor_id)
-              .eq("branch_id", courseData.branch_id)
-              .eq("dance_type_id", courseData.dance_type_id)
-              .maybeSingle()
-              .overrideTypes<InstructorRate>());
-
-            const ratio = rateData?.ratio_per_class || 0;
-            const calculatedAmount = (ratio / 100) * packagePrice;
-
-            console.log(
-              `[recordBatchAttendance] Calculating earnings: ${ratio}% × ₺${packagePrice} = ₺${calculatedAmount.toFixed(2)}`
-            );
-
-            // Check if earnings already recorded for this instructor and session
-            const { data: existingEarning } = (await supabase
-              .from("instructor_earnings")
-              .select("id")
-              .eq("instructor_id", ci.instructor_id)
-              .eq("session_id", actualSessionId)
-              .maybeSingle()
-              .overrideTypes<{ id: string }>());
-
-            // Only record if not already recorded
-            if (!existingEarning && ratio > 0) {
-              const { error: earningsError } = (await supabase
-                .from("instructor_earnings")
-                .insert({
-                  instructor_id: ci.instructor_id,
-                  session_id: actualSessionId,
-                  amount: calculatedAmount,
-                })
-                .select()
-                .single()
-                .overrideTypes<InstructorEarning>());
-
-              if (!earningsError) {
-                earningsCreated.push({
-                  instructor_id: ci.instructor_id,
-                  amount: calculatedAmount,
-                  status: "created",
-                });
-                console.log(
-                  `[recordBatchAttendance] Instructor earnings created: ${ci.instructor_id} - ₺${calculatedAmount}`
-                );
-              } else {
-                console.error(
-                  `[recordBatchAttendance] Failed to create earnings for ${ci.instructor_id}:`,
-                  earningsError
-                );
-              }
-            } else if (existingEarning) {
-              console.log(
-                `[recordBatchAttendance] Earnings already exist for ${ci.instructor_id}, skipping`
-              );
-            } else if (ratio === 0) {
-              console.warn(
-                `[recordBatchAttendance] No rate found for instructor ${ci.instructor_id}`
-              );
-            }
-          }
-          console.log(
-            `[recordBatchAttendance] Earnings creation complete:`,
-            earningsCreated
-          );
-        }
+      // Earnings follow from the attendance that took a credit (see recalculateSessionEarnings)
+      const earnings = await recalculateSessionEarnings(actualSessionId);
+      if (earnings.error) {
+        console.error("[recordBatchAttendance] Failed to calculate instructor earnings:", earnings.error);
       }
     }
 

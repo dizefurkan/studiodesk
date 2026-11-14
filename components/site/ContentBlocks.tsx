@@ -1,4 +1,41 @@
+import { Fragment } from 'react'
+import { Link } from '@/i18n/navigation'
 import type { ContentBlock } from '@/content/blog/types'
+
+const TOKEN = /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*/g
+
+/** Inline `[label](/path)` links (internal paths go through the locale-aware Link) and `**bold**`. */
+function Inline({ text }: { text: string }) {
+  const out: React.ReactNode[] = []
+  let last = 0
+  for (const m of text.matchAll(TOKEN)) {
+    const i = m.index ?? 0
+    if (i > last) out.push(text.slice(last, i))
+    if (m[1]) {
+      const cls = 'font-medium text-primary underline decoration-primary/30 underline-offset-2 hover:decoration-primary'
+      out.push(
+        m[2].startsWith('/') ? (
+          <Link key={i} href={m[2]} className={cls}>
+            {m[1]}
+          </Link>
+        ) : (
+          <a key={i} href={m[2]} className={cls} rel="noopener" target="_blank">
+            {m[1]}
+          </a>
+        )
+      )
+    } else {
+      out.push(
+        <strong key={i} className="font-semibold text-foreground">
+          {m[3]}
+        </strong>
+      )
+    }
+    last = i + m[0].length
+  }
+  if (last < text.length) out.push(text.slice(last))
+  return <Fragment>{out}</Fragment>
+}
 
 /** Renders the structured blocks used by legal pages and blog posts. */
 export function ContentBlocks({ blocks }: { blocks: ContentBlock[] }) {
@@ -15,14 +52,16 @@ export function ContentBlocks({ blocks }: { blocks: ContentBlock[] }) {
           case 'p':
             return (
               <p key={i} className="mt-4 leading-[1.75] text-foreground/85">
-                {b.text}
+                <Inline text={b.text} />
               </p>
             )
           case 'ul':
             return (
               <ul key={i} className="mt-4 list-disc space-y-2 pl-5 leading-[1.7] text-foreground/85 marker:text-primary">
                 {b.items.map((item) => (
-                  <li key={item}>{item}</li>
+                  <li key={item}>
+                    <Inline text={item} />
+                  </li>
                 ))}
               </ul>
             )
@@ -30,7 +69,9 @@ export function ContentBlocks({ blocks }: { blocks: ContentBlock[] }) {
             return (
               <ol key={i} className="mt-4 list-decimal space-y-2 pl-5 leading-[1.7] text-foreground/85 marker:text-muted-foreground">
                 {b.items.map((item) => (
-                  <li key={item}>{item}</li>
+                  <li key={item}>
+                    <Inline text={item} />
+                  </li>
                 ))}
               </ol>
             )
@@ -52,7 +93,7 @@ export function ContentBlocks({ blocks }: { blocks: ContentBlock[] }) {
                       <tr key={r} className="align-top">
                         {row.map((cell, c) => (
                           <td key={c} className={c === 0 ? 'px-4 py-3 font-medium text-foreground' : 'px-4 py-3 text-foreground/80'}>
-                            {cell}
+                            <Inline text={cell} />
                           </td>
                         ))}
                       </tr>
@@ -64,7 +105,7 @@ export function ContentBlocks({ blocks }: { blocks: ContentBlock[] }) {
           case 'tip':
             return (
               <p key={i} className="mt-6 rounded-xl border-l-4 border-highlight bg-highlight/15 px-4 py-3 leading-relaxed text-foreground">
-                {b.text}
+                <Inline text={b.text} />
               </p>
             )
         }

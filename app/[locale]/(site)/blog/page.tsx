@@ -2,10 +2,12 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { formatDay, parseDateOnly } from '@/lib/i18n/dates'
 import { getPosts } from '@/content/blog'
+import { samePathAlternates } from '@/lib/seo'
 
-export async function generateMetadata() {
-  const t = await getTranslations('site.blog')
-  return { title: t('title'), description: t('lead') }
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'site.blog' })
+  return { title: t('metaTitle'), description: t('lead'), alternates: samePathAlternates(locale, '/blog') }
 }
 
 export default async function BlogIndexPage() {

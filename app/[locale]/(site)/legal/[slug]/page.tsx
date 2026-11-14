@@ -6,6 +6,7 @@ import { formatDay, parseDateOnly } from '@/lib/i18n/dates'
 import { cn } from '@/lib/utils'
 import { getLegalDoc, isLegalSlug, LEGAL_SLUGS } from '@/content/legal'
 import { ContentBlocks } from '@/components/site/ContentBlocks'
+import { samePathAlternates } from '@/lib/seo'
 
 export function generateStaticParams() {
   return SUPPORTED_LOCALES.flatMap((locale) => LEGAL_SLUGS.map((slug) => ({ locale, slug })))
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug, locale } = await params
   if (!isLegalSlug(slug)) return {}
   const doc = getLegalDoc(slug, locale)
-  return { title: doc.title, description: doc.description }
+  return { title: doc.title, description: doc.description, alternates: samePathAlternates(locale, `/legal/${slug}`) }
 }
 
 export default async function LegalPage({ params }: { params: Promise<{ slug: string }> }) {

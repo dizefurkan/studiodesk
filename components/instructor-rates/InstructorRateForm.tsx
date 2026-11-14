@@ -243,7 +243,11 @@ export function InstructorRateForm({
             onChange={(e) => setFormData({ ...formData, ratio: e.target.value })}
             placeholder="0.00"
             className="border-input"
+            aria-describedby="ratio-hint"
           />
+          <p id="ratio-hint" className="mt-1.5 text-xs text-muted-foreground">
+            {tx('ratioHint')}
+          </p>
         </div>
       </div>
 

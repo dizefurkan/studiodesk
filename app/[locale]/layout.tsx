@@ -4,7 +4,8 @@ import { hasLocale } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
 import { NextIntlClientProvider } from 'next-intl'
 import { ConfirmProvider } from '@/components/common/ConfirmProvider'
-import { SUPPORTED_LOCALES } from '@/lib/i18n/config'
+import { SUPPORTED_LOCALES, type Locale } from '@/lib/i18n/config'
+import { OG_LOCALE, SITE_URL } from '@/lib/seo'
 
 interface LocaleLayoutProps {
   children: ReactNode
@@ -21,12 +22,15 @@ export async function generateMetadata({ params }: LocaleLayoutProps) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'meta' })
   return {
+    metadataBase: new URL(SITE_URL),
     title: {
       template: '%s | StudioDesk',
       default: t('defaultTitle'),
     },
     description: t('description'),
     keywords: t('keywords'),
+    openGraph: { siteName: 'StudioDesk', locale: OG_LOCALE[locale as Locale], type: 'website' },
+    twitter: { card: 'summary_large_image' },
   }
 }
 

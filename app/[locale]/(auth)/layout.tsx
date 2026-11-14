@@ -1,6 +1,8 @@
 import { getTranslations } from 'next-intl/server'
 import { Logo } from '@/components/brand/Logo'
 
+export const metadata = { robots: { index: false, follow: true } }
+
 export default async function AuthLayout({
   children,
 }: {
