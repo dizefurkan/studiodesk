@@ -13,9 +13,8 @@ import {
   getHistoryActionIcon,
   getHistoryEntityColor,
 } from "@/lib/utils/history";
-import { format } from "date-fns";
 import { useTranslations } from "next-intl";
-import { useDateFnsLocale } from "@/hooks/useDateFnsLocale";
+import { FormattedDate } from "@/components/common/FormattedDate";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
@@ -131,7 +130,7 @@ export function HistoryComponent({
         {maxItems && logs.length > maxItems && (
           <div className="mt-4 pt-4 border-t border-border">
             <p className="text-xs text-muted-foreground text-center">
-              {logs.length - maxItems} more activities
+              {t('historyPage.moreActivities', { count: logs.length - maxItems })}
             </p>
           </div>
         )}
@@ -143,7 +142,6 @@ export function HistoryComponent({
 function HistoryItem({ log }: { log: HistoryLog }) {
   const t = useTranslations();
   const tMsg = useTranslations("historyMessages");
-  const dateLocale = useDateFnsLocale();
   const userName =
     log.profiles?.full_name ||
     (log.data?.user_name as string) ||
@@ -170,10 +168,10 @@ function HistoryItem({ log }: { log: HistoryLog }) {
             variant="secondary"
             className={`${entityColor} border text-xs font-normal capitalize`}
           >
-            {log.entity}
+            {tMsg.has(`entities.${log.entity}`) ? tMsg(`entities.${log.entity}`) : log.entity}
           </Badge>
           <span className="text-xs text-muted-foreground">
-            {format(new Date(log.created_at), "MMM dd, yyyy HH:mm", { locale: dateLocale })}
+            <FormattedDate value={log.created_at} withTime />
           </span>
         </div>
         {log.data?.summary && (

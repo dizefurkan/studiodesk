@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Plus } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
+import { InstructorsTabs } from '@/components/instructors/InstructorsTabs'
 
 type Instructor = Database['public']['Tables']['instructors']['Row']
 
@@ -56,6 +57,7 @@ export default async function InstructorsPage({
         description={t('instructors.description')}
         action={hasRecords ? createAction : undefined}
       />
+      <InstructorsTabs />
 
       {hasRecords ? (
         <Card className="p-3 sm:p-4 md:p-6">

@@ -1,10 +1,12 @@
 'use client'
 
+import { toDateString } from '@/lib/i18n/dates'
 import { Link } from '@/i18n/navigation'
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useLocaleNames } from '@/hooks/useLocaleNames'
-import { getCourses } from '@/lib/actions/courses.actions'
+import { orderedWeekdays, useOrganizationPrefs } from '@/lib/context/OrganizationPrefsContext'
+import { getScheduleCourses, type ScheduleCourse } from '@/lib/actions/schedule.actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
@@ -12,7 +14,7 @@ import { Calendar, Clock, CheckCircle, Grid3x3, List, Users, Info } from 'lucide
 import { formatTime } from '@/lib/utils/formatTime'
 import type { ActionData } from '@/lib/types/actions'
 
-type CalendarCourse = ActionData<typeof getCourses>[number]
+type CalendarCourse = ScheduleCourse
 
 function CalendarPage({
   searchParams,
@@ -20,6 +22,9 @@ function CalendarPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const { DAYS, MONTHS, locale } = useLocaleNames()
+  const { DAYS: SHORT_DAYS } = useLocaleNames({ weekday: 'short' })
+  const { weekStartDay } = useOrganizationPrefs()
+  const weekOrder = orderedWeekdays(weekStartDay)
   const [courses, setCourses] = useState<CalendarCourse[]>([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'agenda'>('month')
@@ -28,8 +33,6 @@ function CalendarPage({
   const [year, setYear] = useState(new Date().getFullYear())
   const [expandedDay, setExpandedDay] = useState<string | null>(null)
   const t = useTranslations()
-  const monthStr = new Date().toISOString().split('T')[0]
-  const yearStr = String(new Date().getFullYear())
 
   // Data fetching with proper cleanup
   useEffect(() => {
@@ -37,7 +40,7 @@ function CalendarPage({
 
     const fetchCourses = async () => {
       try {
-        const coursesResult = await getCourses()
+        const coursesResult = await getScheduleCourses()
         if (!isMounted) return
         
         const coursesData = coursesResult.data || []
@@ -71,7 +74,8 @@ function CalendarPage({
     const firstDay = new Date(y, m - 1, 1)
     const lastDay = new Date(y, m, 0)
     const daysInMonth = lastDay.getDate()
-    const startDay = firstDay.getDay()
+    // Leading blanks so the first day lands under its weekday column
+    const startDay = (firstDay.getDay() - weekStartDay + 7) % 7
 
     const days = []
     for (let i = 0; i < startDay; i++) {
@@ -83,16 +87,13 @@ function CalendarPage({
     return days
   }
 
-  // Helper: Get week days (Monday-Sunday)
+  // Helper: the 7 days of the week containing `date`, starting at the organization's week start
   const getWeekDays = (date: Date) => {
-    const curr = new Date(date)
-    const first = curr.getDate() - curr.getDay()
-    const weekDays = []
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(curr.setDate(first + i))
-      weekDays.push(new Date(day))
-    }
-    return weekDays
+    const offset = (date.getDay() - weekStartDay + 7) % 7
+    return Array.from(
+      { length: 7 },
+      (_, i) => new Date(date.getFullYear(), date.getMonth(), date.getDate() - offset + i)
+    )
   }
 
   // Helper: Get courses for specific day
@@ -213,9 +214,9 @@ function CalendarPage({
       <div className="overflow-x-auto">
         <div className="grid grid-cols-7 gap-1 md:gap-2 min-w-fit md:min-w-none">
           {/* Day headers */}
-          {DAYS.map((day) => (
-            <div key={day} className="text-center font-medium text-foreground py-2 text-xs md:text-sm">
-              {day.slice(0, 3)}
+          {weekOrder.map((d) => (
+            <div key={d} className="text-center font-medium text-foreground py-2 text-xs md:text-sm">
+              {SHORT_DAYS[d]}
             </div>
           ))}
 
@@ -282,8 +283,8 @@ function CalendarPage({
                                     <span>
                                       {formatTime(course.start_time)} - {formatTime(course.end_time)}
                                     </span>
-                                    {course.branches && (
-                                      <span className="font-medium">{course.branches.name}</span>
+                                    {course.branchName && (
+                                      <span className="font-medium">{course.branchName}</span>
                                     )}
                                   </div>
                                 </div>
@@ -372,7 +373,7 @@ function CalendarPage({
                 >
                   <div className="text-center mb-3">
                     <p className="text-xs md:text-sm font-medium text-muted-foreground">
-                      {DAYS[day.getDay()].slice(0, 3)}
+                      {SHORT_DAYS[day.getDay()]}
                     </p>
                     <p className="text-lg md:text-xl font-bold text-foreground">{day.getDate()}</p>
                   </div>
@@ -436,7 +437,7 @@ function CalendarPage({
                               {course.name}
                             </h4>
                           </Link>
-                          <p className="text-sm text-muted-foreground mt-1">{course.branches?.name}</p>
+                          <p className="text-sm text-muted-foreground mt-1">{course.branchName}</p>
                           <div className="flex gap-4 mt-3 text-sm flex-wrap">
                             <div className="flex items-center gap-1 text-muted-foreground">
                               <Clock size={14} />
@@ -444,11 +445,11 @@ function CalendarPage({
                             </div>
                             <div className="flex items-center gap-1 text-muted-foreground">
                               <Users size={14} />
-                              {course.instructorCount || 0} {t('calendar.instructors')}
+                              {course.instructors.length} {t('calendar.instructors')}
                             </div>
                           </div>
                         </div>
-                        <Link href={`/dashboard/attendance?course=${course.id}`}>
+                        <Link href={`/dashboard/attendance?course=${course.id}&date=${toDateString(day)}`}>
                           <Button className="bg-green-600 hover:bg-green-700 text-white gap-2 shrink-0 w-full md:w-auto">
                             <CheckCircle size={16} />
                             {t('calendar.attendance')}

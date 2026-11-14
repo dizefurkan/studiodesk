@@ -1,5 +1,6 @@
 'use server'
 
+import { toDateString } from '@/lib/i18n/dates'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
@@ -82,8 +83,8 @@ export async function getInstructorMonthlyStats(instructorId: string) {
 
     // Get current month dates
     const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+    const startOfMonth = toDateString(new Date(now.getFullYear(), now.getMonth(), 1))
+    const endOfMonth = toDateString(new Date(now.getFullYear(), now.getMonth() + 1, 0))
 
     // Get earnings for this month
     const { data: earningsData, error: earningsError } = await (adminSupabase

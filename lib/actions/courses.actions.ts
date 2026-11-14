@@ -1,5 +1,6 @@
 'use server'
 
+import { toDateString } from '@/lib/i18n/dates'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
@@ -534,8 +535,8 @@ export async function generateCourseSessions(
     }
 
     // Get existing sessions for this period to avoid duplicates
-    const startDateStr = startDate.toISOString().split('T')[0]
-    const endDateStr = endDate.toISOString().split('T')[0]
+    const startDateStr = toDateString(startDate)
+    const endDateStr = toDateString(endDate)
     
     // Use admin client to fetch existing sessions (bypasses RLS)
     const adminSupabase = createAdminClient()
@@ -562,7 +563,7 @@ export async function generateCourseSessions(
 
     while (current <= endDate) {
       if (current.getDay() === course.day_of_week) {
-        const sessionDate = current.toISOString().split('T')[0]
+        const sessionDate = toDateString(current)
         // Only add if not already existing
         if (!existingDates.has(sessionDate)) {
           sessions.push({

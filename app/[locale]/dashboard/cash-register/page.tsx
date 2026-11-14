@@ -1,3 +1,4 @@
+import { toDateString } from '@/lib/i18n/dates'
 import { Link } from '@/i18n/navigation'
 import { getTransactions, getDailyReport, getInstructorEarningsByBranch } from '@/lib/actions/cash-register.actions'
 import { getBranches } from '@/lib/actions/branches.actions'
@@ -21,7 +22,7 @@ export default async function CashRegisterPage({
   const branchId = typeof params.branch === 'string' ? params.branch : undefined
   const type = (typeof params.type === 'string' ? params.type : undefined) as 'income' | 'expense' | undefined
   const dataType = (typeof params.dataType === 'string' ? params.dataType : 'all') as 'all' | 'transactions' | 'earnings'
-  const dateStr = typeof params.date === 'string' ? params.date : new Date().toISOString().split('T')[0]
+  const dateStr = typeof params.date === 'string' ? params.date : toDateString()
   const searchQuery = typeof params.q === 'string' ? params.q : undefined
   const pageParam = typeof params.page === 'string' ? parseInt(params.page, 10) : 1
   const page = Math.max(1, pageParam)

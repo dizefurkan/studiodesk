@@ -4,6 +4,7 @@ import * as React from "react"
 import { format } from "date-fns"
 import { useTranslations } from "next-intl"
 import { useDateFnsLocale } from "@/hooks/useDateFnsLocale"
+import { useOrganizationPrefs } from "@/lib/context/OrganizationPrefsContext"
 import { Calendar as CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -40,6 +41,7 @@ const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
   ) => {
     const t = useTranslations("common")
     const dateLocale = useDateFnsLocale()
+    const { weekStartDay } = useOrganizationPrefs()
     return (
       <Popover>
         <PopoverTrigger asChild>
@@ -59,6 +61,8 @@ const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
+            locale={dateLocale}
+            weekStartsOn={weekStartDay as 0 | 1 | 2 | 3 | 4 | 5 | 6}
             selected={value}
             onSelect={(date) => {
               if (date) {

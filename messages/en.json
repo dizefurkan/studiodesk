@@ -234,7 +234,8 @@
     "studentRegistered": "Student registered",
     "courseCreated": "Course created",
     "viewAll": "View All",
-    "coursesScheduled": "{count, plural, one {# session} other {# sessions}} scheduled"
+    "coursesScheduled": "{count, plural, one {# session} other {# sessions}} scheduled",
+    "monthlyGrowthLast12": "Monthly growth – last 12 months"
   },
   "students": {
     "title": "Students",
@@ -1035,7 +1036,9 @@
     "uncheckAll": "Uncheck all",
     "checkAll": "Check all",
     "saving": "Saving…",
-    "saveCount": "Save attendance ({count, plural, one {# record} other {# records}})"
+    "saveCount": "Save attendance ({count, plural, one {# record} other {# records}})",
+    "originalInstructor": "Originally: {name}",
+    "renewalNeeded": "⚠️ Package renewal needed ({count})"
   },
   "detailPages": {
     "activityTimeline": "Activity timeline",
@@ -1110,7 +1113,9 @@
     "noneAvailable": "No available students (they may all be enrolled already)",
     "noneFound": "No students found",
     "adding": "Adding…",
-    "addCount": "Add {count, plural, one {# student} other {# students}}"
+    "addCount": "Add {count, plural, one {# student} other {# students}}",
+    "withActivePackages": "{count, plural, one {# student} other {# students}} with an active package for this dance type",
+    "selectedCount": "{count, plural, one {# student} other {# students}} selected"
   },
   "forms": {
     "firstName": "First name",
@@ -1174,7 +1179,8 @@
     "selectInstructors": "Select instructors…",
     "loadInstructorsError": "Failed to load instructors: {error}",
     "noInstructorRates": "⚠️ No instructors have a rate for this dance type yet. Set up instructor rates first.",
-    "instructorsFor": "{label} (for {danceType})"
+    "instructorsFor": "{label} (for {danceType})",
+    "studentsAfterCreate": "💡 You can add students from the course page after creating the course."
   },
   "instructorRateForm": {
     "instructor": "Instructor *",
@@ -1202,7 +1208,8 @@
     "selectRequired": "Please select a package",
     "failed": "Failed to process the purchase",
     "processing": "Processing…",
-    "confirm": "Confirm purchase"
+    "confirm": "Confirm purchase",
+    "creditsCount": "{count, plural, one {# credit} other {# credits}}"
   },
   "landing": {
     "featuresDescription": "Everything you need to run a successful dance studio",
@@ -1231,7 +1238,10 @@
     "dateAt": "{date} at {time}",
     "purchased": "Purchased: {date}",
     "unknownCourse": "Unknown course",
-    "unknownPackage": "Unknown package"
+    "unknownPackage": "Unknown package",
+    "danceTypeLabel": "Dance type:",
+    "branchLabel": "Branch:",
+    "classesAttended": "{count, plural, one {# class attended} other {# classes attended}}"
   },
   "studentCourses": {
     "loading": "Loading courses…",
@@ -1271,7 +1281,8 @@
     "missingPackage": "Package not found",
     "updateFailed": "Failed to update credits",
     "unknownDanceType": "Unknown",
-    "packageFallback": "Package"
+    "packageFallback": "Package",
+    "usedLeft": "{used} used • {remaining} left"
   },
   "instructorAttendance": {
     "title": "Attendance history",
@@ -1304,7 +1315,10 @@
     "searchPlaceholder": "Search by instructor name…",
     "hasRate": "Has rate",
     "noneAvailable": "No available instructors: they are all assigned to this course or already chosen as replacements.",
-    "noMatch": "No instructors match your search"
+    "noMatch": "No instructors match your search",
+    "replaceTitle": "Replace instructor: {name}",
+    "replaceDescription": "Pick another instructor to replace {name} for this session.",
+    "pageInfo": "Page {page} of {pages} • {shown} of {total}"
   },
   "courseStudents": {
     "action": "Action",
@@ -1332,7 +1346,9 @@
     "cancel": "Cancel",
     "searchPlaceholder": "Search instructors…",
     "noneForDanceType": "No instructors available for this dance type",
-    "noMatch": "No instructors match your search"
+    "noMatch": "No instructors match your search",
+    "forDanceType": "For {name}",
+    "confirmCount": "Confirm ({count})"
   },
   "instructorRatesTable": {
     "delete": "Delete rate",
@@ -1344,7 +1360,8 @@
   },
   "historyPage": {
     "description": "All activities and changes in your studio",
-    "logDescription": "Complete activity log"
+    "logDescription": "Complete activity log",
+    "moreActivities": "{count, plural, one {# more activity} other {# more activities}}"
   },
   "instructorRateDrawer": {
     "description": "Instructor rate per branch and dance type",
@@ -1575,6 +1592,128 @@
     "studioNotFound": "Studio not found",
     "updateStudioFailed": "Failed to update the studio",
     "deleteStudioFailed": "Failed to delete the studio",
-    "unexpectedWithDetail": "An unexpected error occurred: {detail}"
+    "unexpectedWithDetail": "An unexpected error occurred: {detail}",
+    "attendanceAlreadyTaken": "Attendance for this date has already been taken.",
+    "missingPackageData": "Some students are missing package data. Refresh the page and try again.",
+    "undoAttendanceFailed": "Could not undo the attendance."
+  },
+  "attendanceSheet": {
+    "markEveryone": "Mark {count, plural, one {# more student} other {# more students}} before saving.",
+    "saved": "Attendance saved: {present} present, {absent} absent.",
+    "saveFailed": "Attendance could not be saved. Try again.",
+    "noStudentsTitle": "No students in this course yet",
+    "noStudentsDescription": "Add students to the course to take attendance.",
+    "addStudents": "Add students",
+    "sessionDetails": "Lesson details",
+    "noInstructor": "No instructor",
+    "instructors": "Instructors",
+    "substituteFor": "Substitute for {name}",
+    "undoSubstitute": "Undo",
+    "substitute": "Substitute",
+    "studio": "Studio",
+    "lessonNote": "Lesson note",
+    "lessonNotePlaceholder": "What was covered, anything to remember…",
+    "searchPlaceholder": "Search students…",
+    "studentCount": "{count, plural, one {# student} other {# students}}",
+    "allPresent": "Everyone present",
+    "clear": "Clear",
+    "creditsLeft": "{count, plural, one {# credit left} other {# credits left}}",
+    "noCreditTaken": "No credit taken",
+    "moreOptions": "Note and credit",
+    "statusFor": "Attendance for {name}",
+    "present": "Present",
+    "absent": "Absent",
+    "notePlaceholder": "Note (optional)",
+    "takeCredit": "Take a credit",
+    "noMatch": "No students match your search.",
+    "noCreditsTitle": "No credits left ({count})",
+    "sellPackage": "Sell package",
+    "presentCount": "{count} present",
+    "absentCount": "{count} absent",
+    "unmarkedCount": "{count} not marked",
+    "saving": "Saving…",
+    "save": "Save attendance",
+    "undoTitle": "Undo this attendance?",
+    "undoDescription": "All records for this lesson are removed, credits are given back and instructor earnings for it are deleted. You can take attendance again afterwards.",
+    "undo": "Undo attendance",
+    "undoFailed": "Could not undo the attendance.",
+    "undone": "Attendance undone. You can take it again.",
+    "taken": "Attendance taken",
+    "previousLesson": "Previous lesson",
+    "nextLesson": "Next lesson",
+    "today": "Today",
+    "noLessonsToday": "No lessons today.",
+    "thisWeek": "Earlier this week",
+    "pendingCount": "{count} not taken",
+    "take": "Take attendance",
+    "otherDates": "Other dates",
+    "futureLesson": "This lesson hasn't happened yet. You can take attendance on the day.",
+    "previousDay": "Previous day",
+    "nextDay": "Next day",
+    "overviewHint": "Pick a day to take or check attendance, including past lessons.",
+    "backToToday": "Back to today",
+    "noLessonsOnDay": "No lessons on this day.",
+    "weekBefore": "The week before"
+  },
+  "home": {
+    "greeting": "Hi, {name}",
+    "greetingNoName": "Hi there",
+    "takeAttendance": "Take attendance",
+    "addStudent": "Add student",
+    "setupTitle": "Finish setting up your studio",
+    "setupProgress": "{done}/{total} done",
+    "setup": {
+      "branches": "Add a branch",
+      "danceTypes": "Add dance types",
+      "instructors": "Add instructors",
+      "rates": "Set instructor pay",
+      "packages": "Create packages",
+      "courses": "Create courses"
+    },
+    "stats": {
+      "students": "Active students",
+      "courses": "Courses",
+      "revenue": "Revenue this month",
+      "noLastMonth": "No revenue last month",
+      "vsLastMonth": "{change} vs last month",
+      "pendingAttendance": "Attendance to take",
+      "thisWeek": "This week"
+    },
+    "todaysLessons": "Today's lessons",
+    "lessonCount": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}",
+    "calendar": "Calendar",
+    "noLessonsToday": "No lessons today.",
+    "renewals": "Credits running out",
+    "renewalsDescription": "Students with one credit or less left",
+    "noRenewals": "Everyone has credits.",
+    "creditsLeft": "{count, plural, =0 {no credits left} one {# credit left} other {# credits left}}"
+  },
+  "nav": {
+    "label": "Main menu",
+    "home": "Home",
+    "attendance": "Attendance",
+    "calendar": "Calendar",
+    "students": "Students",
+    "courses": "Courses",
+    "instructors": "Instructors",
+    "instructorRates": "Pay rates",
+    "instructorEarnings": "Earnings",
+    "cashRegister": "Cash register",
+    "setup": "Studio setup",
+    "packages": "Packages",
+    "branches": "Branches",
+    "danceTypes": "Dance types",
+    "settings": "Settings"
+  },
+  "detailTabs": {
+    "courses": "Courses",
+    "attendance": "Attendance",
+    "purchases": "Purchases",
+    "activity": "Activity",
+    "info": "Details",
+    "students": "Students",
+    "schedule": "Schedule",
+    "earnings": "Earnings",
+    "studios": "Studios"
   }
 }

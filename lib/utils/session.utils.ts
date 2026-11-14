@@ -3,6 +3,8 @@
  * Generate sessions based on day_of_week without database queries
  */
 
+import { toDateString } from '@/lib/i18n/dates'
+
 export interface AttendanceConfig {
   week_start_day: number // 0 = Sunday, 1 = Monday, etc.
   timezone: string
@@ -89,7 +91,7 @@ export function generateVirtualSessions(
 
   while (current <= endDate) {
     if (current.getDay() === dayOfWeek) {
-      sessions.push(current.toISOString().split('T')[0])
+      sessions.push(toDateString(current))
     }
     current.setDate(current.getDate() + 1)
   }
@@ -113,7 +115,7 @@ export function getCurrentWeekSessionDate(
     current.setDate(current.getDate() + 1)
   }
 
-  return current.toISOString().split('T')[0]
+  return toDateString(current)
 }
 
 /**

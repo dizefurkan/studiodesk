@@ -120,7 +120,7 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
                 </div>
 
                 <div className="text-xs text-muted-foreground mb-4 flex items-center justify-between">
-                  <span>{used} used • {remaining} left</span>
+                  <span>{tx('usedLeft', { used, remaining })}</span>
                   {editingPackageId === pkg.id ? (
                     <div className="flex items-center gap-2">
                       <Button

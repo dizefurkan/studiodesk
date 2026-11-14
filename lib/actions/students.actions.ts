@@ -891,7 +891,7 @@ export async function purchasePackage(input: PurchasePackageInput) {
     // Get student to find their branch
     const { data: student, error: studentError } = await supabase
       .from("students")
-      .select("id, organization_id")
+      .select("id, organization_id, first_name, last_name")
       .eq("id", input.studentId)
       .eq("organization_id", organization.id)
       .single();
@@ -947,7 +947,7 @@ export async function purchasePackage(input: PurchasePackageInput) {
         branch_id: branchId,
         type: "income",
         amount: price,
-        description: `${packageData.name} - Student Purchase`,
+        description: `${packageData.name} – ${student.first_name} ${student.last_name}`,
         student_package_id: studentPackage.id,
       });
 

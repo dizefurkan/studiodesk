@@ -187,7 +187,7 @@ export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [
         <DialogHeader>
           <DialogTitle>{t('courses.addStudentsTitle')}</DialogTitle>
           <DialogDescription>
-            {hasPackageCount} student{hasPackageCount !== 1 ? 's' : ''} with active packages for this dance type
+            {tx('withActivePackages', { count: hasPackageCount })}
           </DialogDescription>
         </DialogHeader>
 
@@ -284,7 +284,7 @@ export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [
 
         <DialogFooter className="items-center sm:justify-between">
           <span className="text-sm text-muted-foreground">
-            {selectedStudents.size} student{selectedStudents.size !== 1 ? 's' : ''} selected
+            {tx('selectedCount', { count: selectedStudents.size })}
           </span>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setIsOpen(false)} disabled={addingStudents}>

@@ -2,271 +2,119 @@
 
 import { Link } from '@/i18n/navigation'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { useSidebar } from '@/lib/context/SidebarContext'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/brand/Logo'
 import {
-  Home,
-  Users,
-  UserCheck,
-  MapPin,
-  Music2,
   BookOpen,
   Calendar,
   ClipboardCheck,
+  Home,
+  MapPin,
+  Music2,
   Package,
-  DollarSign,
-  TrendingUp,
   Settings,
-  ChevronDown,
+  UserCheck,
+  Users,
+  Wallet,
   type LucideIcon,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
-type NavLink = { label: string; icon: LucideIcon; href: string }
-type MenuItem =
-  | (NavLink & { category: false })
-  | { label: string; category: true; items: NavLink[] }
+type NavLink = {
+  label: string
+  icon: LucideIcon
+  href: string
+  /** Other routes that light up this item (sub-pages reached from it) */
+  also?: string[]
+}
 
+/**
+ * Flat navigation: the daily work first, studio setup below a small label.
+ * No collapsible groups — every page is one tap away.
+ */
 export function Sidebar() {
-  const t = useTranslations()
+  const t = useTranslations('nav')
   const pathname = usePathname()
   const locale = useLocale()
   const { isOpen, toggleSidebar } = useSidebar()
-  
-  // Remove locale prefix from pathname for route matching
-  // e.g., "/tr/dashboard/students" → "/dashboard/students"
-  const pathWithoutLocale = pathname.startsWith(`/${locale}/`)
-    ? pathname.slice(locale.length + 1)
-    : pathname
-  
-  const menuItems: MenuItem[] = [
+
+  // "/tr/dashboard/students" → "/dashboard/students"
+  const path = pathname.startsWith(`/${locale}/`) ? pathname.slice(locale.length + 1) : pathname
+
+  const daily: NavLink[] = [
+    { label: t('home'), icon: Home, href: '/dashboard' },
+    { label: t('attendance'), icon: ClipboardCheck, href: '/dashboard/attendance' },
+    { label: t('calendar'), icon: Calendar, href: '/dashboard/calendar' },
+    { label: t('students'), icon: Users, href: '/dashboard/students' },
+    { label: t('courses'), icon: BookOpen, href: '/dashboard/courses' },
     {
-      label: t('dashboard.title'),
-      icon: Home,
-      href: '/dashboard',
-      category: false,
+      label: t('instructors'),
+      icon: UserCheck,
+      href: '/dashboard/instructors',
+      also: ['/dashboard/instructor-rates', '/dashboard/instructor-earnings'],
     },
-    {
-      label: t('dashboard.coreOperations'),
-      category: true,
-      items: [
-        {
-          label: t('dashboard.students'),
-          icon: Users,
-          href: '/dashboard/students',
-        },
-        {
-          label: t('dashboard.courses'),
-          icon: BookOpen,
-          href: '/dashboard/courses',
-        },
-        {
-          label: t('dashboard.attendance'),
-          icon: ClipboardCheck,
-          href: '/dashboard/attendance',
-        },
-        {
-          label: t('dashboard.calendar'),
-          icon: Calendar,
-          href: '/dashboard/calendar',
-        },
-      ],
-    },
-    {
-      label: t('dashboard.instructorManagement'),
-      category: true,
-      items: [
-        {
-          label: t('dashboard.instructors'),
-          icon: UserCheck,
-          href: '/dashboard/instructors',
-        },
-        {
-          label: t('dashboard.instructorRates'),
-          icon: DollarSign,
-          href: '/dashboard/instructor-rates',
-        },
-        {
-          label: t('dashboard.instructorEarnings'),
-          icon: TrendingUp,
-          href: '/dashboard/instructor-earnings',
-        },
-      ],
-    },
-    {
-      label: t('dashboard.financial'),
-      category: true,
-      items: [
-        {
-          label: t('dashboard.packages'),
-          icon: Package,
-          href: '/dashboard/packages',
-        },
-        {
-          label: t('dashboard.cashRegister'),
-          icon: DollarSign,
-          href: '/dashboard/cash-register',
-        },
-      ],
-    },
-    {
-      label: t('dashboard.settings'),
-      category: true,
-      items: [
-        {
-          label: t('dashboard.branches'),
-          icon: MapPin,
-          href: '/dashboard/branches',
-        },
-        {
-          label: t('dashboard.danceTypes'),
-          icon: Music2,
-          href: '/dashboard/dance-types',
-        },
-        {
-          label: t('dashboard.settings'),
-          icon: Settings,
-          href: '/dashboard/settings',
-        },
-      ],
-    },
+    { label: t('cashRegister'), icon: Wallet, href: '/dashboard/cash-register' },
+  ]
+  const setup: NavLink[] = [
+    { label: t('packages'), icon: Package, href: '/dashboard/packages' },
+    { label: t('branches'), icon: MapPin, href: '/dashboard/branches' },
+    { label: t('danceTypes'), icon: Music2, href: '/dashboard/dance-types' },
+    { label: t('settings'), icon: Settings, href: '/dashboard/settings', also: ['/dashboard/history'] },
   ]
 
-  const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({
-    1: true,   // Core Operations
-    2: false,  // Instructor Management
-    3: false,  // Financial
-    4: false,  // Settings
-  })
+  const matches = (href: string) =>
+    href === '/dashboard' ? path === href : path === href || path.startsWith(href + '/')
+  const isActive = (item: NavLink) => matches(item.href) || (item.also ?? []).some(matches)
 
-  const handleNavClick = () => {
-    // Close sidebar on mobile when user navigates
-    if (isOpen && window.innerWidth < 768) {
-      toggleSidebar()
-    }
+  const closeOnMobile = () => {
+    if (isOpen && window.innerWidth < 768) toggleSidebar()
+  }
+
+  const renderItem = (item: NavLink) => {
+    const Icon = item.icon
+    const active = isActive(item)
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={closeOnMobile}
+        aria-current={active ? 'page' : undefined}
+        className={cn(
+          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+          active ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        )}
+      >
+        <Icon className="size-[18px] shrink-0" />
+        <span className="truncate">{item.label}</span>
+      </Link>
+    )
   }
 
   const content = (
     <>
-        {/* Logo Section */}
-        <div className="h-14 md:h-16 border-b border-border flex items-center px-3 md:px-6 gap-2 md:gap-3">
-          <Logo />
+      <div className="flex h-14 items-center border-b border-border px-4 md:h-16 md:px-5">
+        <Logo />
+      </div>
+      <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4" aria-label={t('label')}>
+        <div className="space-y-0.5">{daily.map(renderItem)}</div>
+        <div className="space-y-0.5">
+          <p className="px-3 pb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">{t('setup')}</p>
+          {setup.map(renderItem)}
         </div>
-
-        {/* Navigation Menu */}
-        <nav className="flex-1 overflow-y-auto px-2 md:px-3 py-4 md:py-6 space-y-2 md:space-y-3">
-          {menuItems.map((item, idx) => {
-            // Dashboard - single item
-            if (!item.category) {
-              const Icon = item.icon
-            // Dashboard only active on exact path
-              const isActive = pathWithoutLocale === item.href
-
-              return (
-                <Link
-                  key={item.href || `item-${idx}`}
-                  href={item.href || '/'}
-                  className={cn(
-                    'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-sm font-medium',
-                    isActive
-                      ? 'bg-primary text-white'
-                      : 'text-muted-foreground hover:bg-muted'
-                  )}
-                  onClick={handleNavClick}
-                >
-                  <Icon size={20} className="shrink-0" />
-                  <span>{item.label}</span>
-                </Link>
-              )
-            }
-
-            // Category with subitems
-            const categoryIdx = idx
-            const isExpanded = expandedCategories[categoryIdx]
-            const toggleCategory = () => {
-              setExpandedCategories((prev) => ({
-                ...prev,
-                [categoryIdx]: !prev[categoryIdx],
-              }))
-            }
-
-            // Check if any subitem is active
-            const hasActiveChild = item.items?.some(
-              (subitem) => pathWithoutLocale === subitem.href || pathWithoutLocale.startsWith(subitem.href + '/')
-            )
-
-            return (
-              <div key={item.label}>
-                {/* Category Header */}
-                <Button variant="ghost" className={cn('w-full justify-between px-4 py-2.5 h-auto font-semibold', hasActiveChild ? 'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary' : 'text-foreground/80')}
-                  onClick={toggleCategory}
-                >
-                  <span>{item.label}</span>
-                  <ChevronDown
-                    size={16}
-                    className={cn('transition-transform', isExpanded ? 'rotate-180' : '')}
-                  />
-                </Button>
-
-                {/* Category Items */}
-                {isExpanded && (
-                  <div className="mt-1 ml-2 space-y-1 border-l border-border pl-3">
-                    {item.items?.map((subitem) => {
-                      const SubIcon = subitem.icon
-                      const isSubActive =
-                        pathWithoutLocale === subitem.href || pathWithoutLocale.startsWith(subitem.href + '/')
-
-                      return (
-                        <Link
-                          key={subitem.href}
-                          href={subitem.href}
-                          className={cn(
-                            'flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm font-medium',
-                            isSubActive
-                              ? 'bg-primary text-white'
-                              : 'text-muted-foreground hover:bg-muted'
-                          )}
-                          onClick={handleNavClick}
-                        >
-                          <SubIcon size={18} className="shrink-0" />
-                          <span>{subitem.label}</span>
-                        </Link>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </nav>
-
-        {/* Bottom Section */}
-        <div className="border-t border-border p-2 md:p-4 space-y-2 md:space-y-3">
-          <div className="px-3 md:px-4 py-2 md:py-3 bg-muted rounded-lg">
-            <p className="text-xs font-semibold text-foreground mb-1">{t('dashboard.quickTip')}</p>
-            <p className="text-xs text-muted-foreground">
-              {t('dashboard.keepInfoUpdated')}
-            </p>
-          </div>
-        </div>
+      </nav>
     </>
   )
 
   return (
     <>
-      {/* Desktop */}
-      <aside className="hidden md:flex w-64 h-full flex-col overflow-hidden border-r border-border bg-background">
+      <aside className="hidden h-full w-64 flex-col overflow-hidden border-r border-border bg-background md:flex">
         {content}
       </aside>
-
-      {/* Mobile */}
       <Sheet open={isOpen} onOpenChange={(open) => open !== isOpen && toggleSidebar()}>
         <SheetContent side="left" className="w-64 gap-0 p-0 md:hidden" showCloseButton={false}>
-          <SheetTitle className="sr-only">{t('dashboard.menu')}</SheetTitle>
+          <SheetTitle className="sr-only">{t('label')}</SheetTitle>
           <div className="flex h-full flex-col overflow-hidden">{content}</div>
         </SheetContent>
       </Sheet>

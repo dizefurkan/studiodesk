@@ -247,8 +247,7 @@ export function CourseForm({ course }: CourseFormProps) {
 
         {!course && (
           <div className="mb-6 p-4 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 text-sm">
-            💡 Students will be added after the course is created using the &quot;Add
-            Students&quot; button on the course detail page.
+            {tx('studentsAfterCreate')}
           </div>
         )}
 

@@ -33,13 +33,15 @@ interface StudentPurchaseDialogProps {
     dance_types?: { name: string } | null
   }>
   currency?: string
+  /** Open on load (e.g. /students/:id?purchase=1 from the attendance sheet) */
+  defaultOpen?: boolean
 }
 
-export function StudentPurchaseDialog({ studentId, packages, currency = 'TRY' }: StudentPurchaseDialogProps) {
+export function StudentPurchaseDialog({ studentId, packages, currency = 'TRY', defaultOpen = false }: StudentPurchaseDialogProps) {
   const tx = useTranslations('purchaseDialog')
   const tf = useTranslations('forms')
   const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(defaultOpen)
   const [selectedPackageId, setSelectedPackageId] = useState('')
   const [customPrice, setCustomPrice] = useState('')
   const [loading, setLoading] = useState(false)
@@ -123,7 +125,7 @@ export function StudentPurchaseDialog({ studentId, packages, currency = 'TRY' }:
                   <FieldContent>
                     <FieldTitle>{pkg.name}</FieldTitle>
                     <FieldDescription>
-                      {pkg.total_credits} credits{pkg.dance_types?.name ? ` • ${pkg.dance_types.name}` : ''} •{' '}
+                      {tx('creditsCount', { count: pkg.total_credits })}{pkg.dance_types?.name ? ` • ${pkg.dance_types.name}` : ''} •{' '}
                       {formatCurrency(pkg.price, currency)}
                     </FieldDescription>
                   </FieldContent>

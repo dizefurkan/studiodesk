@@ -3,6 +3,7 @@ import { getLocale } from 'next-intl/server'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
 import { SidebarProvider } from '@/lib/context/SidebarContext'
+import { OrganizationPrefsProvider } from '@/lib/context/OrganizationPrefsContext'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { isPlatformAdmin } from '@/lib/auth/platformAdmin'
@@ -34,6 +35,9 @@ export default async function DashboardLayout({
   }
 
   return (
+    <OrganizationPrefsProvider
+      value={{ weekStartDay: organization.week_start_day ?? 1, currency: organization.currency ?? 'TRY' }}
+    >
     <SidebarProvider>
       <div className="flex h-screen bg-muted/50">
         {/* Sidebar - Always rendered, handles responsive visibility internally */}
@@ -53,5 +57,6 @@ export default async function DashboardLayout({
       </div>
     </div>
     </SidebarProvider>
+    </OrganizationPrefsProvider>
   )
 }

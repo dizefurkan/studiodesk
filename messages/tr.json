@@ -234,7 +234,8 @@
     "studentRegistered": "Öğrenci kaydı",
     "courseCreated": "Kurs oluşturuldu",
     "viewAll": "Tümünü Gör",
-    "coursesScheduled": "{count} planlı ders"
+    "coursesScheduled": "{count} planlı ders",
+    "monthlyGrowthLast12": "Aylık büyüme – son 12 ay"
   },
   "students": {
     "title": "Öğrenciler",
@@ -403,8 +404,8 @@
     "recordAndManage": "Yoklamayı kaydedin ve yönetin",
     "markAttendance": "Yoklamayı İşaretle",
     "attendanceRecord": "Yoklama Kaydı",
-    "present": "Müsait",
-    "absent": "Yok",
+    "present": "Geldi",
+    "absent": "Gelmedi",
     "enrolled": "Kayıtlı",
     "date": "Tarih",
     "student": "Öğrenci",
@@ -429,7 +430,7 @@
     "removeAttendance": "Yoklamayı Kaldır",
     "back": "Geri",
     "backToSessions": "Oturumlara Geri Dön",
-    "presentOutOf": "müsait",
+    "presentOutOf": "geldi",
     "outOf": "/",
     "total": "toplam",
     "attendanceRecords": "Yoklama Kayıtları",
@@ -447,7 +448,7 @@
     "description": "Sınıf programını ve oturumlarını görüntüleyin",
     "month": "Ay",
     "week": "Hafta",
-    "agenda": "Gündemi",
+    "agenda": "Liste",
     "previous": "Önceki",
     "today": "Bugün",
     "next": "Sonraki",
@@ -459,7 +460,7 @@
     "noClassesScheduled": "Planlanan sınıf yok",
     "branch": "Şube",
     "instructors": "eğitmen(ler)",
-    "agendaDate": "Gündemi Tarihi",
+    "agendaDate": "Liste tarihi",
     "attendance": "Yoklama",
     "moreClasses": "daha fazla",
     "showLess": "Daha az göster"
@@ -536,9 +537,9 @@
     "getStarted": "İlk dans türünüzü ekleyerek başlayın"
   },
   "instructorRates": {
-    "title": "Eğitmen Oranları",
+    "title": "Eğitmen Ücretleri",
     "description": "Her eğitmenin her sınıf için ne kadar kazandığını belirleyin",
-    "aboutTitle": "Eğitmen Oranları Hakkında",
+    "aboutTitle": "Eğitmen ücretleri hakkında",
     "aboutDescription": "Her eğitmen için dans türü ve şube kombinasyonuna göre saatlik ücreti belirleyin. Yoklama alındığında eğitmen otomatik olarak bu ücreti kazanır.",
     "specificToInstructor": "Oranlar Eğitmen + Şube + Dans Türü kombinasyonuna özgüdür",
     "earnAutomatically": "Yoklama alındığında, eğitmen otomatik olarak bu ücreti kazanır",
@@ -1035,7 +1036,9 @@
     "uncheckAll": "Tümünün işaretini kaldır",
     "checkAll": "Tümünü işaretle",
     "saving": "Kaydediliyor…",
-    "saveCount": "Yoklamayı kaydet ({count} kayıt)"
+    "saveCount": "Yoklamayı kaydet ({count} kayıt)",
+    "originalInstructor": "Asıl eğitmen: {name}",
+    "renewalNeeded": "⚠️ Paket yenilemesi gerekiyor ({count})"
   },
   "detailPages": {
     "activityTimeline": "Etkinlik geçmişi",
@@ -1110,7 +1113,9 @@
     "noneAvailable": "Uygun öğrenci yok (hepsi zaten kayıtlı olabilir)",
     "noneFound": "Öğrenci bulunamadı",
     "adding": "Ekleniyor…",
-    "addCount": "{count} öğrenci ekle"
+    "addCount": "{count} öğrenci ekle",
+    "withActivePackages": "Bu dans türünde aktif paketi olan {count} öğrenci",
+    "selectedCount": "{count} öğrenci seçildi"
   },
   "forms": {
     "firstName": "Ad",
@@ -1174,7 +1179,8 @@
     "selectInstructors": "Eğitmen seç…",
     "loadInstructorsError": "Eğitmenler yüklenemedi: {error}",
     "noInstructorRates": "⚠️ Bu dans türü için ücreti tanımlı eğitmen yok. Önce eğitmen ücretlerini tanımlayın.",
-    "instructorsFor": "{label} ({danceType} için)"
+    "instructorsFor": "{label} ({danceType} için)",
+    "studentsAfterCreate": "💡 Kursu oluşturduktan sonra kurs sayfasından öğrenci ekleyebilirsiniz."
   },
   "instructorRateForm": {
     "instructor": "Eğitmen *",
@@ -1202,7 +1208,8 @@
     "selectRequired": "Lütfen bir paket seçin",
     "failed": "Satın alma tamamlanamadı",
     "processing": "İşleniyor…",
-    "confirm": "Satın almayı onayla"
+    "confirm": "Satın almayı onayla",
+    "creditsCount": "{count} kredi"
   },
   "landing": {
     "featuresDescription": "Başarılı bir dans stüdyosu yönetmek için ihtiyacın olan her şey",
@@ -1231,7 +1238,10 @@
     "dateAt": "{date}, {time}",
     "purchased": "Satın alındı: {date}",
     "unknownCourse": "Bilinmeyen kurs",
-    "unknownPackage": "Bilinmeyen paket"
+    "unknownPackage": "Bilinmeyen paket",
+    "danceTypeLabel": "Dans türü:",
+    "branchLabel": "Şube:",
+    "classesAttended": "{count} derse katıldı"
   },
   "studentCourses": {
     "loading": "Kurslar yükleniyor…",
@@ -1271,7 +1281,8 @@
     "missingPackage": "Paket bulunamadı",
     "updateFailed": "Krediler güncellenemedi",
     "unknownDanceType": "Bilinmiyor",
-    "packageFallback": "Paket"
+    "packageFallback": "Paket",
+    "usedLeft": "{used} kullanıldı • {remaining} kaldı"
   },
   "instructorAttendance": {
     "title": "Yoklama geçmişi",
@@ -1304,7 +1315,10 @@
     "searchPlaceholder": "Eğitmen adına göre ara…",
     "hasRate": "Ücreti var",
     "noneAvailable": "Uygun eğitmen yok: hepsi bu kursa atanmış ya da yerine seçilmiş.",
-    "noMatch": "Aramanızla eşleşen eğitmen yok"
+    "noMatch": "Aramanızla eşleşen eğitmen yok",
+    "replaceTitle": "Eğitmeni değiştir: {name}",
+    "replaceDescription": "Bu oturumda {name} yerine başka bir eğitmen seçin.",
+    "pageInfo": "Sayfa {page}/{pages} • {total} sonuçtan {shown} gösteriliyor"
   },
   "courseStudents": {
     "action": "İşlem",
@@ -1332,7 +1346,9 @@
     "cancel": "İptal",
     "searchPlaceholder": "Eğitmen ara…",
     "noneForDanceType": "Bu dans türü için eğitmen yok",
-    "noMatch": "Aramanızla eşleşen eğitmen yok"
+    "noMatch": "Aramanızla eşleşen eğitmen yok",
+    "forDanceType": "{name} için",
+    "confirmCount": "Onayla ({count})"
   },
   "instructorRatesTable": {
     "delete": "Ücreti sil",
@@ -1344,7 +1360,8 @@
   },
   "historyPage": {
     "description": "Stüdyonuzdaki tüm etkinlikler ve değişiklikler",
-    "logDescription": "Tüm etkinlik kaydı"
+    "logDescription": "Tüm etkinlik kaydı",
+    "moreActivities": "{count} etkinlik daha"
   },
   "instructorRateDrawer": {
     "description": "Şube ve dans türüne göre eğitmen ücreti",
@@ -1575,6 +1592,128 @@
     "studioNotFound": "Stüdyo bulunamadı",
     "updateStudioFailed": "Stüdyo güncellenemedi",
     "deleteStudioFailed": "Stüdyo silinemedi",
-    "unexpectedWithDetail": "Beklenmeyen bir hata oluştu: {detail}"
+    "unexpectedWithDetail": "Beklenmeyen bir hata oluştu: {detail}",
+    "attendanceAlreadyTaken": "Bu tarih için yoklama zaten alınmış.",
+    "missingPackageData": "Bazı öğrencilerin paket bilgisi eksik. Sayfayı yenileyip tekrar deneyin.",
+    "undoAttendanceFailed": "Yoklama geri alınamadı."
+  },
+  "attendanceSheet": {
+    "markEveryone": "Kaydetmeden önce {count} öğrenciyi daha işaretleyin.",
+    "saved": "Yoklama kaydedildi: {present} geldi, {absent} gelmedi.",
+    "saveFailed": "Yoklama kaydedilemedi. Tekrar deneyin.",
+    "noStudentsTitle": "Bu kursta henüz öğrenci yok",
+    "noStudentsDescription": "Yoklama almak için kursa öğrenci ekleyin.",
+    "addStudents": "Öğrenci ekle",
+    "sessionDetails": "Ders bilgileri",
+    "noInstructor": "Eğitmen yok",
+    "instructors": "Eğitmenler",
+    "substituteFor": "{name} yerine",
+    "undoSubstitute": "Geri al",
+    "substitute": "Yerine başkası",
+    "studio": "Salon",
+    "lessonNote": "Ders notu",
+    "lessonNotePlaceholder": "İşlenen konu, hatırlatmalar…",
+    "searchPlaceholder": "Öğrenci ara…",
+    "studentCount": "{count} öğrenci",
+    "allPresent": "Hepsi geldi",
+    "clear": "Temizle",
+    "creditsLeft": "{count} kredi kaldı",
+    "noCreditTaken": "Kredi düşülmez",
+    "moreOptions": "Not ve kredi",
+    "statusFor": "{name} yoklaması",
+    "present": "Geldi",
+    "absent": "Gelmedi",
+    "notePlaceholder": "Not (isteğe bağlı)",
+    "takeCredit": "Kredi düş",
+    "noMatch": "Aramanızla eşleşen öğrenci yok.",
+    "noCreditsTitle": "Kredisi bitenler ({count})",
+    "sellPackage": "Paket sat",
+    "presentCount": "{count} geldi",
+    "absentCount": "{count} gelmedi",
+    "unmarkedCount": "{count} işaretlenmedi",
+    "saving": "Kaydediliyor…",
+    "save": "Yoklamayı kaydet",
+    "undoTitle": "Bu yoklama geri alınsın mı?",
+    "undoDescription": "Bu dersin tüm kayıtları silinir, krediler iade edilir ve eğitmen kazancı kaldırılır. Ardından yoklamayı yeniden alabilirsiniz.",
+    "undo": "Yoklamayı geri al",
+    "undoFailed": "Yoklama geri alınamadı.",
+    "undone": "Yoklama geri alındı. Yeniden alabilirsiniz.",
+    "taken": "Yoklama alındı",
+    "previousLesson": "Önceki ders",
+    "nextLesson": "Sonraki ders",
+    "today": "Bugün",
+    "noLessonsToday": "Bugün ders yok.",
+    "thisWeek": "Bu hafta",
+    "pendingCount": "{count} alınmadı",
+    "take": "Yoklama al",
+    "otherDates": "Diğer tarihler",
+    "futureLesson": "Bu ders henüz yapılmadı. Yoklamayı ders günü alabilirsiniz.",
+    "previousDay": "Önceki gün",
+    "nextDay": "Sonraki gün",
+    "overviewHint": "Geçmiş dersler dahil, yoklama almak ya da görmek için bir gün seçin.",
+    "backToToday": "Bugüne dön",
+    "noLessonsOnDay": "Bu gün ders yok.",
+    "weekBefore": "Önceki 6 gün"
+  },
+  "home": {
+    "greeting": "Merhaba, {name}",
+    "greetingNoName": "Merhaba",
+    "takeAttendance": "Yoklama al",
+    "addStudent": "Öğrenci ekle",
+    "setupTitle": "Stüdyonuzun kurulumunu tamamlayın",
+    "setupProgress": "{done}/{total} tamamlandı",
+    "setup": {
+      "branches": "Şube ekleyin",
+      "danceTypes": "Dans türlerini ekleyin",
+      "instructors": "Eğitmenleri ekleyin",
+      "rates": "Eğitmen ücretlerini belirleyin",
+      "packages": "Paketleri oluşturun",
+      "courses": "Kursları oluşturun"
+    },
+    "stats": {
+      "students": "Aktif öğrenci",
+      "courses": "Kurs",
+      "revenue": "Bu ay gelir",
+      "noLastMonth": "Geçen ay gelir yok",
+      "vsLastMonth": "Geçen aya göre {change}",
+      "pendingAttendance": "Alınmayan yoklama",
+      "thisWeek": "Bu hafta"
+    },
+    "todaysLessons": "Bugünün dersleri",
+    "lessonCount": "{count, plural, =0 {Ders yok} other {# ders}}",
+    "calendar": "Takvim",
+    "noLessonsToday": "Bugün ders yok.",
+    "renewals": "Kredisi bitmek üzere",
+    "renewalsDescription": "1 veya daha az kredisi kalan öğrenciler",
+    "noRenewals": "Herkesin kredisi var.",
+    "creditsLeft": "{count, plural, =0 {kredi kalmadı} other {# kredi kaldı}}"
+  },
+  "nav": {
+    "label": "Ana menü",
+    "home": "Ana sayfa",
+    "attendance": "Yoklama",
+    "calendar": "Takvim",
+    "students": "Öğrenciler",
+    "courses": "Kurslar",
+    "instructors": "Eğitmenler",
+    "instructorRates": "Ücretler",
+    "instructorEarnings": "Kazançlar",
+    "cashRegister": "Kasa",
+    "setup": "Stüdyo kurulumu",
+    "packages": "Paketler",
+    "branches": "Şubeler",
+    "danceTypes": "Dans türleri",
+    "settings": "Ayarlar"
+  },
+  "detailTabs": {
+    "courses": "Kurslar",
+    "attendance": "Yoklamalar",
+    "purchases": "Satın alımlar",
+    "activity": "Etkinlik",
+    "info": "Bilgiler",
+    "students": "Öğrenciler",
+    "schedule": "Program",
+    "earnings": "Kazançlar",
+    "studios": "Salonlar"
   }
 }

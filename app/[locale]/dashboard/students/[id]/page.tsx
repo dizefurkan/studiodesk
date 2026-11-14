@@ -1,171 +1,150 @@
-import { Link } from '@/i18n/navigation'
 import { notFound } from 'next/navigation'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Edit2, ArrowLeft, Mail, Phone } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
+import { Mail, Pencil, Phone } from 'lucide-react'
+import { Link } from '@/i18n/navigation'
 import { getStudent, getStudentPackages } from '@/lib/actions/students.actions'
 import { getPackages } from '@/lib/actions/packages.actions'
 import { getOrganization } from '@/lib/auth/getOrganization'
-import { getEntityHistory } from '@/lib/actions/history.actions'
-import { getStudentAttendanceHistory, getStudentPackageHistory } from '@/lib/actions/history.actions'
+import { getEntityHistory, getStudentAttendanceHistory, getStudentPackageHistory } from '@/lib/actions/history.actions'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { DetailHeader } from '@/components/common/DetailHeader'
+import { FormattedDate } from '@/components/common/FormattedDate'
 import { StudentCredits } from '@/components/students/StudentCredits'
 import { StudentPurchaseDialog } from '@/components/students/StudentPurchaseDialog'
 import { StudentCoursesSection } from '@/components/students/StudentCoursesSection'
 import { StudentHistory } from '@/components/students/StudentHistory'
 import { ActivityTimelineWrapper } from '@/components/history/ActivityTimelineWrapper'
-import { getLocale, getTranslations } from 'next-intl/server'
 
-interface StudentDetailPageProps {
-  params: {
-    id: string
-  }
-}
-
-export default async function StudentDetailPage({ params }: StudentDetailPageProps) {
+export default async function StudentDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const tx = await getTranslations('studentDetail')
   const td = await getTranslations('detailPages')
-  const locale = await getLocale()
+  const tt = await getTranslations('detailTabs')
   const { id } = await params
+  const { purchase } = await searchParams
   const result = await getStudent(id)
-
-  if (result.error || !result.data) {
-    notFound()
-  }
+  if (result.error || !result.data) notFound()
 
   const student = result.data
   const organization = await getOrganization()
   const currency = organization?.currency || 'TRY'
 
-  // Fetch student packages, available packages, and history
-  const [packagesResult, availablePackagesResult, attendanceHistoryResult, packageHistoryResult, entityHistoryResult] = await Promise.all([
-    getStudentPackages(id),
-    getPackages(),
-    getStudentAttendanceHistory(id),
-    getStudentPackageHistory(id),
-    getEntityHistory('student', id, 20),
-  ])
+  const [packagesResult, availablePackagesResult, attendanceHistoryResult, packageHistoryResult, entityHistory] =
+    await Promise.all([
+      getStudentPackages(id),
+      getPackages(),
+      getStudentAttendanceHistory(id),
+      getStudentPackageHistory(id),
+      getEntityHistory('student', id, 20),
+    ])
 
-  const studentPackages = packagesResult.data || []
-  const availablePackages = availablePackagesResult.data || []
   const attendanceHistory = attendanceHistoryResult.data || []
   const packageHistory = packageHistoryResult.data || []
-  const entityHistory = entityHistoryResult || []
 
   return (
-    <div className="space-y-6">
-      {/* Header - Mobile: Stacked, Desktop: Side-by-side */}
-      <div className="space-y-4 md:space-y-0 flex flex-col md:flex-row md:items-start md:justify-between">
-        {/* Left Section - Mobile: Full width */}
-        <div className="min-w-0">
-          {/* Back Button - Mobile: text-only, Desktop: full */}
-          <Link href="/dashboard/students">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-muted-foreground px-0 md:px-2 -ml-2 md:ml-0"
-            >
-              <ArrowLeft size={16} className="mr-2 shrink-0" />
-              <span className="hidden md:inline">{tx('backToList')}</span>
-              <span className="md:hidden">{td('back')}</span>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <DetailHeader
+        backHref="/dashboard/students"
+        backLabel={tx('backToList')}
+        title={`${student.first_name} ${student.last_name}`}
+        meta={
+          <span className="flex flex-wrap gap-x-4 gap-y-1">
+            {student.email && (
+              <a href={`mailto:${student.email}`} className="inline-flex items-center gap-1.5 hover:text-foreground">
+                <Mail className="size-3.5" /> {student.email}
+              </a>
+            )}
+            {student.phone && (
+              <a href={`tel:${student.phone}`} className="inline-flex items-center gap-1.5 hover:text-foreground">
+                <Phone className="size-3.5" /> {student.phone}
+              </a>
+            )}
+          </span>
+        }
+        actions={
+          <>
+            <StudentPurchaseDialog
+              studentId={id}
+              packages={availablePackagesResult.data || []}
+              currency={currency}
+              defaultOpen={purchase === '1'}
+            />
+            <Button asChild variant="outline">
+              <Link href={`/dashboard/students/${student.id}/edit`}>
+                <Pencil /> {td('edit')}
+              </Link>
             </Button>
-          </Link>
-          
-          {/* Student Name - Responsive size */}
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-3 truncate">
-            {student.first_name} {student.last_name}
-          </h1>
-          <p className="text-sm md:text-base text-muted-foreground mt-1">{tx('subtitle')}</p>
-        </div>
-
-        {/* Right Section - Mobile: 2-column grid, Desktop: flex row */}
-        <div className="grid grid-cols-2 md:flex gap-2">
-          <div className="col-span-1">
-            <StudentPurchaseDialog studentId={id} packages={availablePackages} currency={currency} />
-          </div>
-          <Link href={`/dashboard/students/${student.id}/edit`} className="col-span-1">
-            <Button className="w-full md:w-auto">
-              <Edit2 size={16} className="mr-2 shrink-0" />
-              <span className="hidden md:inline">{td('edit')}</span>
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Credits Section */}
-      <StudentCredits packages={studentPackages} />
-
-      {/* Enrolled Courses Section */}
-      <StudentCoursesSection studentId={id} />
-
-      {/* History Section */}
-      <StudentHistory 
-        attendanceHistory={attendanceHistory}
-        packageHistory={packageHistory}
+          </>
+        }
       />
 
-      {/* Main Info Card */}
-      <Card className="border-border">
-        <div className="p-8">
-          <h2 className="text-lg font-semibold text-foreground mb-6">{tx('contact')}</h2>
+      {/* What matters most at the desk: credits left */}
+      <StudentCredits packages={packagesResult.data || []} />
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <Mail className="text-primary" size={20} />
+      <Tabs defaultValue="courses">
+        <TabsList variant="line" className="w-full justify-start overflow-x-auto border-b border-border [&>button]:flex-none [&>button]:px-3">
+          <TabsTrigger value="courses">{tt('courses')}</TabsTrigger>
+          <TabsTrigger value="attendance">
+            {tt('attendance')} <span className="text-muted-foreground">{attendanceHistory.length}</span>
+          </TabsTrigger>
+          <TabsTrigger value="purchases">
+            {tt('purchases')} <span className="text-muted-foreground">{packageHistory.length}</span>
+          </TabsTrigger>
+          <TabsTrigger value="activity">{tt('activity')}</TabsTrigger>
+          <TabsTrigger value="info">{tt('info')}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="courses" className="pt-2">
+          <StudentCoursesSection studentId={id} />
+        </TabsContent>
+        <TabsContent value="attendance" className="pt-2">
+          <StudentHistory view="attendance" attendanceHistory={attendanceHistory} packageHistory={packageHistory} />
+        </TabsContent>
+        <TabsContent value="purchases" className="pt-2">
+          <StudentHistory view="credits" attendanceHistory={attendanceHistory} packageHistory={packageHistory} />
+        </TabsContent>
+        <TabsContent value="activity" className="pt-2">
+          <ActivityTimelineWrapper
+            entity="student"
+            entityId={id}
+            initialLogs={entityHistory || []}
+            title={td('activityTimeline')}
+            description={tx('timelineDescription')}
+            showFullPage={false}
+          />
+        </TabsContent>
+        <TabsContent value="info" className="pt-2">
+          <Card className="gap-4 p-6">
+            {student.notes && (
               <div>
-                <p className="text-sm text-muted-foreground">{td('email')}</p>
-                <p className="font-medium text-foreground">{student.email}</p>
-              </div>
-            </div>
-
-            {student.phone && (
-              <div className="flex items-center gap-4">
-                <Phone className="text-primary" size={20} />
-                <div>
-                  <p className="text-sm text-muted-foreground">{td('phone')}</p>
-                  <p className="font-medium text-foreground">{student.phone}</p>
-                </div>
+                <p className="text-sm text-muted-foreground">{tx('notes')}</p>
+                <p className="mt-1 whitespace-pre-wrap text-foreground">{student.notes}</p>
               </div>
             )}
-          </div>
-        </div>
-      </Card>
-
-      {/* Notes */}
-      {student.notes && (
-        <Card className="border-border">
-          <div className="p-8">
-            <h2 className="text-lg font-semibold text-foreground mb-4">{tx('notes')}</h2>
-            <p className="text-muted-foreground whitespace-pre-wrap">{student.notes}</p>
-          </div>
-        </Card>
-      )}
-
-      {/* Meta Info */}
-      <Card className="border-border">
-        <div className="p-8">
-          <h2 className="text-lg font-semibold text-foreground mb-4">{tx('information')}</h2>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <p className="text-sm text-muted-foreground">{tx('joined')}</p>
-              <p className="font-medium text-foreground">{new Date(student.created_at).toLocaleDateString(locale)}</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">{tx('joined')}</p>
+                <p className="font-medium text-foreground">
+                  <FormattedDate value={student.created_at} />
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{tx('updated')}</p>
+                <p className="font-medium text-foreground">
+                  <FormattedDate value={student.updated_at} />
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">{tx('updated')}</p>
-              <p className="font-medium text-foreground">{new Date(student.updated_at).toLocaleDateString(locale)}</p>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Timeline History */}
-      <ActivityTimelineWrapper 
-        entity="student"
-        entityId={id}
-        initialLogs={entityHistory}
-        title={td('activityTimeline')}
-        description={tx('timelineDescription')}
-        showFullPage={false}
-      />
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

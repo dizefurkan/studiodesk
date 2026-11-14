@@ -29,7 +29,7 @@ export function RevenueChart({ data, currency }: RevenueChartProps) {
       <CardHeader className="pb-3 md:pb-6">
         <CardTitle className="text-lg sm:text-xl">{t('dashboard.revenueOverMonth')}</CardTitle>
         <CardDescription className="text-xs sm:text-sm">
-          {t('dashboard.monthlyGrowth')} - Last 12 Months
+          {t('dashboard.monthlyGrowthLast12')}
         </CardDescription>
       </CardHeader>
       <CardContent>

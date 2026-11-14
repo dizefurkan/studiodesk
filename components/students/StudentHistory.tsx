@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Calendar, Zap, BookOpen, History } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
+import { parseDateOnly } from '@/lib/i18n/dates'
 
 interface AttendanceHistoryItem {
   id: string
@@ -37,20 +38,25 @@ interface PackageHistoryItem {
 interface StudentHistoryProps {
   attendanceHistory: AttendanceHistoryItem[]
   packageHistory: PackageHistoryItem[]
+  /** Show just one list, without the section title and the inner tab switch */
+  view?: 'attendance' | 'credits'
 }
 
 export function StudentHistory({
   attendanceHistory,
   packageHistory,
+  view,
 }: StudentHistoryProps) {
   const tx = useTranslations('studentHistory')
   const locale = useLocale()
-  const [activeTab, setActiveTab] = useState<'attendance' | 'credits'>(
+  const [selectedTab, setActiveTab] = useState<'attendance' | 'credits'>(
     'attendance'
   )
+  const activeTab = view ?? selectedTab
 
   return (
     <div className="space-y-6">
+      {!view && (<>
       <div>
         <div className="flex items-center gap-2 mb-2">
           <History size={24} className="text-primary" />
@@ -87,6 +93,8 @@ export function StudentHistory({
         </Button>
       </div>
 
+      </>)}
+
       {/* Attendance Tab */}
       {activeTab === 'attendance' && (
         <div className="space-y-4">
@@ -99,7 +107,7 @@ export function StudentHistory({
             <div className="space-y-3">
               {attendanceHistory.map((record) => {
                 const sessionDate = record.course_sessions?.session_date
-                  ? new Date(record.course_sessions.session_date)
+                  ? parseDateOnly(record.course_sessions.session_date)
                   : null
                 const course = record.course_sessions?.course
 
@@ -116,7 +124,7 @@ export function StudentHistory({
                         <div className="text-sm text-muted-foreground space-y-0.5">
                           {course?.dance_types?.name && (
                             <p>
-                              Dance Type:{' '}
+                              {tx('danceTypeLabel')}{' '}
                               <span className="text-foreground">
                                 {course.dance_types.name}
                               </span>
@@ -124,7 +132,7 @@ export function StudentHistory({
                           )}
                           {course?.branches?.name && (
                             <p>
-                              Branch:{' '}
+                              {tx('branchLabel')}{' '}
                               <span className="text-foreground">
                                 {course.branches.name}
                               </span>
@@ -226,8 +234,7 @@ export function StudentHistory({
                         <div className="flex items-center gap-1 text-sm text-muted-foreground pt-2 border-t border-border">
                           <BookOpen size={14} />
                           <span>
-                            {pkg.attendanceCount} class{' '}
-                            {pkg.attendanceCount === 1 ? 'attended' : 'attendances'}
+                            {tx('classesAttended', { count: pkg.attendanceCount })}
                           </span>
                         </div>
                       )}

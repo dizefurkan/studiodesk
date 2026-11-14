@@ -6,6 +6,7 @@ import { DataTable } from '@/components/table/data-table'
 import { FilterConfig, type FilterValues } from '@/components/table/data-table-filters'
 import { getCourseColumns, Course } from './columns'
 import { useTranslations } from 'next-intl'
+import { useLocaleNames } from '@/hooks/useLocaleNames'
 import { deleteCourse } from '@/lib/actions/courses.actions'
 import { DeleteConfirmModal } from '@/components/common/DeleteConfirmModal'
 
@@ -97,8 +98,10 @@ export function CoursesPageClient({
   ]
 
   // Get columns with delete handler
+  const { DAYS } = useLocaleNames()
   const columns = getCourseColumns({
     onDelete: handleDeleteClick,
+    days: DAYS,
   })
 
   return (

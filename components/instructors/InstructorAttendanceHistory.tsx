@@ -8,6 +8,7 @@ import {
   type InstructorSessionHistory as Session,
 } from '@/lib/actions/instructor-detail.actions'
 import { useLocale, useTranslations } from 'next-intl'
+import { parseDateOnly } from '@/lib/i18n/dates'
 
 interface InstructorAttendanceHistoryProps {
   instructorId: string
@@ -78,7 +79,7 @@ export function InstructorAttendanceHistory({
                 <div className="flex-1">
                   <div className="flex flex-col gap-1">
                     <p className="font-medium text-foreground">
-                      {new Date(session.session_date).toLocaleDateString(locale, {
+                      {parseDateOnly(session.session_date).toLocaleDateString(locale, {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',

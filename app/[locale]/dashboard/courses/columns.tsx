@@ -25,6 +25,8 @@ export interface Course {
 
 interface ColumnsProps {
   onDelete: (course: Course) => void
+  /** Weekday names in the app locale, index 0 = Sunday (from useLocaleNames). */
+  days: string[]
   visibleColumns?: {
     name?: boolean
     branch?: boolean
@@ -37,10 +39,9 @@ interface ColumnsProps {
   }
 }
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-
 export function getCourseColumns({
   onDelete,
+  days,
   visibleColumns = {
     name: true,
     branch: true,
@@ -99,7 +100,7 @@ export function getCourseColumns({
       header: () => <ColumnHeader k="schedule" />,
       cell: ({ row }) => (
         <span className="text-muted-foreground text-sm">
-          {DAYS[row.original.day_of_week]} {formatTime(row.original.start_time)} - {formatTime(row.original.end_time)}
+          {days[row.original.day_of_week]} {formatTime(row.original.start_time)} - {formatTime(row.original.end_time)}
         </span>
       ),
     })

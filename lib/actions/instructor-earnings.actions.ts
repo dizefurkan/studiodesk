@@ -1,5 +1,6 @@
 'use server'
 
+import { toDateString } from '@/lib/i18n/dates'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
@@ -91,8 +92,8 @@ export async function getEarningsReport(instructorId: string, year: number, mont
     // Use admin client to bypass RLS for efficiency, but verify instructor belongs to organization
     const adminSupabase = createAdminClient()
 
-    const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0]
-    const endDate = new Date(year, month, 0).toISOString().split('T')[0]
+    const startDate = toDateString(new Date(year, month - 1, 1))
+    const endDate = toDateString(new Date(year, month, 0))
 
     // Verify instructor belongs to organization first
     const { data: instructor, error: instructorError } = await (adminSupabase

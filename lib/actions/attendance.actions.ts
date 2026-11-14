@@ -1,5 +1,6 @@
 "use server";
 
+import { toDateString } from "@/lib/i18n/dates"
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
@@ -12,361 +13,12 @@ import { actionError } from '@/lib/i18n/actionError'
 type Attendance = Database["public"]["Tables"]["attendances"]["Row"];
 type CourseSession = Database["public"]["Tables"]["course_sessions"]["Row"];
 type Course = Database["public"]["Tables"]["courses"]["Row"];
-type Student = Database["public"]["Tables"]["students"]["Row"];
 type StudentPackage = Database["public"]["Tables"]["student_packages"]["Row"];
-type CourseInstructor =
-  Database["public"]["Tables"]["course_instructors"]["Row"];
-type SessionInstructor =
-  Database["public"]["Tables"]["session_instructors"]["Row"];
-type Instructor = Database["public"]["Tables"]["instructors"]["Row"];
 type InstructorRate = Database["public"]["Tables"]["instructor_rates"]["Row"];
 type InstructorEarning =
   Database["public"]["Tables"]["instructor_earnings"]["Row"];
 type Package = Database["public"]["Tables"]["packages"]["Row"];
 
-// Query result types with relationships
-type AttendanceWithRelations = Attendance & {
-  students: { first_name: string | null; last_name: string | null } | null;
-  student_packages: { remaining_credits: number } | null;
-};
-
-// Type-safe return where students is guaranteed to be present
-type AttendanceWithStudent = AttendanceWithRelations & {
-  students: NonNullable<AttendanceWithRelations["students"]>;
-};
-
-export async function getSessionAttendances(
-  sessionId: string
-): Promise<{ data?: AttendanceWithStudent[]; error?: string }> {
-  const user = await getCurrentUser();
-  if (!user) return { error: await actionError('notAuthenticated') };
-
-  try {
-    const supabase = await createServerSupabaseClient();
-    const result = await supabase
-      .from("attendances")
-      .select(
-        "*, students(first_name, last_name), student_packages(remaining_credits)"
-      )
-      .eq("session_id", sessionId)
-      .overrideTypes<AttendanceWithRelations[]>();
-
-    const { data: allAttendances, error } = result as {
-      data: AttendanceWithRelations[] | null;
-      error: PostgrestError | null;
-    };
-
-    if (error) {
-      console.error("Error fetching attendances:", error);
-      return { error: await actionError('fetchAttendancesFailed') };
-    }
-
-    // ✅ Filter to only include records with valid student relationship
-    const data = (allAttendances || []).filter(
-      (
-        a
-      ): a is AttendanceWithRelations & {
-        students: NonNullable<AttendanceWithRelations["students"]>;
-      } => !!a.students
-    );
-
-    return { data };
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return { error: await actionError('unexpected') };
-  }
-}
-
-export async function getSessionStudents(
-  sessionId: string
-): Promise<{ data?: Student[]; error?: string }> {
-  const user = await getCurrentUser();
-  if (!user) return { error: await actionError('notAuthenticated') };
-
-  try {
-    const supabase = await createServerSupabaseClient();
-
-    // Get course from session
-    const sessionResult = await supabase
-      .from("course_sessions")
-      .select("course_id")
-      .eq("id", sessionId)
-      .single()
-      .overrideTypes<CourseSession>();
-
-    const { data: session, error: sessionError } = sessionResult as {
-      data: CourseSession | null;
-      error: PostgrestError | null;
-    };
-
-    if (sessionError || !session) {
-      return { error: await actionError('sessionNotFound') };
-    }
-
-    // Get course info
-    const courseResult = await supabase
-      .from("courses")
-      .select("dance_type_id")
-      .eq("id", session.course_id)
-      .single()
-      .overrideTypes<Course>();
-
-    const { data: courseData, error: courseError } = courseResult as {
-      data: Course | null;
-      error: PostgrestError | null;
-    };
-
-    if (courseError || !courseData) {
-      return { error: await actionError('courseNotFound') };
-    }
-
-    // Use admin client to fetch students enrolled in this course with packages
-    const adminSupabase = createAdminClient();
-
-    type CourseStudentWithDetails = {
-      student_id: string;
-      students:
-        | (Student & {
-            student_packages:
-              | (StudentPackage & {
-                  package: { dance_type_id: string } | null;
-                })[]
-              | null;
-          })
-        | null;
-    };
-
-    const studentsResult = await adminSupabase
-      .from("course_students")
-      .select(
-        `student_id, 
-         students(
-           id, first_name, last_name, 
-           student_packages(
-             id, remaining_credits, 
-             package:packages(dance_type_id)
-           )
-         )`
-      )
-      .eq("course_id", session.course_id)
-      .overrideTypes<CourseStudentWithDetails[]>();
-
-    const { data: courseStudents, error: studentsError } = studentsResult as {
-      data: CourseStudentWithDetails[] | null;
-      error: PostgrestError | null;
-    };
-
-    if (studentsError) {
-      console.error("Error fetching enrolled students:", {
-        error: studentsError,
-        message: studentsError?.message,
-        details: studentsError?.details,
-      });
-      return { error: await actionError('fetchStudentsFailed') };
-    }
-
-    // Extract students with their packages for this dance type
-    const filteredStudents = (courseStudents || [])
-      .filter(
-        (
-          cs
-        ): cs is CourseStudentWithDetails & {
-          students: NonNullable<CourseStudentWithDetails["students"]>;
-        } => !!cs.students
-      )
-      .map((cs) => ({
-        ...cs.students,
-        student_packages: (cs.students.student_packages || []).filter(
-          (sp) => sp.package?.dance_type_id === courseData.dance_type_id
-        ),
-      }));
-
-    return { data: filteredStudents };
-  } catch (error) {
-    console.error("Unexpected error in getSessionStudents:", {
-      error,
-      message: error instanceof Error ? error.message : String(error),
-    });
-    return { error: await actionError('unexpected') };
-  }
-}
-
-export async function recordAttendance(
-  sessionId: string,
-  studentId: string,
-  studentPackageId: string,
-  studioId?: string | null
-): Promise<{ success?: boolean; data?: Attendance; error?: string }> {
-  const user = await getCurrentUser();
-  if (!user) return { error: await actionError('notAuthenticated') };
-
-  try {
-    const supabase = await createServerSupabaseClient();
-
-    // Record attendance - .overrideTypes() ensures proper return type
-    const result = await supabase
-      .from("attendances")
-      .insert({
-        session_id: sessionId,
-        student_id: studentId,
-        student_package_id: studentPackageId,
-        studio_id: studioId || null,
-      })
-      .select()
-      .single()
-      .overrideTypes<Attendance>();
-
-    const { data, error } = result as { data: Attendance | null; error: PostgrestError | null };
-
-    if (error) {
-      console.error("Error recording attendance:", error);
-      return { error: await actionError('recordAttendanceFailed') };
-    }
-
-    if (!data) {
-      return { error: await actionError('recordAttendanceFailed') };
-    }
-
-    // Get session/course info early (needed for logging to course timeline)
-    const { data: sessionData } = (await supabase
-      .from("course_sessions")
-      .select("course_id")
-      .eq("id", sessionId)
-      .maybeSingle()
-      .overrideTypes<CourseSession>());
-
-    // Get student info for better logging
-    const { data: studentData } = (await supabase
-      .from("students")
-      .select("first_name, last_name")
-      .eq("id", studentId)
-      .maybeSingle()
-      .overrideTypes<{
-        first_name: string | null;
-        last_name: string | null;
-      }>());
-
-    const studentName = studentData
-      ? `${studentData.first_name || ""} ${studentData.last_name || ""}`.trim()
-      : "Student";
-
-    // ✅ Now data is properly typed as Attendance - no casting needed!
-    // Log the attendance record creation
-    const organization = await getOrganization();
-    if (organization) {
-      // Log to attendance entity
-      void logOperation(
-        "CREATE",
-        "attendance",
-        data.id,
-        {
-          after: {
-            sessionId: data.session_id,
-            studentId: data.student_id,
-            studentName: studentName,
-            studentPackageId: data.student_package_id,
-            studioId: data.studio_id,
-          },
-        },
-        organization.id
-      );
-
-      // Also log to course entity so it appears in course timeline
-      if (sessionData?.course_id) {
-        void logOperation(
-          "CREATE",
-          "course",
-          sessionData.course_id,
-          {
-            after: {
-              sessionId: data.session_id,
-              studentId: data.student_id,
-              studentName: studentName,
-              attendanceMarked: true,
-            },
-          },
-          organization.id
-        );
-      }
-    }
-
-    // Deduct credit from student_package
-
-    const { data: pkg } = (await supabase
-      .from("student_packages")
-      .select("remaining_credits")
-      .eq("id", studentPackageId)
-      .maybeSingle()
-      .overrideTypes<StudentPackage>());
-
-    // Process instructor earnings for this session
-    if (sessionData) {
-      // Get instructors for this course - Direct select without complex joins
-      const { data: courseInstructors } = (await supabase
-        .from("course_instructors")
-        .select("instructor_id")
-        .eq("course_id", sessionData.course_id)
-        .overrideTypes<{ instructor_id: string }[]>());
-
-      if (courseInstructors && courseInstructors.length > 0) {
-        // Get course details for rate calculation
-        const { data: courseData } = (await supabase
-          .from("courses")
-          .select("branch_id, dance_type_id")
-          .eq("id", sessionData.course_id)
-          .maybeSingle()
-          .overrideTypes<Course>());
-
-        if (courseData) {
-          // Calculate earnings for each instructor
-          for (const ci of courseInstructors) {
-            // Get rate - using direct filter since we need multiple conditions
-            const { data: rateData } = (await supabase
-              .from("instructor_rates")
-              .select("ratio_per_class")
-              .eq("instructor_id", ci.instructor_id)
-              .eq("branch_id", courseData.branch_id)
-              .eq("dance_type_id", courseData.dance_type_id)
-              .maybeSingle()
-              .overrideTypes<InstructorRate>());
-
-            const ratio = rateData?.ratio_per_class || 0;
-
-            // Check if earnings already recorded for this instructor and session
-            const { data: existingEarning } = (await supabase
-              .from("instructor_earnings")
-              .select("id")
-              .eq("instructor_id", ci.instructor_id)
-              .eq("session_id", sessionId)
-              .maybeSingle()
-              .overrideTypes<{ id: string }>());
-
-            // Only record if not already recorded
-            if (!existingEarning && ratio > 0) {
-              // Note: This appears to be legacy code - instructor earnings should be calculated
-              // with package price. Keeping for backward compatibility.
-              (await supabase
-                .from("instructor_earnings")
-                .insert({
-                  instructor_id: ci.instructor_id,
-                  session_id: sessionId,
-                  amount: ratio / 100, // Convert percentage to decimal
-                })
-                .select()
-                .single()
-                .overrideTypes<InstructorEarning>());
-            }
-          }
-        }
-      }
-    }
-
-    return { success: true, data };
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return { error: await actionError('unexpected') };
-  }
-}
 
 export async function removeAttendance(
   attendanceId: string,
@@ -383,7 +35,7 @@ export async function removeAttendance(
     // Fetch before state for logging
     const { data: beforeAttendance } = (await supabase
       .from("attendances")
-      .select("id, session_id, student_id, student_package_id, studio_id")
+      .select("id, session_id, student_id, student_package_id, studio_id, deduct_credits")
       .eq("id", attendanceId)
       .maybeSingle()
       .overrideTypes<Attendance>());
@@ -396,8 +48,8 @@ export async function removeAttendance(
       .maybeSingle()
       .overrideTypes<StudentPackage>());
 
-    // Restore credit
-    if (pkg) {
+    // Restore the credit only if this record took one
+    if (pkg && beforeAttendance?.deduct_credits !== false) {
       const updateData = { remaining_credits: pkg.remaining_credits + 1 };
       await supabase
         .from("student_packages")
@@ -604,7 +256,7 @@ export async function recordBatchAttendance(
 
     // ✨ NEW: Ensure session exists (create on-demand if needed)
     // Check if a session already exists for this course on the specified date
-    const checkDate = attendanceDate || new Date().toISOString().split("T")[0];
+    const checkDate = attendanceDate || toDateString();
     console.log("[recordBatchAttendance] Checking for session:", {
       courseId,
       checkDate,
@@ -625,7 +277,7 @@ export async function recordBatchAttendance(
         "[recordBatchAttendance] Session not found, creating on-demand for course:",
         courseId
       );
-      const today = attendanceDate || new Date().toISOString().split("T")[0];
+      const today = attendanceDate || toDateString();
 
       // Use admin client to bypass RLS for session creation
       const { createAdminClient } = await import("@/lib/supabase/admin");
@@ -704,26 +356,14 @@ export async function recordBatchAttendance(
           .eq("id", actualSessionId);
       }
 
-      // Check if attendance records already exist for this session
-      const { data: existingAttendance, error: attendanceCheckError } =
-        await supabase
-          .from("attendances")
-          .select("id", { count: "exact", head: true })
-          .eq("session_id", actualSessionId)
-          .limit(1);
+      // One attendance sheet per course per day: refuse if this session already has records
+      const { count: existingCount, error: attendanceCheckError } = await supabase
+        .from("attendances")
+        .select("id", { count: "exact", head: true })
+        .eq("session_id", actualSessionId);
 
-      if (
-        !attendanceCheckError &&
-        existingAttendance &&
-        existingAttendance.length > 0
-      ) {
-        console.warn(
-          "[recordBatchAttendance] Attendance already recorded for this session/date"
-        );
-        return {
-          error:
-            "Yoklama bu tarih için zaten alınmış. Lütfen başka bir tarih seçiniz.",
-        };
+      if (!attendanceCheckError && (existingCount ?? 0) > 0) {
+        return { error: await actionError('attendanceAlreadyTaken') };
       }
 
       // ✅ ensureSessionInstructors: Fill session_instructors for existing session
@@ -796,10 +436,7 @@ export async function recordBatchAttendance(
         "Invalid records - missing studentPackageId:",
         invalidRecords
       );
-      return {
-        error:
-          "Some students are missing package data. Please refresh and try again.",
-      };
+      return { error: await actionError('missingPackageData') };
     }
 
     // ✅ VALIDATION: Ensure session or course has at least one instructor assigned
@@ -1160,6 +797,91 @@ export async function getAttendanceReports(
     return { data: data || [] };
   } catch (error) {
     console.error("Unexpected error:", error);
+    return { error: await actionError('unexpected') };
+  }
+}
+
+/**
+ * Undo a whole attendance sheet: give back the credits it took, remove its records,
+ * the instructor earnings it created and the session itself, so it can be taken again.
+ */
+export async function undoSessionAttendance(
+  sessionId: string
+): Promise<{ success?: boolean; data?: { courseId: string; date: string }; error?: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { error: await actionError('notAuthenticated') };
+  const organization = await getOrganization();
+  if (!organization) return { error: await actionError('noOrganization') };
+
+  try {
+    const admin = createAdminClient();
+
+    // Scope: the session's course must belong to this organization
+    const { data: session } = await admin
+      .from("course_sessions")
+      .select("id, session_date, course_id, courses!inner(id, name, branches!inner(organization_id))")
+      .eq("id", sessionId)
+      .eq("courses.branches.organization_id", organization.id)
+      .maybeSingle();
+    if (!session) return { error: await actionError('sessionNotFound') };
+
+    const { data: records, error: recordsError } = await admin
+      .from("attendances")
+      .select("id, student_package_id, deduct_credits")
+      .eq("session_id", sessionId);
+    if (recordsError) return { error: await actionError('undoAttendanceFailed') };
+
+    // Give the credits back (one per record that took one)
+    const refunds = new Map<string, number>();
+    for (const r of records ?? []) {
+      if (r.deduct_credits) refunds.set(r.student_package_id, (refunds.get(r.student_package_id) ?? 0) + 1);
+    }
+    for (const [packageId, count] of refunds) {
+      const { data: pkg } = await admin
+        .from("student_packages")
+        .select("remaining_credits")
+        .eq("id", packageId)
+        .maybeSingle();
+      if (!pkg) continue;
+      await admin
+        .from("student_packages")
+        .update({ remaining_credits: pkg.remaining_credits + count })
+        .eq("id", packageId);
+    }
+
+    const steps = await Promise.all([
+      admin.from("attendances").delete().eq("session_id", sessionId),
+      admin.from("instructor_earnings").delete().eq("session_id", sessionId),
+      admin.from("session_instructors").delete().eq("session_id", sessionId),
+    ]);
+    if (steps.some((s) => s.error)) {
+      console.error("[undoSessionAttendance]", steps.map((s) => s.error).filter(Boolean));
+      return { error: await actionError('undoAttendanceFailed') };
+    }
+    const { error: sessionDeleteError } = await admin.from("course_sessions").delete().eq("id", sessionId);
+    if (sessionDeleteError) {
+      console.error("[undoSessionAttendance] session delete", sessionDeleteError);
+      return { error: await actionError('undoAttendanceFailed') };
+    }
+
+    void logOperation(
+      "DELETE",
+      "attendance",
+      sessionId,
+      {
+        before: {
+          sessionId,
+          courseName: session.courses.name,
+          date: session.session_date,
+          records: records?.length ?? 0,
+        },
+      },
+      organization.id
+    );
+
+    return { success: true, data: { courseId: session.course_id, date: session.session_date } };
+  } catch (error) {
+    console.error("Unexpected error in undoSessionAttendance:", error);
     return { error: await actionError('unexpected') };
   }
 }

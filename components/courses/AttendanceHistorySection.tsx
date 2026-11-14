@@ -4,9 +4,9 @@ import { Link } from '@/i18n/navigation'
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ChevronDown, BookOpen } from "lucide-react";
-import { format, isToday, isYesterday } from "date-fns";
-import { useTranslations } from "next-intl";
-import { useDateFnsLocale } from "@/hooks/useDateFnsLocale";
+import { isToday, isYesterday } from "date-fns";
+import { useLocale, useTranslations } from "next-intl";
+import { formatDay, parseDateOnly } from "@/lib/i18n/dates";
 import type { getCourseAttendanceHistory } from '@/lib/actions/course-attendance.actions'
 import type { ActionData } from '@/lib/types/actions'
 
@@ -19,7 +19,7 @@ export function AttendanceHistorySection({
 }: AttendanceHistorySectionProps) {
   const t = useTranslations();
   const tHist = useTranslations("attendanceHistory");
-  const dateLocale = useDateFnsLocale();
+  const locale = useLocale();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (attendanceHistory.length === 0) {
@@ -66,18 +66,13 @@ export function AttendanceHistorySection({
                     <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
                       <p className="font-semibold text-foreground">
                         {(() => {
-                          const date = new Date(record.session_date);
-                          if (isToday(date)) {
-                            return tHist('today', { date: format(date, "MMM d", { locale: dateLocale }) });
-                          } else if (isYesterday(date)) {
-                            return tHist('yesterday', { date: format(date, "MMM d", { locale: dateLocale }) });
-                          }
-                          return format(date, "EEE, MMM d", { locale: dateLocale });
+                          const date = parseDateOnly(record.session_date);
+                          const label = formatDay(locale, date, "short");
+                          if (isToday(date)) return tHist('today', { date: label });
+                          if (isYesterday(date)) return tHist('yesterday', { date: label });
+                          return label;
                         })()}
                       </p>
-                      <span className="text-muted-foreground">
-                        {format(new Date(record.session_date), "HH:mm")}
-                      </span>
                       {record.attendances?.length > 0 &&
                         record.attendances[0]?.studios?.name && (
                           <>

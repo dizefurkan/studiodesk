@@ -72,7 +72,7 @@ export function InstructorSelectionModal({
       <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{tx('title')}</DialogTitle>
-          {danceTypeName && <DialogDescription>for {danceTypeName}</DialogDescription>}
+          {danceTypeName && <DialogDescription>{tx('forDanceType', { name: danceTypeName })}</DialogDescription>}
         </DialogHeader>
 
         <InputGroup>
@@ -136,7 +136,7 @@ export function InstructorSelectionModal({
               onOpenChange(false)
             }}
           >
-            Confirm ({tempSelected.length})
+            {tx('confirmCount', { count: tempSelected.length })}
           </Button>
         </DialogFooter>
       </DialogContent>

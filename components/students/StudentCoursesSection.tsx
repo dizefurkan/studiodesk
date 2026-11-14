@@ -9,6 +9,8 @@ import { BookOpen, Calendar, ArrowRight } from 'lucide-react'
 import { getStudentEnrolledCourses } from '@/lib/actions/course-students.actions'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useLocaleNames } from '@/hooks/useLocaleNames'
+import { parseDateOnly } from '@/lib/i18n/dates'
+import { formatTime } from '@/lib/utils/formatTime'
 
 interface CourseWithStats {
   courseId: string
@@ -169,7 +171,7 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Calendar size={16} />
                       <span>
-                        {DAYS[course.dayOfWeek]} • {course.startTime} - {course.endTime}
+                        {DAYS[course.dayOfWeek]} • {formatTime(course.startTime)} - {formatTime(course.endTime)}
                       </span>
                     </div>
 
@@ -188,7 +190,7 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
                             {course.attendanceDates
                               .filter((d) => d)
                               .slice(0, 3)
-                              .map((date) => date && new Date(date).toLocaleDateString(locale))
+                              .map((date) => date && parseDateOnly(date).toLocaleDateString(locale))
                               .join(', ')}{' '}
                             {course.attendanceDates.filter((d) => d).length > 3 && '...'}
                           </div>

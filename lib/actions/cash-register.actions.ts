@@ -1,5 +1,6 @@
 'use server'
 
+import { toDateString } from '@/lib/i18n/dates'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
@@ -276,8 +277,8 @@ export async function getMonthlyReport(
   try {
     const supabase = await createServerSupabaseClient()
 
-    const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0]
-    const endDate = new Date(year, month, 0).toISOString().split('T')[0]
+    const startDate = toDateString(new Date(year, month - 1, 1))
+    const endDate = toDateString(new Date(year, month, 0))
 
     const result = await supabase
       .from('cash_transactions')

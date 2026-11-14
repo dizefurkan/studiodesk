@@ -115,10 +115,10 @@ export function InstructorSelector({
       <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>
-            Replace Instructor: {editingInstructor?.first_name} {editingInstructor?.last_name}
+            {tx('replaceTitle', { name: `${editingInstructor?.first_name ?? ''} ${editingInstructor?.last_name ?? ''}`.trim() })}
           </DialogTitle>
           <DialogDescription>
-            Select a different instructor to replace {editingInstructor?.first_name} for this session.
+            {tx('replaceDescription', { name: editingInstructor?.first_name ?? '' })}
           </DialogDescription>
         </DialogHeader>
 
@@ -199,8 +199,7 @@ export function InstructorSelector({
         {filteredInstructors.length > 0 && (
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
-              Page {currentPage} of {totalPages} • Showing {paginatedInstructors.length} of {filteredInstructors.length}{' '}
-              results
+              {tx('pageInfo', { page: currentPage, pages: totalPages, shown: paginatedInstructors.length, total: filteredInstructors.length })}
             </span>
             <div className="flex gap-2">
               <Button onClick={handlePreviousPage} disabled={currentPage === 1} variant="outline" size="sm">

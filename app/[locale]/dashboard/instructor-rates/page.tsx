@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
 import type { ActionData } from '@/lib/types/actions'
+import { InstructorsTabs } from '@/components/instructors/InstructorsTabs'
 
 export default function InstructorRatesPage() {
   const t = useTranslations()
@@ -116,6 +117,7 @@ export default function InstructorRatesPage() {
   return (
     <div className="space-y-6">
       <PageHeader title={t('instructorRates.title')} description={t('instructorRates.description')} />
+      <InstructorsTabs />
 
       <Alert>
         <Info />

@@ -8,6 +8,7 @@ import { getTranslations } from 'next-intl/server'
 import { InstructorEarningsTable } from './instructor-earnings-client'
 import { InstructorEarningsFilters } from '@/components/instructor-earnings/EarningsFilters'
 import { PageHeader } from '@/components/common/PageHeader'
+import { InstructorsTabs } from '@/components/instructors/InstructorsTabs'
 
 export default async function InstructorEarningsPage({
   searchParams,
@@ -41,6 +42,7 @@ export default async function InstructorEarningsPage({
   return (
     <div className="space-y-6">
       <PageHeader title={t('title')} description={t('description')} />
+      <InstructorsTabs />
 
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4">
