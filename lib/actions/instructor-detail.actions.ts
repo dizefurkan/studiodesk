@@ -3,13 +3,14 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { actionError } from '@/lib/i18n/actionError'
 
 export async function getInstructorCourses(instructorId: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const adminSupabase = createAdminClient()
@@ -22,7 +23,7 @@ export async function getInstructorCourses(instructorId: string) {
       .single()
 
     if (instructorError || !instructor || instructor.organization_id !== organization.id) {
-      return { error: 'Instructor not found or access denied' }
+      return { error: await actionError('instructorAccessDenied') }
     }
 
     // Get courses assigned to this instructor
@@ -44,7 +45,7 @@ export async function getInstructorCourses(instructorId: string) {
 
     if (error) {
       console.error('Error fetching instructor courses:', error)
-      return { error: 'Failed to fetch courses' }
+      return { error: await actionError('fetchCoursesFailed') }
     }
 
     const courses = (data || [])
@@ -54,16 +55,16 @@ export async function getInstructorCourses(instructorId: string) {
     return { data: courses }
   } catch (error) {
     console.error('Unexpected error in getInstructorCourses:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
 export async function getInstructorMonthlyStats(instructorId: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const adminSupabase = createAdminClient()
@@ -76,7 +77,7 @@ export async function getInstructorMonthlyStats(instructorId: string) {
       .single()
 
     if (instructorError || !instructor || instructor.organization_id !== organization.id) {
-      return { error: 'Instructor not found or access denied' }
+      return { error: await actionError('instructorAccessDenied') }
     }
 
     // Get current month dates
@@ -94,7 +95,7 @@ export async function getInstructorMonthlyStats(instructorId: string) {
 
     if (earningsError) {
       console.error('Error fetching monthly earnings:', earningsError)
-      return { error: 'Failed to fetch earnings' }
+      return { error: await actionError('fetchEarningsFailed') }
     }
 
     const totalEarnings = ((earningsData || [])).reduce((sum, e) => sum + Number(e.amount), 0)
@@ -108,7 +109,7 @@ export async function getInstructorMonthlyStats(instructorId: string) {
 
     if (sessionsError) {
       console.error('Error fetching instructor sessions:', sessionsError)
-      return { error: 'Failed to fetch sessions' }
+      return { error: await actionError('fetchSessionsFailed') }
     }
 
     const monthSessions = (instructorSessions || []).filter((si) => {
@@ -140,7 +141,7 @@ export async function getInstructorMonthlyStats(instructorId: string) {
 
       if (attendanceError) {
         console.error('Error fetching monthly attendance:', attendanceError)
-        return { error: 'Failed to fetch attendance' }
+        return { error: await actionError('fetchAttendanceFailed') }
       }
 
       attendanceDetails = attendanceData || []
@@ -160,16 +161,16 @@ export async function getInstructorMonthlyStats(instructorId: string) {
     }
   } catch (error) {
     console.error('Unexpected error in getInstructorMonthlyStats:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
 export async function getInstructorTotalEarnings(instructorId: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const adminSupabase = createAdminClient()
@@ -182,7 +183,7 @@ export async function getInstructorTotalEarnings(instructorId: string) {
       .single()
 
     if (instructorError || !instructor || instructor.organization_id !== organization.id) {
-      return { error: 'Instructor not found or access denied' }
+      return { error: await actionError('instructorAccessDenied') }
     }
 
     // Get all earnings for this instructor
@@ -193,7 +194,7 @@ export async function getInstructorTotalEarnings(instructorId: string) {
 
     if (earningsError) {
       console.error('Error fetching total earnings:', earningsError)
-      return { error: 'Failed to fetch earnings' }
+      return { error: await actionError('fetchEarningsFailed') }
     }
 
     const totalEarnings = ((earningsData || [])).reduce((sum, e) => sum + Number(e.amount), 0)
@@ -206,7 +207,7 @@ export async function getInstructorTotalEarnings(instructorId: string) {
     }
   } catch (error) {
     console.error('Unexpected error in getInstructorTotalEarnings:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -234,10 +235,10 @@ export async function getInstructorAttendanceHistory(
   instructorId: string
 ): Promise<{ data?: InstructorSessionHistory[]; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const adminSupabase = createAdminClient()
@@ -250,7 +251,7 @@ export async function getInstructorAttendanceHistory(
       .single()
 
     if (instructorError || !instructor || instructor.organization_id !== organization.id) {
-      return { error: 'Instructor not found or access denied' }
+      return { error: await actionError('instructorAccessDenied') }
     }
 
     // Get all session IDs where instructor is assigned
@@ -261,7 +262,7 @@ export async function getInstructorAttendanceHistory(
 
     if (linksError) {
       console.error('Error fetching session links:', linksError)
-      return { error: 'Failed to fetch sessions' }
+      return { error: await actionError('fetchSessionsFailed') }
     }
 
     const sessionIds = (sessionInstructorLinks || [])
@@ -280,7 +281,7 @@ export async function getInstructorAttendanceHistory(
 
     if (sessionDetailsError) {
       console.error('Error fetching session details:', sessionDetailsError)
-      return { error: 'Failed to fetch session details' }
+      return { error: await actionError('fetchSessionFailed') }
     }
 
     // Get unique course IDs
@@ -328,7 +329,7 @@ export async function getInstructorAttendanceHistory(
 
     if (attendanceError) {
       console.error('Error fetching attendance:', attendanceError)
-      return { error: 'Failed to fetch attendance' }
+      return { error: await actionError('fetchAttendanceFailed') }
     }
 
     // Get other instructors for each session
@@ -343,7 +344,7 @@ export async function getInstructorAttendanceHistory(
 
     if (instructorsError) {
       console.error('Error fetching session instructors:', instructorsError)
-      return { error: 'Failed to fetch instructors' }
+      return { error: await actionError('fetchInstructorsFailed') }
     }
 
     // Combine data by session
@@ -393,6 +394,6 @@ export async function getInstructorAttendanceHistory(
     return { data: result }
   } catch (error) {
     console.error('Unexpected error in getInstructorAttendanceHistory:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }

@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { format, differenceInDays } from "date-fns"
+import { useLocale, useTranslations } from "next-intl"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -18,7 +19,6 @@ interface AttendanceDatePickerProps {
   onDateChange?: (dateStr: string) => void
   markedDates?: string[]
   className?: string
-  locale?: "tr-TR" | "en-US"
 }
 
 /**
@@ -35,48 +35,51 @@ const AttendanceDatePicker = React.forwardRef<
       onDateChange,
       markedDates = [],
       className,
-      locale = "tr-TR",
     },
     ref
   ) => {
+    const tx = useTranslations("attendanceDatePicker")
+    const locale = useLocale()
     const selectedDate = value ? new Date(value + "T00:00:00") : undefined
 
-    // Format date display with Turkish labels (Bugün, Yarın, etc.)
+    // Relative label: today / tomorrow / weekday / next week / N days ago or ahead
     const formatDateDisplay = (dateStr: string) => {
       const selected = new Date(dateStr + "T00:00:00")
       const today = new Date(new Date().toISOString().split("T")[0])
       const diffDays = differenceInDays(selected, today)
 
-      const formattedDate = selected.toLocaleDateString("tr-TR", {
+      const formattedDate = selected.toLocaleDateString(locale, {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
       })
 
-      const dayName = selected.toLocaleString("tr-TR", { weekday: "long" })
+      const dayName = selected.toLocaleString(locale, { weekday: "long" })
 
       // Today
       if (diffDays === 0) {
-        return `Bugün (${formattedDate})`
+        return tx("today", { date: formattedDate })
       }
 
       // Tomorrow
       if (diffDays === 1) {
-        return `Yarın (${formattedDate})`
+        return tx("tomorrow", { date: formattedDate })
       }
 
       // This week (2-6 days)
       if (diffDays > 1 && diffDays < 7) {
-        return `${dayName} (${formattedDate})`
+        return tx("weekday", { day: dayName, date: formattedDate })
       }
 
       // Next week (7-13 days)
       if (diffDays >= 7 && diffDays < 14) {
-        return `Haftaya ${dayName} (${formattedDate})`
+        return tx("nextWeek", { day: dayName, date: formattedDate })
       }
 
       // Past or far future dates
-      return `${Math.abs(diffDays)} gün ${diffDays < 0 ? "önce" : "sonra"} ${formattedDate}`
+      return diffDays < 0
+        ? tx("daysAgo", { count: Math.abs(diffDays), date: formattedDate })
+        : tx("daysAhead", { count: diffDays, date: formattedDate })
     }
 
     const handleSelectDate = (date: Date | undefined) => {
@@ -106,7 +109,7 @@ const AttendanceDatePicker = React.forwardRef<
           >
             <CalendarIcon className="text-primary group-hover:text-primary/90" size={18} />
             <span className="font-medium group-hover:text-primary/90">
-              {value ? formatDateDisplay(value) : "Pick a date"}
+              {value ? formatDateDisplay(value) : tx("pickDate")}
             </span>
           </Button>
         </PopoverTrigger>

@@ -3,6 +3,7 @@
 import { useRouter } from '@/i18n/navigation'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { InstructorRateForm } from './InstructorRateForm'
+import { useTranslations } from 'next-intl'
 
 interface Instructor {
   id: string
@@ -51,14 +52,15 @@ export function AddInstructorRateDrawer({
   selectedInstructorId,
   onSuccess,
 }: AddInstructorRateDrawerProps) {
+  const tx = useTranslations('instructorRateDrawer')
   const router = useRouter()
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-md">
         <SheetHeader>
-          <SheetTitle>{initialRate ? 'Edit Rate' : 'Add New Rate'}</SheetTitle>
-          <SheetDescription className="sr-only">Instructor rate per branch and dance type</SheetDescription>
+          <SheetTitle>{initialRate ? tx('editTitle') : tx('addTitle')}</SheetTitle>
+          <SheetDescription className="sr-only">{tx('description')}</SheetDescription>
         </SheetHeader>
         <div className="px-4 pb-4">
           <InstructorRateForm

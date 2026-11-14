@@ -7,6 +7,7 @@ export default async function HistoryPage({
 }: {
   params: Promise<{ locale: string }>
 }) {
+  const tx = await getTranslations('historyPage')
   const { locale } = await params
   const t = await getTranslations()
   
@@ -21,7 +22,7 @@ export default async function HistoryPage({
           {t('dashboard.recentActivity')}
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground mt-1">
-          All activities and changes in your studio
+          {tx('description')}
         </p>
       </div>
 
@@ -29,7 +30,7 @@ export default async function HistoryPage({
       <HistoryComponent 
         logs={historyLogs} 
         title={t('dashboard.recentActivity')}
-        description="Complete activity log"
+        description={tx('logDescription')}
         showFullPage={true}
       />
     </div>

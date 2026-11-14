@@ -3,6 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { useTranslations } from 'next-intl'
+import { getLocaleForCurrency } from '@/lib/utils/format'
 
 interface RevenueChartProps {
   data: Array<{
@@ -16,7 +17,7 @@ export function RevenueChart({ data, currency }: RevenueChartProps) {
   const t = useTranslations()
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(getLocaleForCurrency(currency), {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: 0,

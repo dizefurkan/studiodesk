@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Trash2 } from 'lucide-react'
 import { getCourseStudents, removeStudentFromCourse } from '@/lib/actions/course-students.actions'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/table/data-table'
@@ -43,6 +43,8 @@ interface CourseStudentsSectionProps {
 }
 
 export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded }: CourseStudentsSectionProps) {
+  const tx = useTranslations('courseStudents')
+  const locale = useLocale()
   const t = useTranslations()
   const [students, setStudents] = useState<CourseStudent[]>([])
   const [loading, setLoading] = useState(false)
@@ -78,11 +80,11 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
       if (result.success) {
         await loadStudents()
       } else {
-        toast.error(result.error || 'Failed to remove student')
+        toast.error(result.error || tx('removeFailed'))
       }
     } catch (error) {
       console.error('Error removing student:', error)
-      toast.error('Failed to remove student')
+      toast.error(tx('removeFailed'))
     } finally {
       setLoading(false)
     }
@@ -121,19 +123,19 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
       id: 'joined',
       header: () => <ColumnHeader k="joined" />,
       cell: ({ row }) => (
-        <span className="text-muted-foreground">{new Date(row.original.joined_at).toLocaleDateString()}</span>
+        <span className="text-muted-foreground">{new Date(row.original.joined_at).toLocaleDateString(locale)}</span>
       ),
     },
     {
       id: 'actions',
-      header: () => <span className="sr-only">Action</span>,
+      header: () => <span className="sr-only">{tx('action')}</span>,
       cell: ({ row }) => (
         <div className="text-right">
           <Button
             variant="ghost"
             size="icon-sm"
             className="text-destructive"
-            aria-label="Remove student"
+            aria-label={tx('remove')}
             onClick={() => handleRemoveStudent(row.original.student_id)}
             disabled={loading}
           >
@@ -152,7 +154,7 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
       enableSearch={false}
       enableFilters={false}
       enablePagination={false}
-      emptyMessage="No students enrolled yet"
+      emptyMessage={tx('empty')}
     />
   )
 }

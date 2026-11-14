@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Edit2, Trash2 } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
 import { ColumnHeader } from '@/components/table/column-header'
+import { getLocaleForCurrency } from '@/lib/utils/format'
 
 type Package = Database['public']['Tables']['packages']['Row']
 
@@ -46,7 +47,7 @@ export function getPackageColumns({
       header: () => <ColumnHeader k="price" />,
       cell: ({ row }) => {
         const price = row.original.price || 0
-        const formatter = new Intl.NumberFormat('en-US', {
+        const formatter = new Intl.NumberFormat(getLocaleForCurrency(currency), {
           style: 'currency',
           currency: currency,
         })

@@ -7,6 +7,7 @@ import { logOperation } from '@/lib/actions/history.actions'
 import type { Database } from '@/lib/types/database.types'
 import type { PostgrestError } from '@supabase/supabase-js'
 import { sanitizeSearch } from '@/lib/utils/search'
+import { actionError } from '@/lib/i18n/actionError'
 
 type CashTransaction = Database['public']['Tables']['cash_transactions']['Row']
 type Branch = Database['public']['Tables']['branches']['Row']
@@ -29,10 +30,10 @@ export async function getTransactions(
   pageSize: number = 10
 ): Promise<{ data?: TransactionWithBranch[]; totalCount?: number; page?: number; pageSize?: number; totalPages?: number; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
+  if (!user) return { error: await actionError('notAuthenticated'), data: [], totalCount: 0 }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found', data: [], totalCount: 0 }
+  if (!organization) return { error: await actionError('noOrganization'), data: [], totalCount: 0 }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -68,14 +69,14 @@ export async function getTransactions(
 
     if (error) {
       console.error('Error fetching transactions:', error)
-      return { error: 'Failed to fetch transactions', data: [], totalCount: 0 }
+      return { error: await actionError('fetchTransactionsFailed'), data: [], totalCount: 0 }
     }
 
     const totalPages = Math.ceil(count / pageSize)
     return { data: data || [], totalCount: count, page, pageSize, totalPages }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred', data: [], totalCount: 0 }
+    return { error: await actionError('unexpected'), data: [], totalCount: 0 }
   }
 }
 
@@ -83,10 +84,10 @@ export async function createTransaction(
   input: CreateTransactionInput,
 ): Promise<{ data?: CashTransaction; success?: boolean; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -100,7 +101,7 @@ export async function createTransaction(
       .overrideTypes<Branch>()
 
     if (branchError || !branch) {
-      return { error: 'Invalid branch' }
+      return { error: await actionError('invalidBranch') }
     }
 
     const result = await supabase
@@ -120,7 +121,7 @@ export async function createTransaction(
 
     if (error || !data) {
       console.error('Error creating transaction:', error)
-      return { error: 'Failed to create transaction' }
+      return { error: await actionError('createTransactionFailed') }
     }
 
     // Log the create operation
@@ -137,7 +138,7 @@ export async function createTransaction(
     return { success: true, data }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -145,10 +146,10 @@ export async function deleteTransaction(
   id: string,
 ): Promise<{ success?: boolean; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -164,7 +165,7 @@ export async function deleteTransaction(
     const { data: beforeTransaction, error: fetchError } = result as { data: CashTransaction | null; error: PostgrestError | null }
 
     if (!beforeTransaction) {
-      return { error: 'Transaction not found' }
+      return { error: await actionError('transactionNotFound') }
     }
 
     const { error } = await supabase
@@ -175,7 +176,7 @@ export async function deleteTransaction(
 
     if (error) {
       console.error('Error deleting transaction:', error)
-      return { error: 'Failed to delete transaction' }
+      return { error: await actionError('deleteTransactionFailed') }
     }
 
     // Log the delete operation
@@ -193,7 +194,7 @@ export async function deleteTransaction(
     return { success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -214,7 +215,7 @@ export async function getDailyReport(
   date: string,
 ): Promise<{ success?: boolean; data?: DailyReportData; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -234,7 +235,7 @@ export async function getDailyReport(
 
     if (error) {
       console.error('Error fetching daily report:', error)
-      return { error: 'Failed to fetch report' }
+      return { error: await actionError('fetchReportFailed') }
     }
 
     const transactions = data || []
@@ -260,7 +261,7 @@ export async function getDailyReport(
     }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -270,7 +271,7 @@ export async function getMonthlyReport(
   month: number,
 ): Promise<{ success?: boolean; data?: DailyReportData; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -290,7 +291,7 @@ export async function getMonthlyReport(
 
     if (error) {
       console.error('Error fetching monthly report:', error)
-      return { error: 'Failed to fetch report' }
+      return { error: await actionError('fetchReportFailed') }
     }
 
     const transactions = data || []
@@ -316,7 +317,7 @@ export async function getMonthlyReport(
     }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -347,10 +348,10 @@ export async function getInstructorEarningsByBranch(
   toDate?: string,
 ): Promise<{ data?: EnrichedEarnings[]; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -396,7 +397,7 @@ export async function getInstructorEarningsByBranch(
 
     if (error) {
       console.error('Error fetching earnings:', error)
-      return { error: 'Failed to fetch earnings' }
+      return { error: await actionError('fetchEarningsFailed') }
     }
 
     if (!earnings || earnings.length === 0) {

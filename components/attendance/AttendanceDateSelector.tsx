@@ -27,7 +27,6 @@ export function AttendanceDateSelector({
       value={selectedDate}
       onDateChange={onDateChange}
       markedDates={markedDates}
-      locale="tr-TR"
     />
   )
 }

@@ -16,6 +16,7 @@ import {
 import { Empty, EmptyDescription, EmptyHeader } from '@/components/ui/empty'
 import { Field, FieldContent, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
+import { useTranslations } from 'next-intl'
 
 interface Instructor {
   id: string
@@ -46,6 +47,7 @@ export function InstructorSelectionModal({
   onSelect,
   danceTypeName,
 }: InstructorSelectionModalProps) {
+  const tx = useTranslations('instructorSelection')
   const [searchQuery, setSearchQuery] = useState('')
   const [tempSelected, setTempSelected] = useState<string[]>(selectedIds)
 
@@ -69,7 +71,7 @@ export function InstructorSelectionModal({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Select Instructors</DialogTitle>
+          <DialogTitle>{tx('title')}</DialogTitle>
           {danceTypeName && <DialogDescription>for {danceTypeName}</DialogDescription>}
         </DialogHeader>
 
@@ -79,7 +81,7 @@ export function InstructorSelectionModal({
           </InputGroupAddon>
           <InputGroupInput
             type="search"
-            placeholder="Search instructors..."
+            placeholder={tx('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -91,8 +93,8 @@ export function InstructorSelectionModal({
               <EmptyHeader>
                 <EmptyDescription>
                   {instructors.length === 0
-                    ? 'No instructors available for this dance type'
-                    : 'No instructors found matching your search'}
+                    ? tx('noneForDanceType')
+                    : tx('noMatch')}
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -125,7 +127,7 @@ export function InstructorSelectionModal({
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tx('cancel')}
           </Button>
           <Button
             type="button"

@@ -12,28 +12,31 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { createBranch, updateBranch } from '@/lib/actions/branches.actions'
 import type { Database } from '@/lib/types/database.types'
 import { Textarea } from '@/components/ui/textarea'
+import { useTranslations } from 'next-intl'
 
 type Branch = Database['public']['Tables']['branches']['Row']
 
-const branchSchema = z.object({
-  name: z.string().min(2, 'Branch name must be at least 2 characters'),
+const makeBranchSchema = (tx: (key: string) => string) => z.object({
+  name: z.string().min(2, tx('nameMin')),
   address: z.string().optional(),
   phone: z.string().optional(),
 })
 
-type BranchFormValues = z.infer<typeof branchSchema>
+type BranchFormValues = z.infer<ReturnType<typeof makeBranchSchema>>
 
 interface BranchFormProps {
   branch?: Branch
 }
 
 export function BranchForm({ branch }: BranchFormProps) {
+  const tx = useTranslations('branchForm')
+  const tf = useTranslations('forms')
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [generalError, setGeneralError] = useState<string | null>(null)
 
   const form = useForm<BranchFormValues>({
-    resolver: zodResolver(branchSchema),
+    resolver: zodResolver(makeBranchSchema(tx)),
     defaultValues: {
       name: branch?.name || '',
       address: branch?.address || '',
@@ -67,7 +70,7 @@ export function BranchForm({ branch }: BranchFormProps) {
       }
     } catch (error) {
       console.error('Form error:', error)
-      setGeneralError('An unexpected error occurred')
+      setGeneralError(tf('unexpectedError'))
     } finally {
       setIsLoading(false)
     }
@@ -77,10 +80,10 @@ export function BranchForm({ branch }: BranchFormProps) {
     <Card className="border-border max-w-2xl">
       <div className="p-3 sm:p-4 md:p-6 lg:p-8">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">
-          {branch ? 'Edit Branch' : 'Add New Branch'}
+          {branch ? tx('editTitle') : tx('addTitle')}
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground mb-4 md:mb-6">
-          {branch ? 'Update branch information' : 'Add a new studio location'}
+          {branch ? tx('editDescription') : tx('addDescription')}
         </p>
 
         {generalError && (
@@ -94,9 +97,9 @@ export function BranchForm({ branch }: BranchFormProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Branch Name</FormLabel>
+                  <FormLabel>{tx('name')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Downtown Studio" disabled={isLoading} {...field} />
+                    <Input placeholder={tx('namePlaceholder')} disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -108,10 +111,10 @@ export function BranchForm({ branch }: BranchFormProps) {
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address (Optional)</FormLabel>
+                  <FormLabel>{tf('addressOptional')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Street address"
+                      placeholder={tx('addressPlaceholder')}
                       disabled={isLoading}
                       className="w-full"
                       rows={3}
@@ -128,7 +131,7 @@ export function BranchForm({ branch }: BranchFormProps) {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone (Optional)</FormLabel>
+                  <FormLabel>{tf('phoneOptional')}</FormLabel>
                   <FormControl>
                     <Input placeholder="+55 11 3000-0000" disabled={isLoading} {...field} />
                   </FormControl>
@@ -143,7 +146,7 @@ export function BranchForm({ branch }: BranchFormProps) {
                 disabled={isLoading}
                 className="w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                {isLoading ? 'Saving...' : branch ? 'Update Branch' : 'Create Branch'}
+                {isLoading ? tf('saving') : branch ? tx('update') : tx('create')}
               </Button>
               <Button
                 type="button"
@@ -152,7 +155,7 @@ export function BranchForm({ branch }: BranchFormProps) {
                 disabled={isLoading}
                 className="border-border w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                Cancel
+                {tf('cancel')}
               </Button>
             </div>
           </form>

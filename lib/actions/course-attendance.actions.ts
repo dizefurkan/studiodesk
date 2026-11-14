@@ -3,13 +3,14 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { actionError } from '@/lib/i18n/actionError'
 
 export async function getCourseAttendanceHistory(courseId: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -23,7 +24,7 @@ export async function getCourseAttendanceHistory(courseId: string) {
 
     if (sessionsError) {
       console.error('Error fetching course sessions:', sessionsError)
-      return { error: 'Failed to fetch sessions' }
+      return { error: await actionError('fetchSessionsFailed') }
     }
 
     if (!sessions || sessions.length === 0) {
@@ -41,7 +42,7 @@ export async function getCourseAttendanceHistory(courseId: string) {
 
     if (attendancesError) {
       console.error('Error fetching attendances:', attendancesError)
-      return { error: 'Failed to fetch attendances' }
+      return { error: await actionError('fetchAttendancesFailed') }
     }
 
     // Get instructors for these sessions
@@ -95,6 +96,6 @@ export async function getCourseAttendanceHistory(courseId: string) {
     return { data: formattedSessions }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }

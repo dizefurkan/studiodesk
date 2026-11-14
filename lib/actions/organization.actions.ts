@@ -7,16 +7,17 @@ import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { getUserRoleInOrganization } from '@/lib/auth/getCurrentUser'
 import { generateTemporaryPassword } from '@/lib/utils/generatePassword'
+import { actionError } from '@/lib/i18n/actionError'
 
 /**
  * Add existing user to organization with specified role
  */
 export async function addExistingUserToOrganization(email: string, role: string) {
   const currentUser = await getCurrentUser()
-  if (!currentUser) return { error: 'Not authenticated' }
+  if (!currentUser) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   // Check permissions
   const userRoleData = await getUserRoleInOrganization(organization.id)
@@ -28,17 +29,17 @@ export async function addExistingUserToOrganization(email: string, role: string)
   const canManageTeam = isOwner || (isManager && orgSettings?.allow_manager_invite)
 
   if (!canManageTeam) {
-    return { error: 'You do not have permission to add team members' }
+    return { error: await actionError('noPermissionAddMembers') }
   }
 
   // Cannot add owner role
   if (role === 'owner') {
-    return { error: 'Cannot add new team members as owner' }
+    return { error: await actionError('cannotAddOwner') }
   }
 
   // Validate role
   if (!['manager', 'instructor', 'staff'].includes(role)) {
-    return { error: 'Invalid role' }
+    return { error: await actionError('invalidRole') }
   }
 
   try {
@@ -55,10 +56,10 @@ export async function addExistingUserToOrganization(email: string, role: string)
     // Instead, let's check if the user exists by trying to add them with a known user_id
     // For now, return error suggesting to select from existing users dropdown
 
-    return { error: 'Please select an existing user from the dropdown' }
+    return { error: await actionError('selectExistingUser') }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -67,10 +68,10 @@ export async function addExistingUserToOrganization(email: string, role: string)
  */
 export async function addExistingUserToOrganizationById(userId: string, role: string) {
   const currentUser = await getCurrentUser()
-  if (!currentUser) return { error: 'Not authenticated' }
+  if (!currentUser) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   // Check permissions
   const userRoleData = await getUserRoleInOrganization(organization.id)
@@ -82,17 +83,17 @@ export async function addExistingUserToOrganizationById(userId: string, role: st
   const canManageTeam = isOwner || (isManager && orgSettings?.allow_manager_invite)
 
   if (!canManageTeam) {
-    return { error: 'You do not have permission to add team members' }
+    return { error: await actionError('noPermissionAddMembers') }
   }
 
   // Cannot add owner role
   if (role === 'owner') {
-    return { error: 'Cannot add new team members as owner' }
+    return { error: await actionError('cannotAddOwner') }
   }
 
   // Validate role
   if (!['manager', 'instructor', 'staff'].includes(role)) {
-    return { error: 'Invalid role' }
+    return { error: await actionError('invalidRole') }
   }
 
   try {
@@ -111,10 +112,10 @@ export async function addExistingUserToOrganizationById(userId: string, role: st
 
     if (error) {
       if (error.message.includes('duplicate')) {
-        return { error: 'User is already a member of this organization' }
+        return { error: await actionError('alreadyMember') }
       }
       console.error('Error adding user:', error)
-      return { error: 'Failed to add user to organization' }
+      return { error: await actionError('addMemberFailed') }
     }
 
     // Refresh the settings page to show the newly added team member
@@ -123,7 +124,7 @@ export async function addExistingUserToOrganizationById(userId: string, role: st
     return { data, success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -132,10 +133,10 @@ export async function addExistingUserToOrganizationById(userId: string, role: st
  */
 export async function updateTeamMemberRole(memberId: string, newRole: string) {
   const currentUser = await getCurrentUser()
-  if (!currentUser) return { error: 'Not authenticated' }
+  if (!currentUser) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   // Check permissions
   const userRoleData = await getUserRoleInOrganization(organization.id)
@@ -148,12 +149,12 @@ export async function updateTeamMemberRole(memberId: string, newRole: string) {
     isOwner || (isManager && orgSettings?.allow_role_change && orgSettings?.allow_manager_invite)
 
   if (!canChangeRoles) {
-    return { error: 'You do not have permission to change team member roles' }
+    return { error: await actionError('noPermissionChangeRoles') }
   }
 
   // Validate role
   if (!['manager', 'instructor', 'staff', 'owner'].includes(newRole)) {
-    return { error: 'Invalid role' }
+    return { error: await actionError('invalidRole') }
   }
 
   try {
@@ -168,12 +169,12 @@ export async function updateTeamMemberRole(memberId: string, newRole: string) {
       .single()
 
     if (fetchError || !member) {
-      return { error: 'Team member not found' }
+      return { error: await actionError('memberNotFound') }
     }
 
     // Cannot change owner role
     if (member.role === 'owner') {
-      return { error: 'Cannot change owner role' }
+      return { error: await actionError('cannotChangeOwnerRole') }
     }
 
     // Update role
@@ -187,13 +188,13 @@ export async function updateTeamMemberRole(memberId: string, newRole: string) {
 
     if (error) {
       console.error('Error updating role:', error)
-      return { error: 'Failed to update team member role' }
+      return { error: await actionError('updateRoleFailed') }
     }
 
     return { data, success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -202,10 +203,10 @@ export async function updateTeamMemberRole(memberId: string, newRole: string) {
  */
 export async function removeTeamMember(memberId: string) {
   const currentUser = await getCurrentUser()
-  if (!currentUser) return { error: 'Not authenticated' }
+  if (!currentUser) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   // Check permissions
   const userRoleData = await getUserRoleInOrganization(organization.id)
@@ -218,7 +219,7 @@ export async function removeTeamMember(memberId: string) {
     isOwner || (isManager && orgSettings?.allow_member_delete && orgSettings?.allow_manager_invite)
 
   if (!canDeleteMembers) {
-    return { error: 'You do not have permission to remove team members' }
+    return { error: await actionError('noPermissionRemoveMembers') }
   }
 
   try {
@@ -233,12 +234,12 @@ export async function removeTeamMember(memberId: string) {
       .single()
 
     if (fetchError || !member) {
-      return { error: 'Team member not found' }
+      return { error: await actionError('memberNotFound') }
     }
 
     // Cannot remove owner
     if (member.role === 'owner') {
-      return { error: 'Cannot remove organization owner' }
+      return { error: await actionError('cannotRemoveOwner') }
     }
 
     // Delete team member
@@ -250,13 +251,13 @@ export async function removeTeamMember(memberId: string) {
 
     if (error) {
       console.error('Error removing member:', error)
-      return { error: 'Failed to remove team member' }
+      return { error: await actionError('removeMemberFailed') }
     }
 
     return { success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -265,17 +266,17 @@ export async function removeTeamMember(memberId: string) {
  */
 export async function resetTeamMemberPassword(memberId: string) {
   const currentUser = await getCurrentUser()
-  if (!currentUser) return { error: 'Not authenticated' }
+  if (!currentUser) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   // Check permissions - only owner can reset passwords
   const userRoleData = await getUserRoleInOrganization(organization.id)
   const userRole = userRoleData?.role
 
   if (userRole !== 'owner') {
-    return { error: 'Only organization owner can reset team member passwords' }
+    return { error: await actionError('onlyOwnerResetsPasswords') }
   }
 
   try {
@@ -290,12 +291,12 @@ export async function resetTeamMemberPassword(memberId: string) {
       .single()
 
     if (fetchError || !member) {
-      return { error: 'Team member not found' }
+      return { error: await actionError('memberNotFound') }
     }
 
     // Cannot reset owner password
     if (member.role === 'owner') {
-      return { error: 'Cannot reset owner password' }
+      return { error: await actionError('cannotResetOwnerPassword') }
     }
 
     // Generate new temporary password
@@ -309,7 +310,7 @@ export async function resetTeamMemberPassword(memberId: string) {
 
     if (updateError) {
       console.error('Error updating password:', updateError)
-      return { error: 'Failed to update password' }
+      return { error: await actionError('updatePasswordFailed') }
     }
 
     return {
@@ -319,6 +320,6 @@ export async function resetTeamMemberPassword(memberId: string) {
     }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }

@@ -2,6 +2,8 @@
 
 import * as React from "react"
 import { format } from "date-fns"
+import { useTranslations } from "next-intl"
+import { useDateFnsLocale } from "@/hooks/useDateFnsLocale"
 import { Calendar as CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -28,7 +30,7 @@ const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
     {
       value,
       onDateChange,
-      placeholder = "Pick a date",
+      placeholder,
       disabled,
       className,
       showIcon = true,
@@ -36,6 +38,8 @@ const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
     },
     ref
   ) => {
+    const t = useTranslations("common")
+    const dateLocale = useDateFnsLocale()
     return (
       <Popover>
         <PopoverTrigger asChild>
@@ -49,7 +53,7 @@ const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
             )}
           >
             {showIcon && <CalendarIcon className="mr-2 h-4 w-4" />}
-            {value ? format(value, "PPP") : placeholder}
+            {value ? format(value, "PPP", { locale: dateLocale }) : (placeholder ?? t("pickDate"))}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">

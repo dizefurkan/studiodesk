@@ -3,6 +3,8 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { EarningsEditButton } from '@/components/instructor-earnings/EarningsEditButton'
 import { ColumnHeader } from '@/components/table/column-header'
+import { getLocaleForCurrency } from '@/lib/utils/format'
+import { FormattedDate } from '@/components/common/FormattedDate'
 
 export interface EarningRecord {
   id: string
@@ -19,7 +21,7 @@ interface ColumnContextProps {
 }
 
 export function getEarningsColumns({ currency }: ColumnContextProps): ColumnDef<EarningRecord>[] {
-  const formatter = new Intl.NumberFormat('en-US', {
+  const formatter = new Intl.NumberFormat(getLocaleForCurrency(currency), {
     style: 'currency',
     currency,
   })
@@ -43,7 +45,7 @@ export function getEarningsColumns({ currency }: ColumnContextProps): ColumnDef<
       accessorKey: 'created_at',
       header: () => <ColumnHeader k="date" />,
       cell: ({ row }) => {
-        return new Date(row.original.created_at).toLocaleDateString()
+        return <FormattedDate value={row.original.created_at} />
       },
     },
     {

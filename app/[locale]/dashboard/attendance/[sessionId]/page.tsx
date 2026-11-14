@@ -17,12 +17,13 @@ interface AttendanceDetailPageProps {
 export default async function AttendanceDetailPage({
   params,
 }: AttendanceDetailPageProps) {
+  const tx = await getTranslations('attendanceDetail')
   const { sessionId, locale } = await params;
   const t = await getTranslations();
 
   const user = await getCurrentUser();
   if (!user) {
-    return <div>Not authenticated</div>;
+    return <div>{tx('notAuthenticated')}</div>;
   }
 
   const supabase = await createServerSupabaseClient();
@@ -57,9 +58,9 @@ export default async function AttendanceDetailPage({
           href="/dashboard/attendance"
           className="text-primary hover:underline text-sm"
         >
-          ← Back
+          {tx('back')}
         </Link>
-        <p className="text-red-600">Session not found</p>
+        <p className="text-red-600">{tx('sessionNotFound')}</p>
       </div>
     );
   }

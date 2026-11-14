@@ -6,6 +6,7 @@ import { getOrganization } from "@/lib/auth/getOrganization";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { HistoryEntity, HistoryLogData } from "@/lib/utils/history";
 import type { Json } from "@/lib/types/database.types";
+import { actionError } from '@/lib/i18n/actionError'
 
 // ========================================
 // LOGGING UTILITY - NON-BREAKING
@@ -116,10 +117,10 @@ export async function logOperation(
 
 export async function getStudentAttendanceHistory(studentId: string) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -145,22 +146,22 @@ export async function getStudentAttendanceHistory(studentId: string) {
 
     if (error) {
       console.error("Error fetching attendance history:", error);
-      return { error: "Failed to fetch attendance history" };
+      return { error: await actionError('fetchAttendanceHistoryFailed') };
     }
 
     return { data: data || [] };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
 export async function getStudentPackageHistory(studentId: string) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -193,7 +194,7 @@ export async function getStudentPackageHistory(studentId: string) {
 
     if (error) {
       console.error("Error fetching package history:", error);
-      return { error: "Failed to fetch package history" };
+      return { error: await actionError('fetchPackageHistoryFailed') };
     }
 
     // Combine: for each package, count how many attendances used that package
@@ -214,7 +215,7 @@ export async function getStudentPackageHistory(studentId: string) {
     return { data: packagesWithStats };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 

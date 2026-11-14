@@ -26,7 +26,14 @@
   `header: () => <ColumnHeader k="name" />` (keys under `table.*`).
 - No records yet → `EmptyState` (Lottie + one create action) and **no** header create button;
   with records or active filters → `PageHeader` action + DataTable.
-- No hardcoded UI text: every string goes into `messages/tr.json` **and** `messages/en.json`.
+- No hardcoded UI text: every string goes into `messages/tr.json` **and** `messages/en.json`
+  (same keys, valid ICU — plurals as `{count, plural, one {…} other {…}}`). That includes
+  placeholders, aria-labels, toasts, zod messages (build the schema with `makeXSchema(t)`)
+  and **server action errors**: `return { error: await actionError('key') }` (`lib/i18n/actionError`,
+  keys under `serverErrors`). Never compare against a translated message; return a flag instead.
+- Dates/days in the app locale: `<FormattedDate value=… />`, `useLocaleNames()` (weekday/month
+  names), `useDateFnsLocale()` for date-fns `format`, `weekdayNames(locale)` on the server.
+  Money: `formatCurrency(value, organization.currency)` — never a hardcoded `₺`/`$`.
 - Navigation: `Link`, `useRouter`, `redirect` from `@/i18n/navigation` (locale is added automatically;
   write hrefs without it). Not `next/link` / `next/navigation` (except `notFound`, `useSearchParams`, `usePathname`).
   Refresh server data with `router.refresh()`, never `window.location.reload()`.

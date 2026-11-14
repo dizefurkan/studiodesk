@@ -3,6 +3,7 @@ import { getEntityHistory } from '@/lib/actions/history.actions'
 import { notFound } from 'next/navigation'
 import { BranchForm } from '@/components/branches/BranchForm'
 import { ActivityTimelineWrapper } from '@/components/history/ActivityTimelineWrapper'
+import { getTranslations } from 'next-intl/server'
 
 interface EditBranchPageProps {
   params: {
@@ -11,6 +12,7 @@ interface EditBranchPageProps {
 }
 
 export default async function EditBranchPage({ params }: EditBranchPageProps) {
+  const td = await getTranslations('detailPages')
   const { id } = await params
   const result = await getBranch(id)
 
@@ -33,8 +35,8 @@ export default async function EditBranchPage({ params }: EditBranchPageProps) {
           entity="branch"
           entityId={id}
           initialLogs={entityHistory}
-          title="Activity Timeline"
-          description="All changes and actions related to this branch"
+          title={td('activityTimeline')}
+          description={td('branchTimeline')}
           showFullPage={false}
         />
       </div>

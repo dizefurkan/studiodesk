@@ -7,6 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { setOrganizationCookie } from '@/lib/auth/getCurrentUser'
 import { isPlatformAdmin } from '@/lib/auth/platformAdmin'
 import { mustChangePassword } from '@/lib/auth/passwordPolicy'
+import { actionError } from '@/lib/i18n/actionError'
 
 // Public sign-up and self-service onboarding are disabled.
 // Accounts and stores are created from /backoffice only.
@@ -35,7 +36,7 @@ export async function login({ email, password }: LoginParams): Promise<{
   }
 
   if (!data.user) {
-    return { error: 'Failed to sign in' }
+    return { error: await actionError('signInFailed') }
   }
 
   const forceChange = mustChangePassword(data.user)

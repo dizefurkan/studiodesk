@@ -8,6 +8,7 @@ import { logOperation } from "@/lib/actions/history.actions";
 import { getChanges } from "@/lib/utils/history-utils";
 import type { Database } from "@/lib/types/database.types";
 import { sanitizeSearch } from '@/lib/utils/search'
+import { actionError } from '@/lib/i18n/actionError'
 
 type Student = Database["public"]["Tables"]["students"]["Row"];
 type StudentInsert = Database["public"]["Tables"]["students"]["Insert"];
@@ -15,10 +16,10 @@ type StudentUpdate = Database["public"]["Tables"]["students"]["Update"];
 
 export async function getStudents(searchQuery?: string) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const admin = createAdminClient();
@@ -39,13 +40,13 @@ export async function getStudents(searchQuery?: string) {
 
     if (error) {
       console.error("Error fetching students:", error);
-      return { error: "Failed to fetch students" };
+      return { error: await actionError('fetchStudentsFailed') };
     }
 
     return { data: data as Student[] };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
@@ -59,11 +60,11 @@ export async function getStudentsWithStats(
   hasCredits?: boolean
 ) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated", data: [], totalCount: 0 };
+  if (!user) return { error: await actionError('notAuthenticated'), data: [], totalCount: 0 };
 
   const organization = await getOrganization();
   if (!organization)
-    return { error: "No organization found", data: [], totalCount: 0 };
+    return { error: await actionError('noOrganization'), data: [], totalCount: 0 };
 
   try {
     const adminSupabase = createAdminClient();
@@ -410,7 +411,7 @@ export async function getStudentsWithStats(
     };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred", data: [], totalCount: 0 };
+    return { error: await actionError('unexpected'), data: [], totalCount: 0 };
   }
 }
 
@@ -419,10 +420,10 @@ export async function getStudentsWithStats(
  */
 export async function getStudentFilterOptions() {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const adminSupabase = createAdminClient();
@@ -543,7 +544,7 @@ export async function getStudentFilterOptions() {
   } catch (error) {
     console.error("Error fetching filter options:", error);
     return {
-      error: "Failed to fetch filter options",
+      error: await actionError('fetchFiltersFailed'),
       danceTypes: [],
       branches: [],
       courses: [],
@@ -553,10 +554,10 @@ export async function getStudentFilterOptions() {
 
 export async function getStudentsWithPackages(searchQuery?: string) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const adminSupabase = createAdminClient();
@@ -590,22 +591,22 @@ export async function getStudentsWithPackages(searchQuery?: string) {
 
     if (error) {
       console.error("Error fetching students with packages:", error);
-      return { error: "Failed to fetch students" };
+      return { error: await actionError('fetchStudentsFailed') };
     }
 
     return { data: data };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
 export async function getStudent(id: string) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const admin = createAdminClient();
@@ -618,13 +619,13 @@ export async function getStudent(id: string) {
 
     if (error) {
       console.error("Error fetching student:", error);
-      return { error: "Student not found" };
+      return { error: await actionError('studentNotFound') };
     }
 
     return { data: data as Student };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
@@ -638,10 +639,10 @@ interface CreateStudentInput {
 
 export async function createStudent(input: CreateStudentInput) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -660,7 +661,7 @@ export async function createStudent(input: CreateStudentInput) {
 
     if (error) {
       console.error("Error creating student:", error);
-      return { error: "Failed to create student" };
+      return { error: await actionError('createStudentFailed') };
     }
 
     // Log operation (non-blocking)
@@ -683,7 +684,7 @@ export async function createStudent(input: CreateStudentInput) {
     return { data: data as Student, success: true };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
@@ -697,10 +698,10 @@ interface UpdateStudentInput {
 
 export async function updateStudent(id: string, input: UpdateStudentInput) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -715,7 +716,7 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
 
     if (!beforeStudent) {
       return {
-        error: "Student not found or does not belong to your organization",
+        error: await actionError('studentNotInOrg'),
       };
     }
 
@@ -735,7 +736,7 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
 
     if (error) {
       console.error("Error updating student:", error);
-      return { error: "Failed to update student" };
+      return { error: await actionError('updateStudentFailed') };
     }
 
     // Log operation with before/after and changes (non-blocking)
@@ -770,16 +771,16 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
     return { data: data as Student, success: true };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
 export async function deleteStudent(id: string, reason?: string) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -794,7 +795,7 @@ export async function deleteStudent(id: string, reason?: string) {
 
     if (!beforeStudent) {
       return {
-        error: "Student not found or does not belong to your organization",
+        error: await actionError('studentNotInOrg'),
       };
     }
 
@@ -811,7 +812,7 @@ export async function deleteStudent(id: string, reason?: string) {
 
     if (error) {
       console.error("Error deleting student:", error);
-      return { error: "Failed to delete student" };
+      return { error: await actionError('deleteStudentFailed') };
     }
 
     // Log operation (non-blocking)
@@ -834,7 +835,7 @@ export async function deleteStudent(id: string, reason?: string) {
     return { success: true };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
@@ -844,10 +845,10 @@ export async function deleteStudent(id: string, reason?: string) {
 
 export async function getStudentPackages(studentId: string) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const admin = createAdminClient();
@@ -860,13 +861,13 @@ export async function getStudentPackages(studentId: string) {
 
     if (error) {
       console.error("Error fetching student packages:", error);
-      return { error: "Failed to fetch packages" };
+      return { error: await actionError('fetchPackagesFailed') };
     }
 
     return { data };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
@@ -879,10 +880,10 @@ interface PurchasePackageInput {
 
 export async function purchasePackage(input: PurchasePackageInput) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -896,7 +897,7 @@ export async function purchasePackage(input: PurchasePackageInput) {
       .single();
 
     if (studentError || !student) {
-      return { error: "Student not found" };
+      return { error: await actionError('studentNotFound') };
     }
 
     // Get package details
@@ -907,7 +908,7 @@ export async function purchasePackage(input: PurchasePackageInput) {
       .single();
 
     if (packageError || !packageData) {
-      return { error: "Package not found" };
+      return { error: await actionError('packageNotFound') };
     }
 
     const price = input.price || packageData.price;
@@ -925,7 +926,7 @@ export async function purchasePackage(input: PurchasePackageInput) {
 
     if (spError || !studentPackage) {
       console.error("Error creating student package:", spError);
-      return { error: "Failed to create package record" };
+      return { error: await actionError('createPackageRecordFailed') };
     }
 
     // Get the first branch for this organization to record transaction
@@ -979,7 +980,7 @@ export async function purchasePackage(input: PurchasePackageInput) {
     };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
@@ -988,10 +989,10 @@ export async function reduceStudentCredits(
   amount: number = 1
 ) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -1005,7 +1006,7 @@ export async function reduceStudentCredits(
       .single();
 
     if (fetchError || !studentPackage) {
-      return { error: "Package not found" };
+      return { error: await actionError('packageNotFound') };
     }
 
     const beforeCredits = studentPackage.remaining_credits;
@@ -1023,7 +1024,7 @@ export async function reduceStudentCredits(
 
     if (error) {
       console.error("Error updating credits:", error);
-      return { error: "Failed to update credits" };
+      return { error: await actionError('updateCreditsFailed') };
     }
 
     // Log operation (non-blocking)
@@ -1046,7 +1047,7 @@ export async function reduceStudentCredits(
     return { success: true, data };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
@@ -1055,10 +1056,10 @@ export async function increaseStudentCredits(
   amount: number = 1
 ) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -1072,7 +1073,7 @@ export async function increaseStudentCredits(
       .single();
 
     if (fetchError || !studentPackage) {
-      return { error: "Package not found" };
+      return { error: await actionError('packageNotFound') };
     }
 
     const totalCredits = studentPackage.package?.total_credits || 0;
@@ -1092,7 +1093,7 @@ export async function increaseStudentCredits(
 
     if (error) {
       console.error("Error updating credits:", error);
-      return { error: "Failed to update credits" };
+      return { error: await actionError('updateCreditsFailed') };
     }
 
     // Log operation (non-blocking)
@@ -1115,7 +1116,7 @@ export async function increaseStudentCredits(
     return { success: true, data };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
@@ -1124,10 +1125,10 @@ export async function updateStudentPackageCredits(
   newCreditsAmount: number
 ) {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -1148,7 +1149,7 @@ export async function updateStudentPackageCredits(
 
     if (!studentPackage) {
       console.error("Student package not found for ID:", studentPackageId);
-      return { error: "Package not found" };
+      return { error: await actionError('packageNotFound') };
     }
 
     const totalCredits = studentPackage.package?.total_credits || 0;
@@ -1169,7 +1170,7 @@ export async function updateStudentPackageCredits(
 
     if (error) {
       console.error("Error updating credits:", error);
-      return { error: "Failed to update credits" };
+      return { error: await actionError('updateCreditsFailed') };
     }
 
     // Log operation (non-blocking)
@@ -1192,6 +1193,6 @@ export async function updateStudentPackageCredits(
     return { success: true, data };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }

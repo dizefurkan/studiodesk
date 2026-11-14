@@ -15,26 +15,28 @@ import { useEffect } from 'react'
 import type { Database } from '@/lib/types/database.types'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
+import { useTranslations } from 'next-intl'
 
 type Branch = Database['public']['Tables']['branches']['Row']
 
-const transactionSchema = z.object({
-  branchId: z.string().min(1, 'Please select a branch'),
+const makeTransactionSchema = (tx: (key: string) => string) => z.object({
+  branchId: z.string().min(1, tx('branchRequired')),
   type: z.enum(['income', 'expense']),
-  amount: z.coerce.number().min(0.01, 'Amount must be greater than 0'),
-  description: z.string().min(3, 'Description must be at least 3 characters'),
+  amount: z.coerce.number().min(0.01, tx('amountPositive')),
+  description: z.string().min(3, tx('descriptionMin')),
 })
 
-type TransactionFormValues = z.infer<typeof transactionSchema>
+type TransactionFormValues = z.infer<ReturnType<typeof makeTransactionSchema>>
 
 export function TransactionForm() {
+  const tx = useTranslations('transactionForm')
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [branches, setBranches] = useState<Branch[]>([])
   const [generalError, setGeneralError] = useState<string | null>(null)
 
   const form = useForm<TransactionFormValues>({
-    resolver: zodResolver(transactionSchema),
+    resolver: zodResolver(makeTransactionSchema(tx)),
     defaultValues: {
       type: 'income',
     },
@@ -58,13 +60,11 @@ export function TransactionForm() {
       if (result.error) {
         setGeneralError(result.error)
       } else if (result.success) {
-        console.log('Transaction form result:', result)
-        console.log('Redirecting to /dashboard/cash-register')
         router.push('/dashboard/cash-register')
       }
     } catch (error) {
       console.error('Form error:', error)
-      setGeneralError('An unexpected error occurred')
+      setGeneralError(tx('unexpectedError'))
     } finally {
       setIsLoading(false)
     }
@@ -73,8 +73,8 @@ export function TransactionForm() {
   return (
     <Card className="border-border max-w-2xl">
       <div className="p-3 sm:p-4 md:p-6 lg:p-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">Record Transaction</h1>
-        <p className="text-sm sm:text-base text-muted-foreground mb-4 md:mb-6">Add a new income or expense record</p>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">{tx('title')}</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mb-4 md:mb-6">{tx('description')}</p>
 
         {generalError && (
           <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">{generalError}</div>
@@ -87,14 +87,14 @@ export function TransactionForm() {
               name="branchId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Branch</FormLabel>
+                  <FormLabel>{tx('branch')}</FormLabel>
                   <FormControl>
                     <NativeSelect
                       disabled={isLoading}
                       className="w-full"
                       {...field}
                     >
-                      <NativeSelectOption value="">Select a branch</NativeSelectOption>
+                      <NativeSelectOption value="">{tx('selectBranch')}</NativeSelectOption>
                       {branches.map((branch) => (
                         <NativeSelectOption key={branch.id} value={branch.id}>
                           {branch.name}
@@ -112,15 +112,15 @@ export function TransactionForm() {
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Transaction Type</FormLabel>
+                  <FormLabel>{tx('type')}</FormLabel>
                   <FormControl>
                     <NativeSelect
                       disabled={isLoading}
                       className="w-full"
                       {...field}
                     >
-                      <NativeSelectOption value="income">Income</NativeSelectOption>
-                      <NativeSelectOption value="expense">Expense</NativeSelectOption>
+                      <NativeSelectOption value="income">{tx('income')}</NativeSelectOption>
+                      <NativeSelectOption value="expense">{tx('expense')}</NativeSelectOption>
                     </NativeSelect>
                   </FormControl>
                   <FormMessage />
@@ -133,7 +133,7 @@ export function TransactionForm() {
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount ($)</FormLabel>
+                  <FormLabel>{tx('amount')}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -153,10 +153,10 @@ export function TransactionForm() {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{tx('descriptionLabel')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="e.g., Package sale, equipment purchase..."
+                      placeholder={tx('descriptionPlaceholder')}
                       disabled={isLoading}
                       className="w-full"
                       rows={4}
@@ -174,7 +174,7 @@ export function TransactionForm() {
                 disabled={isLoading}
                 className="w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                {isLoading ? 'Recording...' : 'Record Transaction'}
+                {isLoading ? tx('recording') : tx('title')}
               </Button>
               <Button
                 type="button"
@@ -183,7 +183,7 @@ export function TransactionForm() {
                 disabled={isLoading}
                 className="border-border w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                Cancel
+                {tx('cancel')}
               </Button>
             </div>
           </form>

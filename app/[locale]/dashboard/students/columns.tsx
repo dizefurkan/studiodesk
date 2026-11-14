@@ -5,8 +5,8 @@ import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Edit2, Trash2 } from 'lucide-react'
 import { StudentPopover } from '@/components/students/StudentPopover'
-import { format } from 'date-fns'
 import { ColumnHeader } from '@/components/table/column-header'
+import { FormattedDate } from '@/components/common/FormattedDate'
 
 export interface Student {
   id: string
@@ -156,7 +156,7 @@ export function getStudentColumns({
       header: () => <ColumnHeader k="joined" />,
       cell: ({ row }) => (
         <span className="text-muted-foreground">
-          {format(new Date(row.original.created_at), 'MMM dd, yyyy')}
+          <FormattedDate value={row.original.created_at} />
         </span>
       ),
     })

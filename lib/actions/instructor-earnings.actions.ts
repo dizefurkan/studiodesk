@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { sanitizeSearch } from '@/lib/utils/search'
+import { actionError } from '@/lib/i18n/actionError'
 
 export type EarningsFilters = {
   search?: string
@@ -21,10 +22,10 @@ export async function getInstructorEarnings(
   pageSize: number = 10
 ) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0, totalAmount: 0 }
+  if (!user) return { error: await actionError('notAuthenticated'), data: [], totalCount: 0, totalAmount: 0 }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found', data: [], totalCount: 0, totalAmount: 0 }
+  if (!organization) return { error: await actionError('noOrganization'), data: [], totalCount: 0, totalAmount: 0 }
 
   try {
     const adminSupabase = createAdminClient()
@@ -60,7 +61,7 @@ export async function getInstructorEarnings(
 
     if (listResult.error || totalsResult.error) {
       console.error('Error fetching earnings:', listResult.error ?? totalsResult.error)
-      return { error: 'Failed to fetch earnings', data: [], totalCount: 0, totalAmount: 0 }
+      return { error: await actionError('fetchEarningsFailed'), data: [], totalCount: 0, totalAmount: 0 }
     }
 
     const count = listResult.count ?? 0
@@ -75,16 +76,16 @@ export async function getInstructorEarnings(
     }
   } catch (error) {
     console.error('Unexpected error in getInstructorEarnings:', error)
-    return { error: 'An unexpected error occurred', data: [], totalCount: 0, totalAmount: 0 }
+    return { error: await actionError('unexpected'), data: [], totalCount: 0, totalAmount: 0 }
   }
 }
 
 export async function getEarningsReport(instructorId: string, year: number, month: number) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     // Use admin client to bypass RLS for efficiency, but verify instructor belongs to organization
@@ -101,7 +102,7 @@ export async function getEarningsReport(instructorId: string, year: number, mont
       .single()
 
     if (instructorError || !instructor || instructor.organization_id !== organization.id) {
-      return { error: 'Instructor not found or access denied' }
+      return { error: await actionError('instructorAccessDenied') }
     }
 
     const { data, error } = await (adminSupabase
@@ -117,7 +118,7 @@ export async function getEarningsReport(instructorId: string, year: number, mont
         message: error?.message,
         details: error?.details,
       })
-      return { error: 'Failed to fetch report' }
+      return { error: await actionError('fetchReportFailed') }
     }
 
     const total = ((data || [])).reduce((sum: number, e) => sum + Number(e.amount), 0)
@@ -139,16 +140,16 @@ export async function getEarningsReport(instructorId: string, year: number, mont
       error,
       message: error instanceof Error ? error.message : String(error),
     })
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
 export async function updateInstructorEarnings(earningsId: string, amount: number) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -164,7 +165,7 @@ export async function updateInstructorEarnings(earningsId: string, amount: numbe
 
     if (fetchError || !earning || earning.instructors?.organization_id !== organization.id) {
       console.error('[updateInstructorEarnings] Access denied or not found', { fetchError, organization: organization.id })
-      return { error: 'Earning not found or access denied' }
+      return { error: await actionError('earningNotFound') }
     }
 
     // Use admin client to bypass RLS (we've already verified organization access above)
@@ -195,22 +196,22 @@ export async function updateInstructorEarnings(earningsId: string, amount: numbe
 
     if (updatedEarning?.amount !== amount) {
       console.error('[updateInstructorEarnings] Verification failed - amount not updated', { expected: amount, actual: updatedEarning?.amount })
-      return { error: 'Update verification failed - data may not have been saved' }
+      return { error: await actionError('updateNotVerified') }
     }
 
     return { success: true, message: 'Earnings updated successfully', data: updatedEarning }
   } catch (error) {
     console.error('Unexpected error in updateInstructorEarnings:', error)
-    return { error: `An unexpected error occurred: ${error instanceof Error ? error.message : String(error)}` }
+    return { error: await actionError('unexpectedWithDetail', { detail: error instanceof Error ? error.message : String(error) }) }
   }
 }
 
 export async function deleteInstructorEarnings(earningsId: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -226,7 +227,7 @@ export async function deleteInstructorEarnings(earningsId: string) {
 
     if (fetchError || !earning || earning.instructors?.organization_id !== organization.id) {
       console.error('[deleteInstructorEarnings] Access denied or not found', { fetchError, organization: organization.id })
-      return { error: 'Earning not found or access denied' }
+      return { error: await actionError('earningNotFound') }
     }
 
     // Delete the earning
@@ -258,12 +259,12 @@ export async function deleteInstructorEarnings(earningsId: string) {
 
     if (verifyData) {
       console.error('[deleteInstructorEarnings] Verification failed - record still exists')
-      return { error: 'Delete verification failed - record may still exist' }
+      return { error: await actionError('deleteNotVerified') }
     }
 
     return { success: true, message: 'Earnings deleted successfully' }
   } catch (error) {
     console.error('Unexpected error in deleteInstructorEarnings:', error)
-    return { error: `An unexpected error occurred: ${error instanceof Error ? error.message : String(error)}` }
+    return { error: await actionError('unexpectedWithDetail', { detail: error instanceof Error ? error.message : String(error) }) }
   }
 }

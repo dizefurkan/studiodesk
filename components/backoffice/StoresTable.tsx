@@ -6,6 +6,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/table/data-table'
 import type { StoreSummary } from '@/lib/actions/backoffice.actions'
+import { FormattedDate } from '@/components/common/FormattedDate'
 
 export function StoresTable({ stores }: { stores: StoreSummary[] }) {
   const t = useTranslations('backoffice')
@@ -21,7 +22,7 @@ export function StoresTable({ stores }: { stores: StoreSummary[] }) {
           >
             {row.original.name}
           </Link>
-          <div className="text-xs text-muted-foreground">{new Date(row.original.created_at).toLocaleDateString()}</div>
+          <div className="text-xs text-muted-foreground"><FormattedDate value={row.original.created_at} /></div>
         </div>
       ),
     },

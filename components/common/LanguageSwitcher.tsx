@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Globe } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,6 +18,7 @@ const LANGUAGES = [
 ]
 
 export function LanguageSwitcher() {
+  const tx = useTranslations('common')
   const pathname = usePathname()
   const locale = useLocale()
   const current = LANGUAGES.find((l) => l.code === locale)
@@ -32,7 +33,7 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="text-muted-foreground" aria-label="Change language">
+        <Button variant="ghost" size="sm" className="text-muted-foreground" aria-label={tx('changeLanguage')}>
           <Globe />
           <span className="hidden sm:inline">{current?.name}</span>
         </Button>

@@ -9,6 +9,7 @@ import { getChanges } from '@/lib/utils/history-utils'
 import type { Database } from '@/lib/types/database.types'
 import type { PostgrestError } from '@supabase/supabase-js'
 import type { TablesUpdate } from '@/lib/types/database.types'
+import { actionError } from '@/lib/i18n/actionError'
 
 type DanceType = Database['public']['Tables']['dance_types']['Row']
 
@@ -18,10 +19,10 @@ export async function getDanceTypes(
   pageSize: number = 10
 ): Promise<{ data?: DanceType[]; totalCount?: number; page?: number; pageSize?: number; totalPages?: number; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
+  if (!user) return { error: await actionError('notAuthenticated'), data: [], totalCount: 0 }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found', data: [], totalCount: 0 }
+  if (!organization) return { error: await actionError('noOrganization'), data: [], totalCount: 0 }
 
   try {
     const admin = createAdminClient()
@@ -61,23 +62,23 @@ export async function getDanceTypes(
 
     if (error) {
       console.error('Error fetching dance types:', error)
-      return { error: 'Failed to fetch dance types', data: [], totalCount: 0 }
+      return { error: await actionError('fetchDanceTypesFailed'), data: [], totalCount: 0 }
     }
 
     const totalPages = Math.ceil(count / pageSize)
     return { data: data || [], totalCount: count, page, pageSize, totalPages }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred', data: [], totalCount: 0 }
+    return { error: await actionError('unexpected'), data: [], totalCount: 0 }
   }
 }
 
 export async function getDanceType(id: string): Promise<{ data?: DanceType; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const admin = createAdminClient()
@@ -93,13 +94,13 @@ export async function getDanceType(id: string): Promise<{ data?: DanceType; erro
 
     if (error || !data) {
       console.error('Error fetching dance type:', error)
-      return { error: 'Dance type not found' }
+      return { error: await actionError('danceTypeNotFound') }
     }
 
     return { data }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -112,10 +113,10 @@ export async function createDanceType(
   input: CreateDanceTypeInput,
 ): Promise<{ data?: DanceType; success?: boolean; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -134,7 +135,7 @@ export async function createDanceType(
 
     if (error || !data) {
       console.error('Error creating dance type:', error)
-      return { error: 'Failed to create dance type' }
+      return { error: await actionError('createDanceTypeFailed') }
     }
 
     // Log the create operation
@@ -148,7 +149,7 @@ export async function createDanceType(
     return { data, success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -162,10 +163,10 @@ export async function updateDanceType(
   input: UpdateDanceTypeInput,
 ): Promise<{ data?: DanceType; success?: boolean; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -182,7 +183,7 @@ export async function updateDanceType(
     const { data: beforeDanceType, error: beforeError } = beforeResult as { data: DanceType | null; error: PostgrestError | null }
 
     if (!beforeDanceType) {
-      return { error: 'Dance type not found or does not belong to your organization' }
+      return { error: await actionError('danceTypeNotInOrg') }
     }
 
     const updateData: TablesUpdate<'dance_types'> = {}
@@ -206,7 +207,7 @@ export async function updateDanceType(
 
     if (error || !data) {
       console.error('Error updating dance type:', error)
-      return { error: 'Failed to update dance type' }
+      return { error: await actionError('updateDanceTypeFailed') }
     }
 
     // Log the update operation
@@ -228,16 +229,16 @@ export async function updateDanceType(
     return { data, success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
 export async function deleteDanceType(id: string, reason?: string): Promise<{ success?: boolean; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -254,7 +255,7 @@ export async function deleteDanceType(id: string, reason?: string): Promise<{ su
     const { data: beforeDanceType, error: beforeError } = beforeResult as { data: DanceType | null; error: PostgrestError | null }
 
     if (!beforeDanceType) {
-      return { error: 'Dance type not found or does not belong to your organization' }
+      return { error: await actionError('danceTypeNotInOrg') }
     }
 
     const user_id = user.id
@@ -270,7 +271,7 @@ export async function deleteDanceType(id: string, reason?: string): Promise<{ su
 
     if (error) {
       console.error('Error deleting dance type:', error)
-      return { error: 'Failed to delete dance type' }
+      return { error: await actionError('deleteDanceTypeFailed') }
     }
 
     // Log the delete operation
@@ -285,6 +286,6 @@ export async function deleteDanceType(id: string, reason?: string): Promise<{ su
     return { success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }

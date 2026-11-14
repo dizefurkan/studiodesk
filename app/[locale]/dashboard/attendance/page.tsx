@@ -20,6 +20,7 @@ export default async function AttendancePage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  const tx = await getTranslations('attendancePage')
   const t = await getTranslations()
   const params = await searchParams
   const sessionId = typeof params.session === 'string' ? params.session : undefined
@@ -164,8 +165,8 @@ export default async function AttendancePage({
     if (courseResult.error || !courseResult.data) {
       return (
         <div className="space-y-6">
-          <h1 className="text-3xl font-bold text-foreground">Error</h1>
-          <p className="text-muted-foreground">Course not found</p>
+          <h1 className="text-3xl font-bold text-foreground">{tx('error')}</h1>
+          <p className="text-muted-foreground">{tx('courseNotFound')}</p>
         </div>
       )
     }

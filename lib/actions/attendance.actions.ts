@@ -7,6 +7,7 @@ import { getOrganization } from "@/lib/auth/getOrganization";
 import { logOperation } from "@/lib/actions/history.actions";
 import type { Database } from "@/lib/types/database.types";
 import type { PostgrestError } from '@supabase/supabase-js'
+import { actionError } from '@/lib/i18n/actionError'
 
 type Attendance = Database["public"]["Tables"]["attendances"]["Row"];
 type CourseSession = Database["public"]["Tables"]["course_sessions"]["Row"];
@@ -38,7 +39,7 @@ export async function getSessionAttendances(
   sessionId: string
 ): Promise<{ data?: AttendanceWithStudent[]; error?: string }> {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -57,7 +58,7 @@ export async function getSessionAttendances(
 
     if (error) {
       console.error("Error fetching attendances:", error);
-      return { error: "Failed to fetch attendances" };
+      return { error: await actionError('fetchAttendancesFailed') };
     }
 
     // ✅ Filter to only include records with valid student relationship
@@ -72,7 +73,7 @@ export async function getSessionAttendances(
     return { data };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
@@ -80,7 +81,7 @@ export async function getSessionStudents(
   sessionId: string
 ): Promise<{ data?: Student[]; error?: string }> {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -99,7 +100,7 @@ export async function getSessionStudents(
     };
 
     if (sessionError || !session) {
-      return { error: "Session not found" };
+      return { error: await actionError('sessionNotFound') };
     }
 
     // Get course info
@@ -116,7 +117,7 @@ export async function getSessionStudents(
     };
 
     if (courseError || !courseData) {
-      return { error: "Course not found" };
+      return { error: await actionError('courseNotFound') };
     }
 
     // Use admin client to fetch students enrolled in this course with packages
@@ -161,7 +162,7 @@ export async function getSessionStudents(
         message: studentsError?.message,
         details: studentsError?.details,
       });
-      return { error: "Failed to fetch students" };
+      return { error: await actionError('fetchStudentsFailed') };
     }
 
     // Extract students with their packages for this dance type
@@ -186,7 +187,7 @@ export async function getSessionStudents(
       error,
       message: error instanceof Error ? error.message : String(error),
     });
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
@@ -197,7 +198,7 @@ export async function recordAttendance(
   studioId?: string | null
 ): Promise<{ success?: boolean; data?: Attendance; error?: string }> {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -219,11 +220,11 @@ export async function recordAttendance(
 
     if (error) {
       console.error("Error recording attendance:", error);
-      return { error: "Failed to record attendance" };
+      return { error: await actionError('recordAttendanceFailed') };
     }
 
     if (!data) {
-      return { error: "Failed to record attendance" };
+      return { error: await actionError('recordAttendanceFailed') };
     }
 
     // Get session/course info early (needed for logging to course timeline)
@@ -363,7 +364,7 @@ export async function recordAttendance(
     return { success: true, data };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
@@ -372,7 +373,7 @@ export async function removeAttendance(
   studentPackageId: string
 ): Promise<{ success?: boolean; error?: string }> {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
 
@@ -412,7 +413,7 @@ export async function removeAttendance(
 
     if (error) {
       console.error("Error removing attendance:", error);
-      return { error: "Failed to remove attendance" };
+      return { error: await actionError('removeAttendanceFailed') };
     }
 
     // Log the attendance record deletion
@@ -479,7 +480,7 @@ export async function removeAttendance(
     return { success: true };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
@@ -537,14 +538,14 @@ export async function recordBatchAttendance(
    */
 
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   // ✅ VALIDATION: Ensure attendanceData is not empty
   if (!attendanceData || attendanceData.length === 0) {
     console.error(
       "[recordBatchAttendance] ERROR: attendanceData is empty - rejecting"
     );
-    return { error: "Yoklama verisi boş. Lütfen en az bir öğrenci seçin." };
+    return { error: await actionError('attendanceEmpty') };
   }
 
   try {
@@ -559,7 +560,7 @@ export async function recordBatchAttendance(
           "[recordBatchAttendance] Invalid date format:",
           attendanceDate
         );
-        return { error: "Invalid date format. Expected YYYY-MM-DD" };
+        return { error: await actionError('invalidDateFormat') };
       }
 
       // Validate it's a valid date
@@ -569,7 +570,7 @@ export async function recordBatchAttendance(
           "[recordBatchAttendance] Invalid date value:",
           attendanceDate
         );
-        return { error: "Invalid date value" };
+        return { error: await actionError('invalidDate') };
       }
 
       // Warn if date is far in the past or future (optional safeguard)
@@ -599,7 +600,7 @@ export async function recordBatchAttendance(
       .select("id")
       .eq("id", courseId)
       .maybeSingle();
-    if (!accessibleCourse) return { error: "Course not found" };
+    if (!accessibleCourse) return { error: await actionError('courseNotFound') };
 
     // ✨ NEW: Ensure session exists (create on-demand if needed)
     // Check if a session already exists for this course on the specified date
@@ -651,7 +652,7 @@ export async function recordBatchAttendance(
           "[recordBatchAttendance] Failed to create session:",
           createError
         );
-        return { error: "Failed to create session for attendance" };
+        return { error: await actionError('createSessionFailed') };
       }
 
       actualSessionId = createdSession.id;
@@ -834,7 +835,7 @@ export async function recordBatchAttendance(
       console.error(
         "[recordBatchAttendance] No instructor assigned to session or course"
       );
-      return { error: "Bu sınıfta eğitmen atanmamış. Lütfen eğitmen atayın." };
+      return { error: await actionError('noInstructorAssigned') };
     }
 
     // Batch insert all attendance records (both geldi and gelmedi)
@@ -864,7 +865,7 @@ export async function recordBatchAttendance(
     if (insertError && insertError?.code !== "23505") {
       // 23505 = unique violation (already marked), which is ok
       console.error("Error batch inserting attendance:", insertError);
-      return { error: "Failed to record attendance" };
+      return { error: await actionError('recordAttendanceFailed') };
     }
 
     // Batch update credits for each student package
@@ -982,7 +983,7 @@ export async function recordBatchAttendance(
             );
             // This is critical - don't proceed if session_instructors creation fails
             return {
-              error: "Eğitmen bilgisi kaydedilemedi. Lütfen tekrar deneyin.",
+              error: await actionError('saveInstructorFailed'),
             };
           }
           console.log(
@@ -1103,7 +1104,7 @@ export async function recordBatchAttendance(
     };
   } catch (error) {
     console.error("Unexpected error in recordBatchAttendance:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }
 
@@ -1119,10 +1120,10 @@ export async function getAttendanceReports(
   dateTo?: string
 ): Promise<{ data?: AttendanceReport[]; error?: string }> {
   const user = await getCurrentUser();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: await actionError('notAuthenticated') };
 
   const organization = await getOrganization();
-  if (!organization) return { error: "No organization found" };
+  if (!organization) return { error: await actionError('noOrganization') };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -1153,12 +1154,12 @@ export async function getAttendanceReports(
 
     if (error) {
       console.error("Error fetching attendance reports:", error);
-      return { error: "Failed to fetch reports" };
+      return { error: await actionError('fetchReportsFailed') };
     }
 
     return { data: data || [] };
   } catch (error) {
     console.error("Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    return { error: await actionError('unexpected') };
   }
 }

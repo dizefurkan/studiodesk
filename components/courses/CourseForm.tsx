@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
+import { useLocaleNames } from "@/hooks/useLocaleNames";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -38,27 +39,17 @@ type Branch = Database["public"]["Tables"]["branches"]["Row"];
 type DanceType = Database["public"]["Tables"]["dance_types"]["Row"];
 type Instructor = Database["public"]["Tables"]["instructors"]["Row"];
 
-const DAYS = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-
-const courseSchema = z.object({
-  name: z.string().min(2, "Course name must be at least 2 characters"),
-  branchId: z.string().min(1, "Please select a branch"),
-  danceTypeId: z.string().min(1, "Please select a dance type"),
+const makeCourseSchema = (tx: (key: string) => string) => z.object({
+  name: z.string().min(2, tx('nameMin')),
+  branchId: z.string().min(1, tx('branchRequired')),
+  danceTypeId: z.string().min(1, tx('danceTypeRequired')),
   dayOfWeek: z.coerce.number().min(0).max(6),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, "Time must be in HH:mm format"),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, "Time must be in HH:mm format"),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/, tx('timeFormat')),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/, tx('timeFormat')),
   instructorIds: z.array(z.string()).optional(),
 });
 
-type CourseFormValues = z.infer<typeof courseSchema>;
+type CourseFormValues = z.infer<ReturnType<typeof makeCourseSchema>>;
 
 interface CourseFormProps {
   course?: Course & { course_instructors?: { instructor_id: string }[] };
@@ -77,6 +68,9 @@ interface InstructorWithRates {
 }
 
 export function CourseForm({ course }: CourseFormProps) {
+  const tx = useTranslations('courseForm')
+  const tf = useTranslations('forms')
+  const { DAYS } = useLocaleNames()
   const router = useRouter();
   const t = useTranslations();
   const [isLoading, setIsLoading] = useState(false);
@@ -91,7 +85,7 @@ export function CourseForm({ course }: CourseFormProps) {
   const [showInstructorModal, setShowInstructorModal] = useState(false);
 
   const form = useForm<CourseFormValues>({
-    resolver: zodResolver(courseSchema),
+    resolver: zodResolver(makeCourseSchema(tx)),
     defaultValues: {
       name: course?.name || "",
       branchId: course?.branch_id || "",
@@ -144,7 +138,7 @@ export function CourseForm({ course }: CourseFormProps) {
         if (cancelled) return;
         if (result.error) {
           console.error("[Instructors] Backend error:", result.error);
-          setGeneralError(`Failed to load instructors: ${result.error}`);
+          setGeneralError(tx('loadInstructorsError', { error: result.error }));
           setInstructors([]);
         } else {
           setInstructors(result.data || []);
@@ -152,7 +146,7 @@ export function CourseForm({ course }: CourseFormProps) {
       } catch (error) {
         if (cancelled) return;
         console.error("[Instructors] Exception:", error);
-        setGeneralError("An error occurred while loading instructors");
+        setGeneralError(tx('loadInstructorsFailed'));
         setInstructors([]);
       } finally {
         if (!cancelled) setLoadingInstructors(false);
@@ -233,7 +227,7 @@ export function CourseForm({ course }: CourseFormProps) {
       }
     } catch (error) {
       console.error("Form error:", error);
-      setGeneralError("An unexpected error occurred");
+      setGeneralError(tf('unexpectedError'));
     } finally {
       setIsLoading(false);
     }
@@ -277,7 +271,7 @@ export function CourseForm({ course }: CourseFormProps) {
                   <FormLabel>{t("courses.name")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g., Advanced Ballet"
+                      placeholder={tx('namePlaceholder')}
                       disabled={isLoading}
                       {...field}
                     />
@@ -343,22 +337,19 @@ export function CourseForm({ course }: CourseFormProps) {
             {danceTypeId && (
               <div>
                 <Label className="block mb-2">
-                  {t("courses.instructors")} (for{" "}
-                  {
-                    danceTypes.find((d) => d.id === danceTypeId)
-                      ?.name
-                  }
-                  )
+                  {tx('instructorsFor', {
+                    label: t("courses.instructors"),
+                    danceType: danceTypes.find((d) => d.id === danceTypeId)?.name ?? '',
+                  })}
                 </Label>
 
                 {loadingInstructors ? (
                   <div className="p-4 border border-border rounded-lg bg-muted/50 text-muted-foreground text-sm">
-                    Loading instructors...
+                    {tx('loadingInstructors')}
                   </div>
                 ) : instructors.length === 0 ? (
                   <div className="p-4 border border-border rounded-lg bg-amber-50 text-amber-700 text-sm">
-                    ⚠️ No instructors with rates for this dance type. Please set
-                    up instructor rates first.
+                    {tx('noInstructorRates')}
                   </div>
                 ) : (
                   <Button
@@ -372,7 +363,7 @@ export function CourseForm({ course }: CourseFormProps) {
                         ? t("courses.instructorsSelected", {
                             count: instructorIds.length,
                           })
-                        : "Select instructors..."}
+                        : tx('selectInstructors')}
                     </span>
                   </Button>
                 )}

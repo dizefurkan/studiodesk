@@ -48,6 +48,7 @@ interface AddStudentDialogProps {
 }
 
 export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [], onStudentsAdded }: AddStudentDialogProps) {
+  const tx = useTranslations('addStudentDialog')
   const t = useTranslations()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
@@ -124,7 +125,7 @@ export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [
 
   const handleAddStudents = async () => {
     if (selectedStudents.size === 0) {
-      setError('Please select at least one student')
+      setError(tx('selectAtLeastOne'))
       return
     }
 
@@ -150,12 +151,10 @@ export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [
         onStudentsAdded?.()
         // Don't use router.refresh() - let the Container handle the refresh via callback
       } else {
-        setError(
-          `Added ${successCount} student${successCount !== 1 ? 's' : ''}. ${failureCount} failed.`,
-        )
+        setError(tx('partialResult', { added: successCount, failed: failureCount }))
       }
     } catch (err) {
-      setError('Failed to add students')
+      setError(tx('addFailed'))
       console.error(err)
     } finally {
       setAddingStudents(false)
@@ -206,7 +205,7 @@ export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [
             </InputGroupAddon>
             <InputGroupInput
               type="search"
-              placeholder="Search by name or email..."
+              placeholder={tx('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -218,7 +217,7 @@ export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [
               onCheckedChange={(c) => setFilterHasPackage(c === true)}
             />
             <FieldLabel htmlFor="filter-has-package" className="font-normal">
-              Show only students with active packages for this dance type
+              {tx('activeOnly')}
             </FieldLabel>
           </Field>
         </div>
@@ -226,15 +225,15 @@ export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [
         <div className="min-h-0 flex-1 overflow-y-auto rounded-lg border">
           {loading ? (
             <div className="flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
-              <Spinner /> Loading students...
+              <Spinner /> {tx('loading')}
             </div>
           ) : filteredStudents.length === 0 ? (
             <Empty>
               <EmptyHeader>
                 <EmptyDescription>
                   {filterHasPackage && students.filter((s) => !enrolledStudentIds.includes(s.id)).length === 0
-                    ? 'No available students (all may already be enrolled)'
-                    : 'No students found'}
+                    ? tx('noneAvailable')
+                    : tx('noneFound')}
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -243,11 +242,11 @@ export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [
               <TableHeader className="sticky top-0 bg-background">
                 <TableRow>
                   <TableHead className="w-10">
-                    <Checkbox checked={allVisibleSelected} onCheckedChange={toggleAllVisible} aria-label="Select all" />
+                    <Checkbox checked={allVisibleSelected} onCheckedChange={toggleAllVisible} aria-label={tx('selectAll')} />
                   </TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Credits</TableHead>
+                  <TableHead>{tx('name')}</TableHead>
+                  <TableHead>{tx('email')}</TableHead>
+                  <TableHead>{tx('credits')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -289,13 +288,13 @@ export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [
           </span>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setIsOpen(false)} disabled={addingStudents}>
-              Cancel
+              {tx('cancel')}
             </Button>
             <Button onClick={handleAddStudents} disabled={selectedStudents.size === 0 || addingStudents}>
               {addingStudents ? <Spinner /> : <Check />}
               {addingStudents
-                ? 'Adding...'
-                : `Add ${selectedStudents.size} Student${selectedStudents.size !== 1 ? 's' : ''}`}
+                ? tx('adding')
+                : tx('addCount', { count: selectedStudents.size })}
             </Button>
           </div>
         </DialogFooter>

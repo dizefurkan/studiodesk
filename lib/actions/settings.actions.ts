@@ -7,6 +7,7 @@ import { getCurrentUser, getUserRoleInOrganization } from '@/lib/auth/getCurrent
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { MUST_CHANGE_PASSWORD, mustChangePassword } from '@/lib/auth/passwordPolicy'
 import { SUPPORTED_CURRENCIES } from '@/config/currencies'
+import { actionError } from '@/lib/i18n/actionError'
 
 type Result = { error?: string; success?: boolean }
 
@@ -30,8 +31,8 @@ export async function getSettingsContext() {
 /** Resolves the org and checks the caller has one of `roles`. */
 async function requireOrgRole(roles: SettingsRole[]) {
   const ctx = await getSettingsContext()
-  if (!ctx) throw new Error('Not authenticated')
-  if (!roles.includes(ctx.role)) throw new Error('You do not have permission to change these settings')
+  if (!ctx) throw new Error(await actionError('notAuthenticated'))
+  if (!roles.includes(ctx.role)) throw new Error(await actionError('noPermissionSettings'))
   return ctx
 }
 
@@ -59,10 +60,10 @@ export async function updateGeneralSettings(input: {
   try {
     const { organization } = await requireOrgRole(['owner', 'manager'])
     const name = input.name?.trim()
-    if (!name || name.length < 2) return { error: 'Organization name must be at least 2 characters' }
+    if (!name || name.length < 2) return { error: await actionError('studioNameMin') }
     if (!Number.isInteger(input.week_start_day) || input.week_start_day < 0 || input.week_start_day > 6)
-      return { error: 'Invalid week start day' }
-    if (!input.timezone) return { error: 'Timezone is required' }
+      return { error: await actionError('invalidWeekStart') }
+    if (!input.timezone) return { error: await actionError('timezoneRequired') }
     await updateOrganization(organization.id, { name, timezone: input.timezone, week_start_day: input.week_start_day })
     return done()
   } catch (e) {
@@ -73,7 +74,7 @@ export async function updateGeneralSettings(input: {
 export async function updateCurrencySetting(currency: string): Promise<Result> {
   try {
     const { organization } = await requireOrgRole(['owner', 'manager'])
-    if (!SUPPORTED_CURRENCIES.some((c) => c.code === currency)) return { error: 'Unsupported currency' }
+    if (!SUPPORTED_CURRENCIES.some((c) => c.code === currency)) return { error: await actionError('unsupportedCurrency') }
     await updateOrganization(organization.id, { currency })
     return done()
   } catch (e) {
@@ -90,8 +91,8 @@ export async function updateAttendanceSettings(input: {
     const { organization } = await requireOrgRole(['owner', 'manager'])
     const weeks = Number(input.virtual_sessions_weeks)
     const limit = Number(input.attendance_per_week_limit)
-    if (!Number.isInteger(weeks) || weeks < 1 || weeks > 52) return { error: 'Lookahead must be between 1 and 52 weeks' }
-    if (!Number.isInteger(limit) || limit < 1 || limit > 14) return { error: 'Weekly limit must be between 1 and 14' }
+    if (!Number.isInteger(weeks) || weeks < 1 || weeks > 52) return { error: await actionError('lookaheadRange') }
+    if (!Number.isInteger(limit) || limit < 1 || limit > 14) return { error: await actionError('weeklyLimitRange') }
     await updateOrganization(organization.id, {
       virtual_sessions_weeks: weeks,
       attendance_per_week_limit: limit,
@@ -128,9 +129,9 @@ export async function updatePermissionSettings(input: {
 export async function updateMyProfile(input: { fullName: string }): Promise<Result> {
   try {
     const user = await getCurrentUser()
-    if (!user) return { error: 'Not authenticated' }
+    if (!user) return { error: await actionError('notAuthenticated') }
     const fullName = input.fullName?.trim()
-    if (!fullName) return { error: 'Name is required' }
+    if (!fullName) return { error: await actionError('nameRequired') }
     const { error } = await (createAdminClient())
       .from('profiles')
       .upsert({ id: user.id, email: user.email, full_name: fullName })
@@ -144,8 +145,8 @@ export async function updateMyProfile(input: { fullName: string }): Promise<Resu
 export async function changeMyPassword(input: { currentPassword: string; newPassword: string }): Promise<Result> {
   try {
     const user = await getCurrentUser()
-    if (!user?.email) return { error: 'Not authenticated' }
-    if (!input.newPassword || input.newPassword.length < 8) return { error: 'New password must be at least 8 characters' }
+    if (!user?.email) return { error: await actionError('notAuthenticated') }
+    if (!input.newPassword || input.newPassword.length < 8) return { error: await actionError('newPasswordMin') }
 
     const supabase = await createServerSupabaseClient()
     // Re-authenticate so a stolen session alone can't change the password.
@@ -153,9 +154,9 @@ export async function changeMyPassword(input: { currentPassword: string; newPass
       email: user.email,
       password: input.currentPassword,
     })
-    if (signInError) return { error: 'Current password is incorrect' }
+    if (signInError) return { error: await actionError('currentPasswordWrong') }
 
-    if (input.newPassword === input.currentPassword) return { error: 'New password must be different' }
+    if (input.newPassword === input.currentPassword) return { error: await actionError('newPasswordSame') }
     const { error } = await supabase.auth.updateUser({ password: input.newPassword })
     if (error) throw error
     if (mustChangePassword(user)) {

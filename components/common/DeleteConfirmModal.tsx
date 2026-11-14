@@ -41,6 +41,7 @@ export function DeleteConfirmModal({
   isLoading = false,
 }: DeleteConfirmModalProps) {
   const t = useTranslations('confirmDialog')
+  const tErrors = useTranslations('errors')
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string | null>(null)
 
@@ -57,7 +58,7 @@ export function DeleteConfirmModal({
       setReason('')
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      setError(err instanceof Error ? err.message : tErrors('unknown'))
     }
   }
 

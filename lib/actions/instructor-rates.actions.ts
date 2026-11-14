@@ -5,13 +5,14 @@ import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { logOperation } from '@/lib/actions/history.actions'
 import { getChanges } from '@/lib/utils/history-utils'
+import { actionError } from '@/lib/i18n/actionError'
 
 export async function getInstructorRates(instructorId?: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const adminSupabase = createAdminClient()
@@ -60,7 +61,7 @@ export async function getInstructorRates(instructorId?: string) {
     return { data }
   } catch (error) {
     console.error('Unexpected error in getInstructorRates:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -71,10 +72,10 @@ export async function createInstructorRate(
   ratioPerClass: number,
 ) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const adminSupabase = createAdminClient()
@@ -87,7 +88,7 @@ export async function createInstructorRate(
       .single()
 
     if (instructorError || !instructor || instructor.organization_id !== organization.id) {
-      return { error: 'Instructor not found or access denied' }
+      return { error: await actionError('instructorAccessDenied') }
     }
 
     // Verify branch belongs to organization
@@ -98,7 +99,7 @@ export async function createInstructorRate(
       .single()
 
     if (branchError || !branch || branch.organization_id !== organization.id) {
-      return { error: 'Branch not found or access denied' }
+      return { error: await actionError('branchAccessDenied') }
     }
 
     // Verify dance type exists
@@ -109,7 +110,7 @@ export async function createInstructorRate(
       .single()
 
     if (danceTypeError || !danceType) {
-      return { error: 'Dance type not found' }
+      return { error: await actionError('danceTypeNotFound') }
     }
 
     // Check if rate already exists
@@ -122,7 +123,7 @@ export async function createInstructorRate(
       .single()
 
     if (existingRate) {
-      return { error: 'Rate already exists for this combination' }
+      return { error: await actionError('rateExists') }
     }
 
     // Create new rate
@@ -139,7 +140,7 @@ export async function createInstructorRate(
 
     if (error) {
       console.error('Error creating instructor rate:', error)
-      return { error: 'Failed to create rate' }
+      return { error: await actionError('createRateFailed') }
     }
 
     // Log the create operation
@@ -155,7 +156,7 @@ export async function createInstructorRate(
     return { data }
   } catch (error) {
     console.error('Unexpected error in createInstructorRate:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -164,10 +165,10 @@ export async function updateInstructorRate(
   ratioPerClass: number,
 ) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const adminSupabase = createAdminClient()
@@ -180,7 +181,7 @@ export async function updateInstructorRate(
       .single()
 
     if (beforeRateError || !beforeRate) {
-      return { error: 'Rate not found' }
+      return { error: await actionError('rateNotFound') }
     }
 
     const { data: instructor, error: instructorError } = await (adminSupabase
@@ -190,7 +191,7 @@ export async function updateInstructorRate(
       .single()
 
     if (instructorError || !instructor || instructor.organization_id !== organization.id) {
-      return { error: 'Access denied' }
+      return { error: await actionError('accessDenied') }
     }
 
     // Update rate
@@ -203,7 +204,7 @@ export async function updateInstructorRate(
 
     if (error) {
       console.error('Error updating instructor rate:', error)
-      return { error: 'Failed to update rate' }
+      return { error: await actionError('updateRateFailed') }
     }
 
     // Log the update operation
@@ -229,16 +230,16 @@ export async function updateInstructorRate(
     return { data }
   } catch (error) {
     console.error('Unexpected error in updateInstructorRate:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
 export async function deleteInstructorRate(rateId: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const adminSupabase = createAdminClient()
@@ -251,7 +252,7 @@ export async function deleteInstructorRate(rateId: string) {
       .single()
 
     if (beforeRateError || !beforeRate) {
-      return { error: 'Rate not found' }
+      return { error: await actionError('rateNotFound') }
     }
 
     const { data: instructor, error: instructorError } = await (adminSupabase
@@ -261,7 +262,7 @@ export async function deleteInstructorRate(rateId: string) {
       .single()
 
     if (instructorError || !instructor || instructor.organization_id !== organization.id) {
-      return { error: 'Access denied' }
+      return { error: await actionError('accessDenied') }
     }
 
     // Delete rate
@@ -272,7 +273,7 @@ export async function deleteInstructorRate(rateId: string) {
 
     if (error) {
       console.error('Error deleting instructor rate:', error)
-      return { error: 'Failed to delete rate' }
+      return { error: await actionError('deleteRateFailed') }
     }
 
     // Log the delete operation
@@ -289,16 +290,16 @@ export async function deleteInstructorRate(rateId: string) {
     return { success: true }
   } catch (error) {
     console.error('Unexpected error in deleteInstructorRate:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
 export async function getInstructorsAndBranchesAndDanceTypes() {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const adminSupabase = createAdminClient()
@@ -330,7 +331,7 @@ export async function getInstructorsAndBranchesAndDanceTypes() {
 
     if (instructorsResult.error || branchesResult.error || danceTypesResult.error) {
       console.error('Error fetching data:', { instructorsResult, branchesResult, danceTypesResult })
-      return { error: 'Failed to fetch data' }
+      return { error: await actionError('fetchDataFailed') }
     }
 
     return {
@@ -342,16 +343,16 @@ export async function getInstructorsAndBranchesAndDanceTypes() {
     }
   } catch (error) {
     console.error('Unexpected error in getInstructorsAndBranchesAndDanceTypes:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
 export async function getInstructorRate(rateId: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const adminSupabase = createAdminClient()
@@ -374,7 +375,7 @@ export async function getInstructorRate(rateId: string) {
 
     if (error) {
       console.error('Error fetching instructor rate:', error)
-      return { error: 'Rate not found' }
+      return { error: await actionError('rateNotFound') }
     }
 
     // Transform to nested structure to match getInstructorRates format
@@ -399,6 +400,6 @@ export async function getInstructorRate(rateId: string) {
     }
   } catch (error) {
     console.error('Unexpected error in getInstructorRate:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }

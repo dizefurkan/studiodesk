@@ -44,6 +44,7 @@ export function InstructorRatesTable({
   onOpenEdit,
   onOpenNewForInstructor,
 }: InstructorRatesTableProps) {
+  const tx = useTranslations('instructorRatesTable')
   const t = useTranslations()
   const confirm = useConfirm()
   const [busy, setBusy] = useState(false)
@@ -71,7 +72,7 @@ export function InstructorRatesTable({
       if (result.error) toast.error(result.error)
       else await onRatesChange?.()
     } catch {
-      toast.error('Failed to delete rate')
+      toast.error(tx('deleteFailed'))
     } finally {
       setBusy(false)
     }
@@ -178,7 +179,7 @@ export function InstructorRatesTable({
                     className="text-destructive"
                     onClick={() => handleDelete(rate.id)}
                     disabled={busy}
-                    aria-label="Delete rate"
+                    aria-label={tx('delete')}
                   >
                     <Trash2 />
                   </Button>

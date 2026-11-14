@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useTranslations } from 'next-intl'
 
 interface InstructorDropdownProps {
   instructor: { id: string; first_name: string; last_name: string }
@@ -26,6 +27,7 @@ export function InstructorDropdown({
   onReplaceClick,
   onClearOverride,
 }: InstructorDropdownProps) {
+  const tx = useTranslations('instructorDropdown')
   // Show replacement instructor if available, otherwise the original
   const display = replacementInstructor || instructor
 
@@ -40,17 +42,17 @@ export function InstructorDropdown({
       <DropdownMenuContent align="start">
         <DropdownMenuItem asChild>
           <Link href={`/dashboard/instructors/${instructor.id}`}>
-            <ExternalLink /> Go to Instructor Detail
+            <ExternalLink /> {tx('goToDetail')}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={onReplaceClick}>
-          <ArrowRightLeft /> Replace Instructor
+          <ArrowRightLeft /> {tx('replace')}
         </DropdownMenuItem>
         {isOverridden && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onSelect={onClearOverride}>
-              <Trash2 /> Clear Override
+              <Trash2 /> {tx('clearOverride')}
             </DropdownMenuItem>
           </>
         )}

@@ -9,6 +9,7 @@ import { getChanges } from '@/lib/utils/history-utils'
 import type { Database } from '@/lib/types/database.types'
 import type { PostgrestError } from '@supabase/supabase-js'
 import type { TablesUpdate } from '@/lib/types/database.types'
+import { actionError } from '@/lib/i18n/actionError'
 
 type Course = Database['public']['Tables']['courses']['Row']
 type CourseSession = Database['public']['Tables']['course_sessions']['Row']
@@ -56,10 +57,10 @@ export async function getCourses(
   pageSize: number = 10
 ): Promise<{ data?: CourseWithStats[]; totalCount?: number; page?: number; pageSize?: number; totalPages?: number; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
+  if (!user) return { error: await actionError('notAuthenticated'), data: [], totalCount: 0 }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found', data: [], totalCount: 0 }
+  if (!organization) return { error: await actionError('noOrganization'), data: [], totalCount: 0 }
 
   try {
     const admin = createAdminClient()
@@ -99,7 +100,7 @@ export async function getCourses(
 
     if (error) {
       console.error('Error fetching courses:', error)
-      return { error: 'Failed to fetch courses', data: [], totalCount: 0 }
+      return { error: await actionError('fetchCoursesFailed'), data: [], totalCount: 0 }
     }
 
     // Fetch student counts and attendance counts for each course (on current page only)
@@ -131,16 +132,16 @@ export async function getCourses(
     return { data: coursesWithStats, totalCount: count, page, pageSize, totalPages }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred', data: [], totalCount: 0 }
+    return { error: await actionError('unexpected'), data: [], totalCount: 0 }
   }
 }
 
 export async function getCourse(id: string): Promise<{ data?: CourseWithStats; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const admin = createAdminClient()
@@ -156,13 +157,13 @@ export async function getCourse(id: string): Promise<{ data?: CourseWithStats; e
 
     if (error || !data) {
       console.error('Error fetching course:', error)
-      return { error: 'Course not found' }
+      return { error: await actionError('courseNotFound') }
     }
 
     return { data }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -173,10 +174,10 @@ export async function checkDuplicateCourseTime(
   excludeCourseId?: string,
 ): Promise<{ data?: Course[]; isDuplicate?: boolean; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const admin = createAdminClient()
@@ -198,13 +199,13 @@ export async function checkDuplicateCourseTime(
 
     if (error) {
       console.error('Error checking duplicate courses:', error)
-      return { error: 'Failed to check courses on this day' }
+      return { error: await actionError('checkCoursesFailed') }
     }
 
     return { data: data || [], isDuplicate: (data?.length || 0) > 0 }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -212,10 +213,10 @@ export async function createCourse(
   input: CreateCourseInput,
 ): Promise<{ data?: Course; success?: boolean; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -232,7 +233,7 @@ export async function createCourse(
     const { data: branch, error: branchError } = result as { data: Branch | null; error: PostgrestError | null }
 
     if (branchError || !branch) {
-      return { error: 'Invalid branch' }
+      return { error: await actionError('invalidBranch') }
     }
 
     // Check for duplicate course on the same day
@@ -244,7 +245,7 @@ export async function createCourse(
 
     if (duplicate.isDuplicate) {
       return { 
-        error: 'A course for this dance type already exists on this day for this branch' 
+        error: await actionError('duplicateCourse') 
       }
     }
 
@@ -266,7 +267,7 @@ export async function createCourse(
 
     if (courseError || !course) {
       console.error('Error creating course:', courseError)
-      return { error: 'Failed to create course' }
+      return { error: await actionError('createCourseFailed') }
     }
 
     // Add instructors if provided
@@ -297,7 +298,7 @@ export async function createCourse(
     return { success: true, data: course }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -309,11 +310,11 @@ export async function updateCourse(
   
   const user = await getCurrentUser()
   console.log('[updateCourse] User:', user?.id || 'NO USER')
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
   console.log('[updateCourse] Organization:', organization?.id || 'NO ORG')
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -331,7 +332,7 @@ export async function updateCourse(
 
     console.log('[updateCourse] Before course fetch - Error:', beforeError, 'Data:', beforeCourse?.id)
     if (!beforeCourse) {
-      return { error: 'Course not found' }
+      return { error: await actionError('courseNotFound') }
     }
 
     // Verify the branch belongs to the organization
@@ -348,11 +349,11 @@ export async function updateCourse(
     console.log('[updateCourse] Branch verification - Error:', branchError, 'Data:', branch?.id)
     if (branchError) {
       console.error('[updateCourse] Branch verification error:', branchError)
-      return { error: 'Course does not belong to your organization' }
+      return { error: await actionError('courseNotInOrg') }
     }
 
     if (!branch) {
-      return { error: 'Course does not belong to your organization' }
+      return { error: await actionError('courseNotInOrg') }
     }
 
     const updateData: TablesUpdate<'courses'> = {}
@@ -374,13 +375,13 @@ export async function updateCourse(
 
     if (error) {
       console.error('Error updating course:', error)
-      return { error: 'Failed to update course' }
+      return { error: await actionError('updateCourseFailed') }
     }
 
     // If no data was returned, it means the update didn't affect any rows (likely RLS policy issue)
     if (!data) {
       console.error('[updateCourse] No rows updated - RLS policy may be blocking the update')
-      return { error: 'Failed to update course - permission denied' }
+      return { error: await actionError('updateCoursePermission') }
     }
 
     // Update instructors if provided
@@ -438,16 +439,16 @@ export async function updateCourse(
     return { success: true, data }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
 export async function deleteCourse(id: string, reason?: string): Promise<{ success?: boolean; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -463,7 +464,7 @@ export async function deleteCourse(id: string, reason?: string): Promise<{ succe
     const { data: beforeCourse, error: fetchError } = deleteResult as { data: Course | null; error: PostgrestError | null }
 
     if (!beforeCourse) {
-      return { error: 'Course not found' }
+      return { error: await actionError('courseNotFound') }
     }
 
     const user_id = user.id
@@ -478,7 +479,7 @@ export async function deleteCourse(id: string, reason?: string): Promise<{ succe
 
     if (error) {
       console.error('Error deleting course:', error)
-      return { error: 'Failed to delete course' }
+      return { error: await actionError('deleteCourseFailed') }
     }
 
     // Log the delete operation
@@ -497,7 +498,7 @@ export async function deleteCourse(id: string, reason?: string): Promise<{ succe
     return { success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -507,7 +508,7 @@ export async function generateCourseSessions(
   endDate: Date,
 ): Promise<{ success?: boolean; data?: CourseSession[]; error?: string; details?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -524,12 +525,12 @@ export async function generateCourseSessions(
 
     if (courseError || !course) {
       console.error('Course error:', courseError)
-      return { error: 'Course not found' }
+      return { error: await actionError('courseNotFound') }
     }
 
     // Validate day_of_week
     if (course.day_of_week === null || course.day_of_week === undefined) {
-      return { error: 'Course day of week not set' }
+      return { error: await actionError('courseDayMissing') }
     }
 
     // Get existing sessions for this period to avoid duplicates
@@ -596,7 +597,7 @@ export async function generateCourseSessions(
         sessions: sessions.slice(0, 3), // Sample of sessions
       })
       // Return error so we know what happened
-      return { error: 'Failed to insert sessions', details: error instanceof Error ? error.message : String(error) }
+      return { error: await actionError('insertSessionsFailed'), details: error instanceof Error ? error.message : String(error) }
     }
 
     return { success: true, data: data || [] }
@@ -605,7 +606,7 @@ export async function generateCourseSessions(
       error,
       message: error instanceof Error ? error.message : String(error),
     })
-    return { error: 'Unexpected error generating sessions', details: error instanceof Error ? error.message : String(error) }
+    return { error: await actionError('generateSessionsFailed'), details: error instanceof Error ? error.message : String(error) }
   }
 }
 
@@ -615,7 +616,7 @@ export async function getCourseSessions(
   toDate?: string,
 ): Promise<{ data?: CourseSession[]; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -638,13 +639,13 @@ export async function getCourseSessions(
 
     if (error) {
       console.error('Error fetching course sessions:', error)
-      return { error: 'Failed to fetch sessions' }
+      return { error: await actionError('fetchSessionsFailed') }
     }
 
     return { data: data || [] }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -661,7 +662,7 @@ export async function getCourseEnrolledStudents(
   courseId: string,
 ): Promise<{ data?: EnrolledStudent[]; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -677,7 +678,7 @@ export async function getCourseEnrolledStudents(
     const { data: course, error: courseError } = courseResult as { data: Course | null; error: PostgrestError | null }
 
     if (courseError || !course) {
-      return { error: 'Course not found' }
+      return { error: await actionError('courseNotFound') }
     }
 
     // Get students with active packages for this dance type
@@ -693,13 +694,13 @@ export async function getCourseEnrolledStudents(
 
     if (error) {
       console.error('Error fetching enrolled students:', error)
-      return { error: 'Failed to fetch enrolled students' }
+      return { error: await actionError('fetchEnrolledStudentsFailed') }
     }
 
     return { data: data || [] }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -712,10 +713,10 @@ export async function getAvailableStudentsForCourse(
   courseId: string,
 ): Promise<{ data?: AvailableStudent[]; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -731,7 +732,7 @@ export async function getAvailableStudentsForCourse(
     const { data: course, error: courseError } = courseResult as { data: Course | null; error: PostgrestError | null }
 
     if (courseError || !course) {
-      return { error: 'Course not found' }
+      return { error: await actionError('courseNotFound') }
     }
 
     // Get all students with packages matching this dance type
@@ -748,12 +749,12 @@ export async function getAvailableStudentsForCourse(
 
     if (error) {
       console.error('Error fetching available students:', error)
-      return { error: 'Failed to fetch students' }
+      return { error: await actionError('fetchStudentsFailed') }
     }
 
     return { data: data || [] }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }

@@ -48,6 +48,7 @@ export function InstructorSelector({
   onSave,
   onClose,
 }: InstructorSelectorProps) {
+  const tx = useTranslations('instructorSelector')
   const t = useTranslations()
   const [tempSelectedId, setTempSelectedId] = useState<string>(selectedReplacementId || '')
   const [searchQuery, setSearchQuery] = useState<string>('')
@@ -127,7 +128,7 @@ export function InstructorSelector({
           </InputGroupAddon>
           <InputGroupInput
             type="search"
-            placeholder="Search by instructor name..."
+            placeholder={tx('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value)
@@ -173,10 +174,10 @@ export function InstructorSelector({
                       <TableCell>
                         {rateExists ? (
                           <Badge className="bg-green-100 text-green-700">
-                            Has rate {rateAmount !== null && `(%${rateAmount})`}
+                            {tx('hasRate')} {rateAmount !== null && `(%${rateAmount})`}
                           </Badge>
                         ) : (
-                          <Badge variant="destructive">No rate</Badge>
+                          <Badge variant="destructive">{tx('noRate')}</Badge>
                         )}
                       </TableCell>
                     </TableRow>
@@ -186,8 +187,8 @@ export function InstructorSelector({
                 <TableRow>
                   <TableCell colSpan={3} className="py-8 text-center text-muted-foreground">
                     {availableInstructors.length === 0
-                      ? 'No available instructors. Either all are assigned to this course or all have been selected as replacements.'
-                      : 'No instructors matching your search'}
+                      ? tx('noneAvailable')
+                      : tx('noMatch')}
                   </TableCell>
                 </TableRow>
               )}
@@ -203,10 +204,10 @@ export function InstructorSelector({
             </span>
             <div className="flex gap-2">
               <Button onClick={handlePreviousPage} disabled={currentPage === 1} variant="outline" size="sm">
-                Previous
+                {tx('previous')}
               </Button>
               <Button onClick={handleNextPage} disabled={currentPage === totalPages} variant="outline" size="sm">
-                Next
+                {tx('next')}
               </Button>
             </div>
           </div>
@@ -214,10 +215,10 @@ export function InstructorSelector({
 
         <DialogFooter>
           <Button onClick={onClose} variant="outline">
-            Cancel
+            {tx('cancel')}
           </Button>
           <Button onClick={handleSave} disabled={!tempSelectedId}>
-            Confirm
+            {tx('confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Calendar, Zap, BookOpen, History } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
 
 interface AttendanceHistoryItem {
   id: string
@@ -42,6 +43,8 @@ export function StudentHistory({
   attendanceHistory,
   packageHistory,
 }: StudentHistoryProps) {
+  const tx = useTranslations('studentHistory')
+  const locale = useLocale()
   const [activeTab, setActiveTab] = useState<'attendance' | 'credits'>(
     'attendance'
   )
@@ -51,9 +54,9 @@ export function StudentHistory({
       <div>
         <div className="flex items-center gap-2 mb-2">
           <History size={24} className="text-primary" />
-          <h2 className="text-2xl font-bold text-foreground">History</h2>
+          <h2 className="text-2xl font-bold text-foreground">{tx('title')}</h2>
         </div>
-        <p className="text-muted-foreground">View your attendance records and credit usage</p>
+        <p className="text-muted-foreground">{tx('description')}</p>
       </div>
 
       {/* Tabs */}
@@ -68,7 +71,7 @@ export function StudentHistory({
           }`}
         >
           <Calendar size={16} className="mr-2" />
-          Attendance History
+          {tx('attendanceTab')}
         </Button>
         <Button
           onClick={() => setActiveTab('credits')}
@@ -80,7 +83,7 @@ export function StudentHistory({
           }`}
         >
           <Zap size={16} className="mr-2" />
-          Credit History
+          {tx('creditTab')}
         </Button>
       </div>
 
@@ -90,7 +93,7 @@ export function StudentHistory({
           {attendanceHistory.length === 0 ? (
             <Card className="border-border p-8 text-center">
               <Calendar size={32} className="mx-auto text-muted-foreground/70 mb-2" />
-              <p className="text-muted-foreground">No attendance records yet</p>
+              <p className="text-muted-foreground">{tx('noAttendance')}</p>
             </Card>
           ) : (
             <div className="space-y-3">
@@ -108,7 +111,7 @@ export function StudentHistory({
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
                         <h4 className="font-semibold text-foreground">
-                          {course?.name || 'Unknown Course'}
+                          {course?.name || tx('unknownCourse')}
                         </h4>
                         <div className="text-sm text-muted-foreground space-y-0.5">
                           {course?.dance_types?.name && (
@@ -131,14 +134,13 @@ export function StudentHistory({
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold text-green-700 mb-1">
-                          ✓ Attended
+                          {tx('attended')}
                         </p>
                         {sessionDate && (
                           <p className="text-xs text-muted-foreground">
-                            {sessionDate.toLocaleDateString()} at{' '}
-                            {sessionDate.toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
+                            {tx('dateAt', {
+                              date: sessionDate.toLocaleDateString(locale),
+                              time: sessionDate.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }),
                             })}
                           </p>
                         )}
@@ -158,7 +160,7 @@ export function StudentHistory({
           {packageHistory.length === 0 ? (
             <Card className="border-border p-8 text-center">
               <Zap size={32} className="mx-auto text-muted-foreground/70 mb-2" />
-              <p className="text-muted-foreground">No credit purchases yet</p>
+              <p className="text-muted-foreground">{tx('noPurchases')}</p>
             </Card>
           ) : (
             <div className="space-y-3">
@@ -174,7 +176,7 @@ export function StudentHistory({
                       <div className="flex items-start justify-between">
                         <div>
                           <h4 className="font-semibold text-foreground">
-                            {pkg.package?.name || 'Unknown Package'}
+                            {pkg.package?.name || tx('unknownPackage')}
                           </h4>
                           {pkg.package?.dance_types?.name && (
                             <p className="text-sm text-muted-foreground">
@@ -184,8 +186,7 @@ export function StudentHistory({
                         </div>
                         <div className="text-right text-sm">
                           <p className="text-muted-foreground">
-                            Purchased:{' '}
-                            {purchaseDate.toLocaleDateString()}
+                            {tx('purchased', { date: purchaseDate.toLocaleDateString(locale) })}
                           </p>
                         </div>
                       </div>
@@ -193,20 +194,20 @@ export function StudentHistory({
                       {/* Credit Stats */}
                       <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
                         <div className="text-center">
-                          <p className="text-xs text-muted-foreground mb-1">Total</p>
+                          <p className="text-xs text-muted-foreground mb-1">{tx('total')}</p>
                           <p className="text-lg font-bold text-foreground">
                             {totalCredits}
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-xs text-muted-foreground mb-1">Used</p>
+                          <p className="text-xs text-muted-foreground mb-1">{tx('used')}</p>
                           <p className="text-lg font-bold text-amber-600">
                             {creditsUsed}
                           </p>
                         </div>
                         <div className="text-center">
                           <p className="text-xs text-muted-foreground mb-1">
-                            Remaining
+                            {tx('remaining')}
                           </p>
                           <p
                             className={`text-lg font-bold ${

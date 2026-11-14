@@ -9,6 +9,7 @@ import { getChanges } from '@/lib/utils/history-utils'
 import type { Database } from '@/lib/types/database.types'
 import type { TablesUpdate } from '@/lib/types/database.types'
 import { sanitizeSearch } from '@/lib/utils/search'
+import { actionError } from '@/lib/i18n/actionError'
 
 type Instructor = Database['public']['Tables']['instructors']['Row']
 
@@ -17,13 +18,13 @@ export async function getInstructorsForDanceType(danceTypeId?: string) {
     const user = await getCurrentUser()
     if (!user) {
       console.warn('[getInstructorsForDanceType] User not authenticated')
-      return { error: 'Not authenticated' }
+      return { error: await actionError('notAuthenticated') }
     }
 
     const organization = await getOrganization()
     if (!organization) {
       console.warn('[getInstructorsForDanceType] No organization found for user:', user.id)
-      return { error: 'No organization found' }
+      return { error: await actionError('noOrganization') }
     }
 
     // Use admin client to bypass RLS
@@ -43,7 +44,7 @@ export async function getInstructorsForDanceType(danceTypeId?: string) {
 
     if (ratesError) {
       console.error('[getInstructorsForDanceType] Error fetching rates:', ratesError)
-      return { error: 'Failed to fetch instructor rates' }
+      return { error: await actionError('fetchRatesFailed') }
     }
 
     console.log('[getInstructorsForDanceType] Found rates:', rates?.length || 0)
@@ -75,7 +76,7 @@ export async function getInstructorsForDanceType(danceTypeId?: string) {
 
     if (instructorsError) {
       console.error('[getInstructorsForDanceType] Error fetching instructors:', instructorsError)
-      return { error: 'Failed to fetch instructors' }
+      return { error: await actionError('fetchInstructorsFailed') }
     }
 
     console.log('[getInstructorsForDanceType] Returning', instructors?.length || 0, 'instructors')
@@ -83,7 +84,7 @@ export async function getInstructorsForDanceType(danceTypeId?: string) {
   } catch (error) {
     console.error('[getInstructorsForDanceType] Unexpected error:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
-    return { error: 'An unexpected error occurred', details: errorMessage }
+    return { error: await actionError('unexpected'), details: errorMessage }
   }
 }
 
@@ -96,13 +97,13 @@ export async function getInstructors(
     const user = await getCurrentUser()
     if (!user) {
       console.warn('[getInstructors] User not authenticated - user is null')
-      return { error: 'Not authenticated', data: [], totalCount: 0 }
+      return { error: await actionError('notAuthenticated'), data: [], totalCount: 0 }
     }
 
     const organization = await getOrganization()
     if (!organization) {
       console.warn('[getInstructors] No organization found for user:', user.id)
-      return { error: 'No organization found', data: [], totalCount: 0 }
+      return { error: await actionError('noOrganization'), data: [], totalCount: 0 }
     }
 
     const admin = createAdminClient()
@@ -156,7 +157,7 @@ export async function getInstructors(
 
     if (error) {
       console.error('[getInstructors] Supabase error:', error)
-      return { error: 'Failed to fetch instructors', details: error, data: [], totalCount: 0 }
+      return { error: await actionError('fetchInstructorsFailed'), details: error, data: [], totalCount: 0 }
     }
 
     // Enrich data with computed stats
@@ -175,7 +176,7 @@ export async function getInstructors(
   } catch (error) {
     console.error('[getInstructors] Unexpected error:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
-    return { error: 'An unexpected error occurred', details: errorMessage, data: [], totalCount: 0 }
+    return { error: await actionError('unexpected'), details: errorMessage, data: [], totalCount: 0 }
   }
 }
 
@@ -184,13 +185,13 @@ export async function getInstructor(id: string) {
     const user = await getCurrentUser()
     if (!user) {
       console.warn('[getInstructor] User not authenticated')
-      return { error: 'Not authenticated' }
+      return { error: await actionError('notAuthenticated') }
     }
 
     const organization = await getOrganization()
     if (!organization) {
       console.warn('[getInstructor] No organization found for user:', user.id)
-      return { error: 'No organization found' }
+      return { error: await actionError('noOrganization') }
     }
 
     const admin = createAdminClient()
@@ -204,14 +205,14 @@ export async function getInstructor(id: string) {
 
     if (error) {
       console.error('[getInstructor] Supabase error:', error)
-      return { error: 'Instructor not found' }
+      return { error: await actionError('instructorNotFound') }
     }
 
     return { data: data as Instructor }
   } catch (error) {
     console.error('[getInstructor] Unexpected error:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
-    return { error: 'An unexpected error occurred', details: errorMessage }
+    return { error: await actionError('unexpected'), details: errorMessage }
   }
 }
 
@@ -227,13 +228,13 @@ export async function createInstructor(input: CreateInstructorInput) {
     const user = await getCurrentUser()
     if (!user) {
       console.warn('[createInstructor] User not authenticated')
-      return { error: 'Not authenticated' }
+      return { error: await actionError('notAuthenticated') }
     }
 
     const organization = await getOrganization()
     if (!organization) {
       console.warn('[createInstructor] No organization found for user:', user.id)
-      return { error: 'No organization found' }
+      return { error: await actionError('noOrganization') }
     }
 
     const supabase = await createServerSupabaseClient()
@@ -251,7 +252,7 @@ export async function createInstructor(input: CreateInstructorInput) {
 
     if (error) {
       console.error('[createInstructor] Supabase error:', error)
-      return { error: 'Failed to create instructor' }
+      return { error: await actionError('createInstructorFailed') }
     }
 
     // Log operation (non-blocking)
@@ -274,7 +275,7 @@ export async function createInstructor(input: CreateInstructorInput) {
   } catch (error) {
     console.error('[createInstructor] Unexpected error:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
-    return { error: 'An unexpected error occurred', details: errorMessage }
+    return { error: await actionError('unexpected'), details: errorMessage }
   }
 }
 
@@ -290,13 +291,13 @@ export async function updateInstructor(id: string, input: UpdateInstructorInput)
     const user = await getCurrentUser()
     if (!user) {
       console.warn('[updateInstructor] User not authenticated')
-      return { error: 'Not authenticated' }
+      return { error: await actionError('notAuthenticated') }
     }
 
     const organization = await getOrganization()
     if (!organization) {
       console.warn('[updateInstructor] No organization found for user:', user.id)
-      return { error: 'No organization found' }
+      return { error: await actionError('noOrganization') }
     }
 
     const supabase = await createServerSupabaseClient()
@@ -310,7 +311,7 @@ export async function updateInstructor(id: string, input: UpdateInstructorInput)
       .single()
 
     if (!beforeInstructor) {
-      return { error: 'Instructor not found or does not belong to your organization' }
+      return { error: await actionError('instructorNotInOrg') }
     }
 
     const updateData: TablesUpdate<'instructors'> = {}
@@ -328,7 +329,7 @@ export async function updateInstructor(id: string, input: UpdateInstructorInput)
 
     if (error) {
       console.error('[updateInstructor] Supabase error:', error)
-      return { error: 'Failed to update instructor' }
+      return { error: await actionError('updateInstructorFailed') }
     }
 
     // Log the update operation
@@ -355,7 +356,7 @@ export async function updateInstructor(id: string, input: UpdateInstructorInput)
   } catch (error) {
     console.error('[updateInstructor] Unexpected error:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
-    return { error: 'An unexpected error occurred', details: errorMessage }
+    return { error: await actionError('unexpected'), details: errorMessage }
   }
 }
 
@@ -364,13 +365,13 @@ export async function deleteInstructor(id: string, reason?: string) {
     const user = await getCurrentUser()
     if (!user) {
       console.warn('[deleteInstructor] User not authenticated')
-      return { error: 'Not authenticated' }
+      return { error: await actionError('notAuthenticated') }
     }
 
     const organization = await getOrganization()
     if (!organization) {
       console.warn('[deleteInstructor] No organization found for user:', user.id)
-      return { error: 'No organization found' }
+      return { error: await actionError('noOrganization') }
     }
 
     const supabase = await createServerSupabaseClient()
@@ -384,7 +385,7 @@ export async function deleteInstructor(id: string, reason?: string) {
       .single()
 
     if (!beforeInstructor) {
-      return { error: 'Instructor not found or does not belong to your organization' }
+      return { error: await actionError('instructorNotInOrg') }
     }
 
     const user_id = user.id
@@ -400,7 +401,7 @@ export async function deleteInstructor(id: string, reason?: string) {
 
     if (error) {
       console.error('[deleteInstructor] Supabase error:', error)
-      return { error: 'Failed to delete instructor' }
+      return { error: await actionError('deleteInstructorFailed') }
     }
 
     // Log the delete operation
@@ -418,16 +419,16 @@ export async function deleteInstructor(id: string, reason?: string) {
   } catch (error) {
     console.error('[deleteInstructor] Unexpected error:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
-    return { error: 'An unexpected error occurred', details: errorMessage }
+    return { error: await actionError('unexpected'), details: errorMessage }
   }
 }
 
 export async function getInstructorFilterOptions() {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const adminSupabase = createAdminClient()
@@ -453,6 +454,6 @@ export async function getInstructorFilterOptions() {
     return { danceTypes, branches }
   } catch (error) {
     console.error('[getInstructorFilterOptions] Unexpected error:', error)
-    return { error: 'Failed to fetch filter options', danceTypes: [], branches: [] }
+    return { error: await actionError('fetchFiltersFailed'), danceTypes: [], branches: [] }
   }
 }

@@ -8,12 +8,14 @@ import { formatCurrency } from '@/lib/utils/format'
 import { Plus, DollarSign, TrendingUp, TrendingDown, Users } from 'lucide-react'
 import { CashRegisterTable } from './cash-register-client'
 import type { CombinedCashItem } from './columns'
+import { getTranslations } from 'next-intl/server'
 
 export default async function CashRegisterPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  const tx = await getTranslations('cashRegister')
   const PAGE_SIZE = 10
   const params = await searchParams
   const branchId = typeof params.branch === 'string' ? params.branch : undefined
@@ -26,7 +28,7 @@ export default async function CashRegisterPage({
 
   const organization = await getOrganization()
   if (!organization) {
-    return <div className="p-8 text-center text-red-600">Organization not found</div>
+    return <div className="p-8 text-center text-red-600">{tx('orgNotFound')}</div>
   }
 
   const currency = organization?.currency || 'TRY'
@@ -54,7 +56,7 @@ export default async function CashRegisterPage({
         id: e.id,
         type: 'earning' as const,
         amount: e.amount,
-        description: `Instructor Payment - ${e.instructors?.first_name} ${e.instructors?.last_name}`,
+        description: tx('instructorPayment', { name: `${e.instructors?.first_name ?? ''} ${e.instructors?.last_name ?? ''}`.trim() }),
         created_at: e.created_at,
         instructors: e.instructors,
         branches: e.course_sessions?.courses?.branches || null,
@@ -75,13 +77,13 @@ export default async function CashRegisterPage({
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Cash Register</h1>
-            <p className="text-muted-foreground mt-1">Track all financial transactions</p>
+            <h1 className="text-3xl font-bold text-foreground">{tx('title')}</h1>
+            <p className="text-muted-foreground mt-1">{tx('description')}</p>
           </div>
           <Link href="/dashboard/cash-register/new">
             <Button className="gap-2">
               <Plus size={20} />
-              New Transaction
+              {tx('newTransaction')}
             </Button>
           </Link>
         </div>
@@ -91,7 +93,7 @@ export default async function CashRegisterPage({
           <Card className="border-border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Income</p>
+                <p className="text-sm text-muted-foreground mb-1">{tx('income')}</p>
                 <p className="text-3xl font-bold text-green-600">{formatCurrency(income, currency)}</p>
               </div>
               <TrendingUp className="text-green-600" size={32} />
@@ -101,7 +103,7 @@ export default async function CashRegisterPage({
           <Card className="border-border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Expenses</p>
+                <p className="text-sm text-muted-foreground mb-1">{tx('expenses')}</p>
                 <p className="text-3xl font-bold text-red-600">{formatCurrency(expenses, currency)}</p>
               </div>
               <TrendingDown className="text-red-600" size={32} />
@@ -111,7 +113,7 @@ export default async function CashRegisterPage({
           <Card className="border-border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Instructor Pay</p>
+                <p className="text-sm text-muted-foreground mb-1">{tx('instructorPay')}</p>
                 <p className="text-3xl font-bold text-purple-600">{formatCurrency(totalEarnings, currency)}</p>
               </div>
               <Users className="text-purple-600" size={32} />
@@ -121,7 +123,7 @@ export default async function CashRegisterPage({
           <Card className="border-border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Net Balance</p>
+                <p className="text-sm text-muted-foreground mb-1">{tx('netBalance')}</p>
                 <p
                   className={`text-3xl font-bold ${
                     netBalance >= 0 ? 'text-primary' : 'text-red-600'
@@ -151,8 +153,8 @@ export default async function CashRegisterPage({
     console.error('Error loading cash register page:', error)
     return (
       <div className="p-8 text-center">
-        <p className="text-red-600 font-semibold mb-2">Error loading cash register</p>
-        <p className="text-muted-foreground text-sm">Please try refreshing the page</p>
+        <p className="text-red-600 font-semibold mb-2">{tx('loadError')}</p>
+        <p className="text-muted-foreground text-sm">{tx('loadErrorHint')}</p>
       </div>
     )
   }

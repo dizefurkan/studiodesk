@@ -28,12 +28,10 @@ export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: Earn
     setError(null)
 
     try {
-      console.log('[EarningsEditButton] Saving earnings:', { earningsId, amount: parseFloat(amount) })
       const result = await updateInstructorEarnings(earningsId, parseFloat(amount))
-      console.log('[EarningsEditButton] Result:', result)
 
       if (!result) {
-        setError('No response from server')
+        setError(t('errors.noResponse'))
         setIsLoading(false)
         return
       }
@@ -48,12 +46,12 @@ export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: Earn
         onUpdate?.()
         router.refresh()
       } else {
-        setError('Unexpected response format')
+        setError(t('errors.unexpectedResponse'))
         setIsLoading(false)
       }
     } catch (err) {
       console.error('[EarningsEditButton] Exception:', err)
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+      setError(err instanceof Error ? err.message : t('errors.unexpected'))
       setIsLoading(false)
     }
   }
@@ -69,12 +67,10 @@ export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: Earn
     setError(null)
 
     try {
-      console.log('[EarningsEditButton] Deleting earnings:', { earningsId })
       const result = await deleteInstructorEarnings(earningsId)
-      console.log('[EarningsEditButton] Delete result:', result)
 
       if (!result) {
-        setError('No response from server')
+        setError(t('errors.noResponse'))
         setIsLoading(false)
         return
       }
@@ -88,12 +84,12 @@ export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: Earn
         setIsLoading(false)
         router.refresh()
       } else {
-        setError('Unexpected response format')
+        setError(t('errors.unexpectedResponse'))
         setIsLoading(false)
       }
     } catch (err) {
       console.error('[EarningsEditButton] Delete exception:', err)
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+      setError(err instanceof Error ? err.message : t('errors.unexpected'))
       setIsLoading(false)
     }
   }
@@ -109,21 +105,21 @@ export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: Earn
           className="w-24 text-right"
           disabled={isLoading}
         />
-        <Button variant="ghost" size="icon-sm" className="text-green-600" aria-label="Kaydet"
+        <Button variant="ghost" size="icon-sm" className="text-green-600" aria-label={t('common.save')}
           onClick={handleSave}
           disabled={isLoading}
-          title="Kaydet"
+          title={t('common.save')}
         >
           <Check size={18} />
         </Button>
-        <Button variant="ghost" size="icon-sm" aria-label="İptal"
+        <Button variant="ghost" size="icon-sm" aria-label={t('common.cancel')}
           onClick={() => {
             setIsEditing(false)
             setAmount(currentAmount.toString())
             setError(null)
           }}
           disabled={isLoading}
-          title="İptal"
+          title={t('common.cancel')}
         >
           <X size={18} />
         </Button>
@@ -134,16 +130,16 @@ export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: Earn
 
   return (
     <div className="flex items-center gap-2">
-      <Button variant="ghost" size="icon-sm" className="text-primary" aria-label="Düzenle"
+      <Button variant="ghost" size="icon-sm" className="text-primary" aria-label={t('common.edit')}
         onClick={() => setIsEditing(true)}
-        title="Düzenle"
+        title={t('common.edit')}
       >
         <Edit2 size={18} />
       </Button>
-      <Button variant="ghost" size="icon-sm" className="text-destructive" aria-label="Sil"
+      <Button variant="ghost" size="icon-sm" className="text-destructive" aria-label={t('common.delete')}
         onClick={handleDelete}
         disabled={isLoading}
-        title="Sil"
+        title={t('common.delete')}
       >
         <Trash2 size={18} />
       </Button>

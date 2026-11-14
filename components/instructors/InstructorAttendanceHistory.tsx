@@ -7,6 +7,7 @@ import {
   getInstructorAttendanceHistory,
   type InstructorSessionHistory as Session,
 } from '@/lib/actions/instructor-detail.actions'
+import { useLocale, useTranslations } from 'next-intl'
 
 interface InstructorAttendanceHistoryProps {
   instructorId: string
@@ -19,6 +20,8 @@ export function InstructorAttendanceHistory({
   showCourseInfo = false,
   showInstructors = false 
 }: InstructorAttendanceHistoryProps) {
+  const tx = useTranslations('instructorAttendance')
+  const locale = useLocale()
   const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -42,9 +45,9 @@ export function InstructorAttendanceHistory({
   if (loading) {
     return (
       <div className="border-t border-border pt-8">
-        <h2 className="text-2xl font-bold text-foreground mb-4">Attendance History</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-4">{tx('title')}</h2>
         <Card className="border-border p-6 text-center text-muted-foreground">
-          Loading...
+          {tx('loading')}
         </Card>
       </div>
     )
@@ -53,9 +56,9 @@ export function InstructorAttendanceHistory({
   if (!sessions || sessions.length === 0) {
     return (
       <div className="border-t border-border pt-8">
-        <h2 className="text-2xl font-bold text-foreground mb-4">Attendance History</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-4">{tx('title')}</h2>
         <Card className="border-border p-6 text-center text-muted-foreground">
-          No attendance records
+          {tx('empty')}
         </Card>
       </div>
     )
@@ -63,7 +66,7 @@ export function InstructorAttendanceHistory({
 
   return (
     <div className="border-t border-border pt-8">
-      <h2 className="text-2xl font-bold text-foreground mb-4">Attendance History</h2>
+      <h2 className="text-2xl font-bold text-foreground mb-4">{tx('title')}</h2>
 
       <div className="space-y-2">
         {sessions.map((session) => {
@@ -75,7 +78,7 @@ export function InstructorAttendanceHistory({
                 <div className="flex-1">
                   <div className="flex flex-col gap-1">
                     <p className="font-medium text-foreground">
-                      {new Date(session.session_date).toLocaleDateString('tr-TR', {
+                      {new Date(session.session_date).toLocaleDateString(locale, {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
@@ -97,7 +100,7 @@ export function InstructorAttendanceHistory({
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
-                    {presentCount} present (out of {session.attendance.length} total)
+                    {tx('presentSummary', { present: presentCount, total: session.attendance.length })}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 self-start md:self-center md:ml-4">
@@ -105,12 +108,12 @@ export function InstructorAttendanceHistory({
                     {presentCount}/{session.attendance.length}
                   </span>
                   <Link href={`/dashboard/attendance/${session.sessionId}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline">
-                    View Details →
+                    {tx('viewDetails')}
                   </Link>
                 </div>
               </summary>
               <div className="px-4 pb-4 border-t border-border pt-4 bg-muted/50">
-                <p className="text-sm font-semibold text-foreground mb-3">Attendance:</p>
+                <p className="text-sm font-semibold text-foreground mb-3">{tx('attendanceLabel')}</p>
                 <div className="space-y-2">
                   {session.attendance.map((att, idx: number) => (
                     <div key={idx} className="flex items-center gap-3 text-sm">
@@ -125,7 +128,7 @@ export function InstructorAttendanceHistory({
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {att.is_present ? 'Present' : 'Absent'}
+                        {att.is_present ? tx('present') : tx('absent')}
                       </span>
                       {att.notes && <span className="text-muted-foreground">/{att.notes}</span>}
                     </div>

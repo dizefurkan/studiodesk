@@ -9,6 +9,7 @@ import { Trash2, Edit2, Plus, X, CircleAlert } from 'lucide-react'
 import { getStudios, createStudio, updateStudio, deleteStudio } from '@/lib/actions/studios.actions'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { Label } from '@/components/ui/label'
+import { useTranslations } from 'next-intl'
 
 interface Studio {
   id: string
@@ -27,6 +28,7 @@ interface StudioFormData {
 }
 
 export default function StudiosPage({ params }: { params: Promise<{ id: string }> }) {
+  const tx = useTranslations('studios')
   const { id: branchId } = use(params)
   const [studios, setStudios] = useState<Studio[]>([])
   const [loading, setLoading] = useState(true)
@@ -75,7 +77,7 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
     e.preventDefault()
 
     if (!formData.name.trim()) {
-      setError('Studio name is required')
+      setError(tx('nameRequired'))
       return
     }
 
@@ -105,14 +107,14 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
         setShowForm(false)
       }
     } catch (err) {
-      setError('An error occurred')
+      setError(tx('error'))
     }
   }
 
   const confirm = useConfirm()
 
   const handleDelete = async (id: string) => {
-    if ((await confirm({ title: 'Are you sure you want to delete this studio?', destructive: true }))) {
+    if ((await confirm({ title: tx('deleteConfirm'), destructive: true }))) {
       const result = await deleteStudio(id)
       if (result.error) {
         setError(result.error)
@@ -125,7 +127,7 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="text-center py-8">Loading...</div>
+        <div className="text-center py-8">{tx('loading')}</div>
       </div>
     )
   }
@@ -135,8 +137,8 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Studios</h1>
-          <p className="text-muted-foreground mt-1">Manage dance studios in this branch</p>
+          <h1 className="text-3xl font-bold text-foreground">{tx('title')}</h1>
+          <p className="text-muted-foreground mt-1">{tx('description')}</p>
         </div>
         <Button
           onClick={() => {
@@ -144,7 +146,7 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
             setShowForm(true)
           }}>
           <Plus size={20} className="mr-2" />
-          Add Studio
+          {tx('add')}
         </Button>
       </div>
 
@@ -154,7 +156,7 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
           <CircleAlert />
           <AlertDescription>{error}</AlertDescription>
           <AlertAction>
-            <Button variant="ghost" size="icon-xs" aria-label="Dismiss" onClick={() => setError(null)}>
+            <Button variant="ghost" size="icon-xs" aria-label={tx('dismiss')} onClick={() => setError(null)}>
               <X />
             </Button>
           </AlertAction>
@@ -165,18 +167,18 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
       {showForm && (
         <Card className="border-border p-6">
           <h2 className="text-lg font-semibold mb-4 text-foreground">
-            {editingId ? 'Edit Studio' : 'New Studio'}
+            {editingId ? tx('editTitle') : tx('newTitle')}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label className="block mb-1">
-                Studio Name *
+                {tx('name')}
               </Label>
               <Input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Salon 1"
+                placeholder={tx('namePlaceholder')}
                 className="w-full"
                 required
               />
@@ -184,20 +186,20 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
 
             <div>
               <Label className="block mb-1">
-                Description
+                {tx('descriptionLabel')}
               </Label>
               <Input
                 type="text"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="e.g., Ground floor, near entrance"
+                placeholder={tx('descriptionPlaceholder')}
                 className="w-full"
               />
             </div>
 
             <div>
               <Label className="block mb-1">
-                Capacity (Students)
+                {tx('capacity')}
               </Label>
               <Input
                 type="number"
@@ -211,7 +213,7 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
 
             <div>
               <Label className="block mb-1">
-                Image URL (for future)
+                {tx('imageUrl')}
               </Label>
               <Input
                 type="url"
@@ -234,7 +236,7 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
                   setShowForm(false)
                 }}
               >
-                Cancel
+                {tx('cancel')}
               </Button>
             </div>
           </form>
@@ -245,8 +247,8 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
       {studios.length === 0 ? (
         <Card className="border-border p-12 text-center">
           <div className="text-muted-foreground">
-            <p className="text-lg">No studios yet</p>
-            <p className="text-sm mt-1">Create your first studio to organize dance classes</p>
+            <p className="text-lg">{tx('emptyTitle')}</p>
+            <p className="text-sm mt-1">{tx('emptyDescription')}</p>
           </div>
         </Card>
       ) : (
@@ -261,11 +263,14 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
                   )}
                   {studio.capacity && (
                     <p className="text-muted-foreground text-sm mt-1">
-                      Capacity: <span className="font-medium">{studio.capacity} students</span>
+                      {tx.rich('capacityValue', {
+                        count: studio.capacity,
+                        b: (chunks) => <span className="font-medium">{chunks}</span>,
+                      })}
                     </p>
                   )}
                   {studio.image_url && (
-                    <p className="text-muted-foreground text-sm mt-1">Has image (future use)</p>
+                    <p className="text-muted-foreground text-sm mt-1">{tx('hasImage')}</p>
                   )}
                 </div>
                 <div className="flex gap-2 ml-4">

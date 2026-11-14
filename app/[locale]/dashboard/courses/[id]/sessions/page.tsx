@@ -5,8 +5,9 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Calendar, Clock, BookOpen } from 'lucide-react'
 import { formatTime } from '@/lib/utils/formatTime'
+import { getLocale, getTranslations } from 'next-intl/server'
+import { weekdayNames } from '@/lib/i18n/dates'
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 interface SessionsPageProps {
   params: {
@@ -15,6 +16,8 @@ interface SessionsPageProps {
 }
 
 export default async function SessionsPage({ params }: SessionsPageProps) {
+  const tx = await getTranslations('courseSessions')
+  const DAYS = weekdayNames(await getLocale())
   const { id } = await params
   const courseResult = await getCourse(id)
 
@@ -39,9 +42,9 @@ export default async function SessionsPage({ params }: SessionsPageProps) {
     <div className="space-y-6">
       <div>
         <Link href={`/dashboard/courses/${course.id}`} className="text-primary hover:underline mb-4 inline-block">
-          ← Back to Course
+          {tx('backToCourse')}
         </Link>
-        <h1 className="text-3xl font-bold text-foreground">Sessions</h1>
+        <h1 className="text-3xl font-bold text-foreground">{tx('title')}</h1>
         <p className="text-muted-foreground mt-1">
           {course.name} • {course.branches?.name}
         </p>
@@ -51,7 +54,7 @@ export default async function SessionsPage({ params }: SessionsPageProps) {
       <Card className="border-border p-6">
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <p className="text-sm text-muted-foreground mb-2">Schedule</p>
+            <p className="text-sm text-muted-foreground mb-2">{tx('schedule')}</p>
             <div className="flex items-center gap-2">
               <Clock size={18} className="text-primary" />
               <span className="font-medium text-foreground">
@@ -60,10 +63,10 @@ export default async function SessionsPage({ params }: SessionsPageProps) {
             </div>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground mb-2">Total Sessions</p>
+            <p className="text-sm text-muted-foreground mb-2">{tx('total')}</p>
             <div className="flex items-center gap-2">
               <Calendar size={18} className="text-primary" />
-              <span className="font-medium text-foreground">{sessions.length} sessions</span>
+              <span className="font-medium text-foreground">{tx('count', { count: sessions.length })}</span>
             </div>
           </div>
         </div>
@@ -74,8 +77,8 @@ export default async function SessionsPage({ params }: SessionsPageProps) {
         <Card className="border-border p-12 text-center">
           <div className="text-muted-foreground">
             <BookOpen size={48} className="mx-auto mb-4 opacity-50" />
-            <p className="text-lg">No sessions scheduled</p>
-            <p className="text-sm mt-1">Sessions will be auto-generated on the schedule day</p>
+            <p className="text-lg">{tx('emptyTitle')}</p>
+            <p className="text-sm mt-1">{tx('emptyDescription')}</p>
           </div>
         </Card>
       ) : (
@@ -97,7 +100,7 @@ export default async function SessionsPage({ params }: SessionsPageProps) {
 
                 <Link href={`/dashboard/attendance?session=${session.id}`}>
                   <Button size="sm" >
-                    Mark Attendance
+                    {tx('markAttendance')}
                   </Button>
                 </Link>
               </div>

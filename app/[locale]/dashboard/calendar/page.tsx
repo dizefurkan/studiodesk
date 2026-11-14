@@ -2,7 +2,8 @@
 
 import { Link } from '@/i18n/navigation'
 import { useState, useEffect } from 'react'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
+import { useLocaleNames } from '@/hooks/useLocaleNames'
 import { getCourses } from '@/lib/actions/courses.actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -13,23 +14,12 @@ import type { ActionData } from '@/lib/types/actions'
 
 type CalendarCourse = ActionData<typeof getCourses>[number]
 
-/** Localised weekday (0 = Sunday) and short month names */
-function useCalendarNames() {
-  const locale = useLocale()
-  const weekday = new Intl.DateTimeFormat(locale, { weekday: 'long' })
-  const month = new Intl.DateTimeFormat(locale, { month: 'short' })
-  // 2023-01-01 was a Sunday
-  const DAYS = Array.from({ length: 7 }, (_, i) => weekday.format(new Date(2023, 0, 1 + i)))
-  const MONTHS = Array.from({ length: 12 }, (_, i) => month.format(new Date(2023, i, 1)))
-  return { DAYS, MONTHS }
-}
-
 function CalendarPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const { DAYS, MONTHS } = useCalendarNames()
+  const { DAYS, MONTHS, locale } = useLocaleNames()
   const [courses, setCourses] = useState<CalendarCourse[]>([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'agenda'>('month')
@@ -415,7 +405,7 @@ function CalendarPage({
     <div className="space-y-4">
       {weekDays.map((day) => {
         const dayCoursesForDay = getCoursesForDay(day.getDay())
-        const dayFormatted = new Intl.DateTimeFormat('en-US', {
+        const dayFormatted = new Intl.DateTimeFormat(locale, {
           weekday: 'long',
           year: 'numeric',
           month: 'long',

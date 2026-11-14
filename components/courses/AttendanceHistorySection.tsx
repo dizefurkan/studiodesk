@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { ChevronDown, BookOpen } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { useTranslations } from "next-intl";
+import { useDateFnsLocale } from "@/hooks/useDateFnsLocale";
 import type { getCourseAttendanceHistory } from '@/lib/actions/course-attendance.actions'
 import type { ActionData } from '@/lib/types/actions'
 
@@ -17,6 +18,8 @@ export function AttendanceHistorySection({
   attendanceHistory,
 }: AttendanceHistorySectionProps) {
   const t = useTranslations();
+  const tHist = useTranslations("attendanceHistory");
+  const dateLocale = useDateFnsLocale();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (attendanceHistory.length === 0) {
@@ -65,11 +68,11 @@ export function AttendanceHistorySection({
                         {(() => {
                           const date = new Date(record.session_date);
                           if (isToday(date)) {
-                            return `Today, ${format(date, "MMM d")}`;
+                            return tHist('today', { date: format(date, "MMM d", { locale: dateLocale }) });
                           } else if (isYesterday(date)) {
-                            return `Yesterday, ${format(date, "MMM d")}`;
+                            return tHist('yesterday', { date: format(date, "MMM d", { locale: dateLocale }) });
                           }
-                          return format(date, "EEE, MMM d");
+                          return format(date, "EEE, MMM d", { locale: dateLocale });
                         })()}
                       </p>
                       <span className="text-muted-foreground">

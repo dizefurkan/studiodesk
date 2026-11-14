@@ -95,6 +95,7 @@ export function StudentAttendanceList({
   selectedDate: propSelectedDate,
   onDateChange,
 }: StudentAttendanceListProps) {
+  const tx = useTranslations('attendanceList')
   const router = useRouter();
   const t = useTranslations();
   const [attendanceState, setAttendanceState] = useState<AttendanceState[]>([]);
@@ -125,24 +126,6 @@ export function StudentAttendanceList({
       setSelectedDate(propSelectedDate);
     }
   }, [propSelectedDate]);
-
-  // Helper: format date display (Today or X days after DATE DAYNAME)
-  const formatDateDisplay = (date: string) => {
-    if (date === today) return "Today";
-
-    const selected = new Date(date);
-    const todayDate = new Date(today);
-    const diffTime = Math.abs(selected.getTime() - todayDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const dayName = selected.toLocaleString("en-US", { weekday: "long" });
-    const formattedDate = selected.toLocaleDateString("tr-TR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-
-    return `${diffDays} days after ${formattedDate} ${dayName}`;
-  };
 
   // Filter attendance history to last 30 days
   const lastMonthAttendances = useMemo(() => {
@@ -361,7 +344,7 @@ export function StudentAttendanceList({
       const names = unmarkedStudents
         .map((s) => `${s.first_name} ${s.last_name}`)
         .join(", ");
-      setError(`All students must be marked. Not marked: ${names}`);
+      setError(tx('unmarked', { names }));
       return;
     }
 
@@ -476,7 +459,7 @@ export function StudentAttendanceList({
       }
     } catch (err) {
       console.error("[StudentAttendanceList] Unexpected error:", err);
-      setError("Failed to save attendance");
+      setError(tx('saveFailed'));
     } finally {
       setSavingBatch(false);
     }
@@ -501,7 +484,7 @@ export function StudentAttendanceList({
         router.refresh();
       }
     } catch (err) {
-      setError("Failed to remove attendance");
+      setError(tx('removeFailed'));
     }
   };
 
@@ -554,7 +537,7 @@ export function StudentAttendanceList({
                 <Calendar className="text-primary mt-0.5" size={18} />
                 <div>
                   <p className="text-sm font-medium text-foreground">
-                    Attendance History (Last 30 days)
+                    {tx('historyTitle')}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {t("attendance.sessionsRecorded", {
@@ -608,7 +591,7 @@ export function StudentAttendanceList({
             {instructors && instructors.length > 0 && (
               <div>
                 <Label className="block mb-2">
-                  Instructors
+                  {tx('instructors')}
                 </Label>
                 <div className="flex gap-2 flex-wrap">
                   {instructors.map((instructor) => {
@@ -682,7 +665,7 @@ export function StudentAttendanceList({
             />
             <Input
               type="text"
-              placeholder="Search students by name..."
+              placeholder={tx('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full"
@@ -701,8 +684,8 @@ export function StudentAttendanceList({
                       }
                       title={
                         checkedStudentIds.size === studentsWithCredits.length
-                          ? "Uncheck all"
-                          : "Check all"
+                          ? tx("uncheckAll")
+                          : tx("checkAll")
                       }
                     />
                   </TableHead>
@@ -769,14 +752,14 @@ export function StudentAttendanceList({
                               handleStatusChange(student.id, "geldi")
                             }
                           >
-                            ✓ Geldi
+                            {tx('present')}
                           </Button>
                           <Button size="xs" variant={currentState?.status === "gelmedi" || (isMarked && !currentState && !recordedAttendance?.is_present) ? "destructive" : "secondary"} className={currentState?.status === "gelmedi" || (isMarked && !currentState && !recordedAttendance?.is_present) ? "bg-red-600 text-white hover:bg-red-600/90" : undefined}
                             onClick={() =>
                               handleStatusChange(student.id, "gelmedi")
                             }
                           >
-                            ✗ Gelmedi
+                            {tx('absent')}
                           </Button>
                         </div>
                       </TableCell>
@@ -787,9 +770,9 @@ export function StudentAttendanceList({
                           <Label className="flex items-center gap-2 cursor-pointer">
                             <Checkbox onCheckedChange={(c) => handleDeductCreditsChange(student.id, c === true)}
                               checked={currentState?.deductCredits ?? true}
-                              title="Kredi düşsün mü?"
+                              title={tx('deductCredit')}
                             />
-                            <span className="text-xs text-muted-foreground">Evet</span>
+                            <span className="text-xs text-muted-foreground">{tx('yes')}</span>
                           </Label>
                         )}
                       </TableCell>
@@ -798,7 +781,7 @@ export function StudentAttendanceList({
                           currentState?.status === "gelmedi" ||
                           (isMarked && recordedAttendance?.notes)) && (
                           <Input
-                            placeholder="Note"
+                            placeholder={tx('notePlaceholder')}
                             value={
                               currentState?.notes ||
                               recordedAttendance?.notes ||
@@ -856,7 +839,7 @@ export function StudentAttendanceList({
                       {student.first_name} {student.last_name}
                     </p>
                     <p className="text-xs text-orange-700 font-medium">
-                      Credits: 0 - Package renewal required
+                      {tx('noCredits')}
                     </p>
                   </div>
                 </div>
@@ -870,10 +853,10 @@ export function StudentAttendanceList({
       {availableStudents.length === 0 && recordedAttendances.length === 0 && (
         <Card className="border-border p-12 text-center">
           <p className="text-muted-foreground">
-            No students available for this session
+            {tx('emptyTitle')}
           </p>
           <p className="text-sm text-muted-foreground mt-1">
-            Students must be enrolled in this course to attend sessions
+            {tx('emptyDescription')}
           </p>
         </Card>
       )}
@@ -890,8 +873,8 @@ export function StudentAttendanceList({
           >
             <Save size={18} />
             {savingBatch
-              ? "Saving..."
-              : `Save Attendance (${totalPendingRecords} record${totalPendingRecords !== 1 ? "s" : ""})`}
+              ? tx("saving")
+              : tx("saveCount", { count: totalPendingRecords })}
           </Button>
         </div>
       )}

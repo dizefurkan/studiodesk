@@ -82,7 +82,7 @@ export default function LoginPage() {
             id="email"
             type="email"
             name="email"
-            placeholder="you@example.com"
+            placeholder={t('auth.emailPlaceholder')}
             value={formData.email}
             onChange={handleChange}
             required

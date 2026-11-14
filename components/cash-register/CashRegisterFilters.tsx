@@ -5,6 +5,7 @@ import { format, parse } from 'date-fns'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Label } from '@/components/ui/label'
 import { useRouter } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
 
 interface CashRegisterFiltersProps {
   branches: Array<{ id: string; name: string }>
@@ -21,6 +22,7 @@ export function CashRegisterFilters({
   dataType,
   dateStr,
 }: CashRegisterFiltersProps) {
+  const tx = useTranslations('cashRegister')
   const router = useRouter()
   const handleBranchChange = (value: string) => {
     const params = new URLSearchParams()
@@ -74,13 +76,13 @@ export function CashRegisterFilters({
   return (
     <div className="flex gap-4 flex-wrap items-end">
       <div className="flex-1 min-w-50">
-        <Label className="block mb-2">Branch</Label>
+        <Label className="block mb-2">{tx('branch')}</Label>
         <NativeSelect
           defaultValue={branchId || ''}
           onChange={(e) => handleBranchChange(e.target.value)}
           className="w-full"
         >
-          <NativeSelectOption value="">All Branches</NativeSelectOption>
+          <NativeSelectOption value="">{tx('allBranches')}</NativeSelectOption>
           {branches.map((branch) => (
             <NativeSelectOption key={branch.id} value={branch.id}>
               {branch.name}
@@ -90,38 +92,38 @@ export function CashRegisterFilters({
       </div>
 
       <div className="flex-1 min-w-50">
-        <Label className="block mb-2">Data Type</Label>
+        <Label className="block mb-2">{tx('dataType')}</Label>
         <NativeSelect
           defaultValue={dataType || 'all'}
           onChange={(e) => handleDataTypeChange(e.target.value)}
           className="w-full"
         >
-          <NativeSelectOption value="all">All</NativeSelectOption>
-          <NativeSelectOption value="transactions">Transactions</NativeSelectOption>
-          <NativeSelectOption value="earnings">Instructor Earnings</NativeSelectOption>
+          <NativeSelectOption value="all">{tx('all')}</NativeSelectOption>
+          <NativeSelectOption value="transactions">{tx('transactions')}</NativeSelectOption>
+          <NativeSelectOption value="earnings">{tx('instructorEarnings')}</NativeSelectOption>
         </NativeSelect>
       </div>
 
       <div className="flex-1 min-w-50">
-        <Label className="block mb-2">Type</Label>
+        <Label className="block mb-2">{tx('type')}</Label>
         <NativeSelect
           defaultValue={type || ''}
           onChange={(e) => handleTypeChange(e.target.value)}
           className="w-full"
           disabled={dataType === 'earnings'}
         >
-          <NativeSelectOption value="">All Types</NativeSelectOption>
-          <NativeSelectOption value="income">Income</NativeSelectOption>
-          <NativeSelectOption value="expense">Expense</NativeSelectOption>
+          <NativeSelectOption value="">{tx('allTypes')}</NativeSelectOption>
+          <NativeSelectOption value="income">{tx('income')}</NativeSelectOption>
+          <NativeSelectOption value="expense">{tx('expense')}</NativeSelectOption>
         </NativeSelect>
       </div>
 
       <div className="flex-1 min-w-50">
-        <Label className="block mb-2">Date</Label>
+        <Label className="block mb-2">{tx('date')}</Label>
         <DatePicker
           value={dateObj}
           onDateChange={handleDateChange}
-          placeholder="Select date"
+          placeholder={tx('selectDate')}
           className="w-full"
         />
       </div>

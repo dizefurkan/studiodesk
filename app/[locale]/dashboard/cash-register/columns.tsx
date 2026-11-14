@@ -4,6 +4,8 @@ import { ColumnDef } from '@tanstack/react-table'
 import { TrendingUp, TrendingDown, Users, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ColumnHeader } from '@/components/table/column-header'
+import { getLocaleForCurrency } from '@/lib/utils/format'
+import { FormattedDate } from '@/components/common/FormattedDate'
 
 export interface CombinedCashItem {
   id: string
@@ -24,7 +26,7 @@ export function getCashRegisterColumns({
   currency,
   onDelete,
 }: ColumnContextProps): ColumnDef<CombinedCashItem>[] {
-  const formatter = new Intl.NumberFormat('en-US', {
+  const formatter = new Intl.NumberFormat(getLocaleForCurrency(currency), {
     style: 'currency',
     currency,
   })
@@ -46,7 +48,7 @@ export function getCashRegisterColumns({
             )}
             <div>
               <p className="font-medium text-foreground">{item.description}</p>
-              <p className="text-xs text-muted-foreground">{item.branches?.name || 'N/A'}</p>
+              <p className="text-xs text-muted-foreground">{item.branches?.name || <ColumnHeader k="notAvailable" />}</p>
             </div>
           </div>
         )
@@ -56,7 +58,7 @@ export function getCashRegisterColumns({
       accessorKey: 'created_at',
       header: () => <ColumnHeader k="date" />,
       cell: ({ row }) => {
-        return new Date(row.original.created_at).toLocaleDateString()
+        return <FormattedDate value={row.original.created_at} />
       },
     },
     {
@@ -83,7 +85,7 @@ export function getCashRegisterColumns({
         const item = row.original
         // Only show delete button for transactions, not earnings
         if (item.type === 'earning') {
-          return <span className="text-xs text-muted-foreground">System</span>
+          return <span className="text-xs text-muted-foreground"><ColumnHeader k="system" /></span>
         }
         return (
           <Button

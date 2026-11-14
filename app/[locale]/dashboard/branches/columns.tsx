@@ -4,9 +4,9 @@ import { Link } from '@/i18n/navigation'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Edit2, Trash2 } from 'lucide-react'
-import { format } from 'date-fns'
 import type { Database } from '@/lib/types/database.types'
 import { ColumnHeader } from '@/components/table/column-header'
+import { FormattedDate } from '@/components/common/FormattedDate'
 
 export type Branch = Database['public']['Tables']['branches']['Row']
 
@@ -83,7 +83,7 @@ export function getBranchColumns({
       header: () => <ColumnHeader k="created" />,
       cell: ({ row }) => (
         <span className="text-muted-foreground">
-          {format(new Date(row.original.created_at!), 'MMM dd, yyyy')}
+          <FormattedDate value={row.original.created_at} />
         </span>
       ),
     })

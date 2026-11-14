@@ -8,6 +8,7 @@ import { logOperation } from '@/lib/actions/history.actions'
 import { getChanges } from '@/lib/utils/history-utils'
 import type { Database } from '@/lib/types/database.types'
 import type { TablesUpdate } from '@/lib/types/database.types'
+import { actionError } from '@/lib/i18n/actionError'
 
 type Package = Database['public']['Tables']['packages']['Row']
 
@@ -17,10 +18,10 @@ export async function getPackages(
   pageSize: number = 10
 ) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
+  if (!user) return { error: await actionError('notAuthenticated'), data: [], totalCount: 0 }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found', data: [], totalCount: 0 }
+  if (!organization) return { error: await actionError('noOrganization'), data: [], totalCount: 0 }
 
   try {
     const admin = createAdminClient()
@@ -59,29 +60,29 @@ export async function getPackages(
 
     if (error) {
       console.error('Error fetching packages:', error)
-      return { error: 'Failed to fetch packages', data: [], totalCount: 0 }
+      return { error: await actionError('fetchPackagesFailed'), data: [], totalCount: 0 }
     }
 
     const totalPages = Math.ceil(count / pageSize)
     return { data: data as Package[], totalCount: count, page, pageSize, totalPages }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred', data: [], totalCount: 0 }
+    return { error: await actionError('unexpected'), data: [], totalCount: 0 }
   }
 }
 
 export async function getPackage(id: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const admin = createAdminClient()
     const { data, error } = await admin
       .from('packages')
-      .select('*')
+      .select('*, dance_types(name)')
       .eq('id', id)
       .eq('organization_id', organization.id)
       .is('deleted_at', null)
@@ -89,13 +90,13 @@ export async function getPackage(id: string) {
 
     if (error) {
       console.error('Error fetching package:', error)
-      return { error: 'Package not found' }
+      return { error: await actionError('packageNotFound') }
     }
 
-    return { data: data as Package }
+    return { data }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -108,10 +109,10 @@ interface CreatePackageInput {
 
 export async function createPackage(input: CreatePackageInput) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -129,7 +130,7 @@ export async function createPackage(input: CreatePackageInput) {
 
     if (error) {
       console.error('Error creating package:', error)
-      return { error: 'Failed to create package' }
+      return { error: await actionError('createPackageFailed') }
     }
 
     // Log the create operation
@@ -145,7 +146,7 @@ export async function createPackage(input: CreatePackageInput) {
     return { data: data as Package, success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -158,10 +159,10 @@ interface UpdatePackageInput {
 
 export async function updatePackage(id: string, input: UpdatePackageInput) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -175,7 +176,7 @@ export async function updatePackage(id: string, input: UpdatePackageInput) {
       .single()
 
     if (!beforePackage) {
-      return { error: 'Package not found or does not belong to your organization' }
+      return { error: await actionError('packageNotInOrg') }
     }
 
     const updateData: TablesUpdate<'packages'> = {}
@@ -199,7 +200,7 @@ export async function updatePackage(id: string, input: UpdatePackageInput) {
 
     if (error) {
       console.error('Error updating package:', error)
-      return { error: 'Failed to update package' }
+      return { error: await actionError('updatePackageFailed') }
     }
 
     // Log the update operation
@@ -225,16 +226,16 @@ export async function updatePackage(id: string, input: UpdatePackageInput) {
     return { data: data as Package, success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
 export async function deletePackage(id: string, reason?: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -248,7 +249,7 @@ export async function deletePackage(id: string, reason?: string) {
       .single()
 
     if (!beforePackage) {
-      return { error: 'Package not found or does not belong to your organization' }
+      return { error: await actionError('packageNotInOrg') }
     }
 
     const user_id = user.id
@@ -264,7 +265,7 @@ export async function deletePackage(id: string, reason?: string) {
 
     if (error) {
       console.error('Error deleting package:', error)
-      return { error: 'Failed to delete package' }
+      return { error: await actionError('deletePackageFailed') }
     }
 
     // Log the delete operation
@@ -281,6 +282,6 @@ export async function deletePackage(id: string, reason?: string) {
     return { success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }

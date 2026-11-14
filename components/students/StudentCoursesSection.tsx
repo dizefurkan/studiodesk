@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { BookOpen, Calendar, ArrowRight } from 'lucide-react'
 import { getStudentEnrolledCourses } from '@/lib/actions/course-students.actions'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useLocaleNames } from '@/hooks/useLocaleNames'
 
 interface CourseWithStats {
   courseId: string
@@ -28,9 +29,10 @@ interface StudentCoursesSectionProps {
   studentId: string
 }
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps) {
+  const tx = useTranslations('studentCourses')
+  const { DAYS, locale } = useLocaleNames()
   const t = useTranslations()
   const [activeCourses, setActiveCourses] = useState<CourseWithStats[]>([])
   const [completedCourses, setCompletedCourses] = useState<CourseWithStats[]>([])
@@ -75,7 +77,7 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
   if (loading) {
     return (
       <Card className="border-border p-6">
-        <div className="text-center text-muted-foreground">Loading courses...</div>
+        <div className="text-center text-muted-foreground">{tx('loading')}</div>
       </Card>
     )
   }
@@ -94,8 +96,8 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
     return (
       <Card className="border-border p-12 text-center">
         <BookOpen size={48} className="mx-auto mb-4 opacity-50" />
-        <p className="text-muted-foreground text-lg font-medium">No courses enrolled</p>
-        <p className="text-sm text-muted-foreground mt-1">Student hasn&apos;t enrolled in any courses yet</p>
+        <p className="text-muted-foreground text-lg font-medium">{tx('emptyTitle')}</p>
+        <p className="text-sm text-muted-foreground mt-1">{tx('emptyDescription')}</p>
       </Card>
     )
   }
@@ -107,7 +109,7 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
         <div>
           <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <BookOpen size={20} className="text-primary" />
-            Enrolled Courses
+            {tx('title')}
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
             {t('students.enrolledCourses', { total: totalCourses, active: activeCourses.length, completed: completedCourses.length })}
@@ -129,8 +131,8 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
           <div className="text-center py-8">
             <p className="text-muted-foreground">
               {selectedTab === 'active'
-                ? 'No active courses with remaining credits'
-                : 'No completed courses yet'}
+                ? tx('noActive')
+                : tx('noCompleted')}
             </p>
           </div>
         ) : (
@@ -174,19 +176,19 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
                     {/* Attendance & Credits */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">Attendance</p>
+                        <p className="text-xs text-muted-foreground mb-1">{tx('attendance')}</p>
                         <div className="flex items-baseline gap-1">
                           <span className={`text-2xl font-bold ${getAttendanceTextColor(course.attendanceCount)}`}>
                             {course.attendanceCount}
                           </span>
-                          <span className="text-sm text-muted-foreground">classes attended</span>
+                          <span className="text-sm text-muted-foreground">{tx('classesAttended')}</span>
                         </div>
                         {course.attendanceDates.length > 0 && (
                           <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
                             {course.attendanceDates
                               .filter((d) => d)
                               .slice(0, 3)
-                              .map((date) => date && new Date(date).toLocaleDateString('tr-TR'))
+                              .map((date) => date && new Date(date).toLocaleDateString(locale))
                               .join(', ')}{' '}
                             {course.attendanceDates.filter((d) => d).length > 3 && '...'}
                           </div>
@@ -195,12 +197,12 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
 
                       {selectedTab === 'active' && (
                         <div>
-                          <p className="text-xs text-muted-foreground mb-1">Remaining Credits</p>
+                          <p className="text-xs text-muted-foreground mb-1">{tx('remainingCredits')}</p>
                           <div className="flex items-baseline gap-1">
                             <span className="text-2xl font-bold text-primary">
                               {course.remainingCredits}
                             </span>
-                            <span className="text-sm text-muted-foreground">credits</span>
+                            <span className="text-sm text-muted-foreground">{tx('creditsUnit')}</span>
                           </div>
                         </div>
                       )}
@@ -208,7 +210,7 @@ export function StudentCoursesSection({ studentId }: StudentCoursesSectionProps)
 
                     {/* Enrolled Date */}
                     <div className="text-xs text-muted-foreground border-t border-current border-opacity-10 pt-2">
-                      Enrolled {new Date(course.enrolledAt).toLocaleDateString('tr-TR')}
+                      {tx('enrolledOn', { date: new Date(course.enrolledAt).toLocaleDateString(locale) })}
                     </div>
                   </div>
                 </div>

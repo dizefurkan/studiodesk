@@ -21,6 +21,7 @@ interface CourseDetailPageProps {
 export default async function CourseDetailPage({
   params,
 }: CourseDetailPageProps) {
+  const td = await getTranslations('detailPages')
   const { id } = await params;
   const t = await getTranslations();
   const result = await getCourse(id);
@@ -141,8 +142,8 @@ export default async function CourseDetailPage({
           entity="course"
           entityId={course.id}
           initialLogs={entityHistory}
-          title="Activity Timeline"
-          description="All changes and actions related to this course"
+          title={td('activityTimeline')}
+          description={td('courseTimeline')}
           showFullPage={false}
         />
       </div>

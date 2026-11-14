@@ -37,6 +37,7 @@ import {
   type Account,
 } from '@/lib/actions/backoffice.actions'
 import { useServerAction } from '@/hooks/useServerAction'
+import { FormattedDate } from '@/components/common/FormattedDate'
 
 function PasswordField({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (v: string) => void }) {
   const t = useTranslations('backoffice')
@@ -61,6 +62,7 @@ function PasswordField({ id, label, value, onChange }: { id: string; label: stri
 }
 
 function Credentials({ email, password }: { email: string; password: string }) {
+  const t = useTranslations('backoffice')
   const [copied, setCopied] = useState(false)
   return (
     <InputGroup>
@@ -68,7 +70,7 @@ function Credentials({ email, password }: { email: string; password: string }) {
       <InputGroupAddon align="inline-end">
         <InputGroupButton
           size="icon-xs"
-          aria-label="Copy"
+          aria-label={t('copy')}
           onClick={() => {
             navigator.clipboard.writeText(email ? `${email}\n${password}` : password)
             setCopied(true)
@@ -236,7 +238,7 @@ export function AccountsManager({ accounts, currentUserId }: { accounts: Account
       header: t('accounts.lastSignIn'),
       cell: ({ row }) => (
         <span className="text-muted-foreground">
-          {row.original.last_sign_in_at ? new Date(row.original.last_sign_in_at).toLocaleString() : t('accounts.never')}
+          {row.original.last_sign_in_at ? <FormattedDate value={row.original.last_sign_in_at} withTime /> : t('accounts.never')}
         </span>
       ),
     },

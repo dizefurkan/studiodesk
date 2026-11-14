@@ -1,6 +1,6 @@
-import { Link, redirect } from '@/i18n/navigation'
+import { Link } from '@/i18n/navigation'
 import { getInstructors, getInstructorFilterOptions } from '@/lib/actions/instructors.actions'
-import { getTranslations, getLocale } from 'next-intl/server'
+import { getTranslations } from 'next-intl/server'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { InstructorTableWrapper } from '@/components/instructors/InstructorTableWrapper'
@@ -27,12 +27,6 @@ export default async function InstructorsPage({
   const branchId = typeof params.branch === 'string' ? params.branch : undefined
 
   const result = await getInstructors(searchQuery, page, PAGE_SIZE)
-
-  // Handle auth errors specifically
-  if (result.error === 'Not authenticated') {
-    console.warn('[InstructorsPage] Not authenticated, redirecting to login')
-    redirect({ href: '/login', locale: await getLocale() })
-  }
 
   if (result.error) {
     console.error('[InstructorsPage] Error fetching instructors:', result.error)

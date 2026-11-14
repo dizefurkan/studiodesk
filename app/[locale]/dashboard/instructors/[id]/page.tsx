@@ -20,16 +20,11 @@ import {
 import { InstructorAttendanceHistory } from "@/components/instructors/InstructorAttendanceHistory";
 import { ActivityTimelineWrapper } from "@/components/history/ActivityTimelineWrapper";
 import { formatTime } from "@/lib/utils/formatTime";
+import { formatCurrency } from "@/lib/utils/format";
+import { weekdayNames } from "@/lib/i18n/dates";
+import { getOrganization } from "@/lib/auth/getOrganization";
+import { getLocale, getTranslations } from 'next-intl/server'
 
-const DAYS = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
 
 interface InstructorDetailPageProps {
   params: {
@@ -40,6 +35,11 @@ interface InstructorDetailPageProps {
 export default async function InstructorDetailPage({
   params,
 }: InstructorDetailPageProps) {
+  const tx = await getTranslations('instructorDetail')
+  const td = await getTranslations('detailPages')
+  const locale = await getLocale()
+  const DAYS = weekdayNames(locale)
+  const currency = (await getOrganization())?.currency || 'TRY'
   const { id } = await params;
   const result = await getInstructor(id);
 
@@ -69,7 +69,7 @@ export default async function InstructorDetailPage({
         href="/dashboard/instructors"
         className="text-primary hover:underline inline-block"
       >
-        ← Back to Instructors
+        {tx('backToList')}
       </Link>
 
       <Card className="border-border">
@@ -79,7 +79,7 @@ export default async function InstructorDetailPage({
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
                 {instructor.first_name} {instructor.last_name}
               </h1>
-              <p className="text-muted-foreground">Instructor Profile</p>
+              <p className="text-muted-foreground">{tx('subtitle')}</p>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
               <Link
@@ -88,7 +88,7 @@ export default async function InstructorDetailPage({
               >
                 <Button className="gap-2 w-full sm:w-auto">
                   <Edit2 size={18} />
-                  Edit
+                  {td('edit')}
                 </Button>
               </Link>
             </div>
@@ -99,7 +99,7 @@ export default async function InstructorDetailPage({
             <div className="flex items-center gap-4">
               <Mail className="text-primary" size={20} />
               <div>
-                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-sm text-muted-foreground">{td('email')}</p>
                 <p className="text-lg font-medium text-foreground">
                   {instructor.email}
                 </p>
@@ -110,7 +110,7 @@ export default async function InstructorDetailPage({
               <div className="flex items-center gap-4">
                 <Phone className="text-primary" size={20} />
                 <div>
-                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <p className="text-sm text-muted-foreground">{td('phone')}</p>
                   <a
                     href={`tel:${instructor.phone}`}
                     className="text-lg font-medium text-primary hover:underline"
@@ -128,13 +128,12 @@ export default async function InstructorDetailPage({
             <Card className="border-border p-6 bg-linear-to-br from-green-50 to-green-100">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Total Earnings</p>
+                  <p className="text-sm text-muted-foreground mb-1">{tx('totalEarnings')}</p>
                   <p className="text-3xl font-bold text-green-700">
-                    ₺{totalStats?.totalEarnings?.toFixed(2) || "0.00"}
+                    {formatCurrency(totalStats?.totalEarnings ?? 0, currency)}
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    {totalStats?.sessionCount || 0} class
-                    {totalStats?.sessionCount !== 1 ? "es" : ""}
+                    {tx('classCount', { count: totalStats?.sessionCount || 0 })}
                   </p>
                 </div>
                 <DollarSign className="text-green-600" size={28} />
@@ -146,14 +145,13 @@ export default async function InstructorDetailPage({
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">
-                    This Month Earnings
+                    {tx('monthEarnings')}
                   </p>
                   <p className="text-3xl font-bold text-blue-700">
-                    ₺{stats?.totalEarnings?.toFixed(2) || "0.00"}
+                    {formatCurrency(stats?.totalEarnings ?? 0, currency)}
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    {stats?.earningCount || 0} session
-                    {stats?.earningCount !== 1 ? "s" : ""}
+                    {tx('sessionCount', { count: stats?.earningCount || 0 })}
                   </p>
                 </div>
                 <Calendar className="text-blue-600" size={28} />
@@ -165,13 +163,13 @@ export default async function InstructorDetailPage({
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">
-                    This Month Sessions
+                    {tx('monthSessions')}
                   </p>
                   <p className="text-3xl font-bold text-purple-700">
                     {stats?.sessionCount || 0}
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    {stats?.attendanceCount || 0} students marked
+                    {tx('studentsMarked', { count: stats?.attendanceCount || 0 })}
                   </p>
                 </div>
                 <BookOpen className="text-purple-600" size={28} />
@@ -183,7 +181,7 @@ export default async function InstructorDetailPage({
           {courses.length > 0 && (
             <div className="border-t border-border pt-8">
               <h2 className="text-2xl font-bold text-foreground mb-4">
-                Assigned Courses ({courses.length})
+                {tx('assignedCourses', { count: courses.length })}
               </h2>
               <div className="space-y-3">
                 {courses.map((course) => (
@@ -212,7 +210,7 @@ export default async function InstructorDetailPage({
                       </div>
                       <Link href={`/dashboard/courses/${course.id}`}>
                         <Button className="text-sm ml-4 shrink-0">
-                          View
+                          {td('view')}
                         </Button>
                       </Link>
                     </div>
@@ -225,7 +223,7 @@ export default async function InstructorDetailPage({
           {courses.length === 0 && (
             <div className="border-t border-border pt-8 text-center text-muted-foreground">
               <BookOpen size={48} className="mx-auto mb-4 opacity-50" />
-              <p className="text-lg">Not assigned to any courses yet</p>
+              <p className="text-lg">{tx('noCourses')}</p>
             </div>
           )}
 
@@ -242,8 +240,8 @@ export default async function InstructorDetailPage({
               entity="instructor"
               entityId={id}
               initialLogs={entityHistory}
-              title="Activity Timeline"
-              description="All changes and actions related to this instructor"
+              title={td('activityTimeline')}
+              description={tx('timelineDescription')}
               showFullPage={false}
             />
           </div>

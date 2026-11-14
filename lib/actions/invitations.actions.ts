@@ -8,6 +8,7 @@ import { MUST_CHANGE_PASSWORD } from '@/lib/auth/passwordPolicy'
 import { revalidatePath } from 'next/cache'
 import type { Database } from '@/lib/types/database.types'
 import type { PostgrestError } from '@supabase/supabase-js'
+import { actionError } from '@/lib/i18n/actionError'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 type OrganizationUser = Database['public']['Tables']['organization_users']['Row']
@@ -29,20 +30,20 @@ export async function sendTeamInvitation(
   error?: string 
 }> {
   const currentUser = await getCurrentUser()
-  if (!currentUser) return { error: 'Not authenticated' }
+  if (!currentUser) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   // Validate email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(email)) {
-    return { error: 'Invalid email address' }
+    return { error: await actionError('invalidEmail') }
   }
 
   // Validate role
   if (!['staff', 'instructor', 'manager'].includes(role)) {
-    return { error: 'Invalid role' }
+    return { error: await actionError('invalidRole') }
   }
 
   // Permission: owner, or a manager when the org allows managers to invite.
@@ -57,8 +58,8 @@ export async function sendTeamInvitation(
       .maybeSingle()
     const myRole = me?.role as string | undefined
     const canInvite = myRole === 'owner' || (myRole === 'manager' && organization.allow_manager_invite)
-    if (!canInvite) return { error: 'You do not have permission to add team members' }
-    if (role === 'manager' && myRole !== 'owner') return { error: 'Only the owner can add managers' }
+    if (!canInvite) return { error: await actionError('noPermissionAddMembers') }
+    if (role === 'manager' && myRole !== 'owner') return { error: await actionError('onlyOwnerAddsManagers') }
   }
 
   try {
@@ -87,7 +88,7 @@ export async function sendTeamInvitation(
       const { data: orgMember } = orgMemberResult as { data: OrganizationUser | null; error: PostgrestError | null }
 
       if (orgMember) {
-        return { error: 'User is already a member of this organization' }
+        return { error: await actionError('alreadyMember') }
       }
 
       // Add existing user to organization
@@ -102,7 +103,7 @@ export async function sendTeamInvitation(
 
       if (addError) {
         console.error('Error adding existing user:', addError)
-        return { error: 'Failed to add user to organization' }
+        return { error: await actionError('addMemberFailed') }
       }
 
       revalidatePath('/[locale]/dashboard/settings', 'layout')
@@ -125,7 +126,7 @@ export async function sendTeamInvitation(
       // else's password from here (that was an account-takeover path); a platform
       // admin can attach the account from /backoffice instead.
       if (authError.code === 'email_exists') {
-        return { error: 'This email already has an account. Ask a StudioDesk admin to add it to your team.' }
+        return { error: await actionError('emailHasAccount') }
       }
       
       console.error('Error creating auth user:')
@@ -163,7 +164,7 @@ export async function sendTeamInvitation(
 
     if (orgError) {
       console.error('❌ Error adding to organization:', orgError)
-      return { error: 'Failed to add user to organization' }
+      return { error: await actionError('addMemberFailed') }
     }
 
     console.log('✅ User successfully added to organization_users')
@@ -184,6 +185,6 @@ export async function sendTeamInvitation(
     }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }

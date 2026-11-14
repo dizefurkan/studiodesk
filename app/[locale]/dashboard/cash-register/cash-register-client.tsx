@@ -40,7 +40,7 @@ export function CashRegisterTable({
   const confirm = useConfirm()
 
   const handleDelete = async (transactionId: string) => {
-    if (!(await confirm({ title: 'Are you sure you want to delete this transaction?', destructive: true }))) return
+    if (!(await confirm({ title: t('cashRegister.deleteConfirm'), destructive: true }))) return
 
     setIsDeletingId(transactionId)
     try {

@@ -13,6 +13,7 @@ import { StudentPurchaseDialog } from '@/components/students/StudentPurchaseDial
 import { StudentCoursesSection } from '@/components/students/StudentCoursesSection'
 import { StudentHistory } from '@/components/students/StudentHistory'
 import { ActivityTimelineWrapper } from '@/components/history/ActivityTimelineWrapper'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 interface StudentDetailPageProps {
   params: {
@@ -21,6 +22,9 @@ interface StudentDetailPageProps {
 }
 
 export default async function StudentDetailPage({ params }: StudentDetailPageProps) {
+  const tx = await getTranslations('studentDetail')
+  const td = await getTranslations('detailPages')
+  const locale = await getLocale()
   const { id } = await params
   const result = await getStudent(id)
 
@@ -61,8 +65,8 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
               className="text-muted-foreground px-0 md:px-2 -ml-2 md:ml-0"
             >
               <ArrowLeft size={16} className="mr-2 shrink-0" />
-              <span className="hidden md:inline">Back to Students</span>
-              <span className="md:hidden">Back</span>
+              <span className="hidden md:inline">{tx('backToList')}</span>
+              <span className="md:hidden">{td('back')}</span>
             </Button>
           </Link>
           
@@ -70,7 +74,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
           <h1 className="text-2xl md:text-3xl font-bold text-foreground mt-3 truncate">
             {student.first_name} {student.last_name}
           </h1>
-          <p className="text-sm md:text-base text-muted-foreground mt-1">Student Profile</p>
+          <p className="text-sm md:text-base text-muted-foreground mt-1">{tx('subtitle')}</p>
         </div>
 
         {/* Right Section - Mobile: 2-column grid, Desktop: flex row */}
@@ -81,7 +85,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
           <Link href={`/dashboard/students/${student.id}/edit`} className="col-span-1">
             <Button className="w-full md:w-auto">
               <Edit2 size={16} className="mr-2 shrink-0" />
-              <span className="hidden md:inline">Edit</span>
+              <span className="hidden md:inline">{td('edit')}</span>
             </Button>
           </Link>
         </div>
@@ -102,13 +106,13 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
       {/* Main Info Card */}
       <Card className="border-border">
         <div className="p-8">
-          <h2 className="text-lg font-semibold text-foreground mb-6">Contact Information</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-6">{tx('contact')}</h2>
 
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <Mail className="text-primary" size={20} />
               <div>
-                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-sm text-muted-foreground">{td('email')}</p>
                 <p className="font-medium text-foreground">{student.email}</p>
               </div>
             </div>
@@ -117,7 +121,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
               <div className="flex items-center gap-4">
                 <Phone className="text-primary" size={20} />
                 <div>
-                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <p className="text-sm text-muted-foreground">{td('phone')}</p>
                   <p className="font-medium text-foreground">{student.phone}</p>
                 </div>
               </div>
@@ -130,7 +134,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
       {student.notes && (
         <Card className="border-border">
           <div className="p-8">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Notes</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">{tx('notes')}</h2>
             <p className="text-muted-foreground whitespace-pre-wrap">{student.notes}</p>
           </div>
         </Card>
@@ -139,15 +143,15 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
       {/* Meta Info */}
       <Card className="border-border">
         <div className="p-8">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Information</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">{tx('information')}</h2>
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <p className="text-sm text-muted-foreground">Joined</p>
-              <p className="font-medium text-foreground">{new Date(student.created_at!).toLocaleDateString()}</p>
+              <p className="text-sm text-muted-foreground">{tx('joined')}</p>
+              <p className="font-medium text-foreground">{new Date(student.created_at).toLocaleDateString(locale)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Last Updated</p>
-              <p className="font-medium text-foreground">{new Date(student.updated_at!).toLocaleDateString()}</p>
+              <p className="text-sm text-muted-foreground">{tx('updated')}</p>
+              <p className="font-medium text-foreground">{new Date(student.updated_at).toLocaleDateString(locale)}</p>
             </div>
           </div>
         </div>
@@ -158,8 +162,8 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
         entity="student"
         entityId={id}
         initialLogs={entityHistory}
-        title="Activity Timeline"
-        description="All changes and actions related to this student"
+        title={td('activityTimeline')}
+        description={tx('timelineDescription')}
         showFullPage={false}
       />
     </div>

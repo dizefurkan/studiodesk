@@ -30,7 +30,7 @@ export function DataTablePagination({ shown, totalItems, currentPage, pageSize, 
           className="hidden lg:inline-flex"
           onClick={() => go(1)}
           disabled={currentPage <= 1}
-          aria-label="First page"
+          aria-label={t('firstPage')}
         >
           <ChevronsLeft />
         </Button>
@@ -58,7 +58,7 @@ export function DataTablePagination({ shown, totalItems, currentPage, pageSize, 
           className="hidden lg:inline-flex"
           onClick={() => go(totalPages)}
           disabled={currentPage >= totalPages}
-          aria-label="Last page"
+          aria-label={t('lastPage')}
         >
           <ChevronsRight />
         </Button>

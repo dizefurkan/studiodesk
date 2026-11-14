@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Calendar, ArrowRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { format } from 'date-fns'
+import { FormattedDate } from '@/components/common/FormattedDate'
 
 export type UpcomingSession = {
   id: string
@@ -54,7 +54,7 @@ export function UpcomingCoursesCard({ upcomingCourses }: UpcomingCoursesCardProp
                     {session.course_name}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {format(new Date(session.session_date), 'MMM dd, yyyy')}
+                    <FormattedDate value={session.session_date} />
                   </p>
                   {session.instructors.length > 0 && (
                     <p className="text-xs text-muted-foreground truncate">

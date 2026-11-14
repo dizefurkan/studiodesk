@@ -16,14 +16,7 @@ import type { Database } from '@/lib/types/database.types'
 type Instructor = Database['public']['Tables']['instructors']['Row']
 
 // Fallback schema for type inference
-const instructorSchemaFallback = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().optional(),
-})
-
-type InstructorFormValues = z.infer<typeof instructorSchemaFallback>
+type InstructorFormValues = z.infer<ReturnType<typeof createInstructorSchema>>
 
 // Schema factory that uses translations
 function createInstructorSchema(t: ReturnType<typeof useTranslations>) {
@@ -40,6 +33,8 @@ interface InstructorFormProps {
 }
 
 export function InstructorForm({ instructor }: InstructorFormProps) {
+  const tx = useTranslations('instructorForm')
+  const tf = useTranslations('forms')
   const t = useTranslations()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -86,7 +81,7 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
       }
     } catch (error) {
       console.error('Form error:', error)
-      setGeneralError('An unexpected error occurred')
+      setGeneralError(tf('unexpectedError'))
     } finally {
       setIsLoading(false)
     }
@@ -96,10 +91,10 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
     <Card className="border-border">
       <div className="p-4 sm:p-6 md:p-8">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">
-          {instructor ? 'Edit Instructor' : 'Add New Instructor'}
+          {instructor ? tx('editTitle') : tx('addTitle')}
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground mb-4 md:mb-6">
-          {instructor ? 'Update instructor information' : 'Add a new instructor to your studio'}
+          {instructor ? tx('editDescription') : tx('addDescription')}
         </p>
 
         {generalError && (
@@ -114,9 +109,9 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>First Name</FormLabel>
+                    <FormLabel>{tf('firstName')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="John" disabled={isLoading} {...field} />
+                      <Input placeholder={tf('firstNamePlaceholder')} disabled={isLoading} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -127,9 +122,9 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Last Name</FormLabel>
+                    <FormLabel>{tf('lastName')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Doe" disabled={isLoading} {...field} />
+                      <Input placeholder={tf('lastNamePlaceholder')} disabled={isLoading} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -142,9 +137,9 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel>{tf('email')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="john@example.com" type="email" disabled={isLoading} {...field} />
+                    <Input placeholder={tf('emailPlaceholder')} type="email" disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -156,9 +151,9 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone (Optional)</FormLabel>
+                  <FormLabel>{tf('phoneOptional')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="+55 11 99999-9999" disabled={isLoading} {...field} />
+                    <Input placeholder={tf('phonePlaceholder')} disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -171,7 +166,7 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
                 disabled={isLoading}
                 className="w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                {isLoading ? 'Saving...' : instructor ? 'Update Instructor' : 'Create Instructor'}
+                {isLoading ? tf('saving') : instructor ? tx('update') : tx('create')}
               </Button>
               <Button
                 type="button"
@@ -180,7 +175,7 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
                 disabled={isLoading}
                 className="border-border w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                Cancel
+                {tf('cancel')}
               </Button>
             </div>
           </form>

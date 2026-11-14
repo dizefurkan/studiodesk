@@ -10,6 +10,7 @@ import type { Database } from '@/lib/types/database.types'
 import type { PostgrestError } from '@supabase/supabase-js'
 import type { TablesUpdate } from '@/lib/types/database.types'
 import { sanitizeSearch } from '@/lib/utils/search'
+import { actionError } from '@/lib/i18n/actionError'
 
 type Branch = Database['public']['Tables']['branches']['Row']
 
@@ -19,10 +20,10 @@ export async function getBranches(
   pageSize: number = 10
 ): Promise<{ data?: Branch[]; totalCount?: number; page?: number; pageSize?: number; totalPages?: number; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
+  if (!user) return { error: await actionError('notAuthenticated'), data: [], totalCount: 0 }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found', data: [], totalCount: 0 }
+  if (!organization) return { error: await actionError('noOrganization'), data: [], totalCount: 0 }
 
   try {
     const admin = createAdminClient()
@@ -62,23 +63,23 @@ export async function getBranches(
 
     if (error) {
       console.error('Error fetching branches:', error)
-      return { error: 'Failed to fetch branches', data: [], totalCount: 0 }
+      return { error: await actionError('fetchBranchesFailed'), data: [], totalCount: 0 }
     }
 
     const totalPages = Math.ceil(count / pageSize)
     return { data: data || [], totalCount: count, page, pageSize, totalPages }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred', data: [], totalCount: 0 }
+    return { error: await actionError('unexpected'), data: [], totalCount: 0 }
   }
 }
 
 export async function getBranch(id: string): Promise<{ data?: Branch; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const admin = createAdminClient()
@@ -94,13 +95,13 @@ export async function getBranch(id: string): Promise<{ data?: Branch; error?: st
 
     if (error || !data) {
       console.error('Error fetching branch:', error)
-      return { error: 'Branch not found' }
+      return { error: await actionError('branchNotFound') }
     }
 
     return { data }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -114,10 +115,10 @@ export async function createBranch(
   input: CreateBranchInput,
 ): Promise<{ data?: Branch; success?: boolean; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -137,7 +138,7 @@ export async function createBranch(
 
     if (error || !data) {
       console.error('Error creating branch:', error)
-      return { error: 'Failed to create branch' }
+      return { error: await actionError('createBranchFailed') }
     }
 
     // Log the create operation
@@ -152,7 +153,7 @@ export async function createBranch(
     return { data, success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -167,10 +168,10 @@ export async function updateBranch(
   input: UpdateBranchInput,
 ): Promise<{ data?: Branch; success?: boolean; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -187,7 +188,7 @@ export async function updateBranch(
     const { data: beforeBranch } = beforeResult as { data: Branch | null; error: PostgrestError | null }
 
     if (!beforeBranch) {
-      return { error: 'Branch not found or does not belong to your organization' }
+      return { error: await actionError('branchNotInOrg') }
     }
 
     const updateData: TablesUpdate<'branches'> = {}
@@ -207,7 +208,7 @@ export async function updateBranch(
 
     if (error || !data) {
       console.error('Error updating branch:', error)
-      return { error: 'Failed to update branch' }
+      return { error: await actionError('updateBranchFailed') }
     }
 
     // Log the update operation
@@ -231,16 +232,16 @@ export async function updateBranch(
     return { data, success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
 export async function deleteBranch(id: string, reason?: string): Promise<{ success?: boolean; error?: string }> {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -257,7 +258,7 @@ export async function deleteBranch(id: string, reason?: string): Promise<{ succe
     const { data: beforeBranch } = beforeResult as { data: Branch | null; error: PostgrestError | null }
 
     if (!beforeBranch) {
-      return { error: 'Branch not found or does not belong to your organization' }
+      return { error: await actionError('branchNotInOrg') }
     }
 
     const user_id = user.id
@@ -273,7 +274,7 @@ export async function deleteBranch(id: string, reason?: string): Promise<{ succe
 
     if (error) {
       console.error('Error deleting branch:', error)
-      return { error: 'Failed to delete branch' }
+      return { error: await actionError('deleteBranchFailed') }
     }
 
     // Log the delete operation
@@ -289,6 +290,6 @@ export async function deleteBranch(id: string, reason?: string): Promise<{ succe
     return { success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }

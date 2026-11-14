@@ -15,6 +15,7 @@ import {
 } from "@/lib/utils/history";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
+import { useDateFnsLocale } from "@/hooks/useDateFnsLocale";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
@@ -140,13 +141,17 @@ export function HistoryComponent({
 }
 
 function HistoryItem({ log }: { log: HistoryLog }) {
+  const t = useTranslations();
+  const tMsg = useTranslations("historyMessages");
+  const dateLocale = useDateFnsLocale();
   const userName =
     log.profiles?.full_name ||
     (log.data?.user_name as string) ||
-    "Unknown User";
+    t("history.unknownUser");
   const actionIcon = getHistoryActionIcon(log.action);
   const entityColor = getHistoryEntityColor(log.entity);
   const message = formatHistoryMessage(
+    tMsg,
     log.action,
     log.entity,
     log.data,
@@ -168,7 +173,7 @@ function HistoryItem({ log }: { log: HistoryLog }) {
             {log.entity}
           </Badge>
           <span className="text-xs text-muted-foreground">
-            {format(new Date(log.created_at), "MMM dd, yyyy HH:mm")}
+            {format(new Date(log.created_at), "MMM dd, yyyy HH:mm", { locale: dateLocale })}
           </span>
         </div>
         {log.data?.summary && (

@@ -35,7 +35,7 @@ export type HistoryChange = { before: unknown; after: unknown };
 
 /** Shape of history_logs.data written by logOperation() */
 export interface HistoryLogData {
-  before?: Record<string, unknown>;
+  before?: Record<string, unknown> & { studentName?: string };
   after?: Record<string, unknown> & { studentName?: string; packageName?: string };
   changes?: Record<string, HistoryChange>;
   summary?: string;
@@ -46,145 +46,98 @@ export interface HistoryLogData {
   [key: string]: unknown;
 }
 
+/** next-intl translator for the `historyMessages` namespace */
+export type HistoryTranslator = {
+  (key: string, values?: Record<string, string | number>): string
+  has(key: string): boolean
+}
+
+function fieldLabel(t: HistoryTranslator, field: string): string {
+  const key = `fields.${field.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase())}`
+  if (t.has(key)) return t(key)
+  // Fallback: camelCase / snake_case -> "Title Case"
+  return field
+    .replace(/([A-Z])/g, "_$1")
+    .split("_")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ")
+}
+
+function describeChanges(t: HistoryTranslator, changes: Record<string, HistoryChange>): string {
+  return Object.entries(changes)
+    .map(([field, value]) => {
+      const label = fieldLabel(t, field)
+      if (value && typeof value === "object" && value.before !== undefined && value.after !== undefined) {
+        return t("changedTo", { field: label, value: String(value.after) })
+      }
+      return label
+    })
+    .join(", ")
+}
+
 /**
- * Format human-readable history message
+ * Human-readable history message in the current locale.
  */
 export function formatHistoryMessage(
+  t: HistoryTranslator,
   action: HistoryAction,
   entity: HistoryEntity,
   data?: HistoryLogData,
   userName?: string
 ): string {
-  const user = userName || "Someone";
-  const entityLabel = getEntityLabel(entity);
-  const actionLower = (action || "").toLowerCase();
+  const user = userName || t("someone")
+  const entityKey = `entities.${entity}`
+  const entityLabel = t.has(entityKey) ? t(entityKey) : entity
 
   if (data?.summary) {
-    return data.summary;
+    return data.summary
   }
 
-  // Handle special action types
+  // Special action types
   if (data?.action_type === "student_added_to_course") {
-    return `${user} added a student to ${entityLabel}`;
+    return t("studentAddedTo", { user, entity: entityLabel })
   }
   if (data?.action_type === "student_removed_from_course") {
-    return `${user} removed a student from ${entityLabel}`;
+    return t("studentRemovedFrom", { user, entity: entityLabel })
   }
 
-  // Format based on action and entity
-  switch (actionLower) {
+  switch ((action || "").toLowerCase()) {
     case "create":
-      // Special case for course_student creations
       if (entity === "course_student") {
-        const addedStudentName = data?.after?.studentName || "a student";
-        return `${user} added ${addedStudentName} to course`;
+        return t("addedToCourse", { user, student: data?.after?.studentName || t("aStudent") })
       }
-      // Special case for student_package creations - show package name
       if (entity === "student_package") {
-        const packageName = data?.after?.packageName || "a package";
-        return `${user} created a new package purchase: ${packageName}`;
+        return t("packagePurchased", { user, package: data?.after?.packageName || t("aPackage") })
       }
-      return `${user} created a new ${entityLabel}`;
+      return t("created", { user, entity: entityLabel })
     case "update":
-      // Show changed fields if available
       if (data?.changes && typeof data.changes === "object") {
-        // Special case for student_package updates - show package name
+        const changes = describeChanges(t, data.changes)
         if (entity === "student_package" && data?.packageName) {
-          const changedFields = Object.entries(data.changes)
-            .map(([field, value]) => {
-              // Convert camelCase/snake_case to readable format
-              const readableField = field
-                .replace(/([A-Z])/g, "_$1") // camelCase to snake_case
-                .split("_")
-                .filter(Boolean)
-                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(" ");
-
-              // Format the change
-              if (
-                typeof value === "object" &&
-                value.before !== undefined &&
-                value.after !== undefined
-              ) {
-                return `${readableField} to "${value.after}"`;
-              }
-              return readableField;
-            })
-            .join(", ");
-
-          return `${user} updated ${data.packageName} ${changedFields}`;
+          return t("updatedWithChanges", { user, entity: data.packageName, changes })
         }
-
-        const changedFields = Object.entries(data.changes)
-          .map(([field, value]) => {
-            // Convert camelCase/snake_case to readable format
-            const readableField = field
-              .replace(/([A-Z])/g, "_$1") // camelCase to snake_case
-              .split("_")
-              .filter(Boolean)
-              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(" ");
-
-            // Format the change
-            if (
-              typeof value === "object" &&
-              value.before !== undefined &&
-              value.after !== undefined
-            ) {
-              return `${readableField} to "${value.after}"`;
-            }
-            return readableField;
-          })
-          .join(", ");
-
-        return `${user} updated ${entityLabel} ${changedFields}`;
+        return t("updatedWithChanges", { user, entity: entityLabel, changes })
       }
-      return `${user} updated ${entityLabel}`;
+      return t("updated", { user, entity: entityLabel })
     case "delete":
-      // Special case for course_student deletions
       if (entity === "course_student") {
-        const removedStudentName = data?.before?.studentName || "a student";
-        return `${user} removed ${removedStudentName} from course`;
+        return t("removedFromCourse", { user, student: String(data?.before?.studentName || t("aStudent")) })
       }
-      return `${user} deleted ${entityLabel}`;
+      return t("deleted", { user, entity: entityLabel })
     case "add":
-      return `${user} added to ${entityLabel}`;
+      return t("addedTo", { user, entity: entityLabel })
     case "remove":
-      return `${user} removed from ${entityLabel}`;
+      return t("removedFrom", { user, entity: entityLabel })
     case "view":
-      return `${user} viewed ${entityLabel}`;
+      return t("viewed", { user, entity: entityLabel })
     case "import":
-      return `${user} imported ${entityLabel}s`;
+      return t("imported", { user, entity: entityLabel })
     case "export":
-      return `${user} exported ${entityLabel}s`;
+      return t("exported", { user, entity: entityLabel })
     default:
-      return `${user} performed action on ${entityLabel}`;
+      return t("other", { user, entity: entityLabel })
   }
-}
-
-/**
- * Get entity display label
- */
-function getEntityLabel(entity: HistoryEntity): string {
-  const labels: Record<string, string> = {
-    student: "student",
-    instructor: "instructor",
-    course: "course",
-    course_student: "course enrollment",
-    student_package: "package purchase",
-    branch: "branch",
-    package: "package",
-    dance_type: "dance type",
-    attendance: "attendance",
-    cash_register: "cash register",
-    organization: "organization",
-    user: "user",
-    studio: "studio",
-    instructor_rate: "instructor rate",
-    organization_settings: "organization settings",
-    invitation: "team invitation",
-  };
-  return labels[entity] || entity;
 }
 
 /**

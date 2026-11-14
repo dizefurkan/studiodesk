@@ -5,13 +5,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { logOperation } from '@/lib/actions/history.actions'
+import { actionError } from '@/lib/i18n/actionError'
 
 /**
  * Get all students enrolled in a course
  */
 export async function getCourseStudents(courseId: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -45,13 +46,13 @@ export async function getCourseStudents(courseId: string) {
 
     if (error) {
       console.error('Error fetching course students:', error)
-      return { error: 'Failed to fetch course students' }
+      return { error: await actionError('fetchCourseStudentsFailed') }
     }
 
     return { data }
   } catch (error) {
     console.error('Unexpected error in getCourseStudents:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -60,10 +61,10 @@ export async function getCourseStudents(courseId: string) {
  */
 export async function addStudentToCourse(courseId: string, studentId: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -83,7 +84,7 @@ export async function addStudentToCourse(courseId: string, studentId: string) {
         return { success: true, data: { message: 'Student already enrolled' } }
       }
       console.error('Error adding student to course:', error)
-      return { error: 'Failed to add student to course' }
+      return { error: await actionError('addStudentToCourseFailed') }
     }
 
     console.log('[addStudentToCourse] 🎯 Student added successfully, now logging...')
@@ -112,7 +113,7 @@ export async function addStudentToCourse(courseId: string, studentId: string) {
     return { success: true, data }
   } catch (error) {
     console.error('Unexpected error in addStudentToCourse:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -121,10 +122,10 @@ export async function addStudentToCourse(courseId: string, studentId: string) {
  */
 export async function removeStudentFromCourse(courseId: string, studentId: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -137,7 +138,7 @@ export async function removeStudentFromCourse(courseId: string, studentId: strin
 
     if (error) {
       console.error('Error removing student from course:', error)
-      return { error: 'Failed to remove student from course' }
+      return { error: await actionError('removeStudentFromCourseFailed') }
     }
 
     console.log('[removeStudentFromCourse] 🎯 Student removed successfully, now logging...')
@@ -166,7 +167,7 @@ export async function removeStudentFromCourse(courseId: string, studentId: strin
     return { success: true }
   } catch (error) {
     console.error('Unexpected error in removeStudentFromCourse:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
@@ -175,7 +176,7 @@ export async function removeStudentFromCourse(courseId: string, studentId: strin
  */
 export async function getStudentEnrolledCourses(studentId: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -201,7 +202,7 @@ export async function getStudentEnrolledCourses(studentId: string) {
 
     if (enrollmentError) {
       console.error('Error fetching course enrollments:', enrollmentError)
-      return { error: 'Failed to fetch enrolled courses' }
+      return { error: await actionError('fetchEnrolledCoursesFailed') }
     }
 
     if (!courseEnrollments || courseEnrollments.length === 0) {
@@ -216,7 +217,7 @@ export async function getStudentEnrolledCourses(studentId: string) {
 
     if (packagesError) {
       console.error('Error fetching student packages:', packagesError)
-      return { error: 'Failed to fetch student packages' }
+      return { error: await actionError('fetchStudentPackagesFailed') }
     }
 
     // For each course, get attendance counts
@@ -265,6 +266,6 @@ export async function getStudentEnrolledCourses(studentId: string) {
     return { data: { active, completed } }
   } catch (error) {
     console.error('Unexpected error in getStudentEnrolledCourses:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }

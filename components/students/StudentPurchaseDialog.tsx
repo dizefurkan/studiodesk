@@ -21,6 +21,7 @@ import { Separator } from '@/components/ui/separator'
 import { Spinner } from '@/components/ui/spinner'
 import { formatCurrency } from '@/lib/utils/format'
 import { purchasePackage } from '@/lib/actions/students.actions'
+import { useTranslations } from 'next-intl'
 
 interface StudentPurchaseDialogProps {
   studentId: string
@@ -35,6 +36,8 @@ interface StudentPurchaseDialogProps {
 }
 
 export function StudentPurchaseDialog({ studentId, packages, currency = 'TRY' }: StudentPurchaseDialogProps) {
+  const tx = useTranslations('purchaseDialog')
+  const tf = useTranslations('forms')
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [selectedPackageId, setSelectedPackageId] = useState('')
@@ -53,7 +56,7 @@ export function StudentPurchaseDialog({ studentId, packages, currency = 'TRY' }:
 
   const handlePurchase = async () => {
     if (!selectedPackageId) {
-      setError('Please select a package')
+      setError(tx('selectRequired'))
       return
     }
     setLoading(true)
@@ -72,7 +75,7 @@ export function StudentPurchaseDialog({ studentId, packages, currency = 'TRY' }:
         router.refresh()
       }
     } catch {
-      setError('Failed to process purchase')
+      setError(tx('failed'))
     } finally {
       setLoading(false)
     }
@@ -88,13 +91,13 @@ export function StudentPurchaseDialog({ studentId, packages, currency = 'TRY' }:
     >
       <DialogTrigger asChild>
         <Button>
-          <ShoppingCart /> Purchase Package
+          <ShoppingCart /> {tx('title')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Purchase Package</DialogTitle>
-          <DialogDescription>Choose a package for this student.</DialogDescription>
+          <DialogTitle>{tx('title')}</DialogTitle>
+          <DialogDescription>{tx('description')}</DialogDescription>
         </DialogHeader>
 
         {error && (
@@ -105,7 +108,7 @@ export function StudentPurchaseDialog({ studentId, packages, currency = 'TRY' }:
         )}
 
         <FieldSet>
-          <FieldLegend variant="label">Select Package</FieldLegend>
+          <FieldLegend variant="label">{tx('selectPackage')}</FieldLegend>
           <RadioGroup
             value={selectedPackageId}
             onValueChange={(v) => {
@@ -134,7 +137,7 @@ export function StudentPurchaseDialog({ studentId, packages, currency = 'TRY' }:
         {selected && (
           <>
             <Field>
-              <FieldLabel htmlFor="custom-price">Price (optional override)</FieldLabel>
+              <FieldLabel htmlFor="custom-price">{tx('priceOverride')}</FieldLabel>
               <Input
                 id="custom-price"
                 type="number"
@@ -143,20 +146,20 @@ export function StudentPurchaseDialog({ studentId, packages, currency = 'TRY' }:
                 value={customPrice}
                 onChange={(e) => setCustomPrice(e.target.value)}
               />
-              <FieldDescription>Leave empty to use the package price.</FieldDescription>
+              <FieldDescription>{tx('priceHint')}</FieldDescription>
             </Field>
             <div className="space-y-2 rounded-lg bg-muted/50 p-4 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Package</span>
+                <span className="text-muted-foreground">{tx('package')}</span>
                 <span className="font-medium">{selected.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Credits</span>
+                <span className="text-muted-foreground">{tx('credits')}</span>
                 <span className="font-medium">{selected.total_credits}</span>
               </div>
               <Separator />
               <div className="flex justify-between">
-                <span className="font-semibold">Total</span>
+                <span className="font-semibold">{tx('total')}</span>
                 <span className="text-lg font-bold text-primary">{formatCurrency(total ?? 0, currency)}</span>
               </div>
             </div>
@@ -165,11 +168,11 @@ export function StudentPurchaseDialog({ studentId, packages, currency = 'TRY' }:
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
+            {tf('cancel')}
           </Button>
           <Button onClick={handlePurchase} disabled={!selectedPackageId || loading}>
             {loading && <Spinner />}
-            {loading ? 'Processing...' : 'Confirm Purchase'}
+            {loading ? tx('processing') : tx('confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

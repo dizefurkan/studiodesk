@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { createInstructorRate, updateInstructorRate } from '@/lib/actions/instructor-rates.actions'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Label } from '@/components/ui/label'
+import { useTranslations } from 'next-intl'
 
 interface Instructor {
   id: string
@@ -52,6 +53,8 @@ export function InstructorRateForm({
   onSuccess,
   onCancel,
 }: InstructorRateFormProps) {
+  const tx = useTranslations('instructorRateForm')
+  const tf = useTranslations('forms')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string>('')
   const [formData, setFormData] = useState({
@@ -114,13 +117,13 @@ export function InstructorRateForm({
     setError('')
 
     if (!formData.instructorId || !formData.branchId || !formData.danceTypeId || !formData.ratio) {
-      setError('All fields are required')
+      setError(tx('allRequired'))
       return
     }
 
     const ratio = parseFloat(formData.ratio)
     if (isNaN(ratio) || ratio <= 0 || ratio > 100) {
-      setError('Ratio must be a valid percentage between 0-100')
+      setError(tx('ratioRange'))
       return
     }
 
@@ -144,7 +147,7 @@ export function InstructorRateForm({
         onSuccess?.()
       }
     } catch (err) {
-      setError('Failed to save rate')
+      setError(tx('saveFailed'))
     } finally {
       setLoading(false)
     }
@@ -172,7 +175,7 @@ export function InstructorRateForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4">
         <div>
           <Label className="block mb-2">
-            Instructor *
+            {tx('instructor')}
           </Label>
           <NativeSelect
             value={formData.instructorId}
@@ -180,7 +183,7 @@ export function InstructorRateForm({
             disabled={!!initialRate || !!selectedInstructorId}
             className="w-full"
           >
-            <NativeSelectOption value="">Select instructor</NativeSelectOption>
+            <NativeSelectOption value="">{tx('selectInstructor')}</NativeSelectOption>
             {instructors.map((instructor) => (
               <NativeSelectOption key={instructor.id} value={instructor.id}>
                 {instructor.first_name} {instructor.last_name}
@@ -191,7 +194,7 @@ export function InstructorRateForm({
 
         <div>
           <Label className="block mb-2">
-            Branch *
+            {tx('branch')}
           </Label>
           <NativeSelect
             value={formData.branchId}
@@ -199,7 +202,7 @@ export function InstructorRateForm({
             disabled={!!initialRate}
             className="w-full"
           >
-            <NativeSelectOption value="">Select branch</NativeSelectOption>
+            <NativeSelectOption value="">{tx('selectBranch')}</NativeSelectOption>
             {branches.map((branch) => (
               <NativeSelectOption key={branch.id} value={branch.id}>
                 {branch.name}
@@ -210,7 +213,7 @@ export function InstructorRateForm({
 
         <div>
           <Label className="block mb-2">
-            Dance Type *
+            {tx('danceType')}
           </Label>
           <NativeSelect
             value={formData.danceTypeId}
@@ -218,7 +221,7 @@ export function InstructorRateForm({
             disabled={!!initialRate || !formData.branchId}
             className="w-full"
           >
-            <NativeSelectOption value="">Select dance type</NativeSelectOption>
+            <NativeSelectOption value="">{tx('selectDanceType')}</NativeSelectOption>
             {availableDanceTypes.map((danceType) => (
               <NativeSelectOption key={danceType.id} value={danceType.id}>
                 {danceType.name}
@@ -229,7 +232,7 @@ export function InstructorRateForm({
 
         <div>
           <Label className="block mb-2">
-            Commission Ratio (%) *
+            {tx('ratio')}
           </Label>
           <Input
             type="number"
@@ -252,14 +255,14 @@ export function InstructorRateForm({
           disabled={loading}
           className="border-input text-sm md:text-base h-9 md:h-10"
         >
-          Cancel
+          {tf('cancel')}
         </Button>
         <Button
           type="submit"
           disabled={loading}
           className="text-sm md:text-base h-9 md:h-10"
         >
-          {loading ? 'Saving...' : initialRate ? 'Update Rate' : 'Add Rate'}
+          {loading ? tf('saving') : initialRate ? tx('update') : tx('add')}
         </Button>
       </div>
     </form>

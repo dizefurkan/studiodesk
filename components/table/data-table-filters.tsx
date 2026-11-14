@@ -257,7 +257,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
                 })
               }
               className="h-9 w-full bg-background"
-              placeholder="From"
+              placeholder={t('filters.from')}
             />
             <Input
               type="date"
@@ -271,7 +271,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
                 })
               }
               className="h-9 w-full bg-background"
-              placeholder="To"
+              placeholder={t('filters.to')}
             />
           </div>
         </div>

@@ -12,27 +12,30 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { createDanceType, updateDanceType } from '@/lib/actions/dance-types.actions'
 import type { Database } from '@/lib/types/database.types'
 import { Textarea } from '@/components/ui/textarea'
+import { useTranslations } from 'next-intl'
 
 type DanceType = Database['public']['Tables']['dance_types']['Row']
 
-const danceTypeSchema = z.object({
-  name: z.string().min(2, 'Dance type name must be at least 2 characters'),
+const makeDanceTypeSchema = (tx: (key: string) => string) => z.object({
+  name: z.string().min(2, tx('nameMin')),
   description: z.string().optional(),
 })
 
-type DanceTypeFormValues = z.infer<typeof danceTypeSchema>
+type DanceTypeFormValues = z.infer<ReturnType<typeof makeDanceTypeSchema>>
 
 interface DanceTypeFormProps {
   danceType?: DanceType
 }
 
 export function DanceTypeForm({ danceType }: DanceTypeFormProps) {
+  const tx = useTranslations('danceTypeForm')
+  const tf = useTranslations('forms')
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [generalError, setGeneralError] = useState<string | null>(null)
 
   const form = useForm<DanceTypeFormValues>({
-    resolver: zodResolver(danceTypeSchema),
+    resolver: zodResolver(makeDanceTypeSchema(tx)),
     defaultValues: {
       name: danceType?.name || '',
       description: danceType?.description || '',
@@ -63,7 +66,7 @@ export function DanceTypeForm({ danceType }: DanceTypeFormProps) {
       }
     } catch (error) {
       console.error('Form error:', error)
-      setGeneralError('An unexpected error occurred')
+      setGeneralError(tf('unexpectedError'))
     } finally {
       setIsLoading(false)
     }
@@ -73,10 +76,10 @@ export function DanceTypeForm({ danceType }: DanceTypeFormProps) {
     <Card className="border-border max-w-2xl">
       <div className="p-3 sm:p-4 md:p-6 lg:p-8">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">
-          {danceType ? 'Edit Dance Type' : 'Add New Dance Type'}
+          {danceType ? tx('editTitle') : tx('addTitle')}
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground mb-4 md:mb-6">
-          {danceType ? 'Update dance type information' : 'Add a new dance style to your catalog'}
+          {danceType ? tx('editDescription') : tx('addDescription')}
         </p>
 
         {generalError && (
@@ -90,9 +93,9 @@ export function DanceTypeForm({ danceType }: DanceTypeFormProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Dance Type Name</FormLabel>
+                  <FormLabel>{tx('name')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Ballet, Hip Hop, Contemporary" disabled={isLoading} {...field} />
+                    <Input placeholder={tx('namePlaceholder')} disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -104,10 +107,10 @@ export function DanceTypeForm({ danceType }: DanceTypeFormProps) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormLabel>{tf('descriptionOptional')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Describe this dance style..."
+                      placeholder={tx('descriptionPlaceholder')}
                       disabled={isLoading}
                       className="w-full"
                       rows={4}
@@ -125,7 +128,7 @@ export function DanceTypeForm({ danceType }: DanceTypeFormProps) {
                 disabled={isLoading}
                 className="w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                {isLoading ? 'Saving...' : danceType ? 'Update Dance Type' : 'Create Dance Type'}
+                {isLoading ? tf('saving') : danceType ? tx('update') : tx('create')}
               </Button>
               <Button
                 type="button"
@@ -134,7 +137,7 @@ export function DanceTypeForm({ danceType }: DanceTypeFormProps) {
                 disabled={isLoading}
                 className="border-border w-full sm:w-auto text-sm md:text-base h-9 md:h-10"
               >
-                Cancel
+                {tf('cancel')}
               </Button>
             </div>
           </form>

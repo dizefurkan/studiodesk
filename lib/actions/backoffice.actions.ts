@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { requirePlatformAdmin } from '@/lib/auth/platformAdmin'
 import { MUST_CHANGE_PASSWORD } from '@/lib/auth/passwordPolicy'
 import { toRole, type Role } from '@/lib/constants/roles'
+import { actionError } from '@/lib/i18n/actionError'
 
 // Every action re-checks platform admin rights and then uses the
 // service-role client (bypasses RLS). Never call these from dashboard code.
@@ -13,7 +14,7 @@ import { toRole, type Role } from '@/lib/constants/roles'
 export type StoreRole = Role
 const ROLES: StoreRole[] = ['owner', 'manager', 'instructor', 'staff']
 
-type Result<T = undefined> = { data?: T; error?: string }
+type Result<T = undefined> = { data?: T; error?: string; notFound?: true }
 
 export interface StoreSummary {
   id: string
@@ -149,7 +150,7 @@ export async function getStore(id: string): Promise<Result<StoreDetail>> {
       .eq('id', id)
       .maybeSingle()
     if (error) throw error
-    if (!org) return { error: 'Store not found' }
+    if (!org) return { error: await actionError('storeNotFound'), notFound: true }
 
     const [{ data: branches, error: bErr }, { data: members, error: mErr }] = await Promise.all([
       db()
@@ -193,9 +194,9 @@ export async function createStore(input: {
     await requirePlatformAdmin()
     const name = input.name?.trim()
     const branchName = input.branchName?.trim()
-    if (!name || name.length < 2) return { error: 'Store name is required' }
-    if (!branchName) return { error: 'Branch name is required' }
-    if (!input.ownerUserId) return { error: 'Owner is required' }
+    if (!name || name.length < 2) return { error: await actionError('storeNameRequired') }
+    if (!branchName) return { error: await actionError('branchNameRequired') }
+    if (!input.ownerUserId) return { error: await actionError('ownerRequired') }
 
     const { data: org, error: orgErr } = await db()
       .from('organizations')
@@ -234,7 +235,7 @@ export async function updateStore(
     await requirePlatformAdmin()
     const patch: Record<string, string> = {}
     if (input.name !== undefined) {
-      if (input.name.trim().length < 2) return { error: 'Store name is required' }
+      if (input.name.trim().length < 2) return { error: await actionError('storeNameRequired') }
       patch.name = input.name.trim()
     }
     if (input.currency) patch.currency = input.currency
@@ -270,7 +271,7 @@ export async function createBranch(
 ): Promise<Result> {
   try {
     await requirePlatformAdmin()
-    if (!input.name?.trim()) return { error: 'Branch name is required' }
+    if (!input.name?.trim()) return { error: await actionError('branchNameRequired') }
     const { error } = await db().from('branches').insert({
       organization_id: organizationId,
       name: input.name.trim(),
@@ -291,7 +292,7 @@ export async function updateBranch(
 ): Promise<Result> {
   try {
     await requirePlatformAdmin()
-    if (!input.name?.trim()) return { error: 'Branch name is required' }
+    if (!input.name?.trim()) return { error: await actionError('branchNameRequired') }
     const { error } = await db()
       .from('branches')
       .update({
@@ -344,12 +345,12 @@ async function ownerCount(organizationId: string) {
 export async function addStoreMember(organizationId: string, userId: string, role: StoreRole): Promise<Result> {
   try {
     await requirePlatformAdmin()
-    if (!ROLES.includes(role)) return { error: 'Invalid role' }
+    if (!ROLES.includes(role)) return { error: await actionError('invalidRole') }
     const { error } = await db()
       .from('organization_users')
       .insert({ organization_id: organizationId, user_id: userId, role })
     if (error) {
-      if (error.code === '23505') return { error: 'This account is already a member of the store' }
+      if (error.code === '23505') return { error: await actionError('alreadyStoreMember') }
       throw error
     }
     revalidateBackoffice()
@@ -362,10 +363,10 @@ export async function addStoreMember(organizationId: string, userId: string, rol
 export async function updateStoreMemberRole(memberId: string, role: StoreRole): Promise<Result> {
   try {
     await requirePlatformAdmin()
-    if (!ROLES.includes(role)) return { error: 'Invalid role' }
+    if (!ROLES.includes(role)) return { error: await actionError('invalidRole') }
     const { data: m } = await db().from('organization_users').select('organization_id, role').eq('id', memberId).single()
     if (m?.role === 'owner' && role !== 'owner' && (await ownerCount(m.organization_id)) <= 1)
-      return { error: 'A store must keep at least one owner' }
+      return { error: await actionError('keepOneOwner') }
     const { error } = await db().from('organization_users').update({ role }).eq('id', memberId)
     if (error) throw error
     revalidateBackoffice()
@@ -380,7 +381,7 @@ export async function removeStoreMember(memberId: string): Promise<Result> {
     await requirePlatformAdmin()
     const { data: m } = await db().from('organization_users').select('organization_id, role').eq('id', memberId).single()
     if (m?.role === 'owner' && (await ownerCount(m.organization_id)) <= 1)
-      return { error: 'A store must keep at least one owner' }
+      return { error: await actionError('keepOneOwner') }
     const { error } = await db().from('organization_users').delete().eq('id', memberId)
     if (error) throw error
     revalidateBackoffice()
@@ -445,8 +446,8 @@ export async function createAccount(input: {
   try {
     await requirePlatformAdmin()
     const email = input.email?.trim().toLowerCase()
-    if (!email || !/^\S+@\S+\.\S+$/.test(email)) return { error: 'Valid email is required' }
-    if (!input.password || input.password.length < 8) return { error: 'Password must be at least 8 characters' }
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) return { error: await actionError('validEmailRequired') }
+    if (!input.password || input.password.length < 8) return { error: await actionError('passwordMin') }
 
     const admin = createAdminClient()
     const { data, error } = await admin.auth.admin.createUser({
@@ -488,7 +489,7 @@ export async function updateAccountProfile(userId: string, input: { fullName: st
 export async function setAccountPassword(userId: string, password: string): Promise<Result> {
   try {
     const me = await requirePlatformAdmin()
-    if (!password || password.length < 8) return { error: 'Password must be at least 8 characters' }
+    if (!password || password.length < 8) return { error: await actionError('passwordMin') }
     const { error } = await createAdminClient().auth.admin.updateUserById(userId, {
       password,
       // Someone else chose it: the user must replace it at next sign-in
@@ -504,7 +505,7 @@ export async function setAccountPassword(userId: string, password: string): Prom
 export async function setAccountBanned(userId: string, banned: boolean): Promise<Result> {
   try {
     const me = await requirePlatformAdmin()
-    if (me.id === userId) return { error: 'You cannot disable your own account' }
+    if (me.id === userId) return { error: await actionError('cannotDisableSelf') }
     const { error } = await createAdminClient().auth.admin.updateUserById(userId, {
       ban_duration: banned ? '876000h' : 'none',
     })
@@ -519,7 +520,7 @@ export async function setAccountBanned(userId: string, banned: boolean): Promise
 export async function setPlatformAdmin(userId: string, isAdmin: boolean): Promise<Result> {
   try {
     const me = await requirePlatformAdmin()
-    if (me.id === userId && !isAdmin) return { error: 'You cannot remove your own admin access' }
+    if (me.id === userId && !isAdmin) return { error: await actionError('cannotRemoveOwnAdmin') }
     const q = isAdmin
       ? db().from('platform_admins').upsert({ user_id: userId })
       : db().from('platform_admins').delete().eq('user_id', userId)

@@ -7,6 +7,7 @@ import { Logo } from '@/components/brand/Logo'
 
 export default async function HomePage() {
   const t = await getTranslations()
+  const tx = await getTranslations('landing')
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-foreground via-foreground to-primary">
@@ -32,8 +33,8 @@ export default async function HomePage() {
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-6 py-20 text-center">
         <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
-          Manage Your Dance Studio
-          <span className="block text-primary">Like Never Before</span>
+          {tx('heroTitle')}
+          <span className="block text-primary">{tx('heroHighlight')}</span>
         </h2>
         <p className="text-xl text-muted-foreground/50 mb-10 max-w-2xl mx-auto">
           {t('pages.home.description')}
@@ -59,7 +60,7 @@ export default async function HomePage() {
             {t('pages.home.subtitle')}
           </h3>
           <p className="text-muted-foreground/50 text-center mb-16 max-w-2xl mx-auto">
-            Everything you need to run a successful dance studio
+            {tx('featuresDescription')}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -86,13 +87,13 @@ export default async function HomePage() {
               },
               {
                 icon: Shield,
-                title: 'Secure & Private',
-                description: 'Enterprise-grade security with data isolation',
+                title: tx('secureTitle'),
+                description: tx('secureDescription'),
               },
               {
                 icon: Zap,
-                title: 'Fast & Reliable',
-                description: 'Built on modern cloud infrastructure',
+                title: tx('fastTitle'),
+                description: tx('fastDescription'),
               },
             ].map((feature) => {
               const Icon = feature.icon
@@ -117,14 +118,14 @@ export default async function HomePage() {
       {/* CTA Section */}
       <section className="max-w-4xl mx-auto px-6 py-20 text-center">
         <h3 className="text-4xl font-bold text-white mb-6">
-          Ready to Transform Your Studio?
+          {tx('ctaTitle')}
         </h3>
         <p className="text-xl text-muted-foreground/50 mb-10">
-          Join hundreds of dance studios using StudioDesk
+          {tx('ctaDescription')}
         </p>
         <Link href="/login">
           <Button size="lg" className="px-8">
-            Start Your Free Trial Today
+            {tx('ctaButton')}
           </Button>
         </Link>
       </section>
@@ -132,7 +133,7 @@ export default async function HomePage() {
       {/* Footer */}
       <footer className="border-t border-white/10 bg-black/20 py-8">
         <div className="max-w-6xl mx-auto px-6 text-center text-muted-foreground/70 text-sm">
-          <p>&copy; 2026 StudioDesk. All rights reserved.</p>
+          <p>{tx('copyright', { year: new Date().getFullYear() })}</p>
         </div>
       </footer>
     </div>

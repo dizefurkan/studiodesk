@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { hasLocale } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import { NextIntlClientProvider } from 'next-intl'
 import { ConfirmProvider } from '@/components/common/ConfirmProvider'
 import { SUPPORTED_LOCALES } from '@/lib/i18n/config'
@@ -18,13 +19,14 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: LocaleLayoutProps) {
   const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'meta' })
   return {
     title: {
       template: '%s | StudioDesk',
-      default: 'StudioDesk - Dance Studio Management',
+      default: t('defaultTitle'),
     },
-    description: 'All-in-one platform for managing dance studios',
-    keywords: 'dance studio, management, scheduling, students, instructors',
+    description: t('description'),
+    keywords: t('keywords'),
   }
 }
 

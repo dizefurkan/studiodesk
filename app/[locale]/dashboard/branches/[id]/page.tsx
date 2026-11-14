@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { MapPin, Phone, Edit2, Music } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 
 interface BranchDetailPageProps {
   params: {
@@ -12,6 +13,8 @@ interface BranchDetailPageProps {
 }
 
 export default async function BranchDetailPage({ params }: BranchDetailPageProps) {
+  const tx = await getTranslations('branchDetail')
+  const td = await getTranslations('detailPages')
   const { id } = await params
   const result = await getBranch(id)
 
@@ -25,7 +28,7 @@ export default async function BranchDetailPage({ params }: BranchDetailPageProps
     <div className="min-h-screen bg-linear-to-b from-muted/50 to-white p-8">
       <div className="max-w-2xl">
         <Link href="/dashboard/branches" className="text-primary hover:underline mb-6 inline-block">
-          ← Back to Branches
+          {tx('backToList')}
         </Link>
 
         <Card className="border-border">
@@ -33,12 +36,12 @@ export default async function BranchDetailPage({ params }: BranchDetailPageProps
             <div className="flex justify-between items-start mb-8">
               <div>
                 <h1 className="text-3xl font-bold text-foreground mb-2">{branch.name}</h1>
-                <p className="text-muted-foreground">Branch Information</p>
+                <p className="text-muted-foreground">{tx('subtitle')}</p>
               </div>
               <Link href={`/dashboard/branches/${branch.id}/edit`}>
                 <Button className="gap-2">
                   <Edit2 size={18} />
-                  Edit
+                  {td('edit')}
                 </Button>
               </Link>
             </div>
@@ -48,7 +51,7 @@ export default async function BranchDetailPage({ params }: BranchDetailPageProps
                 <div className="flex items-center gap-4">
                   <MapPin className="text-primary" size={20} />
                   <div>
-                    <p className="text-sm text-muted-foreground">Address</p>
+                    <p className="text-sm text-muted-foreground">{tx('address')}</p>
                     <p className="text-lg font-medium text-foreground">{branch.address}</p>
                   </div>
                 </div>
@@ -58,7 +61,7 @@ export default async function BranchDetailPage({ params }: BranchDetailPageProps
                 <div className="flex items-center gap-4">
                   <Phone className="text-primary" size={20} />
                   <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
+                    <p className="text-sm text-muted-foreground">{td('phone')}</p>
                     <p className="text-lg font-medium text-foreground">{branch.phone}</p>
                   </div>
                 </div>
@@ -69,12 +72,12 @@ export default async function BranchDetailPage({ params }: BranchDetailPageProps
 
         <Card className="border-border mt-6">
           <div className="p-8">
-            <h2 className="text-xl font-bold text-foreground mb-4">Studio Management</h2>
-            <p className="text-muted-foreground mb-6">Manage dance studios and spaces for this branch</p>
+            <h2 className="text-xl font-bold text-foreground mb-4">{tx('studiosTitle')}</h2>
+            <p className="text-muted-foreground mb-6">{tx('studiosDescription')}</p>
             <Link href={`/dashboard/branches/${branch.id}/studios`}>
               <Button className="gap-2">
                 <Music size={18} />
-                Manage Studios
+                {tx('manageStudios')}
               </Button>
             </Link>
           </div>

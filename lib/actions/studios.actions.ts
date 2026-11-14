@@ -6,6 +6,7 @@ import { getOrganization } from '@/lib/auth/getOrganization'
 import { logOperation } from '@/lib/actions/history.actions'
 import { getChanges } from '@/lib/utils/history-utils'
 import type { TablesUpdate } from '@/lib/types/database.types'
+import { actionError } from '@/lib/i18n/actionError'
 
 export interface StudioInput {
   name: string
@@ -16,7 +17,7 @@ export interface StudioInput {
 
 export async function getStudios(branchId: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -28,28 +29,28 @@ export async function getStudios(branchId: string) {
 
     if (error) {
       console.error('Error fetching studios:', error)
-      return { error: 'Failed to fetch studios' }
+      return { error: await actionError('fetchStudiosFailed') }
     }
 
     return { data }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
 export async function createStudio(branchId: string, studioData: StudioInput) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
 
     if (!studioData.name) {
-      return { error: 'Studio name is required' }
+      return { error: await actionError('studioRoomNameRequired') }
     }
 
     const { data, error } = await (supabase
@@ -66,7 +67,7 @@ export async function createStudio(branchId: string, studioData: StudioInput) {
 
     if (error) {
       console.error('Error creating studio:', error)
-      return { error: 'Failed to create studio' }
+      return { error: await actionError('createStudioFailed') }
     }
 
     // Log the create operation
@@ -83,16 +84,16 @@ export async function createStudio(branchId: string, studioData: StudioInput) {
     return { data }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
 export async function updateStudio(studioId: string, studioData: Partial<StudioInput>) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -105,7 +106,7 @@ export async function updateStudio(studioId: string, studioData: Partial<StudioI
       .single()
 
     if (!beforeStudio) {
-      return { error: 'Studio not found' }
+      return { error: await actionError('studioNotFound') }
     }
 
     const updateData: TablesUpdate<'studios'> = {}
@@ -123,7 +124,7 @@ export async function updateStudio(studioId: string, studioData: Partial<StudioI
 
     if (error) {
       console.error('Error updating studio:', error)
-      return { error: 'Failed to update studio' }
+      return { error: await actionError('updateStudioFailed') }
     }
 
     // Log the update operation
@@ -149,16 +150,16 @@ export async function updateStudio(studioId: string, studioData: Partial<StudioI
     return { data }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }
 
 export async function deleteStudio(studioId: string) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: await actionError('notAuthenticated') }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
+  if (!organization) return { error: await actionError('noOrganization') }
 
   try {
     const supabase = await createServerSupabaseClient()
@@ -171,7 +172,7 @@ export async function deleteStudio(studioId: string) {
       .single()
 
     if (!beforeStudio) {
-      return { error: 'Studio not found' }
+      return { error: await actionError('studioNotFound') }
     }
 
     const { error } = await supabase
@@ -181,7 +182,7 @@ export async function deleteStudio(studioId: string) {
 
     if (error) {
       console.error('Error deleting studio:', error)
-      return { error: 'Failed to delete studio' }
+      return { error: await actionError('deleteStudioFailed') }
     }
 
     // Log the delete operation
@@ -198,6 +199,6 @@ export async function deleteStudio(studioId: string) {
     return { success: true }
   } catch (error) {
     console.error('Unexpected error:', error)
-    return { error: 'An unexpected error occurred' }
+    return { error: await actionError('unexpected') }
   }
 }

@@ -17,15 +17,7 @@ import type { Database } from '@/lib/types/database.types'
 type Student = Database['public']['Tables']['students']['Row']
 
 // Fallback schema for type inference
-const studentSchemaFallback = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().optional(),
-  notes: z.string().optional(),
-})
-
-type StudentFormValues = z.infer<typeof studentSchemaFallback>
+type StudentFormValues = z.infer<ReturnType<typeof createStudentSchema>>
 
 // Schema factory that uses translations
 function createStudentSchema(t: ReturnType<typeof useTranslations>) {
@@ -43,6 +35,8 @@ interface StudentFormProps {
 }
 
 export function StudentForm({ student }: StudentFormProps) {
+  const tx = useTranslations('studentForm')
+  const tf = useTranslations('forms')
   const t = useTranslations()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -91,7 +85,7 @@ export function StudentForm({ student }: StudentFormProps) {
       }
     } catch (error) {
       console.error('Form error:', error)
-      setGeneralError('An unexpected error occurred')
+      setGeneralError(tf('unexpectedError'))
     } finally {
       setIsLoading(false)
     }
@@ -121,7 +115,7 @@ export function StudentForm({ student }: StudentFormProps) {
                   <FormItem>
                     <FormLabel>{t('auth.firstName')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="John" disabled={isLoading} {...field} />
+                      <Input placeholder={tf('firstNamePlaceholder')} disabled={isLoading} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -134,7 +128,7 @@ export function StudentForm({ student }: StudentFormProps) {
                   <FormItem>
                     <FormLabel>{t('auth.lastName')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Doe" disabled={isLoading} {...field} />
+                      <Input placeholder={tf('lastNamePlaceholder')} disabled={isLoading} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -149,7 +143,7 @@ export function StudentForm({ student }: StudentFormProps) {
                 <FormItem>
                   <FormLabel>{t('auth.email')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="john@example.com" type="email" disabled={isLoading} {...field} />
+                    <Input placeholder={tf('emailPlaceholder')} type="email" disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -163,7 +157,7 @@ export function StudentForm({ student }: StudentFormProps) {
                 <FormItem>
                   <FormLabel>{t('students.phone')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="+55 11 99999-9999" disabled={isLoading} {...field} />
+                    <Input placeholder={tf('phonePlaceholder')} disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -175,10 +169,10 @@ export function StudentForm({ student }: StudentFormProps) {
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormLabel>{tf('notesOptional')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Add any notes about the student..."
+                      placeholder={tx('notesPlaceholder')}
                       disabled={isLoading}
                       rows={4}
                       {...field}

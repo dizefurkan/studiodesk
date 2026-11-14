@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { BookOpen, AlertCircle, Plus, Minus, X } from 'lucide-react'
 import { updateStudentPackageCredits } from '@/lib/actions/students.actions'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 interface StudentCreditsProps {
   packages: Array<{
@@ -22,13 +23,14 @@ interface StudentCreditsProps {
 }
 
 export function StudentCredits({ packages, loading }: StudentCreditsProps) {
+  const tx = useTranslations('studentCredits')
   const router = useRouter()
   const [updating, setUpdating] = useState<string | null>(null)
   const [editingPackageId, setEditingPackageId] = useState<string | null>(null)
 
   const handleUpdateCredits = async (packageId: string, newAmount: number) => {
     if (!packageId) {
-      toast.error('Package ID is missing')
+      toast.error(tx('missingPackage'))
       return
     }
     if (newAmount < 0) return
@@ -37,12 +39,12 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
     try {
       const result = await updateStudentPackageCredits(packageId, newAmount)
       if (result.error) {
-        toast.error(`Error: ${result.error}`)
+        toast.error(result.error)
       } else {
         router.refresh()
       }
     } catch (err) {
-      toast.error('Failed to update credits')
+      toast.error(tx('updateFailed'))
     } finally {
       setUpdating(null)
     }
@@ -65,11 +67,11 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
       <Card className="border-border p-6">
         <div className="flex items-center gap-3 mb-4">
           <BookOpen className="text-primary" size={20} />
-          <h2 className="text-lg font-semibold text-foreground">Credits</h2>
+          <h2 className="text-lg font-semibold text-foreground">{tx('title')}</h2>
         </div>
         <div className="text-center py-8">
           <AlertCircle className="mx-auto text-input mb-2" size={32} />
-          <p className="text-muted-foreground">No active packages</p>
+          <p className="text-muted-foreground">{tx('empty')}</p>
         </div>
       </Card>
     )
@@ -80,13 +82,13 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
       <div className="p-6">
         <div className="flex items-center gap-3 mb-6">
           <BookOpen className="text-primary" size={20} />
-          <h2 className="text-lg font-semibold text-foreground">Credits</h2>
+          <h2 className="text-lg font-semibold text-foreground">{tx('title')}</h2>
         </div>
 
         <div className="space-y-4">
           {packages.map((pkg, idx) => {
-            const danceType = pkg.packages?.dance_types?.name || 'Unknown'
-            const name = pkg.packages?.name || 'Package'
+            const danceType = pkg.packages?.dance_types?.name || tx('unknownDanceType')
+            const name = pkg.packages?.name || tx('packageFallback')
             const total = pkg.packages?.total_credits || 0
             const remaining = pkg.remaining_credits || 0
             const used = Math.max(0, total - remaining)
@@ -154,7 +156,7 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
                     <Button variant="link" size="sm" className="h-auto p-0"
                       onClick={() => setEditingPackageId(pkg.id)}
                     >
-                      Düzenle
+                      {tx('edit')}
                     </Button>
                   )}
                 </div>
