@@ -1,5 +1,4 @@
 import { getOrganization } from '@/lib/auth/getOrganization'
-import { DEFAULT_CURRENCY } from '@/config/currencies'
 import { PackagesPageContent } from './packages-client'
 import { getPackages } from '@/lib/actions/packages.actions'
 

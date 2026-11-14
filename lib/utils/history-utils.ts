@@ -6,8 +6,8 @@
 /**
  * Extract only changed fields from update
  */
-export function getChanges(before: Record<string, any>, after: Record<string, any>) {
-  const changes: Record<string, { before: any; after: any }> = {}
+export function getChanges(before: Record<string, unknown>, after: Record<string, unknown>) {
+  const changes: Record<string, { before: unknown; after: unknown }> = {}
 
   for (const key in after) {
     if (JSON.stringify(before[key]) !== JSON.stringify(after[key])) {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from '@/i18n/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BookOpen, AlertCircle, Plus, Minus, X } from 'lucide-react'
@@ -21,6 +22,7 @@ interface StudentCreditsProps {
 }
 
 export function StudentCredits({ packages, loading }: StudentCreditsProps) {
+  const router = useRouter()
   const [updating, setUpdating] = useState<string | null>(null)
   const [editingPackageId, setEditingPackageId] = useState<string | null>(null)
 
@@ -37,8 +39,7 @@ export function StudentCredits({ packages, loading }: StudentCreditsProps) {
       if (result.error) {
         toast.error(`Error: ${result.error}`)
       } else {
-        // Refresh page to see updates
-        window.location.reload()
+        router.refresh()
       }
     } catch (err) {
       toast.error('Failed to update credits')

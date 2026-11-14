@@ -4,34 +4,16 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import { getOrganization } from "@/lib/auth/getOrganization";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { HistoryEntity, HistoryLogData } from "@/lib/utils/history";
+import type { Json } from "@/lib/types/database.types";
 
 // ========================================
 // LOGGING UTILITY - NON-BREAKING
 // ========================================
 
 export type HistoryAction = "CREATE" | "UPDATE" | "DELETE";
-export type HistoryEntity =
-  | "student"
-  | "instructor"
-  | "course"
-  | "package"
-  | "student_package"
-  | "branch"
-  | "dance_type"
-  | "attendance"
-  | "course_student"
-  | "instructor_rate"
-  | "cash_register"
-  | "studio"
-  | "invitation"
-  | "organization_settings";
+export type { HistoryEntity } from "@/lib/utils/history";
 
-interface HistoryLogData {
-  before?: Record<string, any>; // Previous values (for UPDATE/DELETE)
-  after?: Record<string, any>; // New values (for CREATE/UPDATE)
-  changes?: Record<string, { before: any; after: any }>; // Only changed fields (for UPDATE)
-  [key: string]: any; // Allow additional metadata
-}
 
 /**
  * Logs an operation to history_logs table
@@ -73,7 +55,7 @@ export async function logOperation(
     console.log(
       "[logOperation] 🔍 Checking if history_logs table is accessible..."
     );
-    const { error: tableError } = await (admin.from("history_logs") as any)
+    const { error: tableError } = await admin.from("history_logs")
       .select("id")
       .limit(1);
 
@@ -81,9 +63,9 @@ export async function logOperation(
       console.error(
         "[logOperation] ❌ TABLE ERROR - history_logs table may not exist:",
         {
-          code: (tableError as any).code,
-          message: (tableError as any).message,
-          details: (tableError as any).details,
+          code: tableError.code,
+          message: tableError.message,
+          details: tableError.details,
         }
       );
       // Continue anyway - log to console what we would have logged
@@ -96,23 +78,22 @@ export async function logOperation(
 
     console.log("[logOperation] ✅ Table access OK, proceeding with insert...");
 
-    const { error } = await (admin.from("history_logs") as any).insert({
+    const { error } = await admin.from("history_logs").insert({
       organization_id: finalOrgId,
       user_id: user.id,
       action,
       entity,
       entity_id: entityId,
-      data: data || null,
+      data: (data ?? null) as Json,
       created_at: new Date().toISOString(),
     });
 
     if (error) {
       console.error("[logOperation] ❌ INSERT ERROR:", {
-        code: (error as any).code,
-        message: (error as any).message,
-        details: (error as any).details,
-        hint: (error as any).hint,
-        status: (error as any).status,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
       });
     } else {
       console.log("[logOperation] ✅ Successfully inserted:", {
@@ -143,7 +124,7 @@ export async function getStudentAttendanceHistory(studentId: string) {
   try {
     const supabase = await createServerSupabaseClient();
 
-    const { data, error } = await (supabase.from("attendances") as any)
+    const { data, error } = await supabase.from("attendances")
       .select(
         `
         id,
@@ -216,11 +197,11 @@ export async function getStudentPackageHistory(studentId: string) {
     }
 
     // Combine: for each package, count how many attendances used that package
-    const packagesWithStats = (packages || []).map((pkg: any) => {
+    const packagesWithStats = (packages || []).map((pkg) => {
       const creditsUsed =
         (pkg.package?.total_credits || 0) - (pkg.remaining_credits || 0);
       const attendanceCount =
-        (attendances || []).filter((a: any) => a.student_package_id === pkg.id)
+        (attendances || []).filter((a) => a.student_package_id === pkg.id)
           .length || 0;
 
       return {
@@ -243,10 +224,10 @@ export async function getStudentPackageHistory(studentId: string) {
 
 export interface HistoryLog {
   id: string;
-  action: string;
-  entity: string;
+  action: HistoryAction;
+  entity: HistoryEntity;
   entity_id: string;
-  data?: Record<string, any>;
+  data?: HistoryLogData;
   created_at: string;
   profiles?: {
     full_name: string | null;
@@ -266,20 +247,20 @@ export async function getHistoryLogs(limit = 50): Promise<HistoryLog[]> {
     const supabase = await createServerSupabaseClient();
 
     // Get history logs with user profile join
-    const { data: logs, error: logsError } = await (supabase as any)
+    const { data: logs, error: logsError } = await supabase
       .from("history_logs")
       .select("id, action, entity, entity_id, data, created_at, user_id")
       .eq("organization_id", organization.id)
       .order("created_at", { ascending: false })
       .limit(limit)
-      .throwOnError(); // Throw error if table doesn't exist
+      ;
 
     if (logsError) {
       const errorDetails = {
-        code: (logsError as any).code,
-        message: (logsError as any).message,
-        details: (logsError as any).details,
-        hint: (logsError as any).hint,
+        code: logsError.code,
+        message: logsError.message,
+        details: logsError.details,
+        hint: logsError.hint,
       };
       console.error(
         "[Get History By Entity Error]",
@@ -298,28 +279,29 @@ export async function getHistoryLogs(limit = 50): Promise<HistoryLog[]> {
 
     // Build result - fetch user profiles separately
     const userIds = [
-      ...new Set(logs.map((log: any) => log.user_id).filter(Boolean)),
+      ...new Set(logs.map((log) => log.user_id).filter((id): id is string => !!id)),
     ];
-    const profiles: Record<string, any> = {};
+    const profiles: Record<string, { id: string; full_name: string | null }> = {};
 
     if (userIds.length > 0) {
-      const { data: profileData } = await (supabase.from("profiles") as any)
+      const { data: profileData } = await supabase.from("profiles")
         .select("id, full_name")
         .in("id", userIds);
 
       if (profileData) {
-        profileData.forEach((p: any) => {
+        profileData.forEach((p) => {
           profiles[p.id] = p;
         });
       }
     }
 
-    const result: HistoryLog[] = logs.map((log: any) => ({
+    const result: HistoryLog[] = logs.map((log) => ({
       id: log.id,
-      action: log.action,
-      entity: log.entity,
+      // written only by logOperation(), which takes the typed unions
+      action: log.action as HistoryAction,
+      entity: log.entity as HistoryEntity,
       entity_id: log.entity_id,
-      data: log.data,
+      data: (log.data ?? undefined) as HistoryLogData | undefined,
       created_at: log.created_at,
       profiles: log.user_id ? profiles[log.user_id] || null : null,
     }));
@@ -401,10 +383,10 @@ export async function getEntityHistory(
 
     if (logsError) {
       const errorDetails = {
-        code: (logsError as any).code,
-        message: (logsError as any).message,
-        details: (logsError as any).details,
-        hint: (logsError as any).hint,
+        code: logsError.code,
+        message: logsError.message,
+        details: logsError.details,
+        hint: logsError.hint,
       };
       console.error(
         "[Get Entity History Error] Complete error object:",
@@ -421,7 +403,7 @@ export async function getEntityHistory(
     let logs = allLogs;
     if (entity === "student") {
       logs = allLogs
-        .filter((log: any) => {
+        .filter((log) => {
           if (log.entity === "student") {
             // Direct student logs - check entity_id matches student
             return log.entity_id === entityId;
@@ -443,29 +425,30 @@ export async function getEntityHistory(
 
     // Second step: Fetch user profiles for all unique user_ids
     const userIds = [
-      ...new Set(logs.map((log: any) => log.user_id).filter(Boolean)),
+      ...new Set(logs.map((log) => log.user_id).filter((id): id is string => !!id)),
     ];
-    const profiles: Record<string, any> = {};
+    const profiles: Record<string, { id: string; full_name: string | null }> = {};
 
     if (userIds.length > 0) {
-      const { data: profileData } = await (supabase.from("profiles") as any)
+      const { data: profileData } = await supabase.from("profiles")
         .select("id, full_name")
         .in("id", userIds);
 
       if (profileData) {
-        profileData.forEach((p: any) => {
+        profileData.forEach((p) => {
           profiles[p.id] = p;
         });
       }
     }
 
     // Build result with profiles merged in
-    const result: HistoryLog[] = logs.map((log: any) => ({
+    const result: HistoryLog[] = logs.map((log) => ({
       id: log.id,
-      action: log.action,
-      entity: log.entity,
+      // written only by logOperation(), which takes the typed unions
+      action: log.action as HistoryAction,
+      entity: log.entity as HistoryEntity,
       entity_id: log.entity_id,
-      data: log.data,
+      data: (log.data ?? undefined) as HistoryLogData | undefined,
       created_at: log.created_at,
       profiles: log.user_id ? profiles[log.user_id] || null : null,
     }));
@@ -506,10 +489,10 @@ export async function getHistoryByEntity(
 
     if (logsError) {
       const errorDetails = {
-        code: (logsError as any).code,
-        message: (logsError as any).message,
-        details: (logsError as any).details,
-        hint: (logsError as any).hint,
+        code: logsError.code,
+        message: logsError.message,
+        details: logsError.details,
+        hint: logsError.hint,
       };
       console.error(
         "[Get History By Entity Error]",
@@ -532,29 +515,30 @@ export async function getHistoryByEntity(
 
     // Second step: Fetch user profiles for all unique user_ids
     const userIds = [
-      ...new Set(logs.map((log: any) => log.user_id).filter(Boolean)),
+      ...new Set(logs.map((log) => log.user_id).filter((id): id is string => !!id)),
     ];
-    const profiles: Record<string, any> = {};
+    const profiles: Record<string, { id: string; full_name: string | null }> = {};
 
     if (userIds.length > 0) {
-      const { data: profileData } = await (supabase.from("profiles") as any)
+      const { data: profileData } = await supabase.from("profiles")
         .select("id, full_name")
         .in("id", userIds);
 
       if (profileData) {
-        profileData.forEach((p: any) => {
+        profileData.forEach((p) => {
           profiles[p.id] = p;
         });
       }
     }
 
     // Build result with profiles merged in
-    const result: HistoryLog[] = logs.map((log: any) => ({
+    const result: HistoryLog[] = logs.map((log) => ({
       id: log.id,
-      action: log.action,
-      entity: log.entity,
+      // written only by logOperation(), which takes the typed unions
+      action: log.action as HistoryAction,
+      entity: log.entity as HistoryEntity,
       entity_id: log.entity_id,
-      data: log.data,
+      data: (log.data ?? undefined) as HistoryLogData | undefined,
       created_at: log.created_at,
       profiles: log.user_id ? profiles[log.user_id] || null : null,
     }));

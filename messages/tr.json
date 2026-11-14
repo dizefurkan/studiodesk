@@ -166,7 +166,14 @@
     "getStarted": "Başla",
     "startFreeTrial": "Ücretsiz Denemeyı Başlat",
     "learnMore": "Daha Fazla Bilgi",
-    "loginSubtitle": "Hesabın StudioDesk yöneticisi tarafından açılır. Bilgilerinle giriş yap."
+    "loginSubtitle": "Hesabın StudioDesk yöneticisi tarafından açılır. Bilgilerinle giriş yap.",
+    "forcePasswordChange": {
+      "title": "Kendi şifreni belirle",
+      "description": "{email} hesabı geçici bir şifreyle açıldı. Devam etmek için geçici şifreyi mevcut şifre olarak gir ve yeni bir şifre seç.",
+      "logout": "Çıkış yap"
+    },
+    "tagline": "Dans stüdyosu yönetimi",
+    "copyright": "© {year} StudioDesk. Tüm hakları saklıdır."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -219,7 +226,8 @@
     "sessionHeld": "Seans yapıldı",
     "studentRegistered": "Öğrenci kaydı",
     "courseCreated": "Kurs oluşturuldu",
-    "viewAll": "Tümünü Gör"
+    "viewAll": "Tümünü Gör",
+    "coursesScheduled": "{count} planlı ders"
   },
   "students": {
     "title": "Öğrenciler",
@@ -786,7 +794,12 @@
     "loadingFailed": "Veri yükleme başarısız",
     "savingFailed": "Değişiklikleri kaydetme başarısız",
     "deletingFailed": "Öğeyi silme başarısız",
-    "operationFailed": "İşlem başarısız"
+    "operationFailed": "İşlem başarısız",
+    "notFoundPage": {
+      "title": "Sayfa bulunamadı",
+      "description": "Aradığın sayfa yok ya da taşınmış.",
+      "back": "Panele dön"
+    }
   },
   "backoffice": {
     "badge": "Backoffice",
@@ -935,5 +948,18 @@
       "title": "Henüz eğitmen oranı yok",
       "description": "Eğitmenlerin şube ve dans türüne göre ne kadar kazandığını belirle."
     }
+  },
+  "instructorEarnings": {
+    "title": "Eğitmen kazançları",
+    "description": "Eğitmen ödemelerini ve ders başı kazançları takip et",
+    "totalEarnings": "Toplam kazanç (filtreye göre)",
+    "totalRecords": "Kayıt",
+    "searchPlaceholder": "Eğitmen adına göre ara…",
+    "empty": "Kazanç kaydı yok",
+    "instructor": "Eğitmen",
+    "allInstructors": "Tüm eğitmenler",
+    "fromDate": "Başlangıç",
+    "toDate": "Bitiş",
+    "selectDate": "Tarih seç"
   }
 }

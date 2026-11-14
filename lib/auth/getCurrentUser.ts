@@ -1,10 +1,12 @@
+import { cache } from 'react'
 import { unstable_rethrow } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { cookies } from 'next/headers'
 import type { User } from '@supabase/supabase-js'
 
-export async function getCurrentUser(): Promise<User | null> {
+/** The signed-in user (verified with the Auth server). Cached per request. */
+export const getCurrentUser = cache(async (): Promise<User | null> => {
   try {
     const supabase = await createServerSupabaseClient()
     const {
@@ -13,7 +15,8 @@ export async function getCurrentUser(): Promise<User | null> {
     } = await supabase.auth.getUser()
     
     if (error) {
-      console.error('[getCurrentUser] Auth error:', error)
+      // No session is the normal signed-out state, not an error
+      if (error.name !== 'AuthSessionMissingError') console.error('[getCurrentUser] Auth error:', error)
       return null
     }
     
@@ -23,7 +26,7 @@ export async function getCurrentUser(): Promise<User | null> {
     console.error('[getCurrentUser] Exception:', err instanceof Error ? err.message : err)
     return null
   }
-}
+})
 
 export async function getUserRoleInOrganization(organizationId: string) {
   const supabase = await createServerSupabaseClient()
@@ -36,7 +39,7 @@ export async function getUserRoleInOrganization(organizationId: string) {
   try {
     // Use admin client to bypass RLS
     const admin = createAdminClient()
-    const { data, error } = await (admin as any)
+    const { data, error } = await admin
       .from('organization_users')
       .select('role')
       .eq('organization_id', organizationId)

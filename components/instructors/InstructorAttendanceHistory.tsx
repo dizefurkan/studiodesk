@@ -1,10 +1,12 @@
 'use client'
 
+import { Link } from '@/i18n/navigation'
 import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { Check, X } from 'lucide-react'
-import Link from 'next/link'
-import { getInstructorAttendanceHistory } from '@/lib/actions/instructor-detail.actions'
+import {
+  getInstructorAttendanceHistory,
+  type InstructorSessionHistory as Session,
+} from '@/lib/actions/instructor-detail.actions'
 
 interface InstructorAttendanceHistoryProps {
   instructorId: string
@@ -17,7 +19,7 @@ export function InstructorAttendanceHistory({
   showCourseInfo = false,
   showInstructors = false 
 }: InstructorAttendanceHistoryProps) {
-  const [sessions, setSessions] = useState<any[]>([])
+  const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -65,7 +67,7 @@ export function InstructorAttendanceHistory({
 
       <div className="space-y-2">
         {sessions.map((session) => {
-          const presentCount = session.attendance.filter((r: any) => r.is_present).length
+          const presentCount = session.attendance.filter((r) => r.is_present).length
           
           return (
             <details key={session.sessionId} className="border border-border rounded-lg hover:border-primary transition-colors group">
@@ -90,7 +92,7 @@ export function InstructorAttendanceHistory({
                     )}
                     {showInstructors && session.instructors && session.instructors.length > 0 && (
                       <p className="text-sm text-muted-foreground">
-                        👥 {session.instructors.map((inst: any) => inst.name).join(', ')}
+                        👥 {session.instructors.map((inst) => inst.name).join(', ')}
                       </p>
                     )}
                   </div>
@@ -110,7 +112,7 @@ export function InstructorAttendanceHistory({
               <div className="px-4 pb-4 border-t border-border pt-4 bg-muted/50">
                 <p className="text-sm font-semibold text-foreground mb-3">Attendance:</p>
                 <div className="space-y-2">
-                  {session.attendance.map((att: any, idx: number) => (
+                  {session.attendance.map((att, idx: number) => (
                     <div key={idx} className="flex items-center gap-3 text-sm">
                       <span className={`font-bold ${att.is_present ? 'text-green-600' : 'text-red-600'}`}>
                         {att.is_present ? '✓' : '✗'}

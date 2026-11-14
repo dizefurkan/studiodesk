@@ -27,6 +27,9 @@
 - No records yet → `EmptyState` (Lottie + one create action) and **no** header create button;
   with records or active filters → `PageHeader` action + DataTable.
 - No hardcoded UI text: every string goes into `messages/tr.json` **and** `messages/en.json`.
+- Navigation: `Link`, `useRouter`, `redirect` from `@/i18n/navigation` (locale is added automatically;
+  write hrefs without it). Not `next/link` / `next/navigation` (except `notFound`, `useSearchParams`, `usePathname`).
+  Refresh server data with `router.refresh()`, never `window.location.reload()`.
 
 ## Theme
 - Colors are tokens in `app/globals.css` (`primary`, `highlight`, `muted-foreground`, `border`, …).
@@ -41,5 +44,13 @@
 - After a schema change regenerate `lib/types/database.types.ts` and check the Supabase advisors.
 - Writes go through server actions in `lib/actions/*` with a role check; never trust a client-sent
   organization id. Service-role client (`lib/supabase/admin`) only on the server.
+- The service-role client bypasses RLS, so **every** admin query is scoped to `getOrganization().id`
+  in the query itself (`.eq('organization_id', …)` or an `!inner` join + `.eq('branches.organization_id', …)`),
+  or runs only after an RLS-client lookup proved access. Never filter other tenants out in JS.
+  Prefer the RLS client (`createServerSupabaseClient`) when it can do the job.
+- `getOrganization()` only honours the `organization_id` cookie when the user is a member.
+- No `any`: use the generated types (`Tables<'x'>`, `TablesUpdate<'x'>`), let Supabase infer select
+  results, and type UI props from the action with `ActionData<typeof action>` (`lib/types/actions`).
+- User search terms interpolated into `.or()` / `ilike` go through `sanitizeSearch` (`lib/utils/search`).
 - `proxy.ts` (Next 16 middleware) runs next-intl and refreshes the Supabase session cookies — keep both.
 - In `catch` blocks of server code that reads cookies/headers, call `unstable_rethrow(err)` first.

@@ -1,13 +1,12 @@
+import { Link } from '@/i18n/navigation'
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Edit2, ArrowLeft, Mail, Phone } from 'lucide-react'
 import { getStudent, getStudentPackages } from '@/lib/actions/students.actions'
 import { getPackages } from '@/lib/actions/packages.actions'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { getEntityHistory } from '@/lib/actions/history.actions'
-import { DEFAULT_CURRENCY } from '@/config/currencies'
 import { getStudentAttendanceHistory, getStudentPackageHistory } from '@/lib/actions/history.actions'
 import { StudentCredits } from '@/components/students/StudentCredits'
 import { StudentPurchaseDialog } from '@/components/students/StudentPurchaseDialog'
@@ -77,7 +76,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
         {/* Right Section - Mobile: 2-column grid, Desktop: flex row */}
         <div className="grid grid-cols-2 md:flex gap-2">
           <div className="col-span-1">
-            <StudentPurchaseDialog studentId={id} packages={availablePackages as any} currency={currency} />
+            <StudentPurchaseDialog studentId={id} packages={availablePackages} currency={currency} />
           </div>
           <Link href={`/dashboard/students/${student.id}/edit`} className="col-span-1">
             <Button className="w-full md:w-auto">
@@ -89,7 +88,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
       </div>
 
       {/* Credits Section */}
-      <StudentCredits packages={studentPackages as any} />
+      <StudentCredits packages={studentPackages} />
 
       {/* Enrolled Courses Section */}
       <StudentCoursesSection studentId={id} />

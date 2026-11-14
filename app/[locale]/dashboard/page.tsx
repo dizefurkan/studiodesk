@@ -1,8 +1,8 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { getTranslations } from 'next-intl/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Users, BookOpen, Calendar, TrendingUp, ArrowRight, CheckCircle2, Clock, AlertCircle, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { Users, BookOpen, Calendar, TrendingUp, ArrowRight, CheckCircle2, Clock, AlertCircle, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { getStudents } from '@/lib/actions/students.actions'
 import { getCourses } from '@/lib/actions/courses.actions'
 import { getHistoryLogs } from '@/lib/actions/history.actions'
@@ -12,6 +12,8 @@ import { formatCurrency } from '@/lib/utils/format'
 import { RevenueChart } from '@/components/dashboard/RevenueChart'
 import { UpcomingCoursesCard } from '@/components/dashboard/UpcomingCoursesCard'
 import { HistoryComponent } from '@/components/history/HistoryComponent'
+import type { UpcomingSession } from '@/components/dashboard/UpcomingCoursesCard'
+import type { HistoryLog } from '@/lib/actions/history.actions'
 
 export default async function DashboardPage({
   params,
@@ -35,9 +37,9 @@ export default async function DashboardPage({
   let revenue = 0
   let lastMonthRevenue = 0
   let growthRate = 0
-  let chartData: any[] = []
-  let upcomingCourses: any[] = []
-  let recentActivities: any[] = []
+  let chartData: { name: string; revenue: number }[] = []
+  let upcomingCourses: UpcomingSession[] = []
+  let recentActivities: HistoryLog[] = []
   
   if (organization) {
     try {
@@ -73,7 +75,7 @@ export default async function DashboardPage({
         .lte('created_at', lastDayTimestamp)
       
       if (transactions && Array.isArray(transactions)) {
-        revenue = transactions.reduce((sum, t: any) => sum + (t.amount || 0), 0)
+        revenue = transactions.reduce((sum, t) => sum + (t.amount || 0), 0)
       }
       
       // Get last month revenue for growth calculation
@@ -90,7 +92,7 @@ export default async function DashboardPage({
         .lte('created_at', prevMonthLastTimestamp)
       
       if (prevTransactions && Array.isArray(prevTransactions)) {
-        lastMonthRevenue = prevTransactions.reduce((sum, t: any) => sum + (t.amount || 0), 0)
+        lastMonthRevenue = prevTransactions.reduce((sum, t) => sum + (t.amount || 0), 0)
       }
       
       // Calculate growth rate
@@ -117,8 +119,8 @@ export default async function DashboardPage({
             .gte('created_at', monthFirst.toISOString())
             .lte('created_at', new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59).toISOString())
           
-          const monthRevenue = (monthTransactions || []).reduce((sum, t: any) => sum + (t.amount || 0), 0)
-          const monthName = month.toLocaleDateString('en-US', { month: 'short' })
+          const monthRevenue = (monthTransactions || []).reduce((sum, t) => sum + (t.amount || 0), 0)
+          const monthName = month.toLocaleDateString(locale, { month: 'short' })
           
           return {
             name: monthName,
@@ -139,16 +141,23 @@ export default async function DashboardPage({
           id,
           session_date,
           course_id,
-          courses!inner(id, title, instructors(id, name))
+          courses!inner(id, name, course_instructors(instructors(id, first_name, last_name)))
         `)
         .gte('session_date', today)
         .lte('session_date', nextMonth)
         .order('session_date', { ascending: true })
         .limit(5)
       
-      if (upcomingSessions && Array.isArray(upcomingSessions)) {
-        upcomingCourses = upcomingSessions
-      }
+      upcomingCourses = (upcomingSessions || []).map((session) => ({
+        id: session.id,
+        session_date: session.session_date,
+        course_id: session.course_id,
+        course_name: session.courses.name,
+        instructors: session.courses.course_instructors
+          .map((ci) => ci.instructors)
+          .filter((i) => i !== null)
+          .map((i) => `${i.first_name} ${i.last_name}`),
+      }))
       
       // Get recent activity from history logs
       const historyLogs = await getHistoryLogs(5)

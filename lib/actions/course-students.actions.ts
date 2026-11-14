@@ -22,8 +22,8 @@ export async function getAvailableStudentsForCourse(courseId: string, danceTypeI
     // Get all students with active packages for this dance type
     // Join: student_packages -> packages -> dance_type
     const { data: studentsWithPackages, error: packagesError } = await (adminSupabase
-      .from('student_packages') as any)
-      .select('student_id, students(id, first_name, last_name), packages(dance_type_id)')
+      .from('student_packages'))
+      .select('student_id, students!inner(id, first_name, last_name, organization_id), packages!inner(dance_type_id)')
       .eq('students.organization_id', organization.id)
       .eq('packages.dance_type_id', danceTypeId)
       .gt('remaining_credits', 0)
@@ -38,7 +38,7 @@ export async function getAvailableStudentsForCourse(courseId: string, danceTypeI
     
     if (courseId) {
       const { data: enrolledStudents, error: enrolledError } = await (adminSupabase
-        .from('course_students') as any)
+        .from('course_students'))
         .select('student_id')
         .eq('course_id', courseId)
 
@@ -46,7 +46,7 @@ export async function getAvailableStudentsForCourse(courseId: string, danceTypeI
         console.error('Error fetching enrolled students:', enrolledError)
       }
 
-      enrolledStudentIds = new Set((enrolledStudents || []).map((cs: any) => cs.student_id))
+      enrolledStudentIds = new Set((enrolledStudents || []).map((cs) => cs.student_id))
     }
 
     // Filter out already enrolled students and deduplicate
@@ -80,7 +80,7 @@ export async function getCourseStudents(courseId: string) {
     const supabase = await createServerSupabaseClient()
 
     const { data, error } = await (supabase
-      .from('course_students') as any)
+      .from('course_students'))
       .select(`
         id, 
         student_id, 
@@ -132,7 +132,7 @@ export async function addStudentToCourse(courseId: string, studentId: string) {
     const supabase = await createServerSupabaseClient()
 
     const { data, error } = await (supabase
-      .from('course_students') as any)
+      .from('course_students'))
       .insert({
         course_id: courseId,
         student_id: studentId,
@@ -142,7 +142,7 @@ export async function addStudentToCourse(courseId: string, studentId: string) {
 
     if (error) {
       // If it's a unique constraint error, return success (already enrolled)
-      if ((error as any)?.code === '23505') {
+      if (error?.code === '23505') {
         return { success: true, data: { message: 'Student already enrolled' } }
       }
       console.error('Error adding student to course:', error)
@@ -153,13 +153,13 @@ export async function addStudentToCourse(courseId: string, studentId: string) {
 
     // Get student name for history logging
     const { data: studentData } = await (supabase
-      .from('students') as any)
+      .from('students'))
       .select('first_name, last_name')
       .eq('id', studentId)
       .single()
     
     const studentName = studentData 
-      ? `${(studentData as any).first_name} ${(studentData as any).last_name}`.trim()
+      ? `${studentData.first_name} ${studentData.last_name}`.trim()
       : 'Unknown Student'
 
     // Log the action to history using the standard pattern
@@ -193,7 +193,7 @@ export async function removeStudentFromCourse(courseId: string, studentId: strin
     const supabase = await createServerSupabaseClient()
 
     const { error } = await (supabase
-      .from('course_students') as any)
+      .from('course_students'))
       .delete()
       .eq('course_id', courseId)
       .eq('student_id', studentId)
@@ -207,13 +207,13 @@ export async function removeStudentFromCourse(courseId: string, studentId: strin
 
     // Get student name for history logging
     const { data: studentData } = await (supabase
-      .from('students') as any)
+      .from('students'))
       .select('first_name, last_name')
       .eq('id', studentId)
       .single()
     
     const studentName = studentData 
-      ? `${(studentData as any).first_name} ${(studentData as any).last_name}`.trim()
+      ? `${studentData.first_name} ${studentData.last_name}`.trim()
       : 'Unknown Student'
 
     // Log the action to history using the standard pattern
@@ -234,66 +234,6 @@ export async function removeStudentFromCourse(courseId: string, studentId: strin
 }
 
 /**
- * Auto-enroll a student in all courses matching their newly purchased package's dance type
- */
-export async function autoEnrollStudentInCourses(studentId: string, danceTypeId: string, branchId?: string) {
-  const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated' }
-
-  const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found' }
-
-  try {
-    const adminSupabase = createAdminClient()
-
-    // Get all courses for this dance type
-    let query = (adminSupabase
-      .from('courses') as any)
-      .select('id')
-      .eq('dance_type_id', danceTypeId)
-
-    // If branch is specified, only enroll in that branch; otherwise, all branches
-    if (branchId) {
-      query = query.eq('branch_id', branchId)
-    }
-
-    const { data: courses, error: coursesError } = await query
-
-    if (coursesError) {
-      console.error('Error fetching matching courses:', coursesError)
-      return { error: 'Failed to find matching courses' }
-    }
-
-    if (!courses || courses.length === 0) {
-      return { success: true, data: { enrolledCount: 0 } }
-    }
-
-    // Enroll in all matching courses
-    const enrollments = courses.map((course: any) => ({
-      course_id: course.id,
-      student_id: studentId,
-    }))
-
-    const { error: insertError } = await (adminSupabase
-      .from('course_students') as any)
-      .insert(enrollments)
-
-    if (insertError) {
-      // If it's a unique constraint error, it means some are already enrolled - that's ok
-      if ((insertError as any)?.code !== '23505') {
-        console.error('Error enrolling student in courses:', insertError)
-        return { error: 'Failed to enroll student in courses' }
-      }
-    }
-
-    return { success: true, data: { enrolledCount: enrollments.length } }
-  } catch (error) {
-    console.error('Unexpected error in autoEnrollStudentInCourses:', error)
-    return { error: 'An unexpected error occurred' }
-  }
-}
-
-/**
  * Get all courses a student is enrolled in with attendance stats
  */
 export async function getStudentEnrolledCourses(studentId: string) {
@@ -305,14 +245,14 @@ export async function getStudentEnrolledCourses(studentId: string) {
 
     // Get all courses this student is enrolled in
     const { data: courseEnrollments, error: enrollmentError } = await (supabase
-      .from('course_students') as any)
+      .from('course_students'))
       .select(
         `
         id,
         course_id,
         joined_at,
         courses(
-          id, name, day_of_week, start_time, end_time,
+          id, name, day_of_week, start_time, end_time, dance_type_id,
           branches(name),
           dance_types(name),
           course_instructors(instructor_id)
@@ -333,7 +273,7 @@ export async function getStudentEnrolledCourses(studentId: string) {
 
     // Get student packages to check remaining credits
     const { data: studentPackages, error: packagesError } = await (supabase
-      .from('student_packages') as any)
+      .from('student_packages'))
       .select('id, remaining_credits, packages(dance_type_id)')
       .eq('student_id', studentId)
 
@@ -344,24 +284,24 @@ export async function getStudentEnrolledCourses(studentId: string) {
 
     // For each course, get attendance counts
     const coursesWithStats = await Promise.all(
-      courseEnrollments.map(async (enrollment: any) => {
+      courseEnrollments.map(async (enrollment) => {
         // Get attendance records for this student in this course
         const { data: attendances } = await (supabase
-          .from('attendances') as any)
+          .from('attendances'))
           .select('id, created_at, course_sessions(session_date)')
           .eq('student_id', studentId)
           .in(
             'session_id',
             (
-              await (supabase.from('course_sessions') as any)
+              await supabase.from('course_sessions')
                 .select('id')
                 .eq('course_id', enrollment.courses.id)
-            ).data?.map((s: any) => s.id) || [],
+            ).data?.map((s) => s.id) || [],
           )
 
         // Find matching package for this course's dance type
         const matchingPackage = studentPackages?.find(
-          (pkg: any) => pkg.packages?.dance_type_id === enrollment.courses.dance_type_id
+          (pkg) => pkg.packages?.dance_type_id === enrollment.courses.dance_type_id
         )
 
         return {
@@ -374,7 +314,7 @@ export async function getStudentEnrolledCourses(studentId: string) {
           endTime: enrollment.courses.end_time,
           enrolledAt: enrollment.joined_at,
           attendanceCount: attendances?.length || 0,
-          attendanceDates: attendances?.map((a: any) => a.course_sessions?.session_date) || [],
+          attendanceDates: attendances?.map((a) => a.course_sessions?.session_date) || [],
           remainingCredits: matchingPackage?.remaining_credits || 0,
           packageDanceTypeId: matchingPackage?.packages?.dance_type_id,
         }

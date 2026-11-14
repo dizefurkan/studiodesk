@@ -41,3 +41,11 @@ export const DAYS_OF_WEEK = [
   { value: 5, label: 'Friday' },
   { value: 6, label: 'Saturday' },
 ]
+
+export type Role = (typeof ROLES)[keyof typeof ROLES]
+const ROLE_VALUES: readonly string[] = Object.values(ROLES)
+
+/** Narrows a role read from the database (text + CHECK constraint) to the Role union. */
+export function toRole(value: string): Role {
+  return (ROLE_VALUES.includes(value) ? value : ROLES.STAFF) as Role
+}

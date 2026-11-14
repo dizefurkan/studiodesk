@@ -1,9 +1,9 @@
 'use client'
 
+import { useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/table/data-table'
-import { FilterConfig } from '@/components/table/data-table-filters'
+import { FilterConfig, type FilterValues } from '@/components/table/data-table-filters'
 import { getInstructorColumns, Instructor } from '@/app/[locale]/dashboard/instructors/columns'
 import { useTranslations } from 'next-intl'
 import { deleteInstructor } from '@/lib/actions/instructors.actions'
@@ -35,7 +35,7 @@ export function InstructorTableWrapper({
   const t = useTranslations()
   const router = useRouter()
   const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
-  const [filterValues, setFilterValues] = useState<Record<string, any>>({
+  const [filterValues, setFilterValues] = useState<FilterValues>({
     danceType: danceTypeId || '',
     branch: branchId || '',
   })
@@ -59,8 +59,8 @@ export function InstructorTableWrapper({
         throw new Error(result.error)
       }
 
-      // Reload page to reflect deletion
-      window.location.reload()
+      setDeleteModalOpen(false)
+      router.refresh()
     } catch (err) {
       throw err
     } finally {
@@ -106,7 +106,7 @@ export function InstructorTableWrapper({
 
   return (
     <>
-      <DataTable<Instructor, any>
+      <DataTable<Instructor, unknown>
         columns={columns}
         data={instructors}
         filters={filters}

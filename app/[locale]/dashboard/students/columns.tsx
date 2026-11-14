@@ -1,8 +1,8 @@
 'use client'
 
+import { Link } from '@/i18n/navigation'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 import { Edit2, Trash2 } from 'lucide-react'
 import { StudentPopover } from '@/components/students/StudentPopover'
 import { format } from 'date-fns'
@@ -13,7 +13,7 @@ export interface Student {
   first_name: string
   last_name: string
   email: string
-  phone?: string
+  phone?: string | null
   created_at: string
   totalRemainingCredits: number
   enrolledCoursesCount: number
@@ -32,7 +32,7 @@ export interface Student {
     id: string
     name: string
     danceType: string
-    danceTypeId: string
+    danceTypeId?: string
     remaining: number
   }>
 }

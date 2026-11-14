@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
@@ -22,8 +22,14 @@ import {
   TrendingUp,
   Settings,
   ChevronDown,
+  type LucideIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+
+type NavLink = { label: string; icon: LucideIcon; href: string }
+type MenuItem =
+  | (NavLink & { category: false })
+  | { label: string; category: true; items: NavLink[] }
 
 export function Sidebar() {
   const t = useTranslations()
@@ -37,7 +43,7 @@ export function Sidebar() {
     ? pathname.slice(locale.length + 1)
     : pathname
   
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     {
       label: t('dashboard.title'),
       icon: Home,
@@ -156,7 +162,7 @@ export function Sidebar() {
           {menuItems.map((item, idx) => {
             // Dashboard - single item
             if (!item.category) {
-              const Icon = item.icon as any
+              const Icon = item.icon
             // Dashboard only active on exact path
               const isActive = pathWithoutLocale === item.href
 
@@ -190,7 +196,7 @@ export function Sidebar() {
 
             // Check if any subitem is active
             const hasActiveChild = item.items?.some(
-              (subitem: any) => pathWithoutLocale === subitem.href || pathWithoutLocale.startsWith(subitem.href + '/')
+              (subitem) => pathWithoutLocale === subitem.href || pathWithoutLocale.startsWith(subitem.href + '/')
             )
 
             return (
@@ -209,7 +215,7 @@ export function Sidebar() {
                 {/* Category Items */}
                 {isExpanded && (
                   <div className="mt-1 ml-2 space-y-1 border-l border-border pl-3">
-                    {item.items?.map((subitem: any) => {
+                    {item.items?.map((subitem) => {
                       const SubIcon = subitem.icon
                       const isSubActive =
                         pathWithoutLocale === subitem.href || pathWithoutLocale.startsWith(subitem.href + '/')

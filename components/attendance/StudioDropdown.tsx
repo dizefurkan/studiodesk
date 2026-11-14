@@ -2,10 +2,10 @@
 
 import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-interface Studio {
+export interface Studio {
   id: string
   name: string
-  capacity?: number
+  capacity?: number | null
 }
 
 interface StudioDropdownProps {

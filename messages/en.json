@@ -166,7 +166,14 @@
     "getStarted": "Get Started",
     "startFreeTrial": "Start Free Trial",
     "learnMore": "Learn More",
-    "loginSubtitle": "Accounts are created by your StudioDesk admin. Sign in with your credentials."
+    "loginSubtitle": "Accounts are created by your StudioDesk admin. Sign in with your credentials.",
+    "forcePasswordChange": {
+      "title": "Choose your own password",
+      "description": "{email} was set up with a temporary password. Enter it as the current password and pick a new one to continue.",
+      "logout": "Sign out"
+    },
+    "tagline": "Dance studio management",
+    "copyright": "© {year} StudioDesk. All rights reserved."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -219,7 +226,8 @@
     "sessionHeld": "Session held",
     "studentRegistered": "Student registered",
     "courseCreated": "Course created",
-    "viewAll": "View All"
+    "viewAll": "View All",
+    "coursesScheduled": "{count, plural, one {# session} other {# sessions}} scheduled"
   },
   "students": {
     "title": "Students",
@@ -786,7 +794,12 @@
     "loadingFailed": "Failed to load data",
     "savingFailed": "Failed to save changes",
     "deletingFailed": "Failed to delete item",
-    "operationFailed": "Operation failed"
+    "operationFailed": "Operation failed",
+    "notFoundPage": {
+      "title": "Page not found",
+      "description": "The page you're looking for doesn't exist or has been moved.",
+      "back": "Back to dashboard"
+    }
   },
   "backoffice": {
     "badge": "Backoffice",
@@ -935,5 +948,18 @@
       "title": "No instructor rates yet",
       "description": "Set what each instructor earns per branch and dance type."
     }
+  },
+  "instructorEarnings": {
+    "title": "Instructor earnings",
+    "description": "Track instructor compensation and session payments",
+    "totalEarnings": "Total earnings (filtered)",
+    "totalRecords": "Records",
+    "searchPlaceholder": "Search by instructor…",
+    "empty": "No earnings found",
+    "instructor": "Instructor",
+    "allInstructors": "All instructors",
+    "fromDate": "From",
+    "toDate": "To",
+    "selectDate": "Select date"
   }
 }

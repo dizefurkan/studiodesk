@@ -1,24 +1,36 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/navigation'
+import { useState, useEffect } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
 import { getCourses } from '@/lib/actions/courses.actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
-import Link from 'next/link'
 import { Calendar, Clock, CheckCircle, Grid3x3, List, Users, Info } from 'lucide-react'
 import { formatTime } from '@/lib/utils/formatTime'
+import type { ActionData } from '@/lib/types/actions'
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+type CalendarCourse = ActionData<typeof getCourses>[number]
+
+/** Localised weekday (0 = Sunday) and short month names */
+function useCalendarNames() {
+  const locale = useLocale()
+  const weekday = new Intl.DateTimeFormat(locale, { weekday: 'long' })
+  const month = new Intl.DateTimeFormat(locale, { month: 'short' })
+  // 2023-01-01 was a Sunday
+  const DAYS = Array.from({ length: 7 }, (_, i) => weekday.format(new Date(2023, 0, 1 + i)))
+  const MONTHS = Array.from({ length: 12 }, (_, i) => month.format(new Date(2023, i, 1)))
+  return { DAYS, MONTHS }
+}
 
 function CalendarPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const [courses, setCourses] = useState<any[]>([])
+  const { DAYS, MONTHS } = useCalendarNames()
+  const [courses, setCourses] = useState<CalendarCourse[]>([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'agenda'>('month')
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -95,23 +107,23 @@ function CalendarPage({
 
   // Helper: Get courses for specific day
   const getCoursesForDay = (dayOfWeek: number) => {
-    return courses.filter((course: any) => course.day_of_week === dayOfWeek)
+    return courses.filter((course) => course.day_of_week === dayOfWeek)
   }
 
   // Helper: Get courses for week
   const getWeekCourses = (weekDays: Date[]) => {
-    const weekCourses: any[] = []
+    const weekCourses: (CalendarCourse & { date: Date })[] = []
     weekDays.forEach((day) => {
       const dayOfWeek = day.getDay()
       const dayCoursesForDay = getCoursesForDay(dayOfWeek)
-      dayCoursesForDay.forEach((course: any) => {
+      dayCoursesForDay.forEach((course) => {
         weekCourses.push({
           ...course,
           date: day,
         })
       })
     })
-    return weekCourses.sort((a: any, b: any) => {
+    return weekCourses.sort((a, b) => {
       const timeA = parseInt(a.start_time.replace(':', ''))
       const timeB = parseInt(b.start_time.replace(':', ''))
       return timeA - timeB
@@ -245,7 +257,7 @@ function CalendarPage({
 
                     {/* Desktop View: Course names */}
                     <div className="hidden md:flex flex-col flex-1 space-y-1">
-                      {visibleCourses.map((course: any) => (
+                      {visibleCourses.map((course) => (
                         <div
                           key={course.id}
                           className="text-xs bg-primary text-primary-foreground p-1 rounded truncate hover:bg-primary/90 transition-all"
@@ -270,7 +282,7 @@ function CalendarPage({
                           <PopoverContent className="w-80">
                             <div className="space-y-3">
                               <h4 className="font-bold text-foreground text-sm">{t('calendar.classesOnDay', { count: dayCoursesForDay.length, date: day })}</h4>
-                              {dayCoursesForDay.map((course: any) => (
+                              {dayCoursesForDay.map((course) => (
                                 <div
                                   key={course.id}
                                   className="p-3 bg-background border border-border rounded-lg"
@@ -331,7 +343,7 @@ function CalendarPage({
       <Card className="border-border p-4 md:p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <h2 className="text-xl md:text-2xl font-bold text-foreground">
-            Week {weekStart.getDate()} - {weekEnd.getDate()} {MONTHS[weekEnd.getMonth()]} {weekEnd.getFullYear()}
+            {t('calendar.week')} {weekStart.getDate()} - {weekEnd.getDate()} {MONTHS[weekEnd.getMonth()]} {weekEnd.getFullYear()}
           </h2>
           <div className="flex gap-2 flex-wrap">
             <Button
@@ -375,7 +387,7 @@ function CalendarPage({
                     <p className="text-lg md:text-xl font-bold text-foreground">{day.getDate()}</p>
                   </div>
                   <div className="space-y-2">
-                    {getCoursesForDay(day.getDay()).map((course: any) => (
+                    {getCoursesForDay(day.getDay()).map((course) => (
                       <Link
                         key={course.id}
                         href={`/dashboard/courses/${course.id}`}
@@ -420,12 +432,12 @@ function CalendarPage({
             ) : (
               <div className="space-y-3">
                 {dayCoursesForDay
-                  .sort((a: any, b: any) => {
+                  .sort((a, b) => {
                     const timeA = parseInt(a.start_time.replace(':', ''))
                     const timeB = parseInt(b.start_time.replace(':', ''))
                     return timeA - timeB
                   })
-                  .map((course: any) => (
+                  .map((course) => (
                     <Card key={course.id} className="border-border p-4 hover:shadow-md transition-shadow">
                       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div className="flex-1 w-full md:w-auto">

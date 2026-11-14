@@ -7,6 +7,8 @@ import { getOrganization } from '@/lib/auth/getOrganization'
 import { logOperation } from '@/lib/actions/history.actions'
 import { getChanges } from '@/lib/utils/history-utils'
 import type { Database } from '@/lib/types/database.types'
+import type { TablesUpdate } from '@/lib/types/database.types'
+import { sanitizeSearch } from '@/lib/utils/search'
 
 type Instructor = Database['public']['Tables']['instructors']['Row']
 
@@ -34,7 +36,7 @@ export async function getInstructorsForDanceType(danceTypeId?: string) {
     console.log('[getInstructorsForDanceType] Fetching for dance_type_id:', danceTypeId, 'org_id:', organization.id)
 
     // First, fetch instructor_rates for this dance type
-    const { data: rates, error: ratesError } = await (admin as any)
+    const { data: rates, error: ratesError } = await admin
       .from('instructor_rates')
       .select('instructor_id, ratio_per_class, branch_id, dance_type_id')
       .eq('dance_type_id', danceTypeId)
@@ -52,11 +54,11 @@ export async function getInstructorsForDanceType(danceTypeId?: string) {
     }
 
     // Get unique instructor IDs from rates
-    const instructorIds = [...new Set(rates.map((r: any) => r.instructor_id))]
+    const instructorIds = [...new Set(rates.map((r) => r.instructor_id))]
     console.log('[getInstructorsForDanceType] Unique instructors:', instructorIds.length)
 
     // Fetch the instructors with their rates
-    const { data: instructors, error: instructorsError } = await (admin as any)
+    const { data: instructors, error: instructorsError } = await admin
       .from('instructors')
       .select(`
         *,
@@ -77,7 +79,7 @@ export async function getInstructorsForDanceType(danceTypeId?: string) {
     }
 
     console.log('[getInstructorsForDanceType] Returning', instructors?.length || 0, 'instructors')
-    return { data: instructors as any[] }
+    return { data: instructors }
   } catch (error) {
     console.error('[getInstructorsForDanceType] Unexpected error:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
@@ -106,7 +108,7 @@ export async function getInstructors(
     const admin = createAdminClient()
     
     // Count query
-    let countQuery = (admin as any)
+    let countQuery = admin
       .from('instructors')
       .select('id', { count: 'exact', head: true })
       .eq('organization_id', organization.id)
@@ -114,7 +116,7 @@ export async function getInstructors(
 
     if (searchQuery) {
       countQuery = countQuery.or(
-        `first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`
+        `first_name.ilike.%${sanitizeSearch(searchQuery)}%,last_name.ilike.%${sanitizeSearch(searchQuery)}%,email.ilike.%${sanitizeSearch(searchQuery)}%`
       )
     }
 
@@ -122,7 +124,7 @@ export async function getInstructors(
     const count = totalCount || 0
 
     // Data query
-    let query = (admin as any)
+    let query = admin
       .from('instructors')
       .select(`
         id,
@@ -142,7 +144,7 @@ export async function getInstructors(
 
     if (searchQuery) {
       query = query.or(
-        `first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`
+        `first_name.ilike.%${sanitizeSearch(searchQuery)}%,last_name.ilike.%${sanitizeSearch(searchQuery)}%,email.ilike.%${sanitizeSearch(searchQuery)}%`
       )
     }
 
@@ -158,14 +160,14 @@ export async function getInstructors(
     }
 
     // Enrich data with computed stats
-    const enrichedData = (data as any[]).map((instructor) => ({
+    const enrichedData = data.map((instructor) => ({
       ...instructor,
       branchCount: instructor.branch_instructors?.length || 0,
       courseCount: instructor.course_instructors?.length || 0,
       danceTypeCount: instructor.instructor_rates?.length || 0,
-      branches: instructor.branch_instructors?.filter((bi: any) => bi.branches).map((bi: any) => bi.branches) || [],
-      courses: instructor.course_instructors?.filter((ci: any) => ci.courses).map((ci: any) => ci.courses) || [],
-      danceTypes: instructor.instructor_rates?.filter((ir: any) => ir.dance_types).map((ir: any) => ir.dance_types) || [],
+      branches: instructor.branch_instructors?.filter((bi) => bi.branches).map((bi) => bi.branches) || [],
+      courses: instructor.course_instructors?.filter((ci) => ci.courses).map((ci) => ci.courses) || [],
+      danceTypes: instructor.instructor_rates?.filter((ir) => ir.dance_types).map((ir) => ir.dance_types) || [],
     }))
 
     const totalPages = Math.ceil(count / pageSize)
@@ -192,7 +194,7 @@ export async function getInstructor(id: string) {
     }
 
     const admin = createAdminClient()
-    const { data, error } = await (admin as any)
+    const { data, error } = await admin
       .from('instructors')
       .select('*')
       .eq('id', id)
@@ -243,7 +245,7 @@ export async function createInstructor(input: CreateInstructorInput) {
         last_name: input.lastName,
         email: input.email,
         phone: input.phone || null,
-      } as any)
+      })
       .select()
       .single()
 
@@ -256,13 +258,13 @@ export async function createInstructor(input: CreateInstructorInput) {
     void logOperation(
       'CREATE',
       'instructor',
-      (data as any).id,
+      data.id,
       {
         after: {
-          firstName: (data as any).first_name,
-          lastName: (data as any).last_name,
-          email: (data as any).email,
-          phone: (data as any).phone,
+          firstName: data.first_name,
+          lastName: data.last_name,
+          email: data.email,
+          phone: data.phone,
         },
       },
       organization.id
@@ -311,13 +313,13 @@ export async function updateInstructor(id: string, input: UpdateInstructorInput)
       return { error: 'Instructor not found or does not belong to your organization' }
     }
 
-    const updateData: any = {}
+    const updateData: TablesUpdate<'instructors'> = {}
     if (input.firstName !== undefined) updateData.first_name = input.firstName
     if (input.lastName !== undefined) updateData.last_name = input.lastName
     if (input.email !== undefined) updateData.email = input.email
     if (input.phone !== undefined) updateData.phone = input.phone
 
-    const { data, error } = await (supabase.from('instructors') as any)
+    const { data, error } = await supabase.from('instructors')
       .update({ ...updateData })
       .eq('id', id)
       .eq('organization_id', organization.id)
@@ -331,16 +333,16 @@ export async function updateInstructor(id: string, input: UpdateInstructorInput)
 
     // Log the update operation
     const beforeObj = {
-      firstName: (beforeInstructor as any).first_name,
-      lastName: (beforeInstructor as any).last_name,
-      email: (beforeInstructor as any).email,
-      phone: (beforeInstructor as any).phone,
+      firstName: beforeInstructor.first_name,
+      lastName: beforeInstructor.last_name,
+      email: beforeInstructor.email,
+      phone: beforeInstructor.phone,
     }
     const afterObj = {
-      firstName: (data as any).first_name,
-      lastName: (data as any).last_name,
-      email: (data as any).email,
-      phone: (data as any).phone,
+      firstName: data.first_name,
+      lastName: data.last_name,
+      email: data.email,
+      phone: data.phone,
     }
     const changes = getChanges(beforeObj, afterObj)
     void logOperation('UPDATE', 'instructor', id, {
@@ -386,14 +388,14 @@ export async function deleteInstructor(id: string, reason?: string) {
     }
 
     const user_id = user.id
-    const updateResult = await (supabase.from('instructors') as any)
+    const updateResult = await supabase.from('instructors')
       .update({
         deleted_at: new Date().toISOString(),
         deleted_by: user_id,
         deleted_reason: reason || null,
       })
       .eq('id', id)
-      .eq('organization_id', organization.id) as any
+      .eq('organization_id', organization.id)
     const { error } = updateResult
 
     if (error) {
@@ -403,10 +405,10 @@ export async function deleteInstructor(id: string, reason?: string) {
 
     // Log the delete operation
     const beforeObj = {
-      firstName: (beforeInstructor as any).first_name,
-      lastName: (beforeInstructor as any).last_name,
-      email: (beforeInstructor as any).email,
-      phone: (beforeInstructor as any).phone,
+      firstName: beforeInstructor.first_name,
+      lastName: beforeInstructor.last_name,
+      email: beforeInstructor.email,
+      phone: beforeInstructor.phone,
     }
     void logOperation('DELETE', 'instructor', id, {
       before: beforeObj,
@@ -432,7 +434,7 @@ export async function getInstructorFilterOptions() {
 
     // Get dance types list
     const { data: danceTypesData } = await (adminSupabase
-      .from('dance_types') as any)
+      .from('dance_types'))
       .select('id, name')
       .eq('organization_id', organization.id)
       .order('name')
@@ -441,7 +443,7 @@ export async function getInstructorFilterOptions() {
 
     // Get branches list
     const { data: branchesData } = await (adminSupabase
-      .from('branches') as any)
+      .from('branches'))
       .select('id, name')
       .eq('organization_id', organization.id)
       .order('name')

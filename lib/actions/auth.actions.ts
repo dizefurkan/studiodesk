@@ -1,10 +1,12 @@
 'use server'
 
+import { redirect } from '@/i18n/navigation'
+import { getLocale } from 'next-intl/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { setOrganizationCookie } from '@/lib/auth/getCurrentUser'
 import { isPlatformAdmin } from '@/lib/auth/platformAdmin'
-import { redirect } from 'next/navigation'
+import { mustChangePassword } from '@/lib/auth/passwordPolicy'
 
 // Public sign-up and self-service onboarding are disabled.
 // Accounts and stores are created from /backoffice only.
@@ -14,7 +16,7 @@ interface LoginParams {
   password: string
 }
 
-export type LoginNextStep = 'dashboard' | 'backoffice' | 'no-access'
+export type LoginNextStep = 'dashboard' | 'backoffice' | 'no-access' | 'change-password'
 
 export async function login({ email, password }: LoginParams): Promise<{
   success?: boolean
@@ -36,13 +38,14 @@ export async function login({ email, password }: LoginParams): Promise<{
     return { error: 'Failed to sign in' }
   }
 
+  const forceChange = mustChangePassword(data.user)
+
   if (await isPlatformAdmin(data.user.id)) {
-    return { success: true, nextStep: 'backoffice' }
+    return { success: true, nextStep: forceChange ? 'change-password' : 'backoffice' }
   }
 
   // First active store the user belongs to
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- hand-written DB types lack is_active / nested selects
-  const { data: memberships } = await (createAdminClient() as any)
+  const { data: memberships } = await (createAdminClient())
     .from('organization_users')
     .select('organization_id, organizations!inner(is_active)')
     .eq('user_id', data.user.id)
@@ -52,7 +55,7 @@ export async function login({ email, password }: LoginParams): Promise<{
   const orgId = memberships?.[0]?.organization_id as string | undefined
   if (orgId) {
     await setOrganizationCookie(orgId)
-    return { success: true, nextStep: 'dashboard' }
+    return { success: true, nextStep: forceChange ? 'change-password' : 'dashboard' }
   }
 
   return { success: true, nextStep: 'no-access' }
@@ -61,5 +64,5 @@ export async function login({ email, password }: LoginParams): Promise<{
 export async function logout() {
   const supabase = await createServerSupabaseClient()
   await supabase.auth.signOut()
-  redirect('/')
+  redirect({ href: '/', locale: await getLocale() })
 }

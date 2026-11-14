@@ -1,12 +1,13 @@
-import { redirect } from 'next/navigation'
+import { redirect } from '@/i18n/navigation'
+import { getLocale } from 'next-intl/server'
 import { getSettingsContext } from '@/lib/actions/settings.actions'
 import { SettingsHeader } from '@/components/settings/SettingsHeader'
 import { PermissionSettingsForm } from '@/components/settings/PermissionSettingsForm'
 
 export default async function PermissionSettingsPage() {
   const ctx = await getSettingsContext()
-  if (!ctx) redirect('/login')
-  if (!ctx.isOwner) redirect('/dashboard/settings')
+  if (!ctx) redirect({ href: '/login', locale: await getLocale() })
+  if (!ctx.isOwner) redirect({ href: '/dashboard/settings', locale: await getLocale() })
   const o = ctx.organization
   return (
     <div className="mx-auto max-w-2xl space-y-6">

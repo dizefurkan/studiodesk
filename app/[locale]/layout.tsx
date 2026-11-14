@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
+import { hasLocale } from 'next-intl'
 import { NextIntlClientProvider } from 'next-intl'
 import { ConfirmProvider } from '@/components/common/ConfirmProvider'
 import { SUPPORTED_LOCALES } from '@/lib/i18n/config'
@@ -31,7 +32,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const { locale } = await params
 
   // Validate locale
-  if (!SUPPORTED_LOCALES.includes(locale as any)) {
+  if (!hasLocale(SUPPORTED_LOCALES, locale)) {
     notFound()
   }
 

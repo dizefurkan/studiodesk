@@ -1,7 +1,7 @@
 'use client'
 
+import { useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -47,7 +47,9 @@ export default function LoginPage() {
       }
 
       // Redirect based on user state
-      if (result.nextStep === 'backoffice') {
+      if (result.nextStep === 'change-password') {
+        router.push('/change-password')
+      } else if (result.nextStep === 'backoffice') {
         router.push('/backoffice')
       } else if (result.nextStep === 'no-access') {
         router.push('/no-access')

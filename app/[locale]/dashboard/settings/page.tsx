@@ -1,6 +1,5 @@
-import Link from 'next/link'
-import { redirect } from 'next/navigation'
-import { getTranslations } from 'next-intl/server'
+import { Link, redirect } from '@/i18n/navigation'
+import { getTranslations, getLocale } from 'next-intl/server'
 import { Building2, CalendarCheck, ChevronRight, Coins, ShieldCheck, UserRound, Users, type LucideIcon } from 'lucide-react'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { getSettingsContext } from '@/lib/actions/settings.actions'
@@ -18,7 +17,7 @@ const SECTIONS: Section[] = [
 
 export default async function SettingsPage() {
   const ctx = await getSettingsContext()
-  if (!ctx) redirect('/login')
+  if (!ctx) redirect({ href: '/login', locale: await getLocale() })
   const t = await getTranslations('settings')
   const sections = SECTIONS.filter((s) => !s.ownerOnly || ctx.isOwner)
 

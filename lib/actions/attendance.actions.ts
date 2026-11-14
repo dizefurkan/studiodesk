@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 import { getOrganization } from "@/lib/auth/getOrganization";
 import { logOperation } from "@/lib/actions/history.actions";
 import type { Database } from "@/lib/types/database.types";
+import type { PostgrestError } from '@supabase/supabase-js'
 
 type Attendance = Database["public"]["Tables"]["attendances"]["Row"];
 type CourseSession = Database["public"]["Tables"]["course_sessions"]["Row"];
@@ -51,7 +52,7 @@ export async function getSessionAttendances(
 
     const { data: allAttendances, error } = result as {
       data: AttendanceWithRelations[] | null;
-      error: any;
+      error: PostgrestError | null;
     };
 
     if (error) {
@@ -94,7 +95,7 @@ export async function getSessionStudents(
 
     const { data: session, error: sessionError } = sessionResult as {
       data: CourseSession | null;
-      error: any;
+      error: PostgrestError | null;
     };
 
     if (sessionError || !session) {
@@ -111,7 +112,7 @@ export async function getSessionStudents(
 
     const { data: courseData, error: courseError } = courseResult as {
       data: Course | null;
-      error: any;
+      error: PostgrestError | null;
     };
 
     if (courseError || !courseData) {
@@ -151,14 +152,14 @@ export async function getSessionStudents(
 
     const { data: courseStudents, error: studentsError } = studentsResult as {
       data: CourseStudentWithDetails[] | null;
-      error: any;
+      error: PostgrestError | null;
     };
 
     if (studentsError) {
       console.error("Error fetching enrolled students:", {
         error: studentsError,
-        message: (studentsError as any)?.message,
-        details: (studentsError as any)?.details,
+        message: studentsError?.message,
+        details: studentsError?.details,
       });
       return { error: "Failed to fetch students" };
     }
@@ -183,8 +184,7 @@ export async function getSessionStudents(
   } catch (error) {
     console.error("Unexpected error in getSessionStudents:", {
       error,
-      message: (error as any)?.message,
-      stack: (error as any)?.stack?.split("\n").slice(0, 3),
+      message: error instanceof Error ? error.message : String(error),
     });
     return { error: "An unexpected error occurred" };
   }
@@ -210,12 +210,12 @@ export async function recordAttendance(
         student_id: studentId,
         student_package_id: studentPackageId,
         studio_id: studioId || null,
-      } as any)
+      })
       .select()
       .single()
       .overrideTypes<Attendance>();
 
-    const { data, error } = result as { data: Attendance | null; error: any };
+    const { data, error } = result as { data: Attendance | null; error: PostgrestError | null };
 
     if (error) {
       console.error("Error recording attendance:", error);
@@ -232,7 +232,7 @@ export async function recordAttendance(
       .select("course_id")
       .eq("id", sessionId)
       .maybeSingle()
-      .overrideTypes<CourseSession>()) as any;
+      .overrideTypes<CourseSession>());
 
     // Get student info for better logging
     const { data: studentData } = (await supabase
@@ -243,7 +243,7 @@ export async function recordAttendance(
       .overrideTypes<{
         first_name: string | null;
         last_name: string | null;
-      }>()) as any;
+      }>());
 
     const studentName = studentData
       ? `${studentData.first_name || ""} ${studentData.last_name || ""}`.trim()
@@ -296,7 +296,7 @@ export async function recordAttendance(
       .select("remaining_credits")
       .eq("id", studentPackageId)
       .maybeSingle()
-      .overrideTypes<StudentPackage>()) as any;
+      .overrideTypes<StudentPackage>());
 
     // Process instructor earnings for this session
     if (sessionData) {
@@ -305,7 +305,7 @@ export async function recordAttendance(
         .from("course_instructors")
         .select("instructor_id")
         .eq("course_id", sessionData.course_id)
-        .overrideTypes<{ instructor_id: string }[]>()) as any;
+        .overrideTypes<{ instructor_id: string }[]>());
 
       if (courseInstructors && courseInstructors.length > 0) {
         // Get course details for rate calculation
@@ -314,7 +314,7 @@ export async function recordAttendance(
           .select("branch_id, dance_type_id")
           .eq("id", sessionData.course_id)
           .maybeSingle()
-          .overrideTypes<Course>()) as any;
+          .overrideTypes<Course>());
 
         if (courseData) {
           // Calculate earnings for each instructor
@@ -327,7 +327,7 @@ export async function recordAttendance(
               .eq("branch_id", courseData.branch_id)
               .eq("dance_type_id", courseData.dance_type_id)
               .maybeSingle()
-              .overrideTypes<InstructorRate>()) as any;
+              .overrideTypes<InstructorRate>());
 
             const ratio = rateData?.ratio_per_class || 0;
 
@@ -338,7 +338,7 @@ export async function recordAttendance(
               .eq("instructor_id", ci.instructor_id)
               .eq("session_id", sessionId)
               .maybeSingle()
-              .overrideTypes<{ id: string }>()) as any;
+              .overrideTypes<{ id: string }>());
 
             // Only record if not already recorded
             if (!existingEarning && ratio > 0) {
@@ -350,10 +350,10 @@ export async function recordAttendance(
                   instructor_id: ci.instructor_id,
                   session_id: sessionId,
                   amount: ratio / 100, // Convert percentage to decimal
-                } as any)
+                })
                 .select()
                 .single()
-                .overrideTypes<InstructorEarning>()) as any;
+                .overrideTypes<InstructorEarning>());
             }
           }
         }
@@ -385,7 +385,7 @@ export async function removeAttendance(
       .select("id, session_id, student_id, student_package_id, studio_id")
       .eq("id", attendanceId)
       .maybeSingle()
-      .overrideTypes<Attendance>()) as any;
+      .overrideTypes<Attendance>());
 
     // Get the current credit count
     const { data: pkg } = (await supabase
@@ -393,12 +393,12 @@ export async function removeAttendance(
       .select("remaining_credits")
       .eq("id", studentPackageId)
       .maybeSingle()
-      .overrideTypes<StudentPackage>()) as any;
+      .overrideTypes<StudentPackage>());
 
     // Restore credit
     if (pkg) {
       const updateData = { remaining_credits: pkg.remaining_credits + 1 };
-      await (supabase as any)
+      await supabase
         .from("student_packages")
         .update(updateData)
         .eq("id", studentPackageId);
@@ -426,7 +426,7 @@ export async function removeAttendance(
         .overrideTypes<{
           first_name: string | null;
           last_name: string | null;
-        }>()) as any;
+        }>());
 
       const studentName = studentData
         ? `${studentData.first_name || ""} ${studentData.last_name || ""}`.trim()
@@ -438,7 +438,7 @@ export async function removeAttendance(
         .select("course_id")
         .eq("id", beforeAttendance.session_id)
         .maybeSingle()
-        .overrideTypes<CourseSession>()) as any;
+        .overrideTypes<CourseSession>());
 
       // Log to attendance entity
       void logOperation(
@@ -592,6 +592,15 @@ export async function recordBatchAttendance(
       }
     }
 
+    // The course must be visible to the caller (RLS) before anything is created for it
+    // with the service-role client below.
+    const { data: accessibleCourse } = await supabase
+      .from("courses")
+      .select("id")
+      .eq("id", courseId)
+      .maybeSingle();
+    if (!accessibleCourse) return { error: "Course not found" };
+
     // ✨ NEW: Ensure session exists (create on-demand if needed)
     // Check if a session already exists for this course on the specified date
     const checkDate = attendanceDate || new Date().toISOString().split("T")[0];
@@ -606,7 +615,7 @@ export async function recordBatchAttendance(
       .eq("course_id", courseId)
       .eq("session_date", checkDate)
       .single()
-      .overrideTypes<CourseSession>()) as any;
+      .overrideTypes<CourseSession>());
 
     let actualSessionId = sessionId;
 
@@ -627,14 +636,14 @@ export async function recordBatchAttendance(
           course_id: courseId,
           session_date: today,
           notes: sessionNote || null,
-        } as any)
+        })
         .select()
         .single()
         .overrideTypes<CourseSession>();
 
       const { data: createdSession, error: createError } = result as {
         data: CourseSession | null;
-        error: any;
+        error: PostgrestError | null;
       };
 
       if (createError || !createdSession) {
@@ -660,11 +669,11 @@ export async function recordBatchAttendance(
 
         const { error: siError } = (await supabase
           .from("session_instructors")
-          .insert(sessionInstructorRecords as any)
+          .insert(sessionInstructorRecords)
           .select()
           .overrideTypes<
             { session_id: string; instructor_id: string }[]
-          >()) as any;
+          >());
 
         if (siError) {
           console.error(
@@ -688,7 +697,7 @@ export async function recordBatchAttendance(
 
       // Update session note if provided
       if (sessionNote) {
-        await (supabase as any)
+        await supabase
           .from("course_sessions")
           .update({ notes: sessionNote })
           .eq("id", actualSessionId);
@@ -739,11 +748,11 @@ export async function recordBatchAttendance(
 
         const { error: siError } = (await supabase
           .from("session_instructors")
-          .insert(sessionInstructorRecords as any)
+          .insert(sessionInstructorRecords)
           .select()
           .overrideTypes<
             { session_id: string; instructor_id: string }[]
-          >()) as any;
+          >());
 
         if (siError) {
           console.error(
@@ -797,7 +806,7 @@ export async function recordBatchAttendance(
       .from("session_instructors")
       .select("instructor_id")
       .eq("session_id", actualSessionId)
-      .overrideTypes<{ instructor_id: string }[]>()) as any;
+      .overrideTypes<{ instructor_id: string }[]>());
 
     let hasInstructor = sessionInstructors && sessionInstructors.length > 0;
 
@@ -808,14 +817,14 @@ export async function recordBatchAttendance(
         .select("course_id")
         .eq("id", actualSessionId)
         .maybeSingle()
-        .overrideTypes<CourseSession>()) as any;
+        .overrideTypes<CourseSession>());
 
       if (sessionInfo) {
         const { data: courseInstructors } = (await supabase
           .from("course_instructors")
           .select("instructor_id")
           .eq("course_id", sessionInfo.course_id)
-          .overrideTypes<{ instructor_id: string }[]>()) as any;
+          .overrideTypes<{ instructor_id: string }[]>());
 
         hasInstructor = courseInstructors && courseInstructors.length > 0;
       }
@@ -848,11 +857,11 @@ export async function recordBatchAttendance(
     );
     const { error: insertError } = (await supabase
       .from("attendances")
-      .insert(attendanceRecords as any)
+      .insert(attendanceRecords)
       .select()
-      .overrideTypes<Attendance[]>()) as any;
+      .overrideTypes<Attendance[]>());
 
-    if (insertError && (insertError as any)?.code !== "23505") {
+    if (insertError && insertError?.code !== "23505") {
       // 23505 = unique violation (already marked), which is ok
       console.error("Error batch inserting attendance:", insertError);
       return { error: "Failed to record attendance" };
@@ -874,10 +883,10 @@ export async function recordBatchAttendance(
         .select("remaining_credits")
         .eq("id", record.studentPackageId)
         .maybeSingle()
-        .overrideTypes<StudentPackage>()) as any;
+        .overrideTypes<StudentPackage>());
 
       if (pkg && pkg.remaining_credits > 0) {
-        const { error: updateError } = await (supabase as any)
+        const { error: updateError } = await supabase
           .from("student_packages")
           .update({ remaining_credits: pkg.remaining_credits - 1 })
           .eq("id", record.studentPackageId);
@@ -919,7 +928,7 @@ export async function recordBatchAttendance(
       .select("course_id")
       .eq("id", actualSessionId)
       .maybeSingle()
-      .overrideTypes<CourseSession>()) as any;
+      .overrideTypes<CourseSession>());
 
     if (sessionData) {
       // First check if session_instructors table has a specific instructor for this session
@@ -927,9 +936,9 @@ export async function recordBatchAttendance(
         .from("session_instructors")
         .select("instructor_id")
         .eq("session_id", actualSessionId)
-        .overrideTypes<{ instructor_id: string }[]>()) as any;
+        .overrideTypes<{ instructor_id: string }[]>());
 
-      let instructorsToProcess: any[] = [];
+      let instructorsToProcess: { instructor_id: string }[] = [];
 
       if (sessionInstructors && sessionInstructors.length > 0) {
         // Use specific instructor(s) from session_instructors
@@ -943,7 +952,7 @@ export async function recordBatchAttendance(
           .from("course_instructors")
           .select("instructor_id")
           .eq("course_id", sessionData.course_id)
-          .overrideTypes<{ instructor_id: string }[]>()) as any;
+          .overrideTypes<{ instructor_id: string }[]>());
 
         instructorsToProcess = courseInstructors || [];
         console.log(
@@ -960,11 +969,11 @@ export async function recordBatchAttendance(
 
           const { error: siError } = (await supabase
             .from("session_instructors")
-            .insert(sessionInstructorRecords as any)
+            .insert(sessionInstructorRecords)
             .select()
             .overrideTypes<
               { session_id: string; instructor_id: string }[]
-            >()) as any;
+            >());
 
           if (siError) {
             console.error(
@@ -990,7 +999,7 @@ export async function recordBatchAttendance(
           .select("branch_id, dance_type_id")
           .eq("id", sessionData.course_id)
           .single()
-          .overrideTypes<Course>()) as any;
+          .overrideTypes<Course>());
 
         if (courseData) {
           // Get package price for this dance type
@@ -1016,7 +1025,7 @@ export async function recordBatchAttendance(
               .eq("branch_id", courseData.branch_id)
               .eq("dance_type_id", courseData.dance_type_id)
               .maybeSingle()
-              .overrideTypes<InstructorRate>()) as any;
+              .overrideTypes<InstructorRate>());
 
             const ratio = rateData?.ratio_per_class || 0;
             const calculatedAmount = (ratio / 100) * packagePrice;
@@ -1032,7 +1041,7 @@ export async function recordBatchAttendance(
               .eq("instructor_id", ci.instructor_id)
               .eq("session_id", actualSessionId)
               .maybeSingle()
-              .overrideTypes<{ id: string }>()) as any;
+              .overrideTypes<{ id: string }>());
 
             // Only record if not already recorded
             if (!existingEarning && ratio > 0) {
@@ -1042,10 +1051,10 @@ export async function recordBatchAttendance(
                   instructor_id: ci.instructor_id,
                   session_id: actualSessionId,
                   amount: calculatedAmount,
-                } as any)
+                })
                 .select()
                 .single()
-                .overrideTypes<InstructorEarning>()) as any;
+                .overrideTypes<InstructorEarning>());
 
               if (!earningsError) {
                 earningsCreated.push({
@@ -1139,7 +1148,7 @@ export async function getAttendanceReports(
     const result = await query.overrideTypes<AttendanceReport[]>();
     const { data, error } = result as {
       data: AttendanceReport[] | null;
-      error: any;
+      error: PostgrestError | null;
     };
 
     if (error) {

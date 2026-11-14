@@ -17,9 +17,9 @@ export async function TopBar() {
   const organization = await getOrganization()
   const orgId = await getOrganizationIdFromCookie()
   const userRoleData = orgId ? await getUserRoleInOrganization(orgId) : null
-  const userRole = (userRoleData as any)?.role || 'staff'
+  const userRole = userRoleData?.role || 'staff'
 
-  const userName = (userProfile as any)?.full_name || user?.email || 'User'
+  const userName = userProfile?.full_name || user?.email || 'User'
   const userInitials = getInitials(userName)
 
   const content = (

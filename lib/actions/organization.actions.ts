@@ -7,7 +7,6 @@ import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { getUserRoleInOrganization } from '@/lib/auth/getCurrentUser'
 import { generateTemporaryPassword } from '@/lib/utils/generatePassword'
-import { ROLE_HIERARCHY } from '@/lib/constants/roles'
 
 /**
  * Add existing user to organization with specified role
@@ -21,8 +20,8 @@ export async function addExistingUserToOrganization(email: string, role: string)
 
   // Check permissions
   const userRoleData = await getUserRoleInOrganization(organization.id)
-  const userRole = (userRoleData as any)?.role
-  const orgSettings = (organization as any)
+  const userRole = userRoleData?.role
+  const orgSettings = organization
 
   const isOwner = userRole === 'owner'
   const isManager = userRole === 'manager'
@@ -75,8 +74,8 @@ export async function addExistingUserToOrganizationById(userId: string, role: st
 
   // Check permissions
   const userRoleData = await getUserRoleInOrganization(organization.id)
-  const userRole = (userRoleData as any)?.role
-  const orgSettings = (organization as any)
+  const userRole = userRoleData?.role
+  const orgSettings = organization
 
   const isOwner = userRole === 'owner'
   const isManager = userRole === 'manager'
@@ -100,7 +99,7 @@ export async function addExistingUserToOrganizationById(userId: string, role: st
     const admin = createAdminClient()
 
     // Add user to organization
-    const { data, error } = await (admin as any)
+    const { data, error } = await admin
       .from('organization_users')
       .insert({
         organization_id: organization.id,
@@ -119,7 +118,7 @@ export async function addExistingUserToOrganizationById(userId: string, role: st
     }
 
     // Refresh the settings page to show the newly added team member
-    revalidatePath('/dashboard/settings')
+    revalidatePath('/[locale]/dashboard/settings', 'layout')
 
     return { data, success: true }
   } catch (error) {
@@ -140,8 +139,8 @@ export async function updateTeamMemberRole(memberId: string, newRole: string) {
 
   // Check permissions
   const userRoleData = await getUserRoleInOrganization(organization.id)
-  const userRole = (userRoleData as any)?.role
-  const orgSettings = (organization as any)
+  const userRole = userRoleData?.role
+  const orgSettings = organization
 
   const isOwner = userRole === 'owner'
   const isManager = userRole === 'manager'
@@ -161,7 +160,7 @@ export async function updateTeamMemberRole(memberId: string, newRole: string) {
     const admin = createAdminClient()
 
     // Get member info to check if it's owner
-    const { data: member, error: fetchError } = await (admin as any)
+    const { data: member, error: fetchError } = await admin
       .from('organization_users')
       .select('role')
       .eq('id', memberId)
@@ -178,7 +177,7 @@ export async function updateTeamMemberRole(memberId: string, newRole: string) {
     }
 
     // Update role
-    const { data, error } = await (admin as any)
+    const { data, error } = await admin
       .from('organization_users')
       .update({ role: newRole, updated_at: new Date().toISOString() })
       .eq('id', memberId)
@@ -210,8 +209,8 @@ export async function removeTeamMember(memberId: string) {
 
   // Check permissions
   const userRoleData = await getUserRoleInOrganization(organization.id)
-  const userRole = (userRoleData as any)?.role
-  const orgSettings = (organization as any)
+  const userRole = userRoleData?.role
+  const orgSettings = organization
 
   const isOwner = userRole === 'owner'
   const isManager = userRole === 'manager'
@@ -226,7 +225,7 @@ export async function removeTeamMember(memberId: string) {
     const admin = createAdminClient()
 
     // Get member info to check if it's owner
-    const { data: member, error: fetchError } = await (admin as any)
+    const { data: member, error: fetchError } = await admin
       .from('organization_users')
       .select('role')
       .eq('id', memberId)
@@ -243,7 +242,7 @@ export async function removeTeamMember(memberId: string) {
     }
 
     // Delete team member
-    const { error } = await (admin as any)
+    const { error } = await admin
       .from('organization_users')
       .delete()
       .eq('id', memberId)
@@ -273,7 +272,7 @@ export async function resetTeamMemberPassword(memberId: string) {
 
   // Check permissions - only owner can reset passwords
   const userRoleData = await getUserRoleInOrganization(organization.id)
-  const userRole = (userRoleData as any)?.role
+  const userRole = userRoleData?.role
 
   if (userRole !== 'owner') {
     return { error: 'Only organization owner can reset team member passwords' }
@@ -283,7 +282,7 @@ export async function resetTeamMemberPassword(memberId: string) {
     const admin = createAdminClient()
 
     // Get member info to get user_id
-    const { data: member, error: fetchError } = await (admin as any)
+    const { data: member, error: fetchError } = await admin
       .from('organization_users')
       .select('user_id, role')
       .eq('id', memberId)
@@ -303,7 +302,7 @@ export async function resetTeamMemberPassword(memberId: string) {
     const tempPassword = generateTemporaryPassword()
 
     // Update user password in Auth
-    const { error: updateError } = await (admin as any).auth.admin.updateUserById(
+    const { error: updateError } = await admin.auth.admin.updateUserById(
       member.user_id,
       { password: tempPassword }
     )

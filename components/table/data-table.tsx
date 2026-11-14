@@ -1,6 +1,5 @@
 'use client'
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- filter values are heterogeneous */
 import { Fragment, useState } from 'react'
 import {
   type ColumnDef,
@@ -20,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { DataTableFilters, type FilterConfig } from './data-table-filters'
+import { DataTableFilters, type FilterConfig, type FilterValue, type FilterValues } from './data-table-filters'
 import { DataTablePagination } from './data-table-pagination'
 import { SearchInput } from './search-input'
 
@@ -37,8 +36,8 @@ interface DataTableProps<TData, TValue> {
   onPageChange?: (page: number) => void
   // Filters
   filters?: FilterConfig[]
-  filterValues?: Record<string, any>
-  onFilterChange?: (filterId: string, value: any) => void
+  filterValues?: FilterValues
+  onFilterChange?: (filterId: string, value: FilterValue) => void
   onClearFilters?: () => void
   // Search
   searchValue?: string
@@ -103,7 +102,7 @@ export function DataTable<TData, TValue>({
   })
 
   const hasActiveFilters =
-    !!searchValue || Object.values(filterValues).some((v) => v !== undefined && v !== null && v !== '' && v !== false)
+    !!searchValue || Object.values(filterValues).some((v) => v !== undefined && v !== null && v !== '')
   const showToolbar = (enableSearch && onSearchChange) || (enableFilters && filters.length > 0 && onFilterChange)
   const colSpan = table.getVisibleLeafColumns().length || columns.length
 

@@ -5,6 +5,7 @@ import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { logOperation } from '@/lib/actions/history.actions'
 import { getChanges } from '@/lib/utils/history-utils'
+import type { TablesUpdate } from '@/lib/types/database.types'
 
 export interface StudioInput {
   name: string
@@ -52,7 +53,7 @@ export async function createStudio(branchId: string, studioData: StudioInput) {
     }
 
     const { data, error } = await (supabase
-      .from('studios') as any)
+      .from('studios'))
       .insert({
         branch_id: branchId,
         name: studioData.name,
@@ -69,13 +70,13 @@ export async function createStudio(branchId: string, studioData: StudioInput) {
     }
 
     // Log the create operation
-    void logOperation('CREATE', 'studio', (data as any).id, {
+    void logOperation('CREATE', 'studio', data.id, {
       after: {
-        name: (data as any).name,
-        description: (data as any).description,
-        capacity: (data as any).capacity,
-        imageUrl: (data as any).image_url,
-        branchId: (data as any).branch_id,
+        name: data.name,
+        description: data.description,
+        capacity: data.capacity,
+        imageUrl: data.image_url,
+        branchId: data.branch_id,
       }
     }, organization.id)
 
@@ -98,7 +99,7 @@ export async function updateStudio(studioId: string, studioData: Partial<StudioI
 
     // Fetch before state for logging
     const { data: beforeStudio } = await (supabase
-      .from('studios') as any)
+      .from('studios'))
       .select('id, name, description, capacity, image_url')
       .eq('id', studioId)
       .single()
@@ -107,14 +108,14 @@ export async function updateStudio(studioId: string, studioData: Partial<StudioI
       return { error: 'Studio not found' }
     }
 
-    const updateData: any = {}
+    const updateData: TablesUpdate<'studios'> = {}
     if (studioData.name) updateData.name = studioData.name
     if (studioData.description !== undefined) updateData.description = studioData.description
     if (studioData.capacity !== undefined) updateData.capacity = studioData.capacity
     if (studioData.image_url !== undefined) updateData.image_url = studioData.image_url
 
     const { data, error } = await (supabase
-      .from('studios') as any)
+      .from('studios'))
       .update(updateData)
       .eq('id', studioId)
       .select()
@@ -127,16 +128,16 @@ export async function updateStudio(studioId: string, studioData: Partial<StudioI
 
     // Log the update operation
     const beforeObj = {
-      name: (beforeStudio as any).name,
-      description: (beforeStudio as any).description,
-      capacity: (beforeStudio as any).capacity,
-      imageUrl: (beforeStudio as any).image_url,
+      name: beforeStudio.name,
+      description: beforeStudio.description,
+      capacity: beforeStudio.capacity,
+      imageUrl: beforeStudio.image_url,
     }
     const afterObj = {
-      name: (data as any).name,
-      description: (data as any).description,
-      capacity: (data as any).capacity,
-      imageUrl: (data as any).image_url,
+      name: data.name,
+      description: data.description,
+      capacity: data.capacity,
+      imageUrl: data.image_url,
     }
     const changes = getChanges(beforeObj, afterObj)
     void logOperation('UPDATE', 'studio', studioId, {
@@ -164,7 +165,7 @@ export async function deleteStudio(studioId: string) {
 
     // Fetch before state for logging
     const { data: beforeStudio } = await (supabase
-      .from('studios') as any)
+      .from('studios'))
       .select('id, name, description, capacity, image_url')
       .eq('id', studioId)
       .single()
@@ -185,10 +186,10 @@ export async function deleteStudio(studioId: string) {
 
     // Log the delete operation
     const beforeObj = {
-      name: (beforeStudio as any).name,
-      description: (beforeStudio as any).description,
-      capacity: (beforeStudio as any).capacity,
-      imageUrl: (beforeStudio as any).image_url,
+      name: beforeStudio.name,
+      description: beforeStudio.description,
+      capacity: beforeStudio.capacity,
+      imageUrl: beforeStudio.image_url,
     }
     void logOperation('DELETE', 'studio', studioId, {
       before: beforeObj,

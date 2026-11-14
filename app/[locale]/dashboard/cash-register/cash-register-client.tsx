@@ -3,12 +3,10 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { deleteTransaction } from '@/lib/actions/cash-register.actions'
 import { DataTable } from '@/components/table/data-table'
 import { getCashRegisterColumns, type CombinedCashItem } from './columns'
 import { CashRegisterFilters } from '@/components/cash-register/CashRegisterFilters'
-import { formatCurrency } from '@/lib/utils/format'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 
 interface CashRegisterTableProps {
@@ -89,7 +87,7 @@ export function CashRegisterTable({
       </Card>
 
       <Card className="p-3 sm:p-4 md:p-6">
-        <DataTable<CombinedCashItem, any>
+        <DataTable<CombinedCashItem, unknown>
           columns={columns}
           data={filteredItems}
           enablePagination={true}

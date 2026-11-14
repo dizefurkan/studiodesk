@@ -1,9 +1,9 @@
 'use client'
 
+import { useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/table/data-table'
-import { FilterConfig } from '@/components/table/data-table-filters'
+import { FilterConfig, type FilterValues } from '@/components/table/data-table-filters'
 import { getDanceTypeColumns, DanceType } from './columns'
 import { useTranslations } from 'next-intl'
 import { deleteDanceType } from '@/lib/actions/dance-types.actions'
@@ -27,7 +27,7 @@ export function DanceTypesPageClient({
   const t = useTranslations()
   const router = useRouter()
   const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
-  const [filterValues, setFilterValues] = useState<Record<string, any>>({})
+  const [filterValues, setFilterValues] = useState<FilterValues>({})
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedDanceType, setSelectedDanceType] = useState<DanceType | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -64,7 +64,8 @@ export function DanceTypesPageClient({
       }
 
       // Reload page to reflect deletion
-      window.location.reload()
+      setDeleteModalOpen(false)
+      router.refresh()
     } catch (err) {
       throw err
     } finally {
@@ -82,7 +83,7 @@ export function DanceTypesPageClient({
 
   return (
     <>
-      <DataTable<DanceType, any>
+      <DataTable<DanceType, unknown>
         columns={columns}
         data={danceTypes}
         filters={filters}

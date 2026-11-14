@@ -4,64 +4,78 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { sanitizeSearch } from '@/lib/utils/search'
+
+export type EarningsFilters = {
+  search?: string
+  instructorId?: string
+  /** yyyy-MM-dd, inclusive */
+  from?: string
+  /** yyyy-MM-dd, inclusive */
+  to?: string
+}
 
 export async function getInstructorEarnings(
-  searchQuery?: string,
+  filters: EarningsFilters = {},
   page: number = 1,
   pageSize: number = 10
 ) {
   const user = await getCurrentUser()
-  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
+  if (!user) return { error: 'Not authenticated', data: [], totalCount: 0, totalAmount: 0 }
 
   const organization = await getOrganization()
-  if (!organization) return { error: 'No organization found', data: [], totalCount: 0 }
+  if (!organization) return { error: 'No organization found', data: [], totalCount: 0, totalAmount: 0 }
 
   try {
     const adminSupabase = createAdminClient()
+    const search = filters.search ? sanitizeSearch(filters.search) : ''
 
-    // Count query
-    let countQuery = (adminSupabase
-      .from('instructor_earnings') as any)
-      .select('id', { count: 'exact', head: true })
-
-    if (searchQuery) {
-      countQuery = countQuery.or(`description.ilike.%${searchQuery}%`)
+    // Service-role client bypasses RLS, so the organization filter must be part of the query
+    // (inner join on instructors) — never applied in JS after pagination.
+    const scoped = <Q extends { eq: (column: string, value: string) => Q; gte: (column: string, value: string) => Q; lte: (column: string, value: string) => Q; or: (filters: string, options?: { referencedTable?: string }) => Q }>(query: Q) => {
+      let q = query.eq('instructors.organization_id', organization.id)
+      if (filters.instructorId) q = q.eq('instructor_id', filters.instructorId)
+      if (filters.from) q = q.gte('created_at', `${filters.from}T00:00:00`)
+      if (filters.to) q = q.lte('created_at', `${filters.to}T23:59:59.999`)
+      if (search) q = q.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%`, { referencedTable: 'instructors' })
+      return q
     }
 
-    const { count: totalCount } = await countQuery
-    const count = totalCount || 0
-
-    // Data query
-    let query = (adminSupabase
-      .from('instructor_earnings') as any)
-      .select('*, instructors(id, first_name, last_name, organization_id)')
-      .order('created_at', { ascending: false })
-
-    if (searchQuery) {
-      query = query.or(`description.ilike.%${searchQuery}%`)
-    }
-
-    // Apply pagination
     const offset = (page - 1) * pageSize
-    query = query.range(offset, offset + pageSize - 1)
+    const [listResult, totalsResult] = await Promise.all([
+      scoped(
+        adminSupabase
+          .from('instructor_earnings')
+          .select('*, instructors!inner(id, first_name, last_name, organization_id)', { count: 'exact' })
+      )
+        .order('created_at', { ascending: false })
+        .range(offset, offset + pageSize - 1),
+      // Sum over the whole filtered set, not just the current page
+      scoped(
+        adminSupabase
+          .from('instructor_earnings')
+          .select('amount, instructors!inner(organization_id)')
+      ),
+    ])
 
-    const { data, error } = await query
-
-    if (error) {
-      console.error('Error fetching earnings:', error)
-      return { error: 'Failed to fetch earnings', data: [], totalCount: 0 }
+    if (listResult.error || totalsResult.error) {
+      console.error('Error fetching earnings:', listResult.error ?? totalsResult.error)
+      return { error: 'Failed to fetch earnings', data: [], totalCount: 0, totalAmount: 0 }
     }
 
-    // Filter results to only include instructors from user's organization
-    const filtered = (data || []).filter(
-      (earning: any) => earning.instructors?.organization_id === organization.id
-    )
-
-    const totalPages = Math.ceil(count / pageSize)
-    return { data: filtered, totalCount: count, page, pageSize, totalPages }
+    const count = listResult.count ?? 0
+    const totalAmount = (totalsResult.data || []).reduce((sum, e) => sum + Number(e.amount), 0)
+    return {
+      data: listResult.data || [],
+      totalCount: count,
+      totalAmount,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    }
   } catch (error) {
     console.error('Unexpected error in getInstructorEarnings:', error)
-    return { error: 'An unexpected error occurred', data: [], totalCount: 0 }
+    return { error: 'An unexpected error occurred', data: [], totalCount: 0, totalAmount: 0 }
   }
 }
 
@@ -81,7 +95,7 @@ export async function getEarningsReport(instructorId: string, year: number, mont
 
     // Verify instructor belongs to organization first
     const { data: instructor, error: instructorError } = await (adminSupabase
-      .from('instructors') as any)
+      .from('instructors'))
       .select('organization_id')
       .eq('id', instructorId)
       .single()
@@ -91,7 +105,7 @@ export async function getEarningsReport(instructorId: string, year: number, mont
     }
 
     const { data, error } = await (adminSupabase
-      .from('instructor_earnings') as any)
+      .from('instructor_earnings'))
       .select('*')
       .eq('instructor_id', instructorId)
       .gte('created_at', startDate)
@@ -100,13 +114,13 @@ export async function getEarningsReport(instructorId: string, year: number, mont
     if (error) {
       console.error('Error fetching report:', {
         error,
-        message: (error as any)?.message,
-        details: (error as any)?.details,
+        message: error?.message,
+        details: error?.details,
       })
       return { error: 'Failed to fetch report' }
     }
 
-    const total = ((data || []) as any[]).reduce((sum: number, e: any) => sum + Number(e.amount), 0)
+    const total = ((data || [])).reduce((sum: number, e) => sum + Number(e.amount), 0)
     const count = data?.length || 0
 
     return {
@@ -123,8 +137,7 @@ export async function getEarningsReport(instructorId: string, year: number, mont
   } catch (error) {
     console.error('Unexpected error in getEarningsReport:', {
       error,
-      message: (error as any)?.message,
-      stack: (error as any)?.stack?.split('\n').slice(0, 3),
+      message: error instanceof Error ? error.message : String(error),
     })
     return { error: 'An unexpected error occurred' }
   }
@@ -142,7 +155,7 @@ export async function updateInstructorEarnings(earningsId: string, amount: numbe
 
     // Verify the earning belongs to an instructor in the user's organization
     const { data: earning, error: fetchError } = await (supabase
-      .from('instructor_earnings') as any)
+      .from('instructor_earnings'))
       .select('*, instructors(organization_id)')
       .eq('id', earningsId)
       .single()
@@ -160,7 +173,7 @@ export async function updateInstructorEarnings(earningsId: string, amount: numbe
     // Update the amount
     console.log('[updateInstructorEarnings] Attempting update:', { earningsId, newAmount: amount, oldAmount: earning.amount })
     const { error: updateError, count } = await (adminSupabase
-      .from('instructor_earnings') as any)
+      .from('instructor_earnings'))
       .update({ amount })
       .eq('id', earningsId)
 
@@ -173,7 +186,7 @@ export async function updateInstructorEarnings(earningsId: string, amount: numbe
 
     // Verify the update was successful by fetching the record again
     const { data: updatedEarning, error: verifyError } = await (adminSupabase
-      .from('instructor_earnings') as any)
+      .from('instructor_earnings'))
       .select('amount')
       .eq('id', earningsId)
       .single()
@@ -188,7 +201,7 @@ export async function updateInstructorEarnings(earningsId: string, amount: numbe
     return { success: true, message: 'Earnings updated successfully', data: updatedEarning }
   } catch (error) {
     console.error('Unexpected error in updateInstructorEarnings:', error)
-    return { error: `An unexpected error occurred: ${(error as any).message}` }
+    return { error: `An unexpected error occurred: ${error instanceof Error ? error.message : String(error)}` }
   }
 }
 
@@ -204,7 +217,7 @@ export async function deleteInstructorEarnings(earningsId: string) {
 
     // Verify the earning belongs to an instructor in the user's organization
     const { data: earning, error: fetchError } = await (supabase
-      .from('instructor_earnings') as any)
+      .from('instructor_earnings'))
       .select('*, instructors(organization_id)')
       .eq('id', earningsId)
       .single()
@@ -223,7 +236,7 @@ export async function deleteInstructorEarnings(earningsId: string) {
     const adminSupabase = createAdminClient()
     
     const { error: deleteError, count } = await (adminSupabase
-      .from('instructor_earnings') as any)
+      .from('instructor_earnings'))
       .delete()
       .eq('id', earningsId)
 
@@ -236,7 +249,7 @@ export async function deleteInstructorEarnings(earningsId: string) {
 
     // Verify the deletion was successful
     const { data: verifyData, error: verifyError } = await (adminSupabase
-      .from('instructor_earnings') as any)
+      .from('instructor_earnings'))
       .select('id')
       .eq('id', earningsId)
       .single()
@@ -251,6 +264,6 @@ export async function deleteInstructorEarnings(earningsId: string) {
     return { success: true, message: 'Earnings deleted successfully' }
   } catch (error) {
     console.error('Unexpected error in deleteInstructorEarnings:', error)
-    return { error: `An unexpected error occurred: ${(error as any).message}` }
+    return { error: `An unexpected error occurred: ${error instanceof Error ? error.message : String(error)}` }
   }
 }

@@ -4,7 +4,10 @@ import { getOrganization } from '@/lib/auth/getOrganization'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/format'
 import { TrendingUp, DollarSign } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 import { InstructorEarningsTable } from './instructor-earnings-client'
+import { InstructorEarningsFilters } from '@/components/instructor-earnings/EarningsFilters'
+import { PageHeader } from '@/components/common/PageHeader'
 
 export default async function InstructorEarningsPage({
   searchParams,
@@ -20,11 +23,12 @@ export default async function InstructorEarningsPage({
   const pageParam = typeof params.page === 'string' ? parseInt(params.page, 10) : 1
   const page = Math.max(1, pageParam)
 
+  const t = await getTranslations('instructorEarnings')
   const organization = await getOrganization()
   const currency = organization?.currency || 'TRY'
 
   const [earningsResult, instructorsResult] = await Promise.all([
-    getInstructorEarnings(searchQuery, page, PAGE_SIZE),
+    getInstructorEarnings({ search: searchQuery, instructorId, from: fromDate, to: toDate }, page, PAGE_SIZE),
     getInstructors(),
   ])
 
@@ -32,22 +36,18 @@ export default async function InstructorEarningsPage({
   const instructors = instructorsResult.data || []
   const totalCount = earningsResult.totalCount || 0
 
-  const totalEarnings = earnings.reduce((sum: number, e: any) => sum + Number(e.amount), 0)
-  const sessionCount = earnings.length
+  const totalEarnings = earningsResult.totalAmount || 0
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Instructor Earnings</h1>
-        <p className="text-muted-foreground mt-1">Track instructor compensation and session payments</p>
-      </div>
+      <PageHeader title={t('title')} description={t('description')} />
 
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4">
         <Card className="border-border p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Total Earnings (Selected Period)</p>
+              <p className="text-sm text-muted-foreground mb-1">{t('totalEarnings')}</p>
               <p className="text-3xl font-bold text-primary">{formatCurrency(totalEarnings, currency)}</p>
             </div>
             <DollarSign className="text-primary" size={32} />
@@ -57,18 +57,23 @@ export default async function InstructorEarningsPage({
         <Card className="border-border p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Total Sessions</p>
-              <p className="text-3xl font-bold text-primary">{sessionCount}</p>
+              <p className="text-sm text-muted-foreground mb-1">{t('totalRecords')}</p>
+              <p className="text-3xl font-bold text-primary">{totalCount}</p>
             </div>
             <TrendingUp className="text-primary" size={32} />
           </div>
         </Card>
       </div>
 
-      {/* Filters and Table */}
+      <InstructorEarningsFilters
+        instructors={instructors}
+        instructorId={instructorId}
+        fromDate={fromDate}
+        toDate={toDate}
+      />
+
       <InstructorEarningsTable
         earnings={earnings}
-        instructors={instructors}
         currency={currency}
         searchQuery={searchQuery}
         currentPage={page}

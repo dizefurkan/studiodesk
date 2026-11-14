@@ -7,6 +7,7 @@ import { getOrganization } from '@/lib/auth/getOrganization'
 import { logOperation } from '@/lib/actions/history.actions'
 import { getChanges } from '@/lib/utils/history-utils'
 import type { Database } from '@/lib/types/database.types'
+import type { TablesUpdate } from '@/lib/types/database.types'
 
 type Package = Database['public']['Tables']['packages']['Row']
 
@@ -25,7 +26,7 @@ export async function getPackages(
     const admin = createAdminClient()
 
     // Count query
-    let countQuery = (admin as any)
+    let countQuery = admin
       .from('packages')
       .select('id', { count: 'exact', head: true })
       .eq('organization_id', organization.id)
@@ -39,7 +40,7 @@ export async function getPackages(
     const count = totalCount || 0
 
     // Data query
-    let query = (admin as any)
+    let query = admin
       .from('packages')
       .select('*')
       .eq('organization_id', organization.id)
@@ -78,7 +79,7 @@ export async function getPackage(id: string) {
 
   try {
     const admin = createAdminClient()
-    const { data, error } = await (admin as any)
+    const { data, error } = await admin
       .from('packages')
       .select('*')
       .eq('id', id)
@@ -115,7 +116,7 @@ export async function createPackage(input: CreatePackageInput) {
   try {
     const supabase = await createServerSupabaseClient()
     const { data, error } = await (supabase
-      .from('packages') as any)
+      .from('packages'))
       .insert({
         organization_id: organization.id,
         name: input.name,
@@ -132,12 +133,12 @@ export async function createPackage(input: CreatePackageInput) {
     }
 
     // Log the create operation
-    void logOperation('CREATE', 'package', (data as any).id, {
+    void logOperation('CREATE', 'package', data.id, {
       after: {
-        name: (data as any).name,
-        danceTypeId: (data as any).dance_type_id,
-        totalCredits: (data as any).total_credits,
-        price: (data as any).price,
+        name: data.name,
+        danceTypeId: data.dance_type_id,
+        totalCredits: data.total_credits,
+        price: data.price,
       }
     }, organization.id)
 
@@ -177,7 +178,7 @@ export async function updatePackage(id: string, input: UpdatePackageInput) {
       return { error: 'Package not found or does not belong to your organization' }
     }
 
-    const updateData: any = {}
+    const updateData: TablesUpdate<'packages'> = {}
     if (input.name !== undefined) updateData.name = input.name
     if (input.danceTypeId !== undefined) updateData.dance_type_id = input.danceTypeId
     if (input.totalCredits !== undefined) updateData.total_credits = input.totalCredits
@@ -186,7 +187,7 @@ export async function updatePackage(id: string, input: UpdatePackageInput) {
     console.log('[updatePackage] Package ID:', id)
     console.log('[updatePackage] Update data:', updateData)
 
-    const { data, error } = await (supabase.from('packages') as any)
+    const { data, error } = await supabase.from('packages')
       .update(updateData)
       .eq('id', id)
       .eq('organization_id', organization.id)
@@ -203,16 +204,16 @@ export async function updatePackage(id: string, input: UpdatePackageInput) {
 
     // Log the update operation
     const beforeObj = {
-      name: (beforePackage as any).name,
-      danceTypeId: (beforePackage as any).dance_type_id,
-      totalCredits: (beforePackage as any).total_credits,
-      price: (beforePackage as any).price,
+      name: beforePackage.name,
+      danceTypeId: beforePackage.dance_type_id,
+      totalCredits: beforePackage.total_credits,
+      price: beforePackage.price,
     }
     const afterObj = {
-      name: (data as any).name,
-      danceTypeId: (data as any).dance_type_id,
-      totalCredits: (data as any).total_credits,
-      price: (data as any).price,
+      name: data.name,
+      danceTypeId: data.dance_type_id,
+      totalCredits: data.total_credits,
+      price: data.price,
     }
     const changes = getChanges(beforeObj, afterObj)
     void logOperation('UPDATE', 'package', id, {
@@ -251,14 +252,14 @@ export async function deletePackage(id: string, reason?: string) {
     }
 
     const user_id = user.id
-    const updateResult = await (supabase.from('packages') as any)
+    const updateResult = await supabase.from('packages')
       .update({
         deleted_at: new Date().toISOString(),
         deleted_by: user_id,
         deleted_reason: reason || null,
       })
       .eq('id', id)
-      .eq('organization_id', organization.id) as any
+      .eq('organization_id', organization.id)
     const { error } = updateResult
 
     if (error) {
@@ -268,10 +269,10 @@ export async function deletePackage(id: string, reason?: string) {
 
     // Log the delete operation
     const beforeObj = {
-      name: (beforePackage as any).name,
-      danceTypeId: (beforePackage as any).dance_type_id,
-      totalCredits: (beforePackage as any).total_credits,
-      price: (beforePackage as any).price,
+      name: beforePackage.name,
+      danceTypeId: beforePackage.dance_type_id,
+      totalCredits: beforePackage.total_credits,
+      price: beforePackage.price,
     }
     void logOperation('DELETE', 'package', id, {
       before: beforeObj,

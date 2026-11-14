@@ -1,14 +1,9 @@
 import createMiddleware from 'next-intl/middleware'
 import { createServerClient } from '@supabase/ssr'
 import type { NextRequest } from 'next/server'
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/i18n/config'
+import { routing } from '@/i18n/routing'
 
-const intlMiddleware = createMiddleware({
-  locales: SUPPORTED_LOCALES,
-  defaultLocale: DEFAULT_LOCALE,
-  localePrefix: 'always',
-  localeDetection: true,
-})
+const intlMiddleware = createMiddleware(routing)
 
 /**
  * 1. next-intl: locale prefix redirects/rewrites.

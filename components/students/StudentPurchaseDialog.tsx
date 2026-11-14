@@ -1,7 +1,7 @@
 'use client'
 
+import { useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { CircleAlert, ShoppingCart } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'

@@ -7,6 +7,8 @@ import { getOrganization } from '@/lib/auth/getOrganization'
 import { logOperation } from '@/lib/actions/history.actions'
 import { getChanges } from '@/lib/utils/history-utils'
 import type { Database } from '@/lib/types/database.types'
+import type { PostgrestError } from '@supabase/supabase-js'
+import type { TablesUpdate } from '@/lib/types/database.types'
 
 type Course = Database['public']['Tables']['courses']['Row']
 type CourseSession = Database['public']['Tables']['course_sessions']['Row']
@@ -56,13 +58,17 @@ export async function getCourses(
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated', data: [], totalCount: 0 }
 
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found', data: [], totalCount: 0 }
+
   try {
     const admin = createAdminClient()
 
-    // Count query
+    // Service-role client: scope to the caller's organization through the branch
     let countQuery = admin
       .from('courses')
-      .select('id', { count: 'exact', head: true })
+      .select('id, branches!inner(organization_id)', { count: 'exact', head: true })
+      .eq('branches.organization_id', organization.id)
       .is('deleted_at', null)
 
     if (searchQuery) {
@@ -75,7 +81,8 @@ export async function getCourses(
     // Data query
     let query = admin
       .from('courses')
-      .select('*, branches(name), dance_types(name), course_instructors(instructor_id, instructors(id, first_name, last_name))')
+      .select('*, branches!inner(name, organization_id), dance_types(name), course_instructors(instructor_id, instructors(id, first_name, last_name))')
+      .eq('branches.organization_id', organization.id)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
 
@@ -88,7 +95,7 @@ export async function getCourses(
     query = query.range(offset, offset + pageSize - 1)
 
     const result = await query.overrideTypes<CourseWithStats[]>()
-    const { data, error } = result as { data: CourseWithStats[] | null; error: any }
+    const { data, error } = result as { data: CourseWithStats[] | null; error: PostgrestError | null }
 
     if (error) {
       console.error('Error fetching courses:', error)
@@ -98,7 +105,7 @@ export async function getCourses(
     // Fetch student counts and attendance counts for each course (on current page only)
     const coursesWithStats = await Promise.all(
       (data || []).map(async (course) => {
-        const { count: studentCount } = await (admin as any)
+        const { count: studentCount } = await admin
           .from('course_students')
           .select('*', { count: 'exact', head: true })
           .eq('course_id', course.id)
@@ -132,16 +139,20 @@ export async function getCourse(id: string): Promise<{ data?: CourseWithStats; e
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
   try {
     const admin = createAdminClient()
     const result = await admin
       .from('courses')
-      .select('*, branches(name), dance_types(name), course_instructors(instructor_id, instructors(id, first_name, last_name))')
+      .select('*, branches!inner(name, organization_id), dance_types(name), course_instructors(instructor_id, instructors(id, first_name, last_name))')
       .eq('id', id)
+      .eq('branches.organization_id', organization.id)
       .is('deleted_at', null)
-      .single() as any as any
+      .single()
 
-    const { data, error } = result as { data: CourseWithStats | null; error: any }
+    const { data, error } = result as { data: CourseWithStats | null; error: PostgrestError | null }
 
     if (error || !data) {
       console.error('Error fetching course:', error)
@@ -164,12 +175,16 @@ export async function checkDuplicateCourseTime(
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
+  const organization = await getOrganization()
+  if (!organization) return { error: 'No organization found' }
+
   try {
     const admin = createAdminClient()
     let query = admin
       .from('courses')
-      .select('id, name, start_time, end_time, dance_type_id')
+      .select('id, name, start_time, end_time, dance_type_id, branches!inner(organization_id)')
       .eq('branch_id', branchId)
+      .eq('branches.organization_id', organization.id)
       .eq('dance_type_id', danceTypeId)
       .eq('day_of_week', dayOfWeek)
       .is('deleted_at', null)
@@ -179,7 +194,7 @@ export async function checkDuplicateCourseTime(
     }
 
     const result = await query.overrideTypes<Course[]>()
-    const { data, error } = result as { data: Course[] | null; error: any }
+    const { data, error } = result as { data: Course[] | null; error: PostgrestError | null }
 
     if (error) {
       console.error('Error checking duplicate courses:', error)
@@ -212,9 +227,9 @@ export async function createCourse(
       .eq('id', input.branchId)
       .eq('organization_id', organization.id)
       .single()
-      .overrideTypes<Branch>() as any
+      .overrideTypes<Branch>()
 
-    const { data: branch, error: branchError } = result as { data: Branch | null; error: any }
+    const { data: branch, error: branchError } = result as { data: Branch | null; error: PostgrestError | null }
 
     if (branchError || !branch) {
       return { error: 'Invalid branch' }
@@ -242,12 +257,12 @@ export async function createCourse(
         day_of_week: input.dayOfWeek,
         start_time: input.startTime,
         end_time: input.endTime,
-      } as any)
+      })
       .select()
       .single()
-      .overrideTypes<Course>() as any
+      .overrideTypes<Course>()
 
-    const { data: course, error: courseError } = courseResult as { data: Course | null; error: any }
+    const { data: course, error: courseError } = courseResult as { data: Course | null; error: PostgrestError | null }
 
     if (courseError || !course) {
       console.error('Error creating course:', courseError)
@@ -261,7 +276,7 @@ export async function createCourse(
         instructor_id: instructorId,
       }))
 
-      await (supabase.from('course_instructors') as any).insert(instructorAssignments)
+      await supabase.from('course_instructors').insert(instructorAssignments)
     }
 
     // Note: students should NOT be added during course creation
@@ -310,9 +325,9 @@ export async function updateCourse(
       .select('id, name, day_of_week, start_time, end_time, branch_id, dance_type_id')
       .eq('id', id)
       .single()
-      .overrideTypes<Course>() as any
+      .overrideTypes<Course>()
 
-    const { data: beforeCourse, error: beforeError } = beforeResult as { data: Course | null; error: any }
+    const { data: beforeCourse, error: beforeError } = beforeResult as { data: Course | null; error: PostgrestError | null }
 
     console.log('[updateCourse] Before course fetch - Error:', beforeError, 'Data:', beforeCourse?.id)
     if (!beforeCourse) {
@@ -326,9 +341,9 @@ export async function updateCourse(
       .eq('id', beforeCourse.branch_id)
       .eq('organization_id', organization.id)
       .single()
-      .overrideTypes<Branch>() as any
+      .overrideTypes<Branch>()
 
-    const { data: branch, error: branchError } = branchResult as { data: Branch | null; error: any }
+    const { data: branch, error: branchError } = branchResult as { data: Branch | null; error: PostgrestError | null }
 
     console.log('[updateCourse] Branch verification - Error:', branchError, 'Data:', branch?.id)
     if (branchError) {
@@ -340,20 +355,20 @@ export async function updateCourse(
       return { error: 'Course does not belong to your organization' }
     }
 
-    const updateData: Record<string, any> = {}
+    const updateData: TablesUpdate<'courses'> = {}
     if (input.name !== undefined) updateData.name = input.name
     if (input.dayOfWeek !== undefined) updateData.day_of_week = input.dayOfWeek
     if (input.startTime !== undefined) updateData.start_time = input.startTime
     if (input.endTime !== undefined) updateData.end_time = input.endTime
 
     console.log('[updateCourse] Update data:', updateData)
-    const updateResult = await (supabase.from('courses') as any)
+    const updateResult = await supabase.from('courses')
       .update(updateData)
       .eq('id', id)
       .select()
-      .maybeSingle() as any
+      .maybeSingle()
 
-    const { data, error } = updateResult as { data: Course | null; error: any }
+    const { data, error } = updateResult as { data: Course | null; error: PostgrestError | null }
 
     console.log('[updateCourse] Update result - Error:', error, 'Data:', data?.id)
 
@@ -370,7 +385,7 @@ export async function updateCourse(
 
     // Update instructors if provided
     if (input.instructorIds) {
-      await (supabase.from('course_instructors') as any).delete().eq('course_id', id)
+      await supabase.from('course_instructors').delete().eq('course_id', id)
 
       const instructorAssignments = input.instructorIds.map((instructorId) => ({
         course_id: id,
@@ -378,13 +393,13 @@ export async function updateCourse(
       }))
 
       if (instructorAssignments.length > 0) {
-        await (supabase.from('course_instructors') as any).insert(instructorAssignments)
+        await supabase.from('course_instructors').insert(instructorAssignments)
       }
     }
 
     // Update students if provided
     if (input.studentIds) {
-      await (supabase.from('course_students') as any).delete().eq('course_id', id)
+      await supabase.from('course_students').delete().eq('course_id', id)
 
       const studentAssignments = input.studentIds.map((studentId) => ({
         course_id: id,
@@ -392,7 +407,7 @@ export async function updateCourse(
       }))
 
       if (studentAssignments.length > 0) {
-        await (supabase.from('course_students') as any).insert(studentAssignments)
+        await supabase.from('course_students').insert(studentAssignments)
       }
     }
 
@@ -443,22 +458,22 @@ export async function deleteCourse(id: string, reason?: string): Promise<{ succe
       .select('id, name, day_of_week, start_time, end_time, branch_id, dance_type_id')
       .eq('id', id)
       .is('deleted_at', null)
-      .single() as any as any
+      .single()
 
-    const { data: beforeCourse, error: fetchError } = deleteResult as { data: Course | null; error: any }
+    const { data: beforeCourse, error: fetchError } = deleteResult as { data: Course | null; error: PostgrestError | null }
 
     if (!beforeCourse) {
       return { error: 'Course not found' }
     }
 
     const user_id = user.id
-    const updateResult = await (supabase.from('courses') as any)
+    const updateResult = await supabase.from('courses')
       .update({
         deleted_at: new Date().toISOString(),
         deleted_by: user_id,
         deleted_reason: reason || null,
       })
-      .eq('id', id) as any
+      .eq('id', id)
     const { error } = updateResult
 
     if (error) {
@@ -503,9 +518,9 @@ export async function generateCourseSessions(
       .select('day_of_week')
       .eq('id', courseId)
       .single()
-      .overrideTypes<Course>() as any
+      .overrideTypes<Course>()
 
-    const { data: course, error: courseError } = courseResult as { data: Course | null; error: any }
+    const { data: course, error: courseError } = courseResult as { data: Course | null; error: PostgrestError | null }
 
     if (courseError || !course) {
       console.error('Course error:', courseError)
@@ -531,7 +546,7 @@ export async function generateCourseSessions(
       .lte('session_date', endDateStr)
       .overrideTypes<CourseSession[]>()
 
-    const { data: existingSessions, error: existingError } = existingResult as { data: CourseSession[] | null; error: any }
+    const { data: existingSessions, error: existingError } = existingResult as { data: CourseSession[] | null; error: PostgrestError | null }
 
     if (existingError) {
       console.error('Error fetching existing sessions:', existingError)
@@ -563,35 +578,34 @@ export async function generateCourseSessions(
     }
 
     // Use admin client for insertion (bypasses RLS, which is fine for automatic generation)
-    const insertResult = await (adminSupabase.from('course_sessions') as any)
+    const insertResult = await adminSupabase.from('course_sessions')
       .insert(sessions)
-      .select() as any
+      .select()
 
-    const { data, error } = insertResult as { data: CourseSession[] | null; error: any }
+    const { data, error } = insertResult as { data: CourseSession[] | null; error: PostgrestError | null }
 
     if (error) {
       console.error('Error inserting sessions:', {
         error,
-        errorCode: (error as any)?.code,
-        message: (error as any)?.message || JSON.stringify(error),
-        details: (error as any)?.details,
-        hint: (error as any)?.hint,
+        errorCode: error?.code,
+        message: error?.message || JSON.stringify(error),
+        details: error?.details,
+        hint: error?.hint,
         courseId,
         sessionCount: sessions.length,
         sessions: sessions.slice(0, 3), // Sample of sessions
       })
       // Return error so we know what happened
-      return { error: 'Failed to insert sessions', details: (error as any)?.message }
+      return { error: 'Failed to insert sessions', details: error instanceof Error ? error.message : String(error) }
     }
 
     return { success: true, data: data || [] }
   } catch (error) {
     console.error('Unexpected error in generateCourseSessions:', {
       error,
-      message: (error as any)?.message,
-      stack: (error as any)?.stack?.split('\n').slice(0, 3),
+      message: error instanceof Error ? error.message : String(error),
     })
-    return { error: 'Unexpected error generating sessions', details: (error as any)?.message }
+    return { error: 'Unexpected error generating sessions', details: error instanceof Error ? error.message : String(error) }
   }
 }
 
@@ -620,7 +634,7 @@ export async function getCourseSessions(
     }
 
     const result = await query.overrideTypes<CourseSession[]>()
-    const { data, error } = result as { data: CourseSession[] | null; error: any }
+    const { data, error } = result as { data: CourseSession[] | null; error: PostgrestError | null }
 
     if (error) {
       console.error('Error fetching course sessions:', error)
@@ -658,9 +672,9 @@ export async function getCourseEnrolledStudents(
       .select('dance_type_id')
       .eq('id', courseId)
       .single()
-      .overrideTypes<Course>() as any
+      .overrideTypes<Course>()
 
-    const { data: course, error: courseError } = courseResult as { data: Course | null; error: any }
+    const { data: course, error: courseError } = courseResult as { data: Course | null; error: PostgrestError | null }
 
     if (courseError || !course) {
       return { error: 'Course not found' }
@@ -670,12 +684,12 @@ export async function getCourseEnrolledStudents(
     const enrolledResult = await supabase
       .from('student_packages')
       .select(
-        'student_id, students(id, first_name, last_name), packages(dance_type_id)',
+        'student_id, students(id, first_name, last_name), packages!inner(dance_type_id)',
       )
       .eq('packages.dance_type_id', course.dance_type_id)
       .overrideTypes<EnrolledStudent[]>()
 
-    const { data, error } = enrolledResult as { data: EnrolledStudent[] | null; error: any }
+    const { data, error } = enrolledResult as { data: EnrolledStudent[] | null; error: PostgrestError | null }
 
     if (error) {
       console.error('Error fetching enrolled students:', error)
@@ -712,9 +726,9 @@ export async function getAvailableStudentsForCourse(
       .select('dance_type_id')
       .eq('id', courseId)
       .single()
-      .overrideTypes<Course>() as any
+      .overrideTypes<Course>()
 
-    const { data: course, error: courseError } = courseResult as { data: Course | null; error: any }
+    const { data: course, error: courseError } = courseResult as { data: Course | null; error: PostgrestError | null }
 
     if (courseError || !course) {
       return { error: 'Course not found' }
@@ -730,7 +744,7 @@ export async function getAvailableStudentsForCourse(
       .eq('student_packages.students.organization_id', organization.id)
       .overrideTypes<AvailableStudent[]>()
 
-    const { data, error } = availableResult as { data: AvailableStudent[] | null; error: any }
+    const { data, error } = availableResult as { data: AvailableStudent[] | null; error: PostgrestError | null }
 
     if (error) {
       console.error('Error fetching available students:', error)

@@ -7,6 +7,7 @@ import { Edit2, Trash2, X, Check } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { Input } from '@/components/ui/input'
+import { useRouter } from '@/i18n/navigation'
 
 interface EarningsEditButtonProps {
   earningsId: string
@@ -16,6 +17,7 @@ interface EarningsEditButtonProps {
 
 export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: EarningsEditButtonProps) {
   const t = useTranslations()
+  const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [amount, setAmount] = useState(currentAmount.toString())
   const [isLoading, setIsLoading] = useState(false)
@@ -41,14 +43,10 @@ export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: Earn
         setError(result.error)
         setIsLoading(false)
       } else if (result.success) {
-        console.log('[EarningsEditButton] Success, reloading...')
-        setIsEditing(false)
+                setIsEditing(false)
         setIsLoading(false)
         onUpdate?.()
-        // Add a small delay before reload to ensure all state is updated
-        setTimeout(() => {
-          window.location.reload()
-        }, 500)
+        router.refresh()
       } else {
         setError('Unexpected response format')
         setIsLoading(false)
@@ -86,11 +84,9 @@ export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: Earn
         setError(result.error)
         setIsLoading(false)
       } else if (result.success) {
-        console.log('[EarningsEditButton] Delete success, reloading...')
-        onUpdate?.()
-        setTimeout(() => {
-          window.location.reload()
-        }, 500)
+                onUpdate?.()
+        setIsLoading(false)
+        router.refresh()
       } else {
         setError('Unexpected response format')
         setIsLoading(false)

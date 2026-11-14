@@ -1,9 +1,9 @@
 'use client'
 
+import { Link } from '@/i18n/navigation'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import Link from 'next/link'
 import { Edit2, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ColumnHeader } from '@/components/table/column-header'
@@ -13,7 +13,7 @@ export interface Instructor {
   first_name: string
   last_name: string
   email: string
-  phone?: string
+  phone?: string | null
   created_at: string
   branchCount: number
   courseCount: number

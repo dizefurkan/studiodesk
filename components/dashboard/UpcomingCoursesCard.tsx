@@ -1,26 +1,22 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Calendar, ArrowRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { format } from 'date-fns'
 
+export type UpcomingSession = {
+  id: string
+  session_date: string
+  course_id: string
+  course_name: string
+  instructors: string[]
+}
+
 interface UpcomingCoursesCardProps {
-  upcomingCourses: Array<{
-    id: string
-    session_date: string
-    course_id: string
-    courses: {
-      id: string
-      title: string
-      instructors?: Array<{
-        id: string
-        name: string
-      }>
-    }
-  }>
+  upcomingCourses: UpcomingSession[]
 }
 
 export function UpcomingCoursesCard({ upcomingCourses }: UpcomingCoursesCardProps) {
@@ -32,15 +28,15 @@ export function UpcomingCoursesCard({ upcomingCourses }: UpcomingCoursesCardProp
         <div>
           <CardTitle className="text-lg sm:text-xl">{t('dashboard.upcomingCourses')}</CardTitle>
           <CardDescription className="text-xs sm:text-sm">
-            {upcomingCourses.length} courses scheduled
+            {t('dashboard.coursesScheduled', { count: upcomingCourses.length })}
           </CardDescription>
         </div>
-        <Link href="/dashboard/calendar">
-          <Button variant="outline" size="sm" className="border-border w-full sm:w-auto">
+        <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+          <Link href="/dashboard/calendar">
             {t('common.viewDetails')}
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </Link>
+            <ArrowRight />
+          </Link>
+        </Button>
       </CardHeader>
       <CardContent>
         {upcomingCourses.length > 0 ? (
@@ -50,19 +46,19 @@ export function UpcomingCoursesCard({ upcomingCourses }: UpcomingCoursesCardProp
                 key={session.id}
                 className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-input hover:bg-muted/50 transition-colors"
               >
-                <div className="p-2 bg-orange-100 rounded-lg flex-shrink-0">
-                  <Calendar className="w-4 h-4 text-orange-600" />
+                <div className="p-2 bg-highlight/20 rounded-lg flex-shrink-0">
+                  <Calendar className="w-4 h-4 text-highlight-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-foreground truncate text-sm">
-                    {session.courses?.title || 'Unknown Course'}
+                    {session.course_name}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {format(new Date(session.session_date), 'MMM dd, yyyy')}
                   </p>
-                  {session.courses?.instructors && session.courses.instructors.length > 0 && (
+                  {session.instructors.length > 0 && (
                     <p className="text-xs text-muted-foreground truncate">
-                      {session.courses.instructors.map(i => i.name).join(', ')}
+                      {session.instructors.join(', ')}
                     </p>
                   )}
                 </div>

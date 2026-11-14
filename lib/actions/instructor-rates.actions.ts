@@ -1,6 +1,5 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
@@ -22,10 +21,11 @@ export async function getInstructorRates(instructorId?: string) {
       .select(`
         id,
         ratio_per_class,
-        instructors(
+        instructors!inner(
           id,
           first_name,
-          last_name
+          last_name,
+          organization_id
         ),
         branches(
           id,
@@ -36,6 +36,8 @@ export async function getInstructorRates(instructorId?: string) {
           name
         )
       `)
+      // Service-role client: scope to the caller's organization explicitly
+      .eq('instructors.organization_id', organization.id)
 
     // If specific instructor requested, filter by instructor
     if (instructorId) {
@@ -79,7 +81,7 @@ export async function createInstructorRate(
 
     // Verify instructor belongs to organization
     const { data: instructor, error: instructorError } = await (adminSupabase
-      .from('instructors') as any)
+      .from('instructors'))
       .select('organization_id')
       .eq('id', instructorId)
       .single()
@@ -90,7 +92,7 @@ export async function createInstructorRate(
 
     // Verify branch belongs to organization
     const { data: branch, error: branchError } = await (adminSupabase
-      .from('branches') as any)
+      .from('branches'))
       .select('organization_id')
       .eq('id', branchId)
       .single()
@@ -101,7 +103,7 @@ export async function createInstructorRate(
 
     // Verify dance type exists
     const { data: danceType, error: danceTypeError } = await (adminSupabase
-      .from('dance_types') as any)
+      .from('dance_types'))
       .select('id')
       .eq('id', danceTypeId)
       .single()
@@ -112,7 +114,7 @@ export async function createInstructorRate(
 
     // Check if rate already exists
     const { data: existingRate } = await (adminSupabase
-      .from('instructor_rates') as any)
+      .from('instructor_rates'))
       .select('id')
       .eq('instructor_id', instructorId)
       .eq('branch_id', branchId)
@@ -125,7 +127,7 @@ export async function createInstructorRate(
 
     // Create new rate
     const { data, error } = await (adminSupabase
-      .from('instructor_rates') as any)
+      .from('instructor_rates'))
       .insert({
         instructor_id: instructorId,
         branch_id: branchId,
@@ -141,12 +143,12 @@ export async function createInstructorRate(
     }
 
     // Log the create operation
-    void logOperation('CREATE', 'instructor_rate', (data as any).id, {
+    void logOperation('CREATE', 'instructor_rate', data.id, {
       after: {
-        instructorId: (data as any).instructor_id,
-        branchId: (data as any).branch_id,
-        danceTypeId: (data as any).dance_type_id,
-        ratioPerClass: (data as any).ratio_per_class,
+        instructorId: data.instructor_id,
+        branchId: data.branch_id,
+        danceTypeId: data.dance_type_id,
+        ratioPerClass: data.ratio_per_class,
       }
     }, organization.id)
 
@@ -172,7 +174,7 @@ export async function updateInstructorRate(
 
     // Fetch before state for logging
     const { data: beforeRate, error: beforeRateError } = await (adminSupabase
-      .from('instructor_rates') as any)
+      .from('instructor_rates'))
       .select('id, instructor_id, branch_id, dance_type_id, ratio_per_class')
       .eq('id', rateId)
       .single()
@@ -182,7 +184,7 @@ export async function updateInstructorRate(
     }
 
     const { data: instructor, error: instructorError } = await (adminSupabase
-      .from('instructors') as any)
+      .from('instructors'))
       .select('organization_id')
       .eq('id', beforeRate.instructor_id)
       .single()
@@ -193,7 +195,7 @@ export async function updateInstructorRate(
 
     // Update rate
     const { data, error } = await (adminSupabase
-      .from('instructor_rates') as any)
+      .from('instructor_rates'))
       .update({ ratio_per_class: ratioPerClass })
       .eq('id', rateId)
       .select()
@@ -206,16 +208,16 @@ export async function updateInstructorRate(
 
     // Log the update operation
     const beforeObj = {
-      instructorId: (beforeRate as any).instructor_id,
-      branchId: (beforeRate as any).branch_id,
-      danceTypeId: (beforeRate as any).dance_type_id,
-      ratioPerClass: (beforeRate as any).ratio_per_class,
+      instructorId: beforeRate.instructor_id,
+      branchId: beforeRate.branch_id,
+      danceTypeId: beforeRate.dance_type_id,
+      ratioPerClass: beforeRate.ratio_per_class,
     }
     const afterObj = {
-      instructorId: (data as any).instructor_id,
-      branchId: (data as any).branch_id,
-      danceTypeId: (data as any).dance_type_id,
-      ratioPerClass: (data as any).ratio_per_class,
+      instructorId: data.instructor_id,
+      branchId: data.branch_id,
+      danceTypeId: data.dance_type_id,
+      ratioPerClass: data.ratio_per_class,
     }
     const changes = getChanges(beforeObj, afterObj)
     void logOperation('UPDATE', 'instructor_rate', rateId, {
@@ -243,7 +245,7 @@ export async function deleteInstructorRate(rateId: string) {
 
     // Fetch before state for logging
     const { data: beforeRate, error: beforeRateError } = await (adminSupabase
-      .from('instructor_rates') as any)
+      .from('instructor_rates'))
       .select('id, instructor_id, branch_id, dance_type_id, ratio_per_class')
       .eq('id', rateId)
       .single()
@@ -253,7 +255,7 @@ export async function deleteInstructorRate(rateId: string) {
     }
 
     const { data: instructor, error: instructorError } = await (adminSupabase
-      .from('instructors') as any)
+      .from('instructors'))
       .select('organization_id')
       .eq('id', beforeRate.instructor_id)
       .single()
@@ -264,7 +266,7 @@ export async function deleteInstructorRate(rateId: string) {
 
     // Delete rate
     const { error } = await (adminSupabase
-      .from('instructor_rates') as any)
+      .from('instructor_rates'))
       .delete()
       .eq('id', rateId)
 
@@ -275,10 +277,10 @@ export async function deleteInstructorRate(rateId: string) {
 
     // Log the delete operation
     const beforeObj = {
-      instructorId: (beforeRate as any).instructor_id,
-      branchId: (beforeRate as any).branch_id,
-      danceTypeId: (beforeRate as any).dance_type_id,
-      ratioPerClass: (beforeRate as any).ratio_per_class,
+      instructorId: beforeRate.instructor_id,
+      branchId: beforeRate.branch_id,
+      danceTypeId: beforeRate.dance_type_id,
+      ratioPerClass: beforeRate.ratio_per_class,
     }
     void logOperation('DELETE', 'instructor_rate', rateId, {
       before: beforeObj,
@@ -303,7 +305,7 @@ export async function getInstructorsAndBranchesAndDanceTypes() {
 
     const [instructorsResult, branchesResult, danceTypesResult] = await Promise.all([
       (adminSupabase
-        .from('instructors') as any)
+        .from('instructors'))
         .select(`
           id, 
           first_name, 
@@ -317,11 +319,11 @@ export async function getInstructorsAndBranchesAndDanceTypes() {
         `)
         .eq('organization_id', organization.id),
       (adminSupabase
-        .from('branches') as any)
+        .from('branches'))
         .select('id, name')
         .eq('organization_id', organization.id),
       (adminSupabase
-        .from('dance_types') as any)
+        .from('dance_types'))
         .select('id, name')
         .eq('organization_id', organization.id),
     ])
@@ -355,18 +357,19 @@ export async function getInstructorRate(rateId: string) {
     const adminSupabase = createAdminClient()
 
     const { data, error } = await (adminSupabase
-      .from('instructor_rates') as any)
+      .from('instructor_rates'))
       .select(`
         id,
         ratio_per_class,
         instructor_id,
         branch_id,
         dance_type_id,
-        instructors(first_name, last_name),
+        instructors!inner(first_name, last_name, organization_id),
         branches(name),
         dance_types(name)
       `)
       .eq('id', rateId)
+      .eq('instructors.organization_id', organization.id)
       .single()
 
     if (error) {

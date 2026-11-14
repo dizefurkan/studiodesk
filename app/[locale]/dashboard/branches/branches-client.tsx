@@ -1,9 +1,9 @@
 'use client'
 
+import { useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/table/data-table'
-import { FilterConfig } from '@/components/table/data-table-filters'
+import { FilterConfig, type FilterValues } from '@/components/table/data-table-filters'
 import { getBranchColumns, Branch } from './columns'
 import { useTranslations } from 'next-intl'
 import { deleteBranch } from '@/lib/actions/branches.actions'
@@ -27,7 +27,7 @@ export function BranchesPageClient({
   const t = useTranslations()
   const router = useRouter()
   const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
-  const [filterValues, setFilterValues] = useState<Record<string, any>>({})
+  const [filterValues, setFilterValues] = useState<FilterValues>({})
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -64,7 +64,8 @@ export function BranchesPageClient({
       }
 
       // Reload page to reflect deletion
-      window.location.reload()
+      setDeleteModalOpen(false)
+      router.refresh()
     } catch (err) {
       throw err
     } finally {
@@ -82,7 +83,7 @@ export function BranchesPageClient({
 
   return (
     <>
-      <DataTable<Branch, any>
+      <DataTable<Branch, unknown>
         columns={columns}
         data={branches}
         filters={filters}

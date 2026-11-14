@@ -1,9 +1,9 @@
+import { Link } from '@/i18n/navigation'
 import { getPackage } from '@/lib/actions/packages.actions'
 import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { Gift, Edit2 } from 'lucide-react'
+import { Edit2 } from 'lucide-react'
 
 interface PackageDetailPageProps {
   params: {

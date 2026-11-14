@@ -1,8 +1,8 @@
 'use client'
 
+import { useRouter } from '@/i18n/navigation'
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
-import { useRouter } from 'next/navigation'
 import { Check, CircleAlert, Plus, Search } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -30,7 +30,7 @@ interface Student {
   first_name: string
   last_name: string
   email: string
-  phone?: string
+  phone?: string | null
   student_packages?: Array<{
     id: string
     remaining_credits: number
@@ -73,7 +73,7 @@ export function AddStudentDialog({ courseId, danceTypeId, enrolledStudentIds = [
       if (result.error) {
         setError(result.error)
       } else if (result.data) {
-        setStudents(result.data as any)
+        setStudents(result.data)
       }
 
       setLoading(false)

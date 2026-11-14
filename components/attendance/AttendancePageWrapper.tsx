@@ -1,22 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-import { AttendanceDateSelector } from './AttendanceDateSelector'
 import { AttendanceHeader } from './AttendanceHeader'
 import { StudentAttendanceList } from './StudentAttendanceList'
+
+type ListProps = React.ComponentProps<typeof StudentAttendanceList>
 
 interface AttendancePageWrapperProps {
   sessionId: string
   courseId: string
   courseName: string
   danceTypeId: string
-  availableStudents: any[]
-  recordedAttendances: any[]
-  attendanceHistory?: any[]
-  studios?: any[]
-  instructors?: any[]
-  allInstructors?: any[]
-  instructorRates?: any[]
+  availableStudents: ListProps['availableStudents']
+  recordedAttendances: ListProps['recordedAttendances']
+  attendanceHistory?: ListProps['attendanceHistory']
+  studios?: ListProps['studios']
+  instructors?: ListProps['instructors']
+  allInstructors?: ListProps['allInstructors']
+  instructorRates?: ListProps['instructorRates']
   totalEnrolled?: number
   presentCount?: number
   absentCount?: number

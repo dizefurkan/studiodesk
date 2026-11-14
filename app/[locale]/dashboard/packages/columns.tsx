@@ -1,7 +1,7 @@
 'use client'
 
+import { Link } from '@/i18n/navigation'
 import { ColumnDef } from '@tanstack/react-table'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Edit2, Trash2 } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'

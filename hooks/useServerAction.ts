@@ -1,7 +1,7 @@
 'use client'
 
+import { useRouter } from '@/i18n/navigation'
 import { useTransition } from 'react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
 /** Runs a server action, toasts its error/success and refreshes server data. */

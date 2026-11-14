@@ -1,10 +1,12 @@
-import { redirect } from 'next/navigation'
+import { redirect } from '@/i18n/navigation'
+import { getLocale } from 'next-intl/server'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
 import { SidebarProvider } from '@/lib/context/SidebarContext'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { isPlatformAdmin } from '@/lib/auth/platformAdmin'
+import { mustChangePassword } from '@/lib/auth/passwordPolicy'
 
 export default async function DashboardLayout({
   children,
@@ -14,18 +16,21 @@ export default async function DashboardLayout({
   const user = await getCurrentUser()
 
   if (!user) {
-    redirect('/login')
+    redirect({ href: '/login', locale: await getLocale() })
+  }
+
+  if (mustChangePassword(user)) {
+    redirect({ href: '/change-password', locale: await getLocale() })
   }
 
   const organization = await getOrganization()
 
   if (!organization) {
-    redirect((await isPlatformAdmin(user.id)) ? '/backoffice' : '/no-access')
+    redirect({ href: (await isPlatformAdmin(user.id)) ? '/backoffice' : '/no-access', locale: await getLocale() })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- hand-written DB types lack is_active / nested selects
-  if ((organization as any).is_active === false) {
-    redirect('/no-access?reason=suspended')
+  if (organization.is_active === false) {
+    redirect({ href: '/no-access?reason=suspended', locale: await getLocale() })
   }
 
   return (

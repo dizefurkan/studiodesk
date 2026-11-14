@@ -1,3 +1,4 @@
+import { Link } from '@/i18n/navigation'
 import { getInstructor } from "@/lib/actions/instructors.actions";
 import {
   getInstructorCourses,
@@ -5,10 +6,9 @@ import {
   getInstructorTotalEarnings,
 } from "@/lib/actions/instructor-detail.actions";
 import { getEntityHistory } from "@/lib/actions/history.actions";
-import { notFound } from "next/navigation";
+import { notFound } from 'next/navigation'
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import {
   Edit2,
   Mail,
@@ -186,7 +186,7 @@ export default async function InstructorDetailPage({
                 Assigned Courses ({courses.length})
               </h2>
               <div className="space-y-3">
-                {courses.map((course: any) => (
+                {courses.map((course) => (
                   <Card
                     key={course.id}
                     className="border-border p-4 hover:border-primary transition-colors"

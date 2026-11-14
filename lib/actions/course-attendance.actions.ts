@@ -16,7 +16,7 @@ export async function getCourseAttendanceHistory(courseId: string) {
 
     // Get all sessions for this course FIRST
     const { data: sessions, error: sessionsError } = await (supabase
-      .from('course_sessions') as any)
+      .from('course_sessions'))
       .select('id, session_date')
       .eq('course_id', courseId)
       .order('session_date', { ascending: false })
@@ -31,11 +31,11 @@ export async function getCourseAttendanceHistory(courseId: string) {
     }
 
     // Get session IDs
-    const sessionIds = sessions.map((s: any) => s.id)
+    const sessionIds = sessions.map((s) => s.id)
 
     // NOW get attendances for these specific sessions (all records: present and absent)
     const { data: attendances, error: attendancesError } = await (supabase
-      .from('attendances') as any)
+      .from('attendances'))
       .select('id, session_id, is_present, created_at, notes, student:students(id, first_name, last_name), studios(id, name)')
       .in('session_id', sessionIds)
 
@@ -46,7 +46,7 @@ export async function getCourseAttendanceHistory(courseId: string) {
 
     // Get instructors for these sessions
     const { data: sessionInstructors, error: instructorsError } = await (supabase
-      .from('session_instructors') as any)
+      .from('session_instructors'))
       .select('session_id, instructor:instructors(id, first_name, last_name)')
       .in('session_id', sessionIds)
 
@@ -57,7 +57,7 @@ export async function getCourseAttendanceHistory(courseId: string) {
 
     // Fallback: Get course instructors if session-specific instructors don't exist
     const { data: courseInstructors, error: courseInstructorsError } = await (supabase
-      .from('course_instructors') as any)
+      .from('course_instructors'))
       .select('instructor:instructors(id, first_name, last_name)')
       .eq('course_id', courseId)
 
@@ -67,20 +67,20 @@ export async function getCourseAttendanceHistory(courseId: string) {
     }
 
     // Combine sessions with their attendance counts and instructors
-    const formattedSessions = sessions.map((session: any) => {
+    const formattedSessions = sessions.map((session) => {
       const sessionAttendances = (attendances || []).filter(
-        (a: any) => a.session_id === session.id
+        (a) => a.session_id === session.id
       )
-      const presentCount = sessionAttendances.filter((a: any) => a.is_present).length
+      const presentCount = sessionAttendances.filter((a) => a.is_present).length
       
       // ✅ Use session-specific instructors if available, fallback to course instructors
       const sessionSpecificInstructors = (sessionInstructors || []).filter(
-        (si: any) => si.session_id === session.id
-      ).map((si: any) => si.instructor)
+        (si) => si.session_id === session.id
+      ).map((si) => si.instructor)
       
       const instructors = sessionSpecificInstructors.length > 0 
         ? sessionSpecificInstructors 
-        : (courseInstructors || []).map((ci: any) => ci.instructor)
+        : (courseInstructors || []).map((ci) => ci.instructor)
 
       return {
         id: session.id,

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { toast } from 'sonner'
 import { Check, Copy, KeyRound, Trash2, UserPlus, Users } from 'lucide-react'
 import {
   AlertDialog,

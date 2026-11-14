@@ -1,11 +1,11 @@
 'use server'
-/* eslint-disable @typescript-eslint/no-explicit-any -- lib/types/database.types.ts is hand-written and incomplete */
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserRoleInOrganization } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { MUST_CHANGE_PASSWORD, mustChangePassword } from '@/lib/auth/passwordPolicy'
 import { SUPPORTED_CURRENCIES } from '@/config/currencies'
 
 type Result = { error?: string; success?: boolean }
@@ -17,10 +17,10 @@ export async function getSettingsContext() {
   const [user, organization] = await Promise.all([getCurrentUser(), getOrganization()])
   if (!user || !organization) return null
   const roleData = await getUserRoleInOrganization(organization.id)
-  const role = ((roleData as any)?.role || 'staff') as SettingsRole
+  const role = (roleData?.role || 'staff') as SettingsRole
   return {
     user,
-    organization: organization as any,
+    organization: organization,
     role,
     canEditOrganization: role === 'owner' || role === 'manager',
     isOwner: role === 'owner',
@@ -47,7 +47,7 @@ function fail(e: unknown): Result {
 }
 
 async function updateOrganization(id: string, patch: Record<string, unknown>) {
-  const { error } = await (createAdminClient() as any).from('organizations').update(patch).eq('id', id)
+  const { error } = await (createAdminClient()).from('organizations').update(patch).eq('id', id)
   if (error) throw error
 }
 
@@ -131,7 +131,7 @@ export async function updateMyProfile(input: { fullName: string }): Promise<Resu
     if (!user) return { error: 'Not authenticated' }
     const fullName = input.fullName?.trim()
     if (!fullName) return { error: 'Name is required' }
-    const { error } = await (createAdminClient() as any)
+    const { error } = await (createAdminClient())
       .from('profiles')
       .upsert({ id: user.id, email: user.email, full_name: fullName })
     if (error) throw error
@@ -155,8 +155,15 @@ export async function changeMyPassword(input: { currentPassword: string; newPass
     })
     if (signInError) return { error: 'Current password is incorrect' }
 
+    if (input.newPassword === input.currentPassword) return { error: 'New password must be different' }
     const { error } = await supabase.auth.updateUser({ password: input.newPassword })
     if (error) throw error
+    if (mustChangePassword(user)) {
+      const { error: flagError } = await createAdminClient().auth.admin.updateUserById(user.id, {
+        app_metadata: { [MUST_CHANGE_PASSWORD]: false },
+      })
+      if (flagError) throw flagError
+    }
     return { success: true }
   } catch (e) {
     return fail(e)

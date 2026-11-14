@@ -1,5 +1,6 @@
 'use client'
 
+import { Link } from '@/i18n/navigation'
 import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -7,21 +8,21 @@ import { getInstructorRates, getInstructorsAndBranchesAndDanceTypes, getInstruct
 import { InstructorRatesTable } from '@/components/instructor-rates/InstructorRatesTable'
 import { AddInstructorRateDrawer } from '@/components/instructor-rates/AddInstructorRateDrawer'
 import { Card } from '@/components/ui/card'
-import Link from 'next/link'
 import { Info, Plus } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
+import type { ActionData } from '@/lib/types/actions'
 
 export default function InstructorRatesPage() {
   const t = useTranslations()
   const searchParams = useSearchParams()
-  const [rates, setRates] = useState<any[]>([])
+  const [rates, setRates] = useState<ActionData<typeof getInstructorRates>>([])
   const [loading, setLoading] = useState(true)
-  const [drawerData, setDrawerData] = useState<any>(null)
+  const [drawerData, setDrawerData] = useState<ActionData<typeof getInstructorsAndBranchesAndDanceTypes> | null>(null)
   // Rate loaded for the edit drawer, keyed by id so a stale one is never shown
-  const [loadedRate, setLoadedRate] = useState<{ id: string; data: any } | null>(null)
+  const [loadedRate, setLoadedRate] = useState<{ id: string; data: ActionData<typeof getInstructorRate> | null } | null>(null)
 
   // Local state, initialised from the URL (?modal=new|edit&editId=…)
   const [modalType, setModalType] = useState<string | null>(() => searchParams?.get('modal') ?? null)
@@ -48,7 +49,7 @@ export default function InstructorRatesPage() {
         console.error('Error fetching drawer data:', drawerDataResult.error)
       }
       setRates(ratesResult.data || [])
-      setDrawerData(drawerDataResult.data)
+      setDrawerData(drawerDataResult.data ?? null)
       setLoading(false)
     }
     
@@ -68,7 +69,7 @@ export default function InstructorRatesPage() {
     if (modalType !== 'edit' || !editId) return
     let isMounted = true
     getInstructorRate(editId).then((result) => {
-      if (isMounted) setLoadedRate({ id: editId, data: result.data })
+      if (isMounted) setLoadedRate({ id: editId, data: result.data ?? null })
     })
     return () => {
       isMounted = false
@@ -162,7 +163,7 @@ export default function InstructorRatesPage() {
           rates={rates}
           isOpen={true}
           onOpenChange={handleCloseDrawer}
-          initialRate={editingRate}
+          initialRate={editingRate ?? undefined}
           selectedInstructorId={modalType === 'new' && selectedInstructor ? selectedInstructor : undefined}
           onSuccess={() => {
             handleCloseDrawer()

@@ -16,7 +16,7 @@ export type Database = {
     Tables: {
       attendances: {
         Row: {
-          created_at: string | null
+          created_at: string
           deduct_credits: boolean
           id: string
           is_present: boolean
@@ -25,10 +25,10 @@ export type Database = {
           student_id: string
           student_package_id: string
           studio_id: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           deduct_credits?: boolean
           id?: string
           is_present?: boolean
@@ -37,10 +37,10 @@ export type Database = {
           student_id: string
           student_package_id: string
           studio_id?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           deduct_credits?: boolean
           id?: string
           is_present?: boolean
@@ -49,7 +49,7 @@ export type Database = {
           student_id?: string
           student_package_id?: string
           studio_id?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -85,24 +85,24 @@ export type Database = {
       branch_instructors: {
         Row: {
           branch_id: string
-          created_at: string | null
+          created_at: string
           id: string
           instructor_id: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           branch_id: string
-          created_at?: string | null
+          created_at?: string
           id?: string
           instructor_id: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           branch_id?: string
-          created_at?: string | null
+          created_at?: string
           id?: string
           instructor_id?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -124,7 +124,7 @@ export type Database = {
       branches: {
         Row: {
           address: string | null
-          created_at: string | null
+          created_at: string
           deleted_at: string | null
           deleted_by: string | null
           deleted_reason: string | null
@@ -132,11 +132,11 @@ export type Database = {
           name: string
           organization_id: string
           phone: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           address?: string | null
-          created_at?: string | null
+          created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
           deleted_reason?: string | null
@@ -144,11 +144,11 @@ export type Database = {
           name: string
           organization_id: string
           phone?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           address?: string | null
-          created_at?: string | null
+          created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
           deleted_reason?: string | null
@@ -156,7 +156,7 @@ export type Database = {
           name?: string
           organization_id?: string
           phone?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -179,32 +179,32 @@ export type Database = {
         Row: {
           amount: number
           branch_id: string
-          created_at: string | null
+          created_at: string
           description: string
           id: string
           student_package_id: string | null
           type: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           amount: number
           branch_id: string
-          created_at?: string | null
+          created_at?: string
           description: string
           id?: string
           student_package_id?: string | null
           type: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           amount?: number
           branch_id?: string
-          created_at?: string | null
+          created_at?: string
           description?: string
           id?: string
           student_package_id?: string | null
           type?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -226,24 +226,24 @@ export type Database = {
       course_instructors: {
         Row: {
           course_id: string
-          created_at: string | null
+          created_at: string
           id: string
           instructor_id: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           course_id: string
-          created_at?: string | null
+          created_at?: string
           id?: string
           instructor_id: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           course_id?: string
-          created_at?: string | null
+          created_at?: string
           id?: string
           instructor_id?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -265,27 +265,27 @@ export type Database = {
       course_sessions: {
         Row: {
           course_id: string
-          created_at: string | null
+          created_at: string
           id: string
           notes: string | null
           session_date: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           course_id: string
-          created_at?: string | null
+          created_at?: string
           id?: string
           notes?: string | null
           session_date: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           course_id?: string
-          created_at?: string | null
+          created_at?: string
           id?: string
           notes?: string | null
           session_date?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -300,27 +300,27 @@ export type Database = {
       course_students: {
         Row: {
           course_id: string
-          created_at: string | null
+          created_at: string
           id: string
-          joined_at: string | null
+          joined_at: string
           student_id: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           course_id: string
-          created_at?: string | null
+          created_at?: string
           id?: string
-          joined_at?: string | null
+          joined_at?: string
           student_id: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           course_id?: string
-          created_at?: string | null
+          created_at?: string
           id?: string
-          joined_at?: string | null
+          joined_at?: string
           student_id?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -342,7 +342,7 @@ export type Database = {
       courses: {
         Row: {
           branch_id: string
-          created_at: string | null
+          created_at: string
           dance_type_id: string
           day_of_week: number
           deleted_at: string | null
@@ -352,11 +352,11 @@ export type Database = {
           id: string
           name: string
           start_time: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           branch_id: string
-          created_at?: string | null
+          created_at?: string
           dance_type_id: string
           day_of_week: number
           deleted_at?: string | null
@@ -366,11 +366,11 @@ export type Database = {
           id?: string
           name: string
           start_time: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           branch_id?: string
-          created_at?: string | null
+          created_at?: string
           dance_type_id?: string
           day_of_week?: number
           deleted_at?: string | null
@@ -380,7 +380,7 @@ export type Database = {
           id?: string
           name?: string
           start_time?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -408,7 +408,7 @@ export type Database = {
       }
       dance_types: {
         Row: {
-          created_at: string | null
+          created_at: string
           deleted_at: string | null
           deleted_by: string | null
           deleted_reason: string | null
@@ -416,10 +416,10 @@ export type Database = {
           id: string
           name: string
           organization_id: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
           deleted_reason?: string | null
@@ -427,10 +427,10 @@ export type Database = {
           id?: string
           name: string
           organization_id: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
           deleted_reason?: string | null
@@ -438,7 +438,7 @@ export type Database = {
           id?: string
           name?: string
           organization_id?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -460,7 +460,7 @@ export type Database = {
       history_logs: {
         Row: {
           action: string
-          created_at: string | null
+          created_at: string
           data: Json | null
           entity: string
           entity_id: string
@@ -470,7 +470,7 @@ export type Database = {
         }
         Insert: {
           action: string
-          created_at?: string | null
+          created_at?: string
           data?: Json | null
           entity: string
           entity_id: string
@@ -480,7 +480,7 @@ export type Database = {
         }
         Update: {
           action?: string
-          created_at?: string | null
+          created_at?: string
           data?: Json | null
           entity?: string
           entity_id?: string
@@ -501,27 +501,27 @@ export type Database = {
       instructor_earnings: {
         Row: {
           amount: number
-          created_at: string | null
+          created_at: string
           id: string
           instructor_id: string
           session_id: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           amount: number
-          created_at?: string | null
+          created_at?: string
           id?: string
           instructor_id: string
           session_id: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           amount?: number
-          created_at?: string | null
+          created_at?: string
           id?: string
           instructor_id?: string
           session_id?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -543,30 +543,30 @@ export type Database = {
       instructor_rates: {
         Row: {
           branch_id: string
-          created_at: string | null
+          created_at: string
           dance_type_id: string
           id: string
           instructor_id: string
           ratio_per_class: number
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           branch_id: string
-          created_at?: string | null
+          created_at?: string
           dance_type_id: string
           id?: string
           instructor_id: string
           ratio_per_class: number
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           branch_id?: string
-          created_at?: string | null
+          created_at?: string
           dance_type_id?: string
           id?: string
           instructor_id?: string
           ratio_per_class?: number
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -594,7 +594,7 @@ export type Database = {
       }
       instructors: {
         Row: {
-          created_at: string | null
+          created_at: string
           deleted_at: string | null
           deleted_by: string | null
           deleted_reason: string | null
@@ -604,10 +604,10 @@ export type Database = {
           last_name: string
           organization_id: string
           phone: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
           deleted_reason?: string | null
@@ -617,10 +617,10 @@ export type Database = {
           last_name: string
           organization_id: string
           phone?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
           deleted_reason?: string | null
@@ -630,7 +630,7 @@ export type Database = {
           last_name?: string
           organization_id?: string
           phone?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -705,27 +705,27 @@ export type Database = {
       }
       organization_users: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: string
           organization_id: string
           role: string
-          updated_at: string | null
+          updated_at: string
           user_id: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           organization_id: string
           role?: string
-          updated_at?: string | null
+          updated_at?: string
           user_id: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           organization_id?: string
           role?: string
-          updated_at?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -745,13 +745,13 @@ export type Database = {
           allow_member_delete: boolean | null
           allow_role_change: boolean | null
           attendance_per_week_limit: number | null
-          created_at: string | null
+          created_at: string
           currency: string | null
           id: string
           is_active: boolean
           name: string
           timezone: string | null
-          updated_at: string | null
+          updated_at: string
           virtual_sessions_weeks: number | null
           week_start_day: number | null
         }
@@ -761,13 +761,13 @@ export type Database = {
           allow_member_delete?: boolean | null
           allow_role_change?: boolean | null
           attendance_per_week_limit?: number | null
-          created_at?: string | null
+          created_at?: string
           currency?: string | null
           id?: string
           is_active?: boolean
           name: string
           timezone?: string | null
-          updated_at?: string | null
+          updated_at?: string
           virtual_sessions_weeks?: number | null
           week_start_day?: number | null
         }
@@ -777,13 +777,13 @@ export type Database = {
           allow_member_delete?: boolean | null
           allow_role_change?: boolean | null
           attendance_per_week_limit?: number | null
-          created_at?: string | null
+          created_at?: string
           currency?: string | null
           id?: string
           is_active?: boolean
           name?: string
           timezone?: string | null
-          updated_at?: string | null
+          updated_at?: string
           virtual_sessions_weeks?: number | null
           week_start_day?: number | null
         }
@@ -791,7 +791,7 @@ export type Database = {
       }
       packages: {
         Row: {
-          created_at: string | null
+          created_at: string
           dance_type_id: string
           deleted_at: string | null
           deleted_by: string | null
@@ -801,10 +801,10 @@ export type Database = {
           organization_id: string
           price: number
           total_credits: number
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           dance_type_id: string
           deleted_at?: string | null
           deleted_by?: string | null
@@ -814,10 +814,10 @@ export type Database = {
           organization_id: string
           price: number
           total_credits: number
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           dance_type_id?: string
           deleted_at?: string | null
           deleted_by?: string | null
@@ -827,7 +827,7 @@ export type Database = {
           organization_id?: string
           price?: number
           total_credits?: number
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -870,49 +870,49 @@ export type Database = {
       }
       profiles: {
         Row: {
-          created_at: string | null
+          created_at: string
           email: string | null
           full_name: string | null
           id: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
       session_instructors: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: string
           instructor_id: string
           session_id: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           instructor_id: string
           session_id: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           instructor_id?: string
           session_id?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -933,34 +933,34 @@ export type Database = {
       }
       student_packages: {
         Row: {
-          created_at: string | null
+          created_at: string
           expire_date: string | null
           id: string
           package_id: string
           purchase_date: string
           remaining_credits: number
           student_id: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           expire_date?: string | null
           id?: string
           package_id: string
           purchase_date?: string
           remaining_credits: number
           student_id: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           expire_date?: string | null
           id?: string
           package_id?: string
           purchase_date?: string
           remaining_credits?: number
           student_id?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -981,7 +981,7 @@ export type Database = {
       }
       students: {
         Row: {
-          created_at: string | null
+          created_at: string
           deleted_at: string | null
           deleted_by: string | null
           deleted_reason: string | null
@@ -992,10 +992,10 @@ export type Database = {
           notes: string | null
           organization_id: string
           phone: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
           deleted_reason?: string | null
@@ -1006,10 +1006,10 @@ export type Database = {
           notes?: string | null
           organization_id: string
           phone?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           deleted_at?: string | null
           deleted_by?: string | null
           deleted_reason?: string | null
@@ -1020,7 +1020,7 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           phone?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -1043,32 +1043,32 @@ export type Database = {
         Row: {
           branch_id: string
           capacity: number | null
-          created_at: string | null
+          created_at: string
           description: string | null
           id: string
           image_url: string | null
           name: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           branch_id: string
           capacity?: number | null
-          created_at?: string | null
+          created_at?: string
           description?: string | null
           id?: string
           image_url?: string | null
           name: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           branch_id?: string
           capacity?: number | null
-          created_at?: string | null
+          created_at?: string
           description?: string | null
           id?: string
           image_url?: string | null
           name?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {

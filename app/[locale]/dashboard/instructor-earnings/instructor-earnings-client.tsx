@@ -1,15 +1,15 @@
 'use client'
 
+import { useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
 import { DataTable } from '@/components/table/data-table'
 import { getEarningsColumns, type EarningRecord } from './columns'
-import { InstructorEarningsFilters } from '@/components/instructor-earnings/EarningsFilters'
 
 interface InstructorEarningsTableProps {
   earnings: EarningRecord[]
-  instructors: Array<{ id: string; first_name: string; last_name: string }>
   currency: string
   searchQuery?: string
   currentPage: number
@@ -19,7 +19,6 @@ interface InstructorEarningsTableProps {
 
 export function InstructorEarningsTable({
   earnings: initialEarnings,
-  instructors,
   currency,
   searchQuery,
   currentPage,
@@ -28,18 +27,20 @@ export function InstructorEarningsTable({
 }: InstructorEarningsTableProps) {
   const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
   const router = useRouter()
+  const urlParams = useSearchParams()
+  const t = useTranslations('instructorEarnings')
 
   const handleSearchChange = (value: string) => {
     setSearchValue(value)
-    const params = new URLSearchParams()
+    const params = new URLSearchParams(urlParams.toString())
     if (value) params.set('q', value)
+    else params.delete('q')
     params.set('page', '1')
     router.push(`?${params.toString()}`)
   }
 
   const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams()
-    if (searchQuery) params.set('q', searchQuery)
+    const params = new URLSearchParams(urlParams.toString())
     params.set('page', newPage.toString())
     router.push(`?${params.toString()}`)
   }
@@ -51,7 +52,7 @@ export function InstructorEarningsTable({
   return (
     <>
       <Card className="p-3 sm:p-4 md:p-6">
-        <DataTable<EarningRecord, any>
+        <DataTable<EarningRecord, unknown>
           columns={columns}
           data={initialEarnings}
           enablePagination={true}
@@ -62,8 +63,8 @@ export function InstructorEarningsTable({
           onPageChange={handlePageChange}
           searchValue={searchValue}
           onSearchChange={handleSearchChange}
-          searchPlaceholder="Search instructors..."
-          emptyMessage="No earnings found"
+          searchPlaceholder={t('searchPlaceholder')}
+          emptyMessage={t('empty')}
         />
       </Card>
     </>

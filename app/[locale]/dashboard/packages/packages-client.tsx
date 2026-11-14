@@ -1,9 +1,8 @@
 'use client'
 
+import { Link, useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
@@ -12,7 +11,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { deletePackage } from '@/lib/actions/packages.actions'
 import { DeleteConfirmModal } from '@/components/common/DeleteConfirmModal'
 import { DataTable } from '@/components/table/data-table'
-import { FilterConfig } from '@/components/table/data-table-filters'
+import { FilterConfig, type FilterValues } from '@/components/table/data-table-filters'
 import { getPackageColumns } from './columns'
 import type { Database } from '@/lib/types/database.types'
 
@@ -38,7 +37,7 @@ export function PackagesPageContent({
   const t = useTranslations()
   const router = useRouter()
   const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
-  const [filterValues, setFilterValues] = useState<Record<string, any>>({})
+  const [filterValues, setFilterValues] = useState<FilterValues>({})
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -76,7 +75,9 @@ export function PackagesPageContent({
         throw new Error(result.error)
       }
 
-      window.location.reload()
+      setDeleteModalOpen(false)
+      setSelectedPackage(null)
+      router.refresh()
     } catch (err) {
       throw err
     } finally {
@@ -103,7 +104,7 @@ export function PackagesPageContent({
 
       {hasRecords ? (
         <Card className="p-3 sm:p-4 md:p-6">
-          <DataTable<Package, any>
+          <DataTable<Package, unknown>
             columns={getPackageColumns({
               onDelete: handleDeleteClick,
               currency,

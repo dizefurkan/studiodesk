@@ -4,6 +4,7 @@ import { DatePicker } from '@/components/common/DatePicker'
 import { format, parse } from 'date-fns'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Label } from '@/components/ui/label'
+import { useRouter } from '@/i18n/navigation'
 
 interface CashRegisterFiltersProps {
   branches: Array<{ id: string; name: string }>
@@ -20,13 +21,14 @@ export function CashRegisterFilters({
   dataType,
   dateStr,
 }: CashRegisterFiltersProps) {
+  const router = useRouter()
   const handleBranchChange = (value: string) => {
     const params = new URLSearchParams()
     if (value) params.set('branch', value)
     if (type) params.set('type', type)
     if (dataType) params.set('dataType', dataType)
     if (dateStr) params.set('date', dateStr)
-    window.location.href = `/dashboard/cash-register?${params.toString()}`
+    router.push(`/dashboard/cash-register?${params.toString()}`)
   }
 
   const handleTypeChange = (value: string) => {
@@ -35,7 +37,7 @@ export function CashRegisterFilters({
     if (value && value !== 'earnings') params.set('type', value)
     if (dataType) params.set('dataType', dataType)
     if (dateStr) params.set('date', dateStr)
-    window.location.href = `/dashboard/cash-register?${params.toString()}`
+    router.push(`/dashboard/cash-register?${params.toString()}`)
   }
 
   const handleDataTypeChange = (value: string) => {
@@ -53,7 +55,7 @@ export function CashRegisterFilters({
       if (type) params.set('type', type)
     }
     if (dateStr) params.set('date', dateStr)
-    window.location.href = `/dashboard/cash-register?${params.toString()}`
+    router.push(`/dashboard/cash-register?${params.toString()}`)
   }
 
   const handleDateChange = (date: Date) => {
@@ -63,7 +65,7 @@ export function CashRegisterFilters({
     if (type) params.set('type', type)
     if (dataType) params.set('dataType', dataType)
     if (dateValue) params.set('date', dateValue)
-    window.location.href = `/dashboard/cash-register?${params.toString()}`
+    router.push(`/dashboard/cash-register?${params.toString()}`)
   }
 
   // Parse date string to Date object for DatePicker

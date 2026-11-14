@@ -1,7 +1,7 @@
 'use client'
 
+import { Link } from '@/i18n/navigation'
 import { useState } from 'react'
-import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Ban, Check, Copy, KeyRound, MoreHorizontal, Plus, Shield, ShieldOff, UserCheck } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'

@@ -1,14 +1,16 @@
 'use server'
-/* eslint-disable @typescript-eslint/no-explicit-any -- lib/types/database.types.ts is hand-written and doesn't cover platform_admins / is_active / nested selects */
 
 import { revalidatePath } from 'next/cache'
+import type { User } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requirePlatformAdmin } from '@/lib/auth/platformAdmin'
+import { MUST_CHANGE_PASSWORD } from '@/lib/auth/passwordPolicy'
+import { toRole, type Role } from '@/lib/constants/roles'
 
 // Every action re-checks platform admin rights and then uses the
 // service-role client (bypasses RLS). Never call these from dashboard code.
 
-export type StoreRole = 'owner' | 'manager' | 'instructor' | 'staff'
+export type StoreRole = Role
 const ROLES: StoreRole[] = ['owner', 'manager', 'instructor', 'staff']
 
 type Result<T = undefined> = { data?: T; error?: string }
@@ -71,7 +73,7 @@ function fail(e: unknown): { error: string } {
 }
 
 function db() {
-  return createAdminClient() as any
+  return createAdminClient()
 }
 
 function revalidateBackoffice() {
@@ -89,7 +91,7 @@ async function profilesById(ids: string[]) {
 /** All auth users (paginated through the admin API). */
 async function listAllAuthUsers() {
   const admin = createAdminClient()
-  const users: any[] = []
+  const users: User[] = []
   for (let page = 1; page <= 50; page++) {
     const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 })
     if (error) throw error
@@ -120,17 +122,17 @@ export async function listStores(search?: string): Promise<Result<StoreSummary[]
     const profiles = await profilesById([...ownerIds])
 
     return {
-      data: (data || []).map((o: any) => ({
+      data: (data || []).map((o) => ({
         id: o.id,
         name: o.name,
         is_active: o.is_active,
         currency: o.currency,
         created_at: o.created_at,
-        branchCount: (o.branches || []).filter((b: any) => !b.deleted_at).length,
+        branchCount: (o.branches || []).filter((b) => !b.deleted_at).length,
         memberCount: (o.organization_users || []).length,
         owners: (o.organization_users || [])
-          .filter((m: any) => m.role === 'owner')
-          .map((m: any) => ({ user_id: m.user_id, ...(profiles.get(m.user_id) || { email: null, full_name: null }) })),
+          .filter((m) => m.role === 'owner')
+          .map((m) => ({ user_id: m.user_id, ...(profiles.get(m.user_id) || { email: null, full_name: null }) })),
       })),
     }
   } catch (e) {
@@ -164,13 +166,14 @@ export async function getStore(id: string): Promise<Result<StoreDetail>> {
     if (bErr) throw bErr
     if (mErr) throw mErr
 
-    const profiles = await profilesById((members || []).map((m: any) => m.user_id))
+    const profiles = await profilesById((members || []).map((m) => m.user_id))
     return {
       data: {
         ...org,
         branches: branches || [],
-        members: (members || []).map((m: any) => ({
+        members: (members || []).map((m) => ({
           ...m,
+          role: toRole(m.role),
           ...(profiles.get(m.user_id) || { email: null, full_name: null }),
         })),
       },
@@ -402,7 +405,7 @@ export async function listAccounts(search?: string): Promise<Result<Account[]>> 
       db().from('organization_users').select('id, user_id, role, organization_id, organizations(name)'),
       db().from('platform_admins').select('user_id'),
     ])
-    const adminSet = new Set((admins || []).map((a: any) => a.user_id))
+    const adminSet = new Set((admins || []).map((a) => a.user_id))
 
     let accounts: Account[] = users.map((u) => ({
       id: u.id,
@@ -413,12 +416,12 @@ export async function listAccounts(search?: string): Promise<Result<Account[]>> 
       banned: !!u.banned_until && new Date(u.banned_until) > new Date(),
       is_platform_admin: adminSet.has(u.id),
       memberships: (memberships || [])
-        .filter((m: any) => m.user_id === u.id)
-        .map((m: any) => ({
+        .filter((m) => m.user_id === u.id)
+        .map((m) => ({
           id: m.id,
           organization_id: m.organization_id,
           organization_name: m.organizations?.name ?? '—',
-          role: m.role,
+          role: toRole(m.role),
         })),
     }))
 
@@ -451,6 +454,7 @@ export async function createAccount(input: {
       password: input.password,
       email_confirm: true,
       user_metadata: { full_name: input.fullName?.trim() || null },
+      app_metadata: { [MUST_CHANGE_PASSWORD]: true },
     })
     if (error) throw error
 
@@ -483,9 +487,13 @@ export async function updateAccountProfile(userId: string, input: { fullName: st
 
 export async function setAccountPassword(userId: string, password: string): Promise<Result> {
   try {
-    await requirePlatformAdmin()
+    const me = await requirePlatformAdmin()
     if (!password || password.length < 8) return { error: 'Password must be at least 8 characters' }
-    const { error } = await createAdminClient().auth.admin.updateUserById(userId, { password })
+    const { error } = await createAdminClient().auth.admin.updateUserById(userId, {
+      password,
+      // Someone else chose it: the user must replace it at next sign-in
+      ...(me.id !== userId && { app_metadata: { [MUST_CHANGE_PASSWORD]: true } }),
+    })
     if (error) throw error
     return {}
   } catch (e) {

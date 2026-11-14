@@ -16,7 +16,7 @@ export async function getInstructorCourses(instructorId: string) {
 
     // Verify instructor belongs to organization
     const { data: instructor, error: instructorError } = await (adminSupabase
-      .from('instructors') as any)
+      .from('instructors'))
       .select('organization_id')
       .eq('id', instructorId)
       .single()
@@ -27,7 +27,7 @@ export async function getInstructorCourses(instructorId: string) {
 
     // Get courses assigned to this instructor
     const { data, error } = await (adminSupabase
-      .from('course_instructors') as any)
+      .from('course_instructors'))
       .select(`
         course_id,
         courses(
@@ -48,8 +48,8 @@ export async function getInstructorCourses(instructorId: string) {
     }
 
     const courses = (data || [])
-      .filter((ci: any) => ci.courses)
-      .map((ci: any) => ci.courses)
+      .filter((ci) => ci.courses)
+      .map((ci) => ci.courses)
 
     return { data: courses }
   } catch (error) {
@@ -70,7 +70,7 @@ export async function getInstructorMonthlyStats(instructorId: string) {
 
     // Verify instructor belongs to organization
     const { data: instructor, error: instructorError } = await (adminSupabase
-      .from('instructors') as any)
+      .from('instructors'))
       .select('organization_id')
       .eq('id', instructorId)
       .single()
@@ -86,7 +86,7 @@ export async function getInstructorMonthlyStats(instructorId: string) {
 
     // Get earnings for this month
     const { data: earningsData, error: earningsError } = await (adminSupabase
-      .from('instructor_earnings') as any)
+      .from('instructor_earnings'))
       .select('amount, created_at')
       .eq('instructor_id', instructorId)
       .gte('created_at', startOfMonth)
@@ -97,12 +97,12 @@ export async function getInstructorMonthlyStats(instructorId: string) {
       return { error: 'Failed to fetch earnings' }
     }
 
-    const totalEarnings = ((earningsData || []) as any[]).reduce((sum, e) => sum + Number(e.amount), 0)
+    const totalEarnings = ((earningsData || [])).reduce((sum, e) => sum + Number(e.amount), 0)
     const earningCount = earningsData?.length || 0
 
     // Get sessions for this month where instructor is assigned
     const { data: instructorSessions, error: sessionsError } = await (adminSupabase
-      .from('session_instructors') as any)
+      .from('session_instructors'))
       .select('session_id, course_sessions(id, session_date)')
       .eq('instructor_id', instructorId)
 
@@ -111,21 +111,28 @@ export async function getInstructorMonthlyStats(instructorId: string) {
       return { error: 'Failed to fetch sessions' }
     }
 
-    const monthSessions = (instructorSessions || []).filter((si: any) => {
+    const monthSessions = (instructorSessions || []).filter((si) => {
       const sessionDate = si.course_sessions?.session_date
       return sessionDate && sessionDate >= startOfMonth && sessionDate <= endOfMonth
     })
 
     const sessionCount = monthSessions.length
-    const sessionIds = monthSessions.map((si: any) => si.session_id)
+    const sessionIds = monthSessions.map((si) => si.session_id)
 
     // Get attendance details for those sessions
-    let attendanceDetails: any[] = []
+    let attendanceDetails: {
+      id: string
+      student_id: string
+      is_present: boolean
+      notes: string | null
+      created_at: string
+      students: { first_name: string; last_name: string } | null
+    }[] = []
     let attendanceCount = 0
 
     if (sessionIds.length > 0) {
       const { data: attendanceData, error: attendanceError } = await (adminSupabase
-        .from('attendances') as any)
+        .from('attendances'))
         .select('id, student_id, is_present, notes, created_at, students(first_name, last_name)')
         .in('session_id', sessionIds)
         .gte('created_at', startOfMonth)
@@ -169,7 +176,7 @@ export async function getInstructorTotalEarnings(instructorId: string) {
 
     // Verify instructor belongs to organization
     const { data: instructor, error: instructorError } = await (adminSupabase
-      .from('instructors') as any)
+      .from('instructors'))
       .select('organization_id')
       .eq('id', instructorId)
       .single()
@@ -180,7 +187,7 @@ export async function getInstructorTotalEarnings(instructorId: string) {
 
     // Get all earnings for this instructor
     const { data: earningsData, error: earningsError } = await (adminSupabase
-      .from('instructor_earnings') as any)
+      .from('instructor_earnings'))
       .select('amount')
       .eq('instructor_id', instructorId)
 
@@ -189,7 +196,7 @@ export async function getInstructorTotalEarnings(instructorId: string) {
       return { error: 'Failed to fetch earnings' }
     }
 
-    const totalEarnings = ((earningsData || []) as any[]).reduce((sum, e) => sum + Number(e.amount), 0)
+    const totalEarnings = ((earningsData || [])).reduce((sum, e) => sum + Number(e.amount), 0)
 
     return {
       data: {
@@ -203,7 +210,29 @@ export async function getInstructorTotalEarnings(instructorId: string) {
   }
 }
 
-export async function getInstructorAttendanceHistory(instructorId: string) {
+type HistoryCourse = { id: string; name: string; dance_types: { name: string } | null }
+export type InstructorSessionAttendance = {
+  id: string
+  session_id: string
+  student_id: string
+  is_present: boolean
+  notes: string | null
+  created_at: string
+  students: { id: string; first_name: string; last_name: string } | null
+}
+export type InstructorSessionHistory = {
+  sessionId: string
+  session_date: string
+  course_name?: string
+  dance_type?: string
+  course_id: string
+  instructors: { id: string; name: string }[]
+  attendance: InstructorSessionAttendance[]
+}
+
+export async function getInstructorAttendanceHistory(
+  instructorId: string
+): Promise<{ data?: InstructorSessionHistory[]; error?: string }> {
   const user = await getCurrentUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -215,7 +244,7 @@ export async function getInstructorAttendanceHistory(instructorId: string) {
 
     // Verify instructor belongs to organization
     const { data: instructor, error: instructorError } = await (adminSupabase
-      .from('instructors') as any)
+      .from('instructors'))
       .select('organization_id')
       .eq('id', instructorId)
       .single()
@@ -226,7 +255,7 @@ export async function getInstructorAttendanceHistory(instructorId: string) {
 
     // Get all session IDs where instructor is assigned
     const { data: sessionInstructorLinks, error: linksError } = await (adminSupabase
-      .from('session_instructors') as any)
+      .from('session_instructors'))
       .select('session_id')
       .eq('instructor_id', instructorId)
 
@@ -236,7 +265,7 @@ export async function getInstructorAttendanceHistory(instructorId: string) {
     }
 
     const sessionIds = (sessionInstructorLinks || [])
-      .map((si: any) => si.session_id)
+      .map((si) => si.session_id)
       .filter((id: string) => id)
 
     if (sessionIds.length === 0) {
@@ -245,7 +274,7 @@ export async function getInstructorAttendanceHistory(instructorId: string) {
 
     // Get session details
     const { data: sessionDetails, error: sessionDetailsError } = await (adminSupabase
-      .from('course_sessions') as any)
+      .from('course_sessions'))
       .select('id, session_date, course_id')
       .in('id', sessionIds)
 
@@ -256,8 +285,8 @@ export async function getInstructorAttendanceHistory(instructorId: string) {
 
     // Get unique course IDs
     const courseIds = (sessionDetails || [])
-      .filter((s: any) => s.course_id)
-      .map((s: any) => s.course_id)
+      .filter((s) => s.course_id)
+      .map((s) => s.course_id)
       .filter((id: string, idx: number, arr: string[]) => arr.indexOf(id) === idx)
 
     if (sessionIds.length === 0) {
@@ -265,10 +294,10 @@ export async function getInstructorAttendanceHistory(instructorId: string) {
     }
 
     // Get course details
-    const coursesMap = new Map()
+    const coursesMap = new Map<string, HistoryCourse>()
     if (courseIds.length > 0) {
       const { data: courses, error: coursesError } = await (adminSupabase
-        .from('courses') as any)
+        .from('courses'))
         .select(`
           id,
           name,
@@ -277,7 +306,7 @@ export async function getInstructorAttendanceHistory(instructorId: string) {
         .in('id', courseIds)
 
       if (!coursesError && courses) {
-        courses.forEach((course: any) => {
+        courses.forEach((course) => {
           coursesMap.set(course.id, course)
         })
       }
@@ -285,7 +314,7 @@ export async function getInstructorAttendanceHistory(instructorId: string) {
 
     // Get attendance details for all sessions
     const { data: attendanceData, error: attendanceError } = await (adminSupabase
-      .from('attendances') as any)
+      .from('attendances'))
       .select(`
         id,
         session_id,
@@ -304,7 +333,7 @@ export async function getInstructorAttendanceHistory(instructorId: string) {
 
     // Get other instructors for each session
     const { data: allSessionInstructors, error: instructorsError } = await (adminSupabase
-      .from('session_instructors') as any)
+      .from('session_instructors'))
       .select(`
         session_id,
         instructor_id,
@@ -318,9 +347,9 @@ export async function getInstructorAttendanceHistory(instructorId: string) {
     }
 
     // Combine data by session
-    const sessionsMap = new Map()
+    const sessionsMap = new Map<string, InstructorSessionHistory>()
     
-    sessionDetails.forEach((session: any) => {
+    sessionDetails.forEach((session) => {
       const sessionId = session.id
       const course = coursesMap.get(session.course_id)
       
@@ -338,7 +367,7 @@ export async function getInstructorAttendanceHistory(instructorId: string) {
     })
 
     // Add instructors to sessions
-    allSessionInstructors?.forEach((si: any) => {
+    allSessionInstructors?.forEach((si) => {
       const session = sessionsMap.get(si.session_id)
       if (session && si.instructors) {
         session.instructors.push({
@@ -349,7 +378,7 @@ export async function getInstructorAttendanceHistory(instructorId: string) {
     })
 
     // Add attendance to sessions
-    attendanceData?.forEach((att: any) => {
+    attendanceData?.forEach((att) => {
       const session = sessionsMap.get(att.session_id)
       if (session) {
         session.attendance.push(att)

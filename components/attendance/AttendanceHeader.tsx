@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { AttendanceDateSelector } from './AttendanceDateSelector'
 import { AttendanceStats } from './AttendanceStats'
 import { useTranslations } from 'next-intl'
@@ -9,7 +9,7 @@ interface AttendanceHeaderProps {
   courseName: string
   selectedDate: string
   onDateChange: (date: string) => void
-  attendanceHistory?: any[]
+  attendanceHistory?: React.ComponentProps<typeof AttendanceDateSelector>['attendanceHistory']
   totalEnrolled?: number
   presentCount?: number
   absentCount?: number

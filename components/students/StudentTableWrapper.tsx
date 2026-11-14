@@ -1,9 +1,9 @@
 'use client'
 
+import { useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/table/data-table'
-import { FilterConfig } from '@/components/table/data-table-filters'
+import { FilterConfig, type FilterValue } from '@/components/table/data-table-filters'
 import { getStudentColumns, Student } from '@/app/[locale]/dashboard/students/columns'
 import { useTranslations } from 'next-intl'
 import { deleteStudent } from '@/lib/actions/students.actions'
@@ -43,7 +43,7 @@ export function StudentTableWrapper({
   const t = useTranslations()
   const router = useRouter()
   const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
-  const [filterValues, setFilterValues] = useState<Record<string, any>>({
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({
     danceType: danceTypeId || '',
     branch: branchId || '',
     course: courseId || '',
@@ -69,8 +69,8 @@ export function StudentTableWrapper({
         throw new Error(result.error)
       }
 
-      // Reload page to reflect deletion
-      window.location.reload()
+      setDeleteModalOpen(false)
+      router.refresh()
     } catch (err) {
       throw err
     } finally {
@@ -100,8 +100,8 @@ export function StudentTableWrapper({
   }
 
   // Handle filter change - update URL param
-  const handleFilterChange = (filterId: string, value: any) => {
-    const newFilterValues = { ...filterValues, [filterId]: value }
+  const handleFilterChange = (filterId: string, value: FilterValue) => {
+    const newFilterValues = { ...filterValues, [filterId]: typeof value === 'string' ? value : '' }
     setFilterValues(newFilterValues)
     
     const params = new URLSearchParams()
@@ -159,7 +159,7 @@ export function StudentTableWrapper({
 
   return (
     <>
-      <DataTable<Student, any>
+      <DataTable<Student, unknown>
         columns={columns}
         data={students}
         filters={filters}

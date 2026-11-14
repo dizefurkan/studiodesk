@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from '@/i18n/navigation'
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,11 +10,10 @@ import {
   recordBatchAttendance,
   removeAttendance,
 } from "@/lib/actions/attendance.actions";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { InstructorSelector } from "./InstructorSelector";
 import { InstructorDropdown } from "./InstructorDropdown";
-import { StudioDropdown } from "./StudioDropdown";
+import { StudioDropdown, type Studio } from "./StudioDropdown";
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -48,12 +48,6 @@ interface AttendanceHistoryRecord {
   id: string;
   session_date: string;
   attendance_count: number;
-}
-
-interface Studio {
-  id: string;
-  name: string;
-  capacity?: number;
 }
 
 interface StudentAttendanceListProps {
@@ -476,7 +470,7 @@ export function StudentAttendanceList({
         } else {
           // Fallback to page reload if sessionId not returned
           setTimeout(() => {
-            window.location.reload();
+            router.refresh();
           }, 1500);
         }
       }

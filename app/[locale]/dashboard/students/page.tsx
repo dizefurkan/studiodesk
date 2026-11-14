@@ -1,9 +1,9 @@
+import { Link } from '@/i18n/navigation'
 import { getStudentsWithStats, getStudentFilterOptions } from '@/lib/actions/students.actions'
 import { getTranslations } from 'next-intl/server'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StudentTableWrapper } from '@/components/students/StudentTableWrapper'
-import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -50,9 +50,9 @@ export default async function StudentsPage({
   const totalPages = result.totalPages || 1
 
   const filterOptions = await getStudentFilterOptions()
-  const danceTypes = (filterOptions as any).danceTypes || []
-  const branches = (filterOptions as any).branches || []
-  const courses = (filterOptions as any).courses || []
+  const danceTypes = filterOptions.danceTypes || []
+  const branches = filterOptions.branches || []
+  const courses = filterOptions.courses || []
 
   // Check if any filters are active
   const hasActiveFilters = searchQuery || hasCredits || danceTypeId || courseId || branchId

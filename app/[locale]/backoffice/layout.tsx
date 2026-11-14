@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { getTranslations } from 'next-intl/server'
 import { LayoutDashboard, LogOut } from 'lucide-react'
 import { requirePlatformAdminPage } from '@/lib/auth/platformAdmin'
@@ -15,8 +15,7 @@ export default async function BackofficeLayout({ children }: { children: React.R
   const user = await requirePlatformAdminPage()
   const t = await getTranslations('backoffice')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- hand-written DB types lack is_active / nested selects
-  const { count } = await (createAdminClient() as any)
+  const { count } = await (createAdminClient())
     .from('organization_users')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', user.id)

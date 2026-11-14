@@ -1,9 +1,9 @@
 'use client'
 
+import { useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/table/data-table'
-import { FilterConfig } from '@/components/table/data-table-filters'
+import { FilterConfig, type FilterValues } from '@/components/table/data-table-filters'
 import { getCourseColumns, Course } from './columns'
 import { useTranslations } from 'next-intl'
 import { deleteCourse } from '@/lib/actions/courses.actions'
@@ -31,7 +31,7 @@ export function CoursesPageClient({
   const t = useTranslations()
   const router = useRouter()
   const [searchValue, setSearchValue] = useState<string>(searchQuery || '')
-  const [filterValues, setFilterValues] = useState<Record<string, any>>({
+  const [filterValues, setFilterValues] = useState<FilterValues>({
     branch: '',
     danceType: '',
   })
@@ -71,7 +71,8 @@ export function CoursesPageClient({
       }
 
       // Reload page to reflect deletion
-      window.location.reload()
+      setDeleteModalOpen(false)
+      router.refresh()
     } catch (err) {
       throw err
     } finally {
@@ -102,7 +103,7 @@ export function CoursesPageClient({
 
   return (
     <>
-      <DataTable<Course, any>
+      <DataTable<Course, unknown>
         columns={columns}
         data={courses}
         filters={filters}

@@ -1,8 +1,8 @@
+import { Link } from '@/i18n/navigation'
 import { getCourse, getCourseSessions } from '@/lib/actions/courses.actions'
 import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 import { Calendar, Clock, BookOpen } from 'lucide-react'
 import { formatTime } from '@/lib/utils/formatTime'
 
@@ -16,7 +16,7 @@ interface SessionsPageProps {
 
 export default async function SessionsPage({ params }: SessionsPageProps) {
   const { id } = await params
-  const courseResult = await getCourse(id) as any
+  const courseResult = await getCourse(id)
 
   if (courseResult.error || !courseResult.data) {
     notFound()

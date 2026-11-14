@@ -7,6 +7,8 @@ import { getOrganization } from '@/lib/auth/getOrganization'
 import { logOperation } from '@/lib/actions/history.actions'
 import { getChanges } from '@/lib/utils/history-utils'
 import type { Database } from '@/lib/types/database.types'
+import type { PostgrestError } from '@supabase/supabase-js'
+import type { TablesUpdate } from '@/lib/types/database.types'
 
 type DanceType = Database['public']['Tables']['dance_types']['Row']
 
@@ -55,7 +57,7 @@ export async function getDanceTypes(
     query = query.range(offset, offset + pageSize - 1)
 
     const result = await query.overrideTypes<DanceType[]>()
-    const { data, error } = result as { data: DanceType[] | null; error: any }
+    const { data, error } = result as { data: DanceType[] | null; error: PostgrestError | null }
 
     if (error) {
       console.error('Error fetching dance types:', error)
@@ -85,9 +87,9 @@ export async function getDanceType(id: string): Promise<{ data?: DanceType; erro
       .eq('id', id)
       .eq('organization_id', organization.id)
       .is('deleted_at', null)
-      .single() as any as any
+      .single()
 
-    const { data, error } = result as { data: DanceType | null; error: any }
+    const { data, error } = result as { data: DanceType | null; error: PostgrestError | null }
 
     if (error || !data) {
       console.error('Error fetching dance type:', error)
@@ -123,12 +125,12 @@ export async function createDanceType(
         organization_id: organization.id,
         name: input.name,
         description: input.description,
-      } as any)
+      })
       .select()
       .single()
-      .overrideTypes<DanceType>() as any
+      .overrideTypes<DanceType>()
 
-    const { data, error } = result as { data: DanceType | null; error: any }
+    const { data, error } = result as { data: DanceType | null; error: PostgrestError | null }
 
     if (error || !data) {
       console.error('Error creating dance type:', error)
@@ -175,29 +177,29 @@ export async function updateDanceType(
       .eq('id', id)
       .eq('organization_id', organization.id)
       .single()
-      .overrideTypes<DanceType>() as any
+      .overrideTypes<DanceType>()
 
-    const { data: beforeDanceType, error: beforeError } = beforeResult as { data: DanceType | null; error: any }
+    const { data: beforeDanceType, error: beforeError } = beforeResult as { data: DanceType | null; error: PostgrestError | null }
 
     if (!beforeDanceType) {
       return { error: 'Dance type not found or does not belong to your organization' }
     }
 
-    const updateData: any = {}
+    const updateData: TablesUpdate<'dance_types'> = {}
     if (input.name !== undefined) updateData.name = input.name
     if (input.description !== undefined) updateData.description = input.description
 
     console.log('[updateDanceType] Dance Type ID:', id)
     console.log('[updateDanceType] Update data:', updateData)
 
-    const updateResult = await (supabase.from('dance_types') as any)
+    const updateResult = await supabase.from('dance_types')
       .update(updateData)
       .eq('id', id)
       .eq('organization_id', organization.id)
       .select()
-      .single() as any
+      .single()
 
-    const { data, error } = updateResult as { data: DanceType | null; error: any }
+    const { data, error } = updateResult as { data: DanceType | null; error: PostgrestError | null }
 
     console.log('[updateDanceType] Error:', error)
     console.log('[updateDanceType] Data:', data)
@@ -247,23 +249,23 @@ export async function deleteDanceType(id: string, reason?: string): Promise<{ su
       .eq('id', id)
       .eq('organization_id', organization.id)
       .is('deleted_at', null)
-      .single() as any as any
+      .single()
 
-    const { data: beforeDanceType, error: beforeError } = beforeResult as { data: DanceType | null; error: any }
+    const { data: beforeDanceType, error: beforeError } = beforeResult as { data: DanceType | null; error: PostgrestError | null }
 
     if (!beforeDanceType) {
       return { error: 'Dance type not found or does not belong to your organization' }
     }
 
     const user_id = user.id
-    const updateResult = await (supabase.from('dance_types') as any)
+    const updateResult = await supabase.from('dance_types')
       .update({
         deleted_at: new Date().toISOString(),
         deleted_by: user_id,
         deleted_reason: reason || null,
       })
       .eq('id', id)
-      .eq('organization_id', organization.id) as any
+      .eq('organization_id', organization.id)
     const { error } = updateResult
 
     if (error) {

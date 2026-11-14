@@ -1,5 +1,4 @@
 'use client'
-/* eslint-disable @typescript-eslint/no-explicit-any -- filter values are heterogeneous */
 
 import React, { useState } from 'react'
 import { useTranslations } from 'next-intl'
@@ -30,19 +29,24 @@ import { format } from 'date-fns'
 
 export type FilterType = 'select' | 'dateRange' | 'checkbox' | 'number'
 
+export type DateRange = { from?: Date; to?: Date }
+/** select → string, number → number | '', dateRange → DateRange */
+export type FilterValue = string | number | DateRange | undefined
+export type FilterValues = Record<string, FilterValue>
+
 export interface FilterConfig {
   id: string
   label: string
   type: FilterType
   options?: Array<{ label: string; value: string }>
   placeholder?: string
-  defaultValue?: any
+  defaultValue?: FilterValue
 }
 
 interface DataTableFiltersProps {
   filters: FilterConfig[]
-  values: Record<string, any>
-  onFilterChange: (filterId: string, value: any) => void
+  values: FilterValues
+  onFilterChange: (filterId: string, value: FilterValue) => void
   onClearAll: () => void
 }
 
@@ -181,12 +185,14 @@ export function DataTableFilters({
 // Individual Filter Field Component
 interface FilterFieldProps {
   filter: FilterConfig
-  value: any
-  onChange: (value: any) => void
+  value: FilterValue
+  onChange: (value: FilterValue) => void
 }
 
 function FilterField({ filter, value, onChange }: FilterFieldProps) {
   const t = useTranslations()
+  const text = typeof value === 'string' || typeof value === 'number' ? value : ''
+  const range: DateRange = value && typeof value === 'object' ? value : {}
 
   switch (filter.type) {
     case 'select':
@@ -194,7 +200,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
         <div className="space-y-2.5">
           <Label className="text-sm font-semibold text-foreground/80">{filter.label}</Label>
           <div className="relative">
-            <Select value={value || ''} onValueChange={(val) => onChange(val || undefined)}>
+            <Select value={String(text)} onValueChange={(val) => onChange(val || undefined)}>
               <SelectTrigger className={`h-9 w-full bg-background ${value ? 'pr-8' : ''}`}>
                 <SelectValue placeholder={filter.placeholder || t('common.selectOption')} />
               </SelectTrigger>
@@ -227,7 +233,7 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
           <Input
             type="number"
             placeholder={filter.placeholder || t('common.selectOption')}
-            value={value || ''}
+            value={text}
             onChange={(e) => onChange(e.target.value ? Number(e.target.value) : '')}
             className="h-9 w-full bg-background"
           />
@@ -241,10 +247,10 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
           <div className="space-y-2.5">
             <Input
               type="date"
-              value={value?.from ? format(value.from, 'yyyy-MM-dd') : ''}
+              value={range.from ? format(range.from, 'yyyy-MM-dd') : ''}
               onChange={(e) =>
                 onChange({
-                  ...value,
+                  ...range,
                   from: e.target.value
                     ? new Date(e.target.value)
                     : undefined,
@@ -255,10 +261,10 @@ function FilterField({ filter, value, onChange }: FilterFieldProps) {
             />
             <Input
               type="date"
-              value={value?.to ? format(value.to, 'yyyy-MM-dd') : ''}
+              value={range.to ? format(range.to, 'yyyy-MM-dd') : ''}
               onChange={(e) =>
                 onChange({
-                  ...value,
+                  ...range,
                   to: e.target.value
                     ? new Date(e.target.value)
                     : undefined,

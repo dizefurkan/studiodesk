@@ -2,12 +2,12 @@
 
 import { useState } from 'react'
 import { HistoryComponent } from './HistoryComponent'
-import { getEntityHistory } from '@/lib/actions/history.actions'
+import { getEntityHistory, type HistoryLog } from '@/lib/actions/history.actions'
 
 interface ActivityTimelineWrapperProps {
   entity: string
   entityId: string
-  initialLogs: any[]
+  initialLogs: HistoryLog[]
   title?: string
   description?: string
   maxItems?: number

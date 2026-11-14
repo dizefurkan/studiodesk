@@ -1,10 +1,10 @@
+import { Link } from '@/i18n/navigation'
 import { getTransactions, getDailyReport, getInstructorEarningsByBranch } from '@/lib/actions/cash-register.actions'
 import { getBranches } from '@/lib/actions/branches.actions'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils/format'
-import Link from 'next/link'
 import { Plus, DollarSign, TrendingUp, TrendingDown, Users } from 'lucide-react'
 import { CashRegisterTable } from './cash-register-client'
 import type { CombinedCashItem } from './columns'
@@ -46,11 +46,11 @@ export default async function CashRegisterPage({
 
     // Merge transactions and earnings into a single sorted list
     const combinedItems: CombinedCashItem[] = [
-      ...transactions.map((t: any) => ({
+      ...transactions.map((t) => ({
         ...t,
         type: t.type as 'income' | 'expense',
       })),
-      ...earnings.map((e: any) => ({
+      ...earnings.map((e) => ({
         id: e.id,
         type: 'earning' as const,
         amount: e.amount,
@@ -63,12 +63,12 @@ export default async function CashRegisterPage({
 
     // Calculate summary including earnings
     const income = transactions
-      .filter((t: any) => t.type === 'income')
-      .reduce((sum: number, t: any) => sum + Number(t.amount), 0)
+      .filter((t) => t.type === 'income')
+      .reduce((sum: number, t) => sum + Number(t.amount), 0)
     const expenses = transactions
-      .filter((t: any) => t.type === 'expense')
-      .reduce((sum: number, t: any) => sum + Number(t.amount), 0)
-    const totalEarnings = earnings.reduce((sum: number, e: any) => sum + Number(e.amount), 0)
+      .filter((t) => t.type === 'expense')
+      .reduce((sum: number, t) => sum + Number(t.amount), 0)
+    const totalEarnings = earnings.reduce((sum: number, e) => sum + Number(e.amount), 0)
     const netBalance = income - expenses - totalEarnings
 
     return (

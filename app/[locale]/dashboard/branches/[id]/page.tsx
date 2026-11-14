@@ -1,8 +1,8 @@
+import { Link } from '@/i18n/navigation'
 import { getBranch } from '@/lib/actions/branches.actions'
 import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 import { MapPin, Phone, Edit2, Music } from 'lucide-react'
 
 interface BranchDetailPageProps {

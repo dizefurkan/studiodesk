@@ -18,18 +18,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
-
-interface HistoryLog {
-  id: string;
-  action: string;
-  entity: string;
-  entity_id: string;
-  data?: Record<string, any>;
-  created_at: string;
-  profiles?: {
-    full_name: string | null;
-  } | null;
-}
+import type { HistoryLog } from "@/lib/actions/history.actions";
 
 interface HistoryComponentProps {
   logs: HistoryLog[];
@@ -155,11 +144,11 @@ function HistoryItem({ log }: { log: HistoryLog }) {
     log.profiles?.full_name ||
     (log.data?.user_name as string) ||
     "Unknown User";
-  const actionIcon = getHistoryActionIcon(log.action as any);
-  const entityColor = getHistoryEntityColor(log.entity as any);
+  const actionIcon = getHistoryActionIcon(log.action);
+  const entityColor = getHistoryEntityColor(log.entity);
   const message = formatHistoryMessage(
-    log.action as any,
-    log.entity as any,
+    log.action,
+    log.entity,
     log.data,
     userName
   );

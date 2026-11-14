@@ -1,7 +1,5 @@
 'use server'
 
-import type { SupabaseClient, PostgrestSingleResponse } from '@supabase/supabase-js'
-import type { Database } from '@/lib/types/database.types'
 
 /**
  * IMPORTANT: Supabase TypeScript typing works best with LITERAL table names.

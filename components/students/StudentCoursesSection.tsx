@@ -1,11 +1,11 @@
 'use client'
 
+import { Link } from '@/i18n/navigation'
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { BookOpen, Calendar, Users, ArrowRight } from 'lucide-react'
+import { BookOpen, Calendar, ArrowRight } from 'lucide-react'
 import { getStudentEnrolledCourses } from '@/lib/actions/course-students.actions'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 

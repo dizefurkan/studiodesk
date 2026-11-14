@@ -1,7 +1,6 @@
 'use client'
 
 import { ColumnDef } from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
 import { EarningsEditButton } from '@/components/instructor-earnings/EarningsEditButton'
 import { ColumnHeader } from '@/components/table/column-header'
 

@@ -7,6 +7,7 @@ import { getOrganization } from "@/lib/auth/getOrganization";
 import { logOperation } from "@/lib/actions/history.actions";
 import { getChanges } from "@/lib/utils/history-utils";
 import type { Database } from "@/lib/types/database.types";
+import { sanitizeSearch } from '@/lib/utils/search'
 
 type Student = Database["public"]["Tables"]["students"]["Row"];
 type StudentInsert = Database["public"]["Tables"]["students"]["Insert"];
@@ -22,7 +23,7 @@ export async function getStudents(searchQuery?: string) {
   try {
     const admin = createAdminClient();
 
-    let query = (admin as any)
+    let query = admin
       .from("students")
       .select("*")
       .eq("organization_id", organization.id)
@@ -30,7 +31,7 @@ export async function getStudents(searchQuery?: string) {
 
     if (searchQuery) {
       query = query.or(
-        `first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`
+        `first_name.ilike.%${sanitizeSearch(searchQuery)}%,last_name.ilike.%${sanitizeSearch(searchQuery)}%,email.ilike.%${sanitizeSearch(searchQuery)}%`
       );
     }
 
@@ -93,7 +94,7 @@ export async function getStudentsWithStats(
           .eq("dance_type_id", danceTypeId)
           .eq("organization_id", organization.id);
 
-        packageIds = (packagesData as any[])?.map((p: any) => p.id) || [];
+        packageIds = packagesData?.map((p) => p.id) || [];
 
         if (packageIds.length === 0) {
           return {
@@ -107,7 +108,7 @@ export async function getStudentsWithStats(
       }
 
       // Step 2: Get student IDs from student_packages
-      let filterQuery: any = adminSupabase
+      let filterQuery = adminSupabase
         .from("student_packages")
         .select("student_id");
 
@@ -119,17 +120,17 @@ export async function getStudentsWithStats(
         filterQuery = filterQuery.gt("remaining_credits", 0);
       }
 
-      let packageData: any[] = [];
+      let packageData: { student_id: string }[] = [];
       try {
-        const response: any = await filterQuery;
-        packageData = response?.data || [];
+        const response = await filterQuery;
+        packageData = response.data || [];
       } catch (e) {
         console.error("Error fetching filtered packages:", e);
       }
 
-      (packageData as any[]).forEach((p: any) => {
+      packageData.forEach((p) => {
         if (p?.student_id) {
-          filteredStudentIds.add(p.student_id as string);
+          filteredStudentIds.add(p.student_id);
         }
       });
 
@@ -159,7 +160,7 @@ export async function getStudentsWithStats(
         .select("id")
         .eq("branch_id", branchId);
 
-      const courseIds = ((courseData as any) || []).map((c: any) => c.id);
+      const courseIds = (courseData || []).map((c) => c.id);
       console.log("[DEBUG] Found courses for branch:", courseIds);
 
       if (courseIds.length > 0) {
@@ -170,8 +171,8 @@ export async function getStudentsWithStats(
           .in("course_id", courseIds);
 
         const branchStudentIds = new Set<string>(
-          ((enrollmentData as any) || []).map(
-            (e: any) => e.student_id as string
+          (enrollmentData || []).map(
+            (e) => e.student_id as string
           )
         );
         console.log(
@@ -206,7 +207,7 @@ export async function getStudentsWithStats(
         .eq("course_id", courseId);
 
       const courseStudentIds = new Set<string>(
-        ((enrollmentData as any) || []).map((e: any) => e.student_id as string)
+        (enrollmentData || []).map((e) => e.student_id as string)
       );
 
       if (filteredStudentIds.size === 0) {
@@ -257,7 +258,7 @@ export async function getStudentsWithStats(
 
     // Apply search filter to both queries
     if (searchQuery) {
-      const searchFilter = `first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`;
+      const searchFilter = `first_name.ilike.%${sanitizeSearch(searchQuery)}%,last_name.ilike.%${sanitizeSearch(searchQuery)}%,email.ilike.%${sanitizeSearch(searchQuery)}%`;
       countQuery = countQuery.or(searchFilter);
       dataQuery = dataQuery.or(searchFilter);
     }
@@ -292,8 +293,9 @@ export async function getStudentsWithStats(
     }
 
     // Fetch student_packages
-    const studentIds = data?.map((s: any) => s.id) || [];
-    let studentPackages: any[] = [];
+    const studentIds = data?.map((s) => s.id) || [];
+    type StudentPackageRow = { id: string; remaining_credits: number; package_id: string; student_id: string };
+    let studentPackages: StudentPackageRow[] = [];
     if (studentIds.length > 0) {
       const { data: packagesData } = await adminSupabase
         .from("student_packages")
@@ -303,17 +305,12 @@ export async function getStudentsWithStats(
     }
 
     // Merge student_packages
-    const studentPackagesByStudentId = new Map<string, any[]>();
+    const studentPackagesByStudentId = new Map<string, StudentPackageRow[]>();
     studentPackages.forEach((sp) => {
       if (!studentPackagesByStudentId.has(sp.student_id)) {
         studentPackagesByStudentId.set(sp.student_id, []);
       }
       studentPackagesByStudentId.get(sp.student_id)!.push(sp);
-    });
-
-    data?.forEach((student: any) => {
-      student.student_packages =
-        studentPackagesByStudentId.get(student.id) || [];
     });
 
     // Fetch packages and dance types mapping
@@ -323,35 +320,31 @@ export async function getStudentsWithStats(
       .filter(Boolean);
 
     if (packageIds.length > 0) {
-      const { data: packagesData } = await (
-        adminSupabase.from("packages") as any
-      )
+      const { data: packagesData } = await adminSupabase.from("packages")
         .select("id, dance_type_id")
         .in("id", packageIds);
 
       if (packagesData) {
-        const packages = packagesData as any;
+        const packages = packagesData;
         const danceTypeIds = [
           ...new Set(
-            packages.map((pkg: any) => pkg.dance_type_id).filter(Boolean)
+            packages.map((pkg) => pkg.dance_type_id).filter(Boolean)
           ),
         ];
 
         if (danceTypeIds.length > 0) {
-          const { data: danceTypesData } = await (
-            adminSupabase.from("dance_types") as any
-          )
+          const { data: danceTypesData } = await adminSupabase.from("dance_types")
             .select("id, name")
             .in("id", danceTypeIds);
 
           const danceTypeMap = new Map<string, string>();
           if (danceTypesData) {
-            (danceTypesData as any[]).forEach((dt: any) => {
+            danceTypesData.forEach((dt) => {
               danceTypeMap.set(dt.id, dt.name);
             });
           }
 
-          (packages as any[]).forEach((pkg: any) => {
+          packages.forEach((pkg) => {
             packageDanceTypeMap.set(pkg.id, {
               id: pkg.dance_type_id,
               name: danceTypeMap.get(pkg.dance_type_id) || "Unknown",
@@ -361,48 +354,44 @@ export async function getStudentsWithStats(
       }
     }
 
-    // Enrich student_packages
-    data?.forEach((student: any) => {
-      if (student.student_packages) {
-        student.student_packages = student.student_packages.map((sp: any) => ({
-          ...sp,
-          packages: {
-            id: sp.package_id,
-            dance_type_id: packageDanceTypeMap.get(sp.package_id)?.id,
-            dance_type_name: packageDanceTypeMap.get(sp.package_id)?.name,
-          },
-        }));
-      }
-    });
-
     // Add calculated stats
-    const studentsWithStats = (data || []).map((student: any) => {
-      const totalCredits = (student.student_packages || []).reduce(
-        (sum: number, sp: any) => sum + (sp.remaining_credits || 0),
+    const studentsWithStats = (data || []).map((student) => {
+      // student_packages enriched with their dance type
+      const student_packages = (studentPackagesByStudentId.get(student.id) || []).map((sp) => ({
+        ...sp,
+        packages: {
+          id: sp.package_id,
+          dance_type_id: packageDanceTypeMap.get(sp.package_id)?.id,
+          dance_type_name: packageDanceTypeMap.get(sp.package_id)?.name,
+        },
+      }));
+      const totalCredits = student_packages.reduce(
+        (sum: number, sp) => sum + (sp.remaining_credits || 0),
         0
       );
       const activeCourses = (student.course_students || [])
-        .map((cs: any) => cs.course)
+        .map((cs) => cs.course)
         .filter(Boolean);
       const branches = (student.course_students || [])
-        .map((cs: any) => cs.course?.branch_id)
+        .map((cs) => cs.course?.branch_id)
         .filter(Boolean);
       const courseNames = (student.course_students || [])
-        .map((cs: any) => cs.course?.name)
+        .map((cs) => cs.course?.name)
         .filter(Boolean);
       const courseIds = (student.course_students || [])
-        .map((cs: any) => cs.course?.id)
+        .map((cs) => cs.course?.id)
         .filter(Boolean);
 
       return {
         ...student,
+        student_packages,
         totalRemainingCredits: totalCredits,
         enrolledCoursesCount: activeCourses.length,
         enrolledCourseNames: courseNames,
         enrolledCourseIds: courseIds,
         enrolledCourses: activeCourses,
         branchIds: branches,
-        packageDetails: (student.student_packages || []).map((sp: any) => ({
+        packageDetails: student_packages.map((sp) => ({
           id: sp.package_id,
           name: sp.packages?.id || "Unknown Package",
           danceType: sp.packages?.dance_type_name || "Unknown",
@@ -439,64 +428,61 @@ export async function getStudentFilterOptions() {
     const adminSupabase = createAdminClient();
 
     // Get dance types list
-    const { data: danceTypesData } = await (
-      adminSupabase.from("dance_types") as any
-    )
+    const { data: danceTypesData } = await adminSupabase.from("dance_types")
       .select("id, name")
       .eq("organization_id", organization.id)
       .order("name");
 
-    const danceTypesList = danceTypesData as any;
+    const danceTypesList = danceTypesData;
 
     // Get student counts per dance type
-    const { data: studentsByDanceType } = await (
-      adminSupabase.from("student_packages") as any
-    ).select("packages(dance_type_id)", { count: "exact" });
+    const { data: studentsByDanceType } = await adminSupabase.from("student_packages").select("packages(dance_type_id), students!inner(organization_id)", { count: "exact" }).eq("students.organization_id", organization.id);
 
     // Count students per dance type
     const danceTypeCounts: Record<string, number> = {};
     if (studentsByDanceType) {
-      danceTypesList?.forEach((dt: any) => {
-        const count = (studentsByDanceType as any[]).filter(
-          (sp: any) => sp.packages?.dance_type_id === dt.id
+      danceTypesList?.forEach((dt) => {
+        const count = studentsByDanceType.filter(
+          (sp) => sp.packages?.dance_type_id === dt.id
         ).length;
         danceTypeCounts[dt.id] = count;
       });
     }
 
-    const danceTypes = ((danceTypesList || []) as any[]).map((dt: any) => ({
+    const danceTypes = ((danceTypesList || [])).map((dt) => ({
       ...dt,
       studentCount: danceTypeCounts[dt.id] || 0,
     }));
 
     // Get branches list
-    const { data: branchesData } = await (adminSupabase.from("branches") as any)
+    const { data: branchesData } = await adminSupabase.from("branches")
       .select("id, name")
       .eq("organization_id", organization.id)
       .order("name");
 
-    const branchesList = branchesData as any;
+    const branchesList = branchesData;
 
     // Get courses list via branches (courses table has no organization_id, only branch_id)
-    const { data: coursesData } = await (adminSupabase.from("courses") as any)
+    const { data: coursesData } = await adminSupabase.from("courses")
       .select("id, name, branch_id, dance_type_id")
-      .in("branch_id", (branchesList || [])?.map((b: any) => b.id) || [])
+      .in("branch_id", (branchesList || [])?.map((b) => b.id) || [])
       .order("name");
 
-    const coursesList = coursesData as any;
+    const coursesList = coursesData;
 
     // Get student counts per course
-    const { data: studentsByCoursData } = await (
-      adminSupabase.from("course_students") as any
-    ).select("student_id, course_id");
+    const { data: studentsByCoursData } = await adminSupabase
+      .from("course_students")
+      .select("student_id, course_id")
+      .in("course_id", (coursesList || []).map((c) => c.id));
 
-    const studentsByCourse = studentsByCoursData as any;
+    const studentsByCourse = studentsByCoursData;
 
     // Calculate branch student counts from coursesList and studentsByCourse
     const branchStudentSetsArray: Array<[string, Set<string>]> = [] as Array<
       [string, Set<string>]
     >;
-    (coursesList || []).forEach((course: any) => {
+    (coursesList || []).forEach((course) => {
       let branchSet = branchStudentSetsArray.find(
         ([id]) => id === course.branch_id
       );
@@ -505,11 +491,11 @@ export async function getStudentFilterOptions() {
         branchStudentSetsArray.push(branchSet);
       }
       const courseStudents = (studentsByCourse || [])
-        .filter((cs: any) => cs.course_id === course.id)
-        .map((cs: any) => cs.student_id)
+        .filter((cs) => cs.course_id === course.id)
+        .map((cs) => cs.student_id)
         .filter(Boolean);
 
-      courseStudents.forEach((studentId: any) => {
+      courseStudents.forEach((studentId) => {
         branchSet[1].add(studentId);
       });
     });
@@ -519,24 +505,24 @@ export async function getStudentFilterOptions() {
       branchCounts[branchId] = studentSet.size;
     });
 
-    const branches = ((branchesList || []) as any[]).map((branch: any) => ({
+    const branches = ((branchesList || [])).map((branch) => ({
       ...branch,
       studentCount: branchCounts[branch.id] || 0,
     }));
 
     // Calculate course student counts
     const courseCounts = {} as Record<string, number>;
-    (coursesList || []).forEach((course: any) => {
+    (coursesList || []).forEach((course) => {
       const uniqueStudents = new Set(
         (studentsByCourse || [])
-          .filter((cs: any) => cs.course_id === course.id)
-          .map((cs: any) => cs.student_id)
+          .filter((cs) => cs.course_id === course.id)
+          .map((cs) => cs.student_id)
           .filter(Boolean)
       );
       courseCounts[course.id] = uniqueStudents.size;
     });
 
-    const courses = ((coursesList || []) as any[]).map((course: any) => ({
+    const courses = ((coursesList || [])).map((course) => ({
       ...course,
       studentCount: courseCounts[course.id] || 0,
     }));
@@ -596,7 +582,7 @@ export async function getStudentsWithPackages(searchQuery?: string) {
 
     if (searchQuery) {
       query = query.or(
-        `first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`
+        `first_name.ilike.%${sanitizeSearch(searchQuery)}%,last_name.ilike.%${sanitizeSearch(searchQuery)}%,email.ilike.%${sanitizeSearch(searchQuery)}%`
       );
     }
 
@@ -607,7 +593,7 @@ export async function getStudentsWithPackages(searchQuery?: string) {
       return { error: "Failed to fetch students" };
     }
 
-    return { data: data as any[] };
+    return { data: data };
   } catch (error) {
     console.error("Unexpected error:", error);
     return { error: "An unexpected error occurred" };
@@ -623,7 +609,7 @@ export async function getStudent(id: string) {
 
   try {
     const admin = createAdminClient();
-    const { data, error } = await (admin as any)
+    const { data, error } = await admin
       .from("students")
       .select("*")
       .eq("id", id)
@@ -668,7 +654,7 @@ export async function createStudent(input: CreateStudentInput) {
         email: input.email,
         phone: input.phone || null,
         notes: input.notes || null,
-      } as any)
+      })
       .select()
       .single();
 
@@ -681,14 +667,14 @@ export async function createStudent(input: CreateStudentInput) {
     void logOperation(
       "CREATE",
       "student",
-      (data as any).id,
+      data.id,
       {
         after: {
-          firstName: (data as any).first_name,
-          lastName: (data as any).last_name,
-          email: (data as any).email,
-          phone: (data as any).phone,
-          notes: (data as any).notes,
+          firstName: data.first_name,
+          lastName: data.last_name,
+          email: data.email,
+          phone: data.phone,
+          notes: data.notes,
         },
       },
       organization.id
@@ -740,7 +726,7 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
     if (input.phone !== undefined) updateData.phone = input.phone;
     if (input.notes !== undefined) updateData.notes = input.notes;
 
-    const { data, error } = await (supabase.from("students") as any)
+    const { data, error } = await supabase.from("students")
       .update(updateData)
       .eq("id", id)
       .eq("organization_id", organization.id)
@@ -754,18 +740,18 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
 
     // Log operation with before/after and changes (non-blocking)
     const beforeObj = {
-      firstName: (beforeStudent as any).first_name,
-      lastName: (beforeStudent as any).last_name,
-      email: (beforeStudent as any).email,
-      phone: (beforeStudent as any).phone,
-      notes: (beforeStudent as any).notes,
+      firstName: beforeStudent.first_name,
+      lastName: beforeStudent.last_name,
+      email: beforeStudent.email,
+      phone: beforeStudent.phone,
+      notes: beforeStudent.notes,
     };
     const afterObj = {
-      firstName: (data as any).first_name,
-      lastName: (data as any).last_name,
-      email: (data as any).email,
-      phone: (data as any).phone,
-      notes: (data as any).notes,
+      firstName: data.first_name,
+      lastName: data.last_name,
+      email: data.email,
+      phone: data.phone,
+      notes: data.notes,
     };
     const changes = getChanges(beforeObj, afterObj);
 
@@ -813,14 +799,14 @@ export async function deleteStudent(id: string, reason?: string) {
     }
 
     const user_id = user.id;
-    const updateResult = (await (supabase.from("students") as any)
+    const updateResult = (await supabase.from("students")
       .update({
         deleted_at: new Date().toISOString(),
         deleted_by: user_id,
         deleted_reason: reason || null,
       })
       .eq("id", id)
-      .eq("organization_id", organization.id)) as any;
+      .eq("organization_id", organization.id));
     const { error } = updateResult;
 
     if (error) {
@@ -835,11 +821,11 @@ export async function deleteStudent(id: string, reason?: string) {
       id,
       {
         before: {
-          firstName: (beforeStudent as any).first_name,
-          lastName: (beforeStudent as any).last_name,
-          email: (beforeStudent as any).email,
-          phone: (beforeStudent as any).phone,
-          notes: (beforeStudent as any).notes,
+          firstName: beforeStudent.first_name,
+          lastName: beforeStudent.last_name,
+          email: beforeStudent.email,
+          phone: beforeStudent.phone,
+          notes: beforeStudent.notes,
         },
       },
       organization.id
@@ -860,12 +846,16 @@ export async function getStudentPackages(studentId: string) {
   const user = await getCurrentUser();
   if (!user) return { error: "Not authenticated" };
 
+  const organization = await getOrganization();
+  if (!organization) return { error: "No organization found" };
+
   try {
     const admin = createAdminClient();
-    const { data, error } = await (admin as any)
+    const { data, error } = await admin
       .from("student_packages")
-      .select("*, packages(name, total_credits, price, dance_types(name))")
+      .select("*, packages(name, total_credits, price, dance_types(name)), students!inner(organization_id)")
       .eq("student_id", studentId)
+      .eq("students.organization_id", organization.id)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -910,13 +900,11 @@ export async function purchasePackage(input: PurchasePackageInput) {
     }
 
     // Get package details
-    const { data: packageData, error: packageError } = (await (
-      supabase.from("packages") as any
-    )
+    const { data: packageData, error: packageError } = await supabase.from("packages")
       .select("*")
       .eq("id", input.packageId)
       .eq("organization_id", organization.id)
-      .single()) as { data: any; error: any };
+      .single();
 
     if (packageError || !packageData) {
       return { error: "Package not found" };
@@ -925,9 +913,7 @@ export async function purchasePackage(input: PurchasePackageInput) {
     const price = input.price || packageData.price;
 
     // Create student_packages record
-    const { data: studentPackage, error: spError } = await (
-      supabase.from("student_packages") as any
-    )
+    const { data: studentPackage, error: spError } = await supabase.from("student_packages")
       .insert({
         student_id: input.studentId,
         package_id: input.packageId,
@@ -951,14 +937,12 @@ export async function purchasePackage(input: PurchasePackageInput) {
 
     const branchId =
       branchesData && Array.isArray(branchesData) && branchesData.length > 0
-        ? (branchesData[0] as any).id
+        ? branchesData[0].id
         : null;
 
     // Create cash transaction if we have a branch
     if (branchId) {
-      const { error: transError } = await (
-        supabase.from("cash_transactions") as any
-      ).insert({
+      const { error: transError } = await supabase.from("cash_transactions").insert({
         branch_id: branchId,
         type: "income",
         amount: price,
@@ -1013,9 +997,7 @@ export async function reduceStudentCredits(
     const supabase = await createServerSupabaseClient();
 
     // Get current credits and package name
-    const { data: studentPackage, error: fetchError } = await (
-      supabase.from("student_packages") as any
-    )
+    const { data: studentPackage, error: fetchError } = await supabase.from("student_packages")
       .select(
         "remaining_credits, package:packages(name, total_credits), student_id"
       )
@@ -1031,7 +1013,7 @@ export async function reduceStudentCredits(
     const packageName = studentPackage.package?.name || "Unknown Package";
 
     // Update credits
-    const { data, error } = await (supabase.from("student_packages") as any)
+    const { data, error } = await supabase.from("student_packages")
       .update({
         remaining_credits: newCredits,
       })
@@ -1082,9 +1064,7 @@ export async function increaseStudentCredits(
     const supabase = await createServerSupabaseClient();
 
     // Get current credits and total from packages table
-    const { data: studentPackage, error: fetchError } = await (
-      supabase.from("student_packages") as any
-    )
+    const { data: studentPackage, error: fetchError } = await supabase.from("student_packages")
       .select(
         "id, student_id, remaining_credits, package:packages(total_credits, name)"
       )
@@ -1102,7 +1082,7 @@ export async function increaseStudentCredits(
     const packageName = studentPackage.package?.name || "Unknown Package";
 
     // Update credits
-    const { data, error } = await (supabase.from("student_packages") as any)
+    const { data, error } = await supabase.from("student_packages")
       .update({
         remaining_credits: newCredits,
       })
@@ -1153,9 +1133,7 @@ export async function updateStudentPackageCredits(
     const supabase = await createServerSupabaseClient();
 
     // Get package info with total_credits AND student_id from packages table
-    const { data: studentPackage, error: fetchError } = await (
-      supabase.from("student_packages") as any
-    )
+    const { data: studentPackage, error: fetchError } = await supabase.from("student_packages")
       .select(
         "id, student_id, remaining_credits, package:packages(total_credits, name)"
       )
@@ -1181,7 +1159,7 @@ export async function updateStudentPackageCredits(
     const finalCredits = Math.max(0, Math.min(newCreditsAmount, totalCredits));
 
     // Update credits
-    const { data, error } = await (supabase.from("student_packages") as any)
+    const { data, error } = await supabase.from("student_packages")
       .update({
         remaining_credits: finalCredits,
       })

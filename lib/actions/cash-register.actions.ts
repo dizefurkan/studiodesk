@@ -4,8 +4,9 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { logOperation } from '@/lib/actions/history.actions'
-import { getChanges } from '@/lib/utils/history-utils'
 import type { Database } from '@/lib/types/database.types'
+import type { PostgrestError } from '@supabase/supabase-js'
+import { sanitizeSearch } from '@/lib/utils/search'
 
 type CashTransaction = Database['public']['Tables']['cash_transactions']['Row']
 type Branch = Database['public']['Tables']['branches']['Row']
@@ -42,7 +43,7 @@ export async function getTransactions(
       .select('id', { count: 'exact', head: true })
 
     if (searchQuery) {
-      countQuery = countQuery.or(`description.ilike.%${searchQuery}%,type.ilike.%${searchQuery}%`)
+      countQuery = countQuery.or(`description.ilike.%${sanitizeSearch(searchQuery)}%,type.ilike.%${sanitizeSearch(searchQuery)}%`)
     }
 
     const { count: totalCount } = await countQuery
@@ -55,14 +56,14 @@ export async function getTransactions(
       .order('created_at', { ascending: false })
 
     if (searchQuery) {
-      query = query.or(`description.ilike.%${searchQuery}%,type.ilike.%${searchQuery}%`)
+      query = query.or(`description.ilike.%${sanitizeSearch(searchQuery)}%,type.ilike.%${sanitizeSearch(searchQuery)}%`)
     }
 
     // Apply pagination
     const offset = (page - 1) * pageSize
     query = query.range(offset, offset + pageSize - 1)
 
-    const result = await query.overrideTypes<TransactionWithBranch[]>() as { data: TransactionWithBranch[] | null; error: any }
+    const result = await query.overrideTypes<TransactionWithBranch[]>() as { data: TransactionWithBranch[] | null; error: PostgrestError | null }
     const { data, error } = result
 
     if (error) {
@@ -96,7 +97,7 @@ export async function createTransaction(
       .eq('id', input.branchId)
       .eq('organization_id', organization.id)
       .single()
-      .overrideTypes<Branch>() as any
+      .overrideTypes<Branch>()
 
     if (branchError || !branch) {
       return { error: 'Invalid branch' }
@@ -110,12 +111,12 @@ export async function createTransaction(
         amount: input.amount,
         description: input.description,
         student_package_id: input.studentPackageId || null,
-      } as any)
+      })
       .select()
       .single()
-      .overrideTypes<CashTransaction>() as any
+      .overrideTypes<CashTransaction>()
 
-    const { data, error } = result as { data: CashTransaction | null; error: any }
+    const { data, error } = result as { data: CashTransaction | null; error: PostgrestError | null }
 
     if (error || !data) {
       console.error('Error creating transaction:', error)
@@ -158,9 +159,9 @@ export async function deleteTransaction(
       .select('id, type, amount, description, branch_id, student_package_id')
       .eq('id', id)
       .single()
-      .overrideTypes<CashTransaction>() as any
+      .overrideTypes<CashTransaction>()
 
-    const { data: beforeTransaction, error: fetchError } = result as { data: CashTransaction | null; error: any }
+    const { data: beforeTransaction, error: fetchError } = result as { data: CashTransaction | null; error: PostgrestError | null }
 
     if (!beforeTransaction) {
       return { error: 'Transaction not found' }
@@ -227,9 +228,9 @@ export async function getDailyReport(
       .eq('branch_id', branchId)
       .gte('created_at', startOfDay)
       .lte('created_at', endOfDay)
-      .overrideTypes<CashTransaction[]>() as any
+      .overrideTypes<CashTransaction[]>()
 
-    const { data, error } = result as { data: CashTransaction[] | null; error: any }
+    const { data, error } = result as { data: CashTransaction[] | null; error: PostgrestError | null }
 
     if (error) {
       console.error('Error fetching daily report:', error)
@@ -283,9 +284,9 @@ export async function getMonthlyReport(
       .eq('branch_id', branchId)
       .gte('created_at', startDate)
       .lte('created_at', endDate)
-      .overrideTypes<CashTransaction[]>() as any
+      .overrideTypes<CashTransaction[]>()
 
-    const { data, error } = result as { data: CashTransaction[] | null; error: any }
+    const { data, error } = result as { data: CashTransaction[] | null; error: PostgrestError | null }
 
     if (error) {
       console.error('Error fetching monthly report:', error)
@@ -362,9 +363,9 @@ export async function getInstructorEarningsByBranch(
         .eq('id', branchId)
         .eq('organization_id', organization.id)
         .maybeSingle()
-        .overrideTypes<Branch>() as any
+        .overrideTypes<Branch>()
 
-      const { data: branch, error: branchError } = result as { data: Branch | null; error: any }
+      const { data: branch, error: branchError } = result as { data: Branch | null; error: PostgrestError | null }
 
       if (branchError || !branch) {
         console.warn('[getInstructorEarningsByBranch] Branch not found or access denied:', branchId)
@@ -391,7 +392,7 @@ export async function getInstructorEarningsByBranch(
     }
 
     const result = await query.overrideTypes<Earnings[]>()
-    const { data: earnings, error } = result as { data: Earnings[] | null; error: any }
+    const { data: earnings, error } = result as { data: Earnings[] | null; error: PostgrestError | null }
 
     if (error) {
       console.error('Error fetching earnings:', error)
@@ -422,10 +423,10 @@ export async function getInstructorEarningsByBranch(
         .overrideTypes<(CourseSession & {
           courses: Course & { branches: Branch }
         })[]>(),
-    ]) as any
+    ])
 
     const instructorMap = new Map(instructors?.map((i: Instructor) => [i.id, i]) || [])
-    const sessionMap = new Map(sessions?.map((s: any) => [s.id, s]) || [])
+    const sessionMap = new Map(sessions?.map((s) => [s.id, s]) || [])
 
     // Enrich earnings with related data
     const enrichedEarnings = earnings.map((e) => ({
@@ -437,7 +438,7 @@ export async function getInstructorEarningsByBranch(
     // Filter by branch if specified
     let filtered = enrichedEarnings
     if (branchId) {
-      filtered = filtered.filter((earning: any) => earning.course_sessions?.courses?.branch_id === branchId)
+      filtered = filtered.filter((earning) => earning.course_sessions?.courses?.branch_id === branchId)
     }
 
     console.log('[getInstructorEarningsByBranch] Fetched:', { 

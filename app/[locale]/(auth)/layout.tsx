@@ -1,10 +1,12 @@
+import { getTranslations } from 'next-intl/server'
 import { Logo } from '@/components/brand/Logo'
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const t = await getTranslations('auth')
   return (
     <div className="min-h-screen bg-gradient-to-br from-foreground via-foreground to-primary flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -13,7 +15,7 @@ export default function AuthLayout({
           <div className="mb-4">
             <Logo inverted markClassName="size-10" className="[&>span:last-child]:text-2xl" />
           </div>
-          <p className="text-muted-foreground/70 text-sm">Dance Studio Management System</p>
+          <p className="text-muted-foreground/70 text-sm">{t('tagline')}</p>
         </div>
 
         {/* Auth Card */}
@@ -23,7 +25,7 @@ export default function AuthLayout({
 
         {/* Footer */}
         <div className="mt-8 text-center text-muted-foreground/70 text-sm">
-          <p>© 2026 StudioDesk. All rights reserved.</p>
+          <p>{t('copyright', { year: new Date().getFullYear() })}</p>
         </div>
       </div>
     </div>

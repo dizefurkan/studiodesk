@@ -1,17 +1,16 @@
-import { getCourse, getCourseSessions } from "@/lib/actions/courses.actions";
+import { Link } from '@/i18n/navigation'
+import { getCourse } from "@/lib/actions/courses.actions";
 import { getCourseAttendanceHistory } from "@/lib/actions/course-attendance.actions";
 import { getEntityHistory } from "@/lib/actions/history.actions";
 import { CourseStudentsContainer } from "@/components/courses/CourseStudentsContainer";
 import { AttendanceHistorySection } from "@/components/courses/AttendanceHistorySection";
 import { ActivityTimelineWrapper } from "@/components/history/ActivityTimelineWrapper";
-import { notFound } from "next/navigation";
+import { notFound } from 'next/navigation'
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Clock, Users, Edit2, BookOpen, CheckCircle } from "lucide-react";
+import { Clock, Edit2, CheckCircle } from "lucide-react";
 import { formatTime } from "@/lib/utils/formatTime";
-import { format, isToday, isYesterday } from "date-fns";
 
 interface CourseDetailPageProps {
   params: {
@@ -103,7 +102,7 @@ export default async function CourseDetailPage({
                   {t("courses.assignedInstructors")}
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  {course.course_instructors.map((ci: any) => {
+                  {course.course_instructors.map((ci) => {
                     const instructor = ci.instructors;
                     const instructorName = instructor
                       ? `${instructor.first_name} ${instructor.last_name}`

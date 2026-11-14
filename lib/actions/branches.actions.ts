@@ -7,6 +7,9 @@ import { getOrganization } from '@/lib/auth/getOrganization'
 import { logOperation } from '@/lib/actions/history.actions'
 import { getChanges } from '@/lib/utils/history-utils'
 import type { Database } from '@/lib/types/database.types'
+import type { PostgrestError } from '@supabase/supabase-js'
+import type { TablesUpdate } from '@/lib/types/database.types'
+import { sanitizeSearch } from '@/lib/utils/search'
 
 type Branch = Database['public']['Tables']['branches']['Row']
 
@@ -32,7 +35,7 @@ export async function getBranches(
       .is('deleted_at', null)
 
     if (searchQuery) {
-      countQuery = countQuery.or(`name.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%`)
+      countQuery = countQuery.or(`name.ilike.%${sanitizeSearch(searchQuery)}%,address.ilike.%${sanitizeSearch(searchQuery)}%`)
     }
 
     const { count: totalCount } = await countQuery
@@ -47,7 +50,7 @@ export async function getBranches(
       .order('created_at', { ascending: false })
 
     if (searchQuery) {
-      query = query.or(`name.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%`)
+      query = query.or(`name.ilike.%${sanitizeSearch(searchQuery)}%,address.ilike.%${sanitizeSearch(searchQuery)}%`)
     }
 
     // Apply pagination
@@ -55,7 +58,7 @@ export async function getBranches(
     query = query.range(offset, offset + pageSize - 1)
 
     const result = await query.overrideTypes<Branch[]>()
-    const { data, error } = result as { data: Branch[] | null; error: any }
+    const { data, error } = result as { data: Branch[] | null; error: PostgrestError | null }
 
     if (error) {
       console.error('Error fetching branches:', error)
@@ -85,9 +88,9 @@ export async function getBranch(id: string): Promise<{ data?: Branch; error?: st
       .eq('id', id)
       .eq('organization_id', organization.id)
       .is('deleted_at', null)
-      .single() as any as any
+      .single()
 
-    const { data, error } = result as { data: Branch | null; error: any }
+    const { data, error } = result as { data: Branch | null; error: PostgrestError | null }
 
     if (error || !data) {
       console.error('Error fetching branch:', error)
@@ -125,12 +128,12 @@ export async function createBranch(
         name: input.name,
         address: input.address || null,
         phone: input.phone || null,
-      } as any)
+      })
       .select()
       .single()
-      .overrideTypes<Branch>() as any
+      .overrideTypes<Branch>()
 
-    const { data, error } = result as { data: Branch | null; error: any }
+    const { data, error } = result as { data: Branch | null; error: PostgrestError | null }
 
     if (error || !data) {
       console.error('Error creating branch:', error)
@@ -179,20 +182,20 @@ export async function updateBranch(
       .eq('id', id)
       .eq('organization_id', organization.id)
       .single()
-      .overrideTypes<Branch>() as any
+      .overrideTypes<Branch>()
 
-    const { data: beforeBranch } = beforeResult as { data: Branch | null; error: any }
+    const { data: beforeBranch } = beforeResult as { data: Branch | null; error: PostgrestError | null }
 
     if (!beforeBranch) {
       return { error: 'Branch not found or does not belong to your organization' }
     }
 
-    const updateData: any = {}
+    const updateData: TablesUpdate<'branches'> = {}
     if (input.name !== undefined) updateData.name = input.name
     if (input.address !== undefined) updateData.address = input.address
     if (input.phone !== undefined) updateData.phone = input.phone
 
-    const result = await (supabase as any)
+    const result = await supabase
       .from('branches')
       .update({ ...updateData })
       .eq('id', id)
@@ -200,7 +203,7 @@ export async function updateBranch(
       .select()
       .single()
 
-    const { data, error } = result as { data: Branch | null; error: any }
+    const { data, error } = result as { data: Branch | null; error: PostgrestError | null }
 
     if (error || !data) {
       console.error('Error updating branch:', error)
@@ -249,23 +252,23 @@ export async function deleteBranch(id: string, reason?: string): Promise<{ succe
       .eq('id', id)
       .eq('organization_id', organization.id)
       .is('deleted_at', null)
-      .single() as any as any
+      .single()
 
-    const { data: beforeBranch } = beforeResult as { data: Branch | null; error: any }
+    const { data: beforeBranch } = beforeResult as { data: Branch | null; error: PostgrestError | null }
 
     if (!beforeBranch) {
       return { error: 'Branch not found or does not belong to your organization' }
     }
 
     const user_id = user.id
-    const updateResult = await (supabase.from('branches') as any)
+    const updateResult = await supabase.from('branches')
       .update({
         deleted_at: new Date().toISOString(),
         deleted_by: user_id,
         deleted_reason: reason || null,
       })
       .eq('id', id)
-      .eq('organization_id', organization.id) as any
+      .eq('organization_id', organization.id)
     const { error } = updateResult
 
     if (error) {

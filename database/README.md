@@ -10,6 +10,7 @@ The single source of truth for the schema is **`supabase/migrations/`** (Supabas
 | `20261110000200_cleanup_legacy.sql` | Drops leftovers of the old scripts (no-op on a fresh DB) |
 | `20261112000000_backoffice.sql`     | `platform_admins`, `organizations.is_active`, suspended stores excluded from RLS |
 | `20261113000000_advisor_fixes.sql`  | Supabase advisor fixes: `(select auth.uid())` in policies, FK index, revoke on `rls_auto_enable` |
+| `20261113000100_timestamps_not_null.sql` | `created_at` / `updated_at` / `joined_at` backfilled and `NOT NULL` |
 
 All files are idempotent. Every schema change = a **new** timestamped file here; never edit the
 database by hand in the dashboard.

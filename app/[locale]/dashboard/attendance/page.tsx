@@ -1,3 +1,4 @@
+import { Link } from '@/i18n/navigation'
 import { getCourses, getCourse } from '@/lib/actions/courses.actions'
 import { getSessionAttendances, getSessionStudents } from '@/lib/actions/attendance.actions'
 import { getCourseAttendanceHistory } from '@/lib/actions/course-attendance.actions'
@@ -8,10 +9,11 @@ import { Button } from '@/components/ui/button'
 import { StudentAttendanceList } from '@/components/attendance/StudentAttendanceList'
 import { AttendancePageWrapper } from '@/components/attendance/AttendancePageWrapper'
 import { formatDateDisplay } from '@/lib/utils/formatting'
-import Link from 'next/link'
-import { Calendar, Users, CheckCircle } from 'lucide-react'
+import { Calendar, CheckCircle } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 import { getTranslations } from 'next-intl/server'
+
+type ListProps = React.ComponentProps<typeof StudentAttendanceList>
 
 export default async function AttendancePage({
   searchParams,
@@ -36,7 +38,7 @@ export default async function AttendancePage({
       (async () => {
         const { createServerSupabaseClient } = await import('@/lib/supabase/server')
         const supabase = await createServerSupabaseClient()
-        const res = await (supabase.from('course_sessions') as any)
+        const res = await supabase.from('course_sessions')
           .select('course_id')
           .eq('id', sessionId)
           .single()
@@ -46,12 +48,12 @@ export default async function AttendancePage({
     attendances = attendancesResult.data || []
     const availableStudents = studentsResult.data || []
     const courseId = sessionDataResult?.course_id
-    let studios: any[] = []
-    let courseInstructors: any[] = []
-    const allInstructors: any[] = []
-    const instructorRates: any[] = []
+    let studios: NonNullable<ListProps['studios']> = []
+    let courseInstructors: NonNullable<ListProps['instructors']> = []
+    const allInstructors: NonNullable<ListProps['allInstructors']> = []
+    const instructorRates: NonNullable<ListProps['instructorRates']> = []
     let danceTypeId = ''
-    let attendanceHistory: any[] = []
+    let attendanceHistory: NonNullable<ListProps['attendanceHistory']> = []
 
     
     if (courseId) {
@@ -79,8 +81,8 @@ export default async function AttendancePage({
         .eq('course_id', courseId)
 
       courseInstructors = (courseInstructorsData || [])
-        .filter((ci: any) => ci.instructors)
-        .map((ci: any) => ({
+        .filter((ci) => ci.instructors)
+        .map((ci) => ({
           id: ci.instructors.id,
           first_name: ci.instructors.first_name,
           last_name: ci.instructors.last_name,
@@ -97,7 +99,7 @@ export default async function AttendancePage({
         .eq('organization_id', organization?.id || '')
 
       const allInstructors = (orgInstructorsData || [])
-        .map((instructor: any) => ({
+        .map((instructor) => ({
           id: instructor.id,
           first_name: instructor.first_name,
           last_name: instructor.last_name,
@@ -136,13 +138,13 @@ export default async function AttendancePage({
 
         {studios.length > 0 && (
           <Card className="border-border p-4">
-            <p className="text-sm text-muted-foreground mb-2">{t('attendance.availableStudios')}: {studios.map((s: any) => s.name).join(', ')}</p>
+            <p className="text-sm text-muted-foreground mb-2">{t('attendance.availableStudios')}: {studios.map((s) => s.name).join(', ')}</p>
           </Card>
         )}
 
         <StudentAttendanceList
           sessionId={sessionId}
-          courseId={courseId}
+          courseId={courseId ?? ''}
           danceTypeId={danceTypeId}
           availableStudents={availableStudents}
           recordedAttendances={attendances}
@@ -210,8 +212,8 @@ export default async function AttendancePage({
       .eq('course_id', courseId)
 
     const courseInstructors = (courseInstructorsData || [])
-      .filter((ci: any) => ci.instructors)
-      .map((ci: any) => ({
+      .filter((ci) => ci.instructors)
+      .map((ci) => ({
         id: ci.instructors.id,
         first_name: ci.instructors.first_name,
         last_name: ci.instructors.last_name,
@@ -225,7 +227,7 @@ export default async function AttendancePage({
       .eq('organization_id', organization?.id || '')
 
     const allInstructors = (orgInstructorsData || [])
-      .map((instructor: any) => ({
+      .map((instructor) => ({
         id: instructor.id,
         first_name: instructor.first_name,
         last_name: instructor.last_name,
@@ -237,14 +239,14 @@ export default async function AttendancePage({
 
     // Transform students data and filter packages by dance_type_id
     const availableStudents = (courseStudentsData || [])
-      .filter((cs: any) => cs.students)
-      .map((cs: any) => ({
+      .filter((cs) => cs.students)
+      .map((cs) => ({
         id: cs.students.id,
         first_name: cs.students.first_name,
         last_name: cs.students.last_name,
         student_packages: (cs.students.student_packages || [])
-          .filter((pkg: any) => pkg.packages?.dance_type_id === course.dance_type_id)
-          .map((pkg: any) => ({
+          .filter((pkg) => pkg.packages?.dance_type_id === course.dance_type_id)
+          .map((pkg) => ({
             id: pkg.id,
             remaining_credits: pkg.remaining_credits,
           })),
@@ -259,13 +261,13 @@ export default async function AttendancePage({
     const isCourseScheduledToday = course.day_of_week === todayDayOfWeek
     
     const { data: existingSessionData } = await (supabase
-      .from('course_sessions') as any)
+      .from('course_sessions'))
       .select('id')
       .eq('course_id', courseId)
       .eq('session_date', today)
       .single()
 
-    let existingAttendances: any[] = []
+    let existingAttendances: ListProps['recordedAttendances'] = []
     // Use fresh session ID if starting new session, otherwise use existing or create new
     const sessionIdToUse = newSession ? uuidv4() : (existingSessionData?.id || uuidv4())
 
@@ -290,7 +292,7 @@ export default async function AttendancePage({
       <div className="space-y-6">
         <AttendancePageWrapper
           sessionId={tempSessionId}
-          courseId={courseId}
+          courseId={courseId ?? ''}
           courseName={course.name}
           danceTypeId={course.dance_type_id}
           availableStudents={availableStudents}
@@ -301,8 +303,8 @@ export default async function AttendancePage({
           allInstructors={allInstructors}
           instructorRates={instructorRatesData || []}
           totalEnrolled={availableStudents.length}
-          presentCount={existingAttendances.filter((a: any) => a.is_present).length}
-          absentCount={existingAttendances.filter((a: any) => !a.is_present).length}
+          presentCount={existingAttendances.filter((a) => a.is_present).length}
+          absentCount={existingAttendances.filter((a) => !a.is_present).length}
         />
       </div>
     )
@@ -315,7 +317,7 @@ export default async function AttendancePage({
 
     // Fetch attendance count for each course
     const coursesWithAttendance = await Promise.all(
-      courses.map(async (course: any) => {
+      courses.map(async (course) => {
         const historyResult = await getCourseAttendanceHistory(course.id)
         const attendanceRecords = historyResult.data || []
         const totalAttendance = attendanceRecords.length // Number of times attendance was taken
@@ -345,7 +347,7 @@ export default async function AttendancePage({
           </Card>
         ) : (
           <div className="space-y-4">
-            {coursesWithAttendance.map((course: any) => (
+            {coursesWithAttendance.map((course) => (
               <Card key={course.id} className="border-border p-4 hover:border-primary transition-colors">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                   <Link href={`/dashboard/courses/${course.id}`} className="flex-1">

@@ -1,14 +1,16 @@
 "use client";
 
+import { Link } from '@/i18n/navigation'
 import { useState } from "react";
-import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { ChevronDown, BookOpen } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { useTranslations } from "next-intl";
+import type { getCourseAttendanceHistory } from '@/lib/actions/course-attendance.actions'
+import type { ActionData } from '@/lib/types/actions'
 
 interface AttendanceHistorySectionProps {
-  attendanceHistory: any[];
+  attendanceHistory: ActionData<typeof getCourseAttendanceHistory>;
 }
 
 export function AttendanceHistorySection({
@@ -43,7 +45,7 @@ export function AttendanceHistorySection({
       </h2>
 
       <div className="space-y-2">
-        {attendanceHistory.map((record: any) => {
+        {attendanceHistory.map((record) => {
           const isExpanded = expandedId === record.id;
 
           return (
@@ -122,7 +124,7 @@ export function AttendanceHistorySection({
                         </p>
                         <p className="text-sm text-foreground/80">
                           {record.instructors
-                            .map((i: any) => `${i.first_name} ${i.last_name}`)
+                            .map((i) => `${i.first_name} ${i.last_name}`)
                             .join(", ")}
                         </p>
                       </div>
@@ -137,7 +139,7 @@ export function AttendanceHistorySection({
 
                       <div className="space-y-0.5 max-h-48 overflow-y-auto pr-1">
                         {record.attendances && record.attendances.length > 0 ? (
-                          record.attendances.map((att: any, idx: number) => (
+                          record.attendances.map((att, idx: number) => (
                             <div
                               key={idx}
                               className="flex items-center gap-1.5 px-1 rounded text-xs"

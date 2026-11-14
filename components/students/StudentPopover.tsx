@@ -14,7 +14,7 @@ interface StudentPopoverProps {
     id: string
     name: string
     danceType: string
-    danceTypeId: string
+    danceTypeId?: string
     remaining: number
   }>
   filteredDanceTypeId?: string

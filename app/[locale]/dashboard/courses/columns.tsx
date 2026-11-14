@@ -1,9 +1,9 @@
 'use client'
 
+import { Link } from '@/i18n/navigation'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import Link from 'next/link'
 import { Edit2, Trash2 } from 'lucide-react'
 import { formatTime } from '@/lib/utils/formatTime'
 import { ColumnHeader } from '@/components/table/column-header'

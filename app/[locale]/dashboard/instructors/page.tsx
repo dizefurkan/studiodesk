@@ -1,10 +1,9 @@
+import { Link, redirect } from '@/i18n/navigation'
 import { getInstructors, getInstructorFilterOptions } from '@/lib/actions/instructors.actions'
-import { getTranslations } from 'next-intl/server'
-import { redirect } from 'next/navigation'
+import { getTranslations, getLocale } from 'next-intl/server'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { InstructorTableWrapper } from '@/components/instructors/InstructorTableWrapper'
-import Link from 'next/link'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Plus } from 'lucide-react'
@@ -32,7 +31,7 @@ export default async function InstructorsPage({
   // Handle auth errors specifically
   if (result.error === 'Not authenticated') {
     console.warn('[InstructorsPage] Not authenticated, redirecting to login')
-    redirect('/login')
+    redirect({ href: '/login', locale: await getLocale() })
   }
 
   if (result.error) {
@@ -44,8 +43,8 @@ export default async function InstructorsPage({
   const totalPages = result.totalPages || 1
 
   const filterOptions = await getInstructorFilterOptions()
-  const danceTypes = (filterOptions as any).danceTypes || []
-  const branches = (filterOptions as any).branches || []
+  const danceTypes = filterOptions.danceTypes || []
+  const branches = filterOptions.branches || []
 
   const hasRecords = totalCount > 0 || !!(searchQuery || danceTypeId || branchId)
   const createAction = (

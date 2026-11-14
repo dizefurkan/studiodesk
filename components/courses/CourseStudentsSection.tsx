@@ -1,5 +1,6 @@
 'use client'
 
+import { Link } from '@/i18n/navigation'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -7,7 +8,6 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Trash2 } from 'lucide-react'
 import { getCourseStudents, removeStudentFromCourse } from '@/lib/actions/course-students.actions'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/table/data-table'
@@ -24,7 +24,7 @@ interface CourseStudent {
     id: string
     first_name: string
     last_name: string
-    phone?: string
+    phone?: string | null
     student_packages?: Array<{
       id: string
       remaining_credits: number

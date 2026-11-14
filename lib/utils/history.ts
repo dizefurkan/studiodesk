@@ -24,8 +24,27 @@ export type HistoryEntity =
   | "dance_type"
   | "attendance"
   | "cash_register"
+  | "instructor_rate"
+  | "studio"
+  | "invitation"
   | "organization"
+  | "organization_settings"
   | "user";
+
+export type HistoryChange = { before: unknown; after: unknown };
+
+/** Shape of history_logs.data written by logOperation() */
+export interface HistoryLogData {
+  before?: Record<string, unknown>;
+  after?: Record<string, unknown> & { studentName?: string; packageName?: string };
+  changes?: Record<string, HistoryChange>;
+  summary?: string;
+  action_type?: string;
+  packageName?: string;
+  studentName?: string;
+  user_name?: string;
+  [key: string]: unknown;
+}
 
 /**
  * Format human-readable history message
@@ -33,7 +52,7 @@ export type HistoryEntity =
 export function formatHistoryMessage(
   action: HistoryAction,
   entity: HistoryEntity,
-  data?: Record<string, any>,
+  data?: HistoryLogData,
   userName?: string
 ): string {
   const user = userName || "Someone";
@@ -72,7 +91,7 @@ export function formatHistoryMessage(
         // Special case for student_package updates - show package name
         if (entity === "student_package" && data?.packageName) {
           const changedFields = Object.entries(data.changes)
-            .map(([field, value]: [string, any]) => {
+            .map(([field, value]) => {
               // Convert camelCase/snake_case to readable format
               const readableField = field
                 .replace(/([A-Z])/g, "_$1") // camelCase to snake_case
@@ -97,7 +116,7 @@ export function formatHistoryMessage(
         }
 
         const changedFields = Object.entries(data.changes)
-          .map(([field, value]: [string, any]) => {
+          .map(([field, value]) => {
             // Convert camelCase/snake_case to readable format
             const readableField = field
               .replace(/([A-Z])/g, "_$1") // camelCase to snake_case

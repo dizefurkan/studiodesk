@@ -1,10 +1,10 @@
+import { Link } from '@/i18n/navigation'
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
-import Link from "next/link";
-import { ArrowLeft, Users, Check, X, User } from "lucide-react";
+import { ArrowLeft, Users, Check, X } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Card } from "@/components/ui/card";
-import { format, isToday, isYesterday, toDate } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 import { tr, enUS } from "date-fns/locale";
 
 interface AttendanceDetailPageProps {
@@ -28,9 +28,7 @@ export default async function AttendanceDetailPage({
   const supabase = await createServerSupabaseClient();
 
   // Fetch session details
-  const { data: session, error: sessionError } = await (
-    supabase.from("course_sessions") as any
-  )
+  const { data: session, error: sessionError } = await supabase.from("course_sessions")
     .select(
       `
       id,
@@ -67,29 +65,24 @@ export default async function AttendanceDetailPage({
   }
 
   const attendances = session.attendances || [];
-  const presentCount = attendances.filter((a: any) => a.is_present).length;
-  const absentCount = attendances.filter((a: any) => !a.is_present).length;
+  const presentCount = attendances.filter((a) => a.is_present).length;
+  const absentCount = attendances.filter((a) => !a.is_present).length;
 
   // ✅ Get session-specific instructors, fallback to course instructors
   let instructors =
-    session.session_instructors?.map((si: any) => si.instructor) || [];
+    session.session_instructors?.map((si) => si.instructor) || [];
 
   if (instructors.length === 0 && session.course?.id) {
     // Fallback: Get course instructors if session has none
-    const query = supabase
+    const { data: courseInstructors } = await supabase
       .from("course_instructors")
       .select("instructor:instructors(id, first_name, last_name)")
-      .eq("course_id", session.course.id)
-      .overrideTypes<{ instructor: any }[]>();
+      .eq("course_id", session.course.id);
 
-    const { data: courseInstructors } = (await query) as {
-      data: { instructor: any }[] | null;
-    };
-
-    instructors = (courseInstructors || []).map((ci: any) => ci.instructor);
+    instructors = (courseInstructors || []).map((ci) => ci.instructor);
   }
 
-  const studio = attendances.find((a: any) => a.studio?.name)?.studio;
+  const studio = attendances.find((a) => a.studio?.name)?.studio;
 
   // Format date for display
   const sessionDate = new Date(session.session_date + "T00:00:00Z");
@@ -117,7 +110,7 @@ export default async function AttendanceDetailPage({
         <div className="p-4 sm:p-6 md:p-8 space-y-4">
           <div>
             <Link
-              href={`/${locale}/dashboard/courses/${session.course?.id}`}
+              href={`/dashboard/courses/${session.course?.id}`}
               className="text-2xl font-bold text-primary hover:underline block"
             >
               {session.course?.name}
@@ -177,7 +170,7 @@ export default async function AttendanceDetailPage({
                 {t("attendance.instructors")}
               </p>
               <div className="flex flex-wrap gap-2">
-                {instructors.map((instructor: any) => (
+                {instructors.map((instructor) => (
                   <span
                     key={instructor.id}
                     className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
@@ -213,7 +206,7 @@ export default async function AttendanceDetailPage({
               </div>
             ) : (
               <div className="space-y-2">
-                {attendances.map((attendance: any) => (
+                {attendances.map((attendance) => (
                   <div
                     key={attendance.id}
                     className={`flex items-center gap-4 p-4 rounded-lg border ${
@@ -236,7 +229,7 @@ export default async function AttendanceDetailPage({
 
                     <div className="flex-1">
                       <Link
-                        href={`/${locale}/dashboard/students/${attendance.student?.id}`}
+                        href={`/dashboard/students/${attendance.student?.id}`}
                         className="font-semibold text-primary hover:underline"
                       >
                         {attendance.student?.first_name}{" "}
