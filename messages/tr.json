@@ -121,7 +121,7 @@
     "previousPage": "Önceki sayfa",
     "nextPage": "Sonraki sayfa",
     "noResults": "Sonuç bulunamadı",
-    "noResultsHint": "Aramanı ya da filtrelerini değiştirmeyi dene.",
+    "noResultsHint": "Aramanızı ya da filtrelerinizi değiştirmeyi deneyin.",
     "clearFilters": "Filtreleri temizle",
     "expand": "Genişlet",
     "collapse": "Daralt",
@@ -172,10 +172,10 @@
     "getStarted": "Başla",
     "startFreeTrial": "Ücretsiz Denemeyi Başlat",
     "learnMore": "Daha Fazla Bilgi",
-    "loginSubtitle": "Hesabın StudioDesk yöneticisi tarafından açılır. Bilgilerinle giriş yap.",
+    "loginSubtitle": "Hesabınız StudioDesk yöneticisi tarafından açılır. Bilgilerinizle giriş yapın.",
     "forcePasswordChange": {
-      "title": "Kendi şifreni belirle",
-      "description": "{email} hesabı geçici bir şifreyle açıldı. Devam etmek için geçici şifreyi mevcut şifre olarak gir ve yeni bir şifre seç.",
+      "title": "Kendi şifrenizi belirleyin",
+      "description": "{email} hesabı geçici bir şifreyle açıldı. Devam etmek için geçici şifreyi mevcut şifre olarak girin ve yeni bir şifre seçin.",
       "logout": "Çıkış yap"
     },
     "tagline": "Dans stüdyosu yönetimi",
@@ -358,7 +358,7 @@
     "courseDeleted": "Kurs başarıyla silindi",
     "newCourse": "Yeni Kurs",
     "createNewCourse": "Yeni Kurs Oluştur",
-    "updateCourseDetails": "Kurs detaylarını güncelle",
+    "updateCourseDetails": "Kurs detaylarını güncelleyin",
     "setupNewCourse": "Programı ve eğitmenleriyle yeni bir kurs ayarlayın",
     "courseName": "Kurs Adı",
     "startTime": "Başlama Saati",
@@ -399,8 +399,8 @@
     "title": "Yoklama",
     "description": "Öğrenci yoklamasını işaretleyin ve takip edin",
     "pageDescription": "Öğrenci yoklamasını işaretleyin ve sınıf oturumlarını yönetin",
-    "recordDescription": "Bu oturum için yoklamayı kaydettirin ve kredileri düşün",
-    "recordAndManage": "Yoklamayı kaydet ve yönet",
+    "recordDescription": "Bu oturumun yoklamasını kaydedin; krediler otomatik düşülür",
+    "recordAndManage": "Yoklamayı kaydedin ve yönetin",
     "markAttendance": "Yoklamayı İşaretle",
     "attendanceRecord": "Yoklama Kaydı",
     "present": "Müsait",
@@ -424,7 +424,7 @@
     "moveToHistory": "Tamamlandı",
     "noAttendance": "Yoklama kaydı bulunamadı",
     "noCoursesFound": "Kurs bulunamadı",
-    "noCoursesMessage": "Kursu oluşturun ve oturumları planlayın yoklama takibine başlamak için",
+    "noCoursesMessage": "Yoklama almaya başlamak için bir kurs oluşturun",
     "recordUpdated": "Yoklama başarıyla kaydedildi",
     "removeAttendance": "Yoklamayı Kaldır",
     "back": "Geri",
@@ -453,7 +453,7 @@
     "next": "Sonraki",
     "loading": "Takvim yükleniyor...",
     "noCoursesScheduled": "Planlanan kurs yok",
-    "createCoursesMessage": "Kursu takvimde görüntülemek için oluşturun",
+    "createCoursesMessage": "Takvimde görmek için bir kurs oluşturun",
     "classesOnDay": "{date} tarihi için {count} sınıf",
     "noClasses": "Sınıf yok",
     "noClassesScheduled": "Planlanan sınıf yok",
@@ -537,9 +537,9 @@
   },
   "instructorRates": {
     "title": "Eğitmen Oranları",
-    "description": "Her eğitmenin her sınıf için ne kadar kazandığını belirle",
+    "description": "Her eğitmenin her sınıf için ne kadar kazandığını belirleyin",
     "aboutTitle": "Eğitmen Oranları Hakkında",
-    "aboutDescription": "Her eğitmen için dans türü ve şube kombinasyonuna göre saatlik ücreti belirle. Yoklama alındığında eğitmen otomatik olarak bu ücreti kazanır.",
+    "aboutDescription": "Her eğitmen için dans türü ve şube kombinasyonuna göre saatlik ücreti belirleyin. Yoklama alındığında eğitmen otomatik olarak bu ücreti kazanır.",
     "specificToInstructor": "Oranlar Eğitmen + Şube + Dans Türü kombinasyonuna özgüdür",
     "earnAutomatically": "Yoklama alındığında, eğitmen otomatik olarak bu ücreti kazanır",
     "multipleRates": "Aynı eğitmenin farklı şubeler ve dans türleri arasında birden fazla oranı yapılandırılabilir",
@@ -586,8 +586,8 @@
     "descriptionTimezone": "Tarih hesaplamaları ve oturum oluşturma için kullanılır",
     "descriptionVirtualSessions": "Takvimde planlanan oturumları kaç hafta önceden göster (hesaplanır, DB'de depolanmaz)",
     "descriptionAttendancePerWeek": "Bir kursun haftada kaç kez yoklama alınabileceği (genellikle 1)",
-    "descriptionMakeupSessions": "Eğitmenlerin kaçırılan dersler için telafi oturumları planlamasını sağla",
-    "subtitle": "Organizasyonunu, ekibini ve hesabını yönet",
+    "descriptionMakeupSessions": "Eğitmenlerin kaçırılan dersler için telafi oturumları planlamasını sağlayın",
+    "subtitle": "Organizasyonunuzu, ekibinizi ve hesabınızı yönetin",
     "readOnly": "Bu ayarları sadece owner ve yöneticiler değiştirebilir.",
     "save": "Kaydet",
     "saving": "Kaydediliyor...",
@@ -603,7 +603,7 @@
       },
       "account": {
         "title": "Hesabım",
-        "description": "Adın ve şifren"
+        "description": "Adınız ve şifreniz"
       },
       "team": {
         "title": "Ekip",
@@ -648,7 +648,7 @@
       "newPasswordHint": "En az 8 karakter.",
       "confirmPassword": "Yeni şifre (tekrar)",
       "mismatch": "Şifreler eşleşmiyor",
-      "passwordChanged": "Şifren güncellendi",
+      "passwordChanged": "Şifreniz güncellendi",
       "changePassword": "Şifreyi güncelle"
     },
     "teamPage": {
@@ -660,7 +660,7 @@
       "role": "Rol",
       "create": "Ekle",
       "empty": "Henüz ekip üyesi yok",
-      "emptyHint": "İlk üyeni ekleyerek başla.",
+      "emptyHint": "İlk üyenizi ekleyerek başlayın.",
       "you": "Sen",
       "resetPassword": "Şifreyi sıfırla",
       "remove": "Ekipten çıkar",
@@ -670,7 +670,7 @@
       "roleUpdated": "Rol güncellendi",
       "added": "Üye eklendi",
       "credentialsTitle": "Giriş bilgileri",
-      "credentialsDescription": "Bu bilgileri kişiyle paylaş; şifre bir daha gösterilmeyecek. İlk girişten sonra şifresini değiştirmeli.",
+      "credentialsDescription": "Bu bilgileri kişiyle paylaşın; şifre bir daha gösterilmeyecek. İlk girişten sonra şifresini değiştirmesi gerekir.",
       "password": "Geçici şifre",
       "noPermission": "Ekibi sadece owner (ve izin verilmişse yöneticiler) yönetebilir."
     },
@@ -687,7 +687,7 @@
     },
     "attendanceForm": {
       "lookahead": "Sanal oturum ufku (hafta)",
-      "lookaheadHint": "Takvimde kaç hafta ilerisinin planlanmış oturumlarını göster.",
+      "lookaheadHint": "Takvimde planlanmış oturumların kaç hafta ilerisine kadar gösterileceği.",
       "weeklyLimit": "Kurs başına haftalık yoklama limiti",
       "weeklyLimitHint": "Bir kursta haftada kaç kez yoklama alınabilir (genellikle 1).",
       "makeup": "Telafi derslerine izin ver",
@@ -806,7 +806,7 @@
     "operationFailed": "İşlem başarısız",
     "notFoundPage": {
       "title": "Sayfa bulunamadı",
-      "description": "Aradığın sayfa yok ya da taşınmış.",
+      "description": "Aradığınız sayfa yok ya da taşınmış.",
       "back": "Panele dön"
     },
     "noResponse": "Sunucudan yanıt gelmedi",
@@ -854,7 +854,7 @@
       "suspendHint": "Askıdaki store'un kullanıcıları dashboard'a giremez ve verilerine erişemez.",
       "suspend": "Askıya al",
       "activate": "Aktifleştir",
-      "suspendConfirm": "Bu store askıya alınsın mı? Tüm kullanıcıları erişimini kaybeder.",
+      "suspendConfirm": "Bu store askıya alınsın mı? Tüm kullanıcılar erişimini kaybeder.",
       "createdAt": "Oluşturulma"
     },
     "branches": {
@@ -924,31 +924,31 @@
     "cancel": "İptal",
     "delete": "Sil",
     "deleting": "Siliniyor...",
-    "areYouSure": "Emin misin?",
+    "areYouSure": "Emin misiniz?",
     "careful": "Dikkat",
     "willRemove": "Kaldırılacak: {name}",
     "reason": "Silme nedeni",
     "optional": "opsiyonel",
-    "reasonPlaceholder": "Neden siliyorsun? (opsiyonel)",
+    "reasonPlaceholder": "Neden siliyorsunuz? (isteğe bağlı)",
     "clearSearch": "Aramayı temizle",
     "search": "Ara"
   },
   "emptyStates": {
     "students": {
       "title": "Henüz öğrenci yok",
-      "description": "İlk öğrencini ekle; paketler, kurslar ve yoklamalar buradan yönetilir."
+      "description": "İlk öğrencinizi ekleyin; paketler, kurslar ve yoklamalar buradan yönetilir."
     },
     "courses": {
       "title": "Henüz kurs yok",
-      "description": "Haftalık programını oluşturmak için ilk kursunu ekle."
+      "description": "Haftalık programınızı oluşturmak için ilk kursunuzu ekleyin."
     },
     "instructors": {
       "title": "Henüz eğitmen yok",
-      "description": "Eğitmenlerini ekle; kurslara atayıp kazançlarını takip edebilirsin."
+      "description": "Eğitmenlerinizi ekleyin; kurslara atayıp kazançlarını takip edebilirsiniz."
     },
     "branches": {
       "title": "Henüz şube yok",
-      "description": "Kurslar ve kasa şubeye bağlıdır; önce bir şube ekle."
+      "description": "Kurslar ve kasa şubeye bağlıdır; önce bir şube ekleyin."
     },
     "danceTypes": {
       "title": "Henüz dans türü yok",
@@ -956,16 +956,16 @@
     },
     "packages": {
       "title": "Henüz paket yok",
-      "description": "Öğrencilerine satacağın kredi paketlerini oluştur."
+      "description": "Öğrencilerinize satacağınız kredi paketlerini oluşturun."
     },
     "instructorRates": {
       "title": "Henüz eğitmen oranı yok",
-      "description": "Eğitmenlerin şube ve dans türüne göre ne kadar kazandığını belirle."
+      "description": "Eğitmenlerin şube ve dans türüne göre ne kadar kazandığını belirleyin."
     }
   },
   "instructorEarnings": {
     "title": "Eğitmen kazançları",
-    "description": "Eğitmen ödemelerini ve ders başı kazançları takip et",
+    "description": "Eğitmen ödemelerini ve ders başı kazançları takip edin",
     "totalEarnings": "Toplam kazanç (filtreye göre)",
     "totalRecords": "Kayıt",
     "searchPlaceholder": "Eğitmen adına göre ara…",
@@ -979,7 +979,7 @@
   "studios": {
     "loading": "Yükleniyor...",
     "title": "Stüdyolar",
-    "description": "Bu şubedeki dans stüdyolarını yönet",
+    "description": "Bu şubedeki dans stüdyolarını yönetin",
     "add": "Stüdyo ekle",
     "name": "Stüdyo adı *",
     "descriptionLabel": "Açıklama",
@@ -987,7 +987,7 @@
     "imageUrl": "Görsel URL (ileride kullanılacak)",
     "cancel": "İptal",
     "emptyTitle": "Henüz stüdyo yok",
-    "emptyDescription": "Dersleri düzenlemek için ilk stüdyonu oluştur",
+    "emptyDescription": "Dersleri düzenlemek için ilk stüdyonuzu oluşturun",
     "hasImage": "Görseli var (ileride kullanılacak)",
     "dismiss": "Kapat",
     "namePlaceholder": "örn. Salon 1",
@@ -1001,7 +1001,7 @@
   },
   "transactionForm": {
     "title": "İşlem kaydet",
-    "description": "Yeni bir gelir ya da gider kaydı ekle",
+    "description": "Yeni bir gelir ya da gider kaydı ekleyin",
     "branch": "Şube",
     "selectBranch": "Şube seç",
     "type": "İşlem türü",
@@ -1012,7 +1012,7 @@
     "cancel": "İptal",
     "descriptionPlaceholder": "örn. paket satışı, ekipman alımı…",
     "unexpectedError": "Beklenmeyen bir hata oluştu",
-    "branchRequired": "Lütfen bir şube seç",
+    "branchRequired": "Lütfen bir şube seçin",
     "amountPositive": "Tutar 0'dan büyük olmalı",
     "descriptionMin": "Açıklama en az 3 karakter olmalı",
     "recording": "Kaydediliyor…"
@@ -1085,13 +1085,13 @@
     "selectDate": "Tarih seç",
     "orgNotFound": "Stüdyo bulunamadı",
     "title": "Kasa",
-    "description": "Tüm finansal işlemleri takip et",
+    "description": "Tüm finansal işlemleri takip edin",
     "newTransaction": "Yeni işlem",
     "expenses": "Giderler",
     "instructorPay": "Eğitmen ödemeleri",
     "netBalance": "Net bakiye",
     "loadError": "Kasa yüklenirken hata oluştu",
-    "loadErrorHint": "Sayfayı yenilemeyi dene",
+    "loadErrorHint": "Sayfayı yenilemeyi deneyin",
     "instructorPayment": "Eğitmen ödemesi — {name}",
     "deleteConfirm": "Bu işlem silinsin mi?"
   },
@@ -1104,7 +1104,7 @@
     "cancel": "İptal",
     "searchPlaceholder": "Ad veya e-posta ile ara…",
     "selectAll": "Tümünü seç",
-    "selectAtLeastOne": "En az bir öğrenci seç",
+    "selectAtLeastOne": "En az bir öğrenci seçin",
     "addFailed": "Öğrenciler eklenemedi",
     "partialResult": "{added} öğrenci eklendi, {failed} eklenemedi.",
     "noneAvailable": "Uygun öğrenci yok (hepsi zaten kayıtlı olabilir)",
@@ -1131,8 +1131,8 @@
   "instructorForm": {
     "editTitle": "Eğitmeni düzenle",
     "addTitle": "Yeni eğitmen ekle",
-    "editDescription": "Eğitmen bilgilerini güncelle",
-    "addDescription": "Stüdyona yeni bir eğitmen ekle",
+    "editDescription": "Eğitmen bilgilerini güncelleyin",
+    "addDescription": "Stüdyonuza yeni bir eğitmen ekleyin",
     "update": "Eğitmeni güncelle",
     "create": "Eğitmen oluştur"
   },
@@ -1146,20 +1146,20 @@
     "nameMin": "Şube adı en az 2 karakter olmalı",
     "editTitle": "Şubeyi düzenle",
     "addTitle": "Yeni şube ekle",
-    "editDescription": "Şube bilgilerini güncelle",
-    "addDescription": "Yeni bir stüdyo şubesi ekle",
+    "editDescription": "Şube bilgilerini güncelleyin",
+    "addDescription": "Yeni bir stüdyo şubesi ekleyin",
     "update": "Şubeyi güncelle",
     "create": "Şube oluştur"
   },
   "danceTypeForm": {
     "name": "Dans türü adı",
     "namePlaceholder": "örn. Bale, Hip hop, Modern",
-    "descriptionPlaceholder": "Bu dans stilini anlat…",
+    "descriptionPlaceholder": "Bu dans stilini anlatın…",
     "nameMin": "Dans türü adı en az 2 karakter olmalı",
     "editTitle": "Dans türünü düzenle",
     "addTitle": "Yeni dans türü ekle",
-    "editDescription": "Dans türü bilgilerini güncelle",
-    "addDescription": "Kataloğuna yeni bir dans stili ekle",
+    "editDescription": "Dans türü bilgilerini güncelleyin",
+    "addDescription": "Kataloğunuza yeni bir dans stili ekleyin",
     "update": "Dans türünü güncelle",
     "create": "Dans türü oluştur"
   },
@@ -1168,12 +1168,12 @@
     "loadingInstructors": "Eğitmenler yükleniyor…",
     "loadInstructorsFailed": "Eğitmenler yüklenirken bir hata oluştu",
     "nameMin": "Kurs adı en az 2 karakter olmalı",
-    "branchRequired": "Lütfen bir şube seç",
-    "danceTypeRequired": "Lütfen bir dans türü seç",
+    "branchRequired": "Lütfen bir şube seçin",
+    "danceTypeRequired": "Lütfen bir dans türü seçin",
     "timeFormat": "Saat SS:dd biçiminde olmalı",
     "selectInstructors": "Eğitmen seç…",
     "loadInstructorsError": "Eğitmenler yüklenemedi: {error}",
-    "noInstructorRates": "⚠️ Bu dans türü için ücreti tanımlı eğitmen yok. Önce eğitmen ücretlerini tanımla.",
+    "noInstructorRates": "⚠️ Bu dans türü için ücreti tanımlı eğitmen yok. Önce eğitmen ücretlerini tanımlayın.",
     "instructorsFor": "{label} ({danceType} için)"
   },
   "instructorRateForm": {
@@ -1192,28 +1192,28 @@
   },
   "purchaseDialog": {
     "title": "Paket satın al",
-    "description": "Bu öğrenci için bir paket seç.",
+    "description": "Bu öğrenci için bir paket seçin.",
     "selectPackage": "Paket seç",
     "priceOverride": "Fiyat (isteğe bağlı, paket fiyatı yerine)",
-    "priceHint": "Paket fiyatını kullanmak için boş bırak.",
+    "priceHint": "Paket fiyatını kullanmak için boş bırakın.",
     "package": "Paket",
     "credits": "Kredi",
     "total": "Toplam",
-    "selectRequired": "Lütfen bir paket seç",
+    "selectRequired": "Lütfen bir paket seçin",
     "failed": "Satın alma tamamlanamadı",
     "processing": "İşleniyor…",
     "confirm": "Satın almayı onayla"
   },
   "landing": {
     "featuresDescription": "Başarılı bir dans stüdyosu yönetmek için ihtiyacın olan her şey",
-    "ctaTitle": "Stüdyonu dönüştürmeye hazır mısın?",
-    "ctaDescription": "StudioDesk kullanan dans stüdyolarına katıl",
+    "ctaTitle": "Stüdyonuzu dönüştürmeye hazır mısınız?",
+    "ctaDescription": "StudioDesk kullanan dans stüdyolarına katılın",
     "ctaButton": "Ücretsiz denemeni bugün başlat",
     "secureTitle": "Güvenli ve gizli",
     "secureDescription": "Veri izolasyonuyla kurumsal düzeyde güvenlik",
     "fastTitle": "Hızlı ve güvenilir",
     "fastDescription": "Modern bulut altyapısı üzerine kurulu",
-    "heroTitle": "Dans stüdyonu yönet",
+    "heroTitle": "Dans stüdyonuzu yönetin",
     "heroHighlight": "hiç olmadığı kadar kolay",
     "copyright": "© {year} StudioDesk. Tüm hakları saklıdır."
   },
@@ -1251,7 +1251,7 @@
     "subtitle": "Şube bilgileri",
     "address": "Adres",
     "studiosTitle": "Stüdyolar",
-    "studiosDescription": "Bu şubenin dans stüdyolarını ve salonlarını yönet",
+    "studiosDescription": "Bu şubenin dans stüdyolarını ve salonlarını yönetin",
     "manageStudios": "Stüdyoları yönet"
   },
   "courseSessions": {
@@ -1304,7 +1304,7 @@
     "searchPlaceholder": "Eğitmen adına göre ara…",
     "hasRate": "Ücreti var",
     "noneAvailable": "Uygun eğitmen yok: hepsi bu kursa atanmış ya da yerine seçilmiş.",
-    "noMatch": "Aramanla eşleşen eğitmen yok"
+    "noMatch": "Aramanızla eşleşen eğitmen yok"
   },
   "courseStudents": {
     "action": "İşlem",
@@ -1332,7 +1332,7 @@
     "cancel": "İptal",
     "searchPlaceholder": "Eğitmen ara…",
     "noneForDanceType": "Bu dans türü için eğitmen yok",
-    "noMatch": "Aramanla eşleşen eğitmen yok"
+    "noMatch": "Aramanızla eşleşen eğitmen yok"
   },
   "instructorRatesTable": {
     "delete": "Ücreti sil",
@@ -1343,7 +1343,7 @@
     "courseNotFound": "Kurs bulunamadı"
   },
   "historyPage": {
-    "description": "Stüdyondaki tüm etkinlikler ve değişiklikler",
+    "description": "Stüdyonuzdaki tüm etkinlikler ve değişiklikler",
     "logDescription": "Tüm etkinlik kaydı"
   },
   "instructorRateDrawer": {
@@ -1446,12 +1446,12 @@
     "fetchStudentsFailed": "Öğrenciler yüklenemedi",
     "recordAttendanceFailed": "Yoklama kaydedilemedi",
     "removeAttendanceFailed": "Yoklama kaldırılamadı",
-    "attendanceEmpty": "Yoklama verisi boş. Lütfen en az bir öğrenci seç.",
+    "attendanceEmpty": "Yoklama verisi boş. Lütfen en az bir öğrenci seçin.",
     "invalidDateFormat": "Geçersiz tarih biçimi (YYYY-AA-GG olmalı)",
     "invalidDate": "Geçersiz tarih",
     "createSessionFailed": "Yoklama için ders oluşturulamadı",
-    "noInstructorAssigned": "Bu sınıfta eğitmen atanmamış. Lütfen eğitmen ata.",
-    "saveInstructorFailed": "Eğitmen bilgisi kaydedilemedi. Lütfen tekrar dene.",
+    "noInstructorAssigned": "Bu sınıfta eğitmen atanmamış. Lütfen eğitmen atayın.",
+    "saveInstructorFailed": "Eğitmen bilgisi kaydedilemedi. Lütfen tekrar deneyin.",
     "noOrganization": "Hesabına bağlı stüdyo bulunamadı",
     "fetchReportsFailed": "Raporlar yüklenemedi",
     "signInFailed": "Giriş yapılamadı",
@@ -1464,12 +1464,12 @@
     "keepOneOwner": "Mağazanın en az bir sahibi olmalı",
     "validEmailRequired": "Geçerli bir e-posta gerekli",
     "passwordMin": "Şifre en az 8 karakter olmalı",
-    "cannotDisableSelf": "Kendi hesabını devre dışı bırakamazsın",
-    "cannotRemoveOwnAdmin": "Kendi yönetici yetkini kaldıramazsın",
+    "cannotDisableSelf": "Kendi hesabınızı devre dışı bırakamazsınız",
+    "cannotRemoveOwnAdmin": "Kendi yönetici yetkinizi kaldıramazsınız",
     "fetchBranchesFailed": "Şubeler yüklenemedi",
     "branchNotFound": "Şube bulunamadı",
     "createBranchFailed": "Şube oluşturulamadı",
-    "branchNotInOrg": "Şube stüdyonda bulunamadı",
+    "branchNotInOrg": "Şube stüdyonuzda bulunamadı",
     "updateBranchFailed": "Şube güncellenemedi",
     "deleteBranchFailed": "Şube silinemedi",
     "fetchTransactionsFailed": "İşlemler yüklenemedi",
@@ -1489,9 +1489,9 @@
     "checkCoursesFailed": "Bu günün kursları kontrol edilemedi",
     "duplicateCourse": "Bu şubede bu gün için bu dans türünde zaten bir kurs var",
     "createCourseFailed": "Kurs oluşturulamadı",
-    "courseNotInOrg": "Kurs stüdyonda bulunamadı",
+    "courseNotInOrg": "Kurs stüdyonuzda bulunamadı",
     "updateCourseFailed": "Kurs güncellenemedi",
-    "updateCoursePermission": "Bu kursu güncelleme yetkin yok",
+    "updateCoursePermission": "Bu kursu güncelleme yetkiniz yok",
     "deleteCourseFailed": "Kurs silinemedi",
     "courseDayMissing": "Kursun haftanın günü belirlenmemiş",
     "insertSessionsFailed": "Dersler oluşturulamadı",
@@ -1500,7 +1500,7 @@
     "fetchDanceTypesFailed": "Dans türleri yüklenemedi",
     "danceTypeNotFound": "Dans türü bulunamadı",
     "createDanceTypeFailed": "Dans türü oluşturulamadı",
-    "danceTypeNotInOrg": "Dans türü stüdyonda bulunamadı",
+    "danceTypeNotInOrg": "Dans türü stüdyonuzda bulunamadı",
     "updateDanceTypeFailed": "Dans türü güncellenemedi",
     "deleteDanceTypeFailed": "Dans türü silinemedi",
     "fetchAttendanceHistoryFailed": "Yoklama geçmişi yüklenemedi",
@@ -1523,23 +1523,23 @@
     "fetchRatesFailed": "Eğitmen ücretleri yüklenemedi",
     "instructorNotFound": "Eğitmen bulunamadı",
     "createInstructorFailed": "Eğitmen oluşturulamadı",
-    "instructorNotInOrg": "Eğitmen stüdyonda bulunamadı",
+    "instructorNotInOrg": "Eğitmen stüdyonuzda bulunamadı",
     "updateInstructorFailed": "Eğitmen güncellenemedi",
     "deleteInstructorFailed": "Eğitmen silinemedi",
     "fetchFiltersFailed": "Filtre seçenekleri yüklenemedi",
     "invalidEmail": "Geçersiz e-posta adresi",
-    "noPermissionAddMembers": "Ekip üyesi ekleme yetkin yok",
+    "noPermissionAddMembers": "Ekip üyesi ekleme yetkiniz yok",
     "onlyOwnerAddsManagers": "Yöneticiyi yalnızca sahip ekleyebilir",
     "alreadyMember": "Bu kullanıcı zaten stüdyonun üyesi",
     "addMemberFailed": "Kullanıcı stüdyoya eklenemedi",
-    "emailHasAccount": "Bu e-postanın zaten bir hesabı var. Ekibine eklemesi için bir StudioDesk yöneticisine başvur.",
+    "emailHasAccount": "Bu e-postanın zaten bir hesabı var. Ekibinize eklemesi için bir StudioDesk yöneticisine başvurun.",
     "cannotAddOwner": "Yeni ekip üyesi sahip olarak eklenemez",
-    "selectExistingUser": "Listeden mevcut bir kullanıcı seç",
-    "noPermissionChangeRoles": "Ekip üyelerinin rolünü değiştirme yetkin yok",
+    "selectExistingUser": "Listeden mevcut bir kullanıcı seçin",
+    "noPermissionChangeRoles": "Ekip üyelerinin rolünü değiştirme yetkiniz yok",
     "memberNotFound": "Ekip üyesi bulunamadı",
     "cannotChangeOwnerRole": "Sahibin rolü değiştirilemez",
     "updateRoleFailed": "Ekip üyesinin rolü güncellenemedi",
-    "noPermissionRemoveMembers": "Ekip üyesi çıkarma yetkin yok",
+    "noPermissionRemoveMembers": "Ekip üyesi çıkarma yetkiniz yok",
     "cannotRemoveOwner": "Stüdyo sahibi çıkarılamaz",
     "removeMemberFailed": "Ekip üyesi çıkarılamadı",
     "onlyOwnerResetsPasswords": "Ekip üyelerinin şifresini yalnızca stüdyo sahibi sıfırlayabilir",
@@ -1548,7 +1548,7 @@
     "fetchPackagesFailed": "Paketler yüklenemedi",
     "packageNotFound": "Paket bulunamadı",
     "createPackageFailed": "Paket oluşturulamadı",
-    "packageNotInOrg": "Paket stüdyonda bulunamadı",
+    "packageNotInOrg": "Paket stüdyonuzda bulunamadı",
     "updatePackageFailed": "Paket güncellenemedi",
     "deletePackageFailed": "Paket silinemedi",
     "studioNameMin": "Stüdyo adı en az 2 karakter olmalı",
@@ -1561,10 +1561,10 @@
     "newPasswordMin": "Yeni şifre en az 8 karakter olmalı",
     "currentPasswordWrong": "Mevcut şifre yanlış",
     "newPasswordSame": "Yeni şifre eskisinden farklı olmalı",
-    "noPermissionSettings": "Bu ayarları değiştirme yetkin yok",
+    "noPermissionSettings": "Bu ayarları değiştirme yetkiniz yok",
     "studentNotFound": "Öğrenci bulunamadı",
     "createStudentFailed": "Öğrenci oluşturulamadı",
-    "studentNotInOrg": "Öğrenci stüdyonda bulunamadı",
+    "studentNotInOrg": "Öğrenci stüdyonuzda bulunamadı",
     "updateStudentFailed": "Öğrenci güncellenemedi",
     "deleteStudentFailed": "Öğrenci silinemedi",
     "createPackageRecordFailed": "Paket satışı kaydedilemedi",

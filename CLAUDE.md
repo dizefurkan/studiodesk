@@ -34,6 +34,10 @@
 - Dates/days in the app locale: `<FormattedDate value=… />`, `useLocaleNames()` (weekday/month
   names), `useDateFnsLocale()` for date-fns `format`, `weekdayNames(locale)` on the server.
   Money: `formatCurrency(value, organization.currency)` — never a hardcoded `₺`/`$`.
+- Turkish tone: buttons/labels/placeholders stay neutral ("Kaydet", "Öğrenci ekle", "Şube seç").
+  Sentences address the user as "siz" with the plain imperative: "Lütfen bir şube seçin",
+  "Şifrenizi girin", "Yetkiniz yok". Never "sen" forms ("seç", "şifreni", "yetkin yok") and
+  never the bureaucratic "-iniz" imperative ("giriniz", "seçiniz").
 - Navigation: `Link`, `useRouter`, `redirect` from `@/i18n/navigation` (locale is added automatically;
   write hrefs without it). Not `next/link` / `next/navigation` (except `notFound`, `useSearchParams`, `usePathname`).
   Refresh server data with `router.refresh()`, never `window.location.reload()`.
