@@ -72,7 +72,8 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "changeLanguage": "Change language",
-    "pickDate": "Pick a date"
+    "pickDate": "Pick a date",
+    "refresh": "Refresh"
   },
   "dates": {
     "days": {
@@ -711,25 +712,6 @@
     "from": "From",
     "to": "To"
   },
-  "pages": {
-    "home": {
-      "title": "StudioDesk",
-      "subtitle": "Powerful Features",
-      "description": "All-in-one platform for managing students, instructors, courses, attendance, and payments. Built for modern dance studios.",
-      "studentManagement": "Student Management",
-      "studentManagementDesc": "Track students, manage credits, and monitor progress",
-      "courseManagement": "Course Management",
-      "courseManagementDesc": "Create and manage courses with multiple instructors",
-      "attendanceTracking": "Attendance Tracking",
-      "attendanceTrackingDesc": "Mark attendance and track student participation",
-      "paymentProcessing": "Payment Processing",
-      "paymentProcessingDesc": "Accept payments and manage credit packages",
-      "instructorManagement": "Instructor Management",
-      "instructorManagementDesc": "Manage instructor profiles and calculate earnings",
-      "reporting": "Reporting",
-      "reportingDesc": "Generate reports and analyze studio performance"
-    }
-  },
   "data": {
     "roles": {
       "owner": "Owner",
@@ -821,7 +803,8 @@
       "stores": "Stores",
       "accounts": "Accounts",
       "dashboard": "Dashboard",
-      "logout": "Log out"
+      "logout": "Log out",
+      "demoRequests": "Demo requests"
     },
     "common": {
       "save": "Save",
@@ -918,7 +901,24 @@
       "suspendedText": "The store you belong to is currently suspended. Please contact your administrator.",
       "logout": "Log out"
     },
-    "copy": "Copy"
+    "copy": "Copy",
+    "demoRequests": {
+      "title": "Demo requests",
+      "subtitle": "Requests sent from the website, newest first.",
+      "empty": "No requests yet.",
+      "statusLabel": "Status",
+      "status": {
+        "new": "New",
+        "contacted": "Contacted",
+        "closed": "Closed"
+      },
+      "studentCount": {
+        "lt50": "under 50 students",
+        "50to150": "50–150 students",
+        "150to400": "150–400 students",
+        "gt400": "over 400 students"
+      }
+    }
   },
   "confirmDialog": {
     "confirm": "Confirm",
@@ -1058,7 +1058,10 @@
     "information": "Information",
     "joined": "Joined",
     "updated": "Last updated",
-    "timelineDescription": "All changes and actions related to this student"
+    "timelineDescription": "All changes and actions related to this student",
+    "lessonsAttended": "Lessons attended",
+    "lastLesson": "Last lesson",
+    "addNote": "Add a note"
   },
   "instructorDetail": {
     "backToList": "← Back to instructors",
@@ -1211,19 +1214,6 @@
     "confirm": "Confirm purchase",
     "creditsCount": "{count, plural, one {# credit} other {# credits}}"
   },
-  "landing": {
-    "featuresDescription": "Everything you need to run a successful dance studio",
-    "ctaTitle": "Ready to transform your studio?",
-    "ctaDescription": "Join the dance studios using StudioDesk",
-    "ctaButton": "Start your free trial today",
-    "secureTitle": "Secure & private",
-    "secureDescription": "Enterprise-grade security with data isolation",
-    "fastTitle": "Fast & reliable",
-    "fastDescription": "Built on modern cloud infrastructure",
-    "heroTitle": "Manage your dance studio",
-    "heroHighlight": "like never before",
-    "copyright": "© {year} StudioDesk. All rights reserved."
-  },
   "studentHistory": {
     "title": "History",
     "description": "Attendance records and credit usage",
@@ -1236,12 +1226,19 @@
     "used": "Used",
     "remaining": "Remaining",
     "dateAt": "{date} at {time}",
-    "purchased": "Purchased: {date}",
+    "purchased": "bought {date}",
     "unknownCourse": "Unknown course",
     "unknownPackage": "Unknown package",
     "danceTypeLabel": "Dance type:",
     "branchLabel": "Branch:",
-    "classesAttended": "{count, plural, one {# class attended} other {# classes attended}}"
+    "classesAttended": "{count, plural, one {# class attended} other {# classes attended}}",
+    "monthSummary": "Attended {present}/{total}",
+    "present": "Present",
+    "absent": "Absent",
+    "noCreditTaken": "No credit taken",
+    "usedOf": "Used {used}/{total}",
+    "left": "{count} left",
+    "finished": "Used up"
   },
   "studentCourses": {
     "loading": "Loading courses…",
@@ -1254,7 +1251,9 @@
     "creditsUnit": "credits",
     "enrolledOn": "Enrolled {date}",
     "noActive": "No active courses with remaining credits",
-    "noCompleted": "No completed courses yet"
+    "noCompleted": "No completed courses yet",
+    "lessons": "{count, plural, one {# lesson} other {# lessons}}",
+    "creditsLeft": "{count, plural, one {# credit left} other {# credits left}}"
   },
   "branchDetail": {
     "backToList": "← Back to branches",
@@ -1275,14 +1274,22 @@
     "count": "{count, plural, one {# session} other {# sessions}}"
   },
   "studentCredits": {
-    "title": "Credits",
-    "empty": "No active packages",
+    "title": "Credits left",
+    "empty": "No active package. Sell one to take attendance.",
     "edit": "Edit",
     "missingPackage": "Package not found",
     "updateFailed": "Failed to update credits",
     "unknownDanceType": "Unknown",
     "packageFallback": "Package",
-    "usedLeft": "{used} used • {remaining} left"
+    "usedLeft": "{used} used • {remaining} left",
+    "none": "No credits",
+    "low": "Running out",
+    "ok": "Active",
+    "expires": "Valid until {date}",
+    "noExpiry": "No expiry",
+    "decrease": "Remove a credit",
+    "increase": "Add a credit",
+    "done": "Done"
   },
   "instructorAttendance": {
     "title": "Attendance history",
@@ -1595,7 +1602,10 @@
     "unexpectedWithDetail": "An unexpected error occurred: {detail}",
     "attendanceAlreadyTaken": "Attendance for this date has already been taken.",
     "missingPackageData": "Some students are missing package data. Refresh the page and try again.",
-    "undoAttendanceFailed": "Could not undo the attendance."
+    "undoAttendanceFailed": "Could not undo the attendance.",
+    "demoRequestInvalid": "Check the highlighted fields and try again.",
+    "demoRequestFailed": "Your request couldn't be sent. Try again in a moment.",
+    "notAuthorized": "You don't have permission to do this."
   },
   "attendanceSheet": {
     "markEveryone": "Mark {count, plural, one {# more student} other {# more students}} before saving.",
@@ -1715,5 +1725,363 @@
     "schedule": "Schedule",
     "earnings": "Earnings",
     "studios": "Studios"
+  },
+  "consent": {
+    "bannerLabel": "Cookie consent",
+    "bannerText": "We use necessary cookies to keep you signed in and remember your language. With your permission we also measure site visits anonymously.",
+    "policyLink": "Cookie policy",
+    "acceptAll": "Accept",
+    "rejectAll": "Necessary only",
+    "preferences": "Preferences",
+    "dialogTitle": "Cookie preferences",
+    "dialogDescription": "Choose which cookies we may use. You can change this any time from the link at the bottom of the page.",
+    "necessaryTitle": "Necessary",
+    "necessaryText": "Sign-in, language and these preferences. Always on.",
+    "analyticsTitle": "Analytics",
+    "analyticsText": "Anonymous visit statistics on the public site. Never inside the app.",
+    "save": "Save preferences"
+  },
+  "site": {
+    "meta": {
+      "title": "StudioDesk: attendance, class packages and instructor pay for dance studios",
+      "description": "Sell class packages, run your weekly timetable, take attendance from your phone and close the month with instructor pay already calculated."
+    },
+    "skip": "Skip to content",
+    "nav": {
+      "label": "Main menu",
+      "how": "How it works",
+      "features": "Features",
+      "faq": "FAQ",
+      "blog": "Blog",
+      "signIn": "Sign in",
+      "demo": "Request a demo",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu",
+      "pricing": "Pricing"
+    },
+    "hero": {
+      "title": "Run your studio, not spreadsheets",
+      "lead": "Class packages, the weekly timetable, attendance and instructor pay in one place. Credits come off as students check in; month-end numbers are already done.",
+      "primary": "Request a demo",
+      "secondary": "See how it works",
+      "sheet": {
+        "course": "Salsa beginners",
+        "when": "Tuesday 19:00, Kadıköy branch",
+        "marked": "{done}/{total}",
+        "credits": "{count, plural, one {# credit} other {# credits}}",
+        "present": "Present",
+        "save": "Save attendance",
+        "saved": "Saved: {present} present, {absent} absent"
+      },
+      "badge": "For dance studios",
+      "stage": {
+        "today": "Today",
+        "lessons": "lessons",
+        "revenue": "Revenue this month",
+        "renewals": "Credits running out",
+        "credits": "{count, plural, =0 {none left} one {# left} other {# left}}",
+        "sell": "Sell a package",
+        "pay": "Classes this month",
+        "payNote": "instructor pay"
+      }
+    },
+    "how": {
+      "title": "From the sale to the end of the month",
+      "lead": "Each step feeds the next, so nothing is typed twice.",
+      "steps": {
+        "sell": {
+          "title": "Sell the package",
+          "text": "Sell a credit pack for a dance style. The payment goes into the cash register at the same moment."
+        },
+        "schedule": {
+          "title": "Set the timetable",
+          "text": "Define each class once with its day, time, branch and teacher. The calendar repeats every week."
+        },
+        "attend": {
+          "title": "Take attendance",
+          "text": "Mark it on your phone as class ends. Credits come off, and students running out show up as a warning."
+        },
+        "pay": {
+          "title": "Close the month",
+          "text": "Instructor pay is calculated from attendance. Income and expenses sit side by side in the cash register."
+        }
+      },
+      "panels": {
+        "sell": {
+          "student": "Student",
+          "package": "8 bachata classes",
+          "credits": "8 credits, valid for 6 weeks",
+          "cash": "Recorded as income in the cash register"
+        },
+        "schedule": {
+          "title": "Weekly timetable",
+          "days": "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
+        },
+        "attend": {
+          "title": "Salsa 1, Monday 19:00",
+          "credits": "{count, plural, one {# credit left} other {# credits left}}",
+          "present": "Present",
+          "absent": "Absent",
+          "renewal": "Mert Aydın has 1 credit left."
+        },
+        "pay": {
+          "title": "November pay",
+          "lessons": "{count, plural, one {# class} other {# classes}}",
+          "income": "Income",
+          "expense": "Expenses"
+        }
+      },
+      "eyebrow": "How it works",
+      "stepLabel": "Step {n} of {total}"
+    },
+    "features": {
+      "title": "What the front desk does every day, in one screen",
+      "lead": "Not an accounting package, not a generic CRM. Built around classes, credits and teachers.",
+      "eyebrow": "Features",
+      "bento": {
+        "attendance": {
+          "title": "Attendance before the class leaves",
+          "text": "Mark it on the phone in the last minute of class. Start with everyone present and tap the absent ones.",
+          "course": "Salsa 1, Monday 19:00",
+          "all": "Everyone present",
+          "present": "Present",
+          "absent": "Absent"
+        },
+        "credits": {
+          "title": "Credits take care of themselves",
+          "text": "Saving attendance takes the credit from the right package.",
+          "unit": "credits left"
+        },
+        "pay": {
+          "title": "Pay comes from attendance",
+          "text": "Rates per instructor, branch and dance style. Substitutes get paid for the classes they covered."
+        },
+        "branches": {
+          "title": "Every branch, one account",
+          "text": "Separate timetables, rooms and cash per branch."
+        },
+        "cash": {
+          "title": "Cash register",
+          "text": "Package sales arrive as income; add the rest by hand.",
+          "income": "Package sale",
+          "expense": "Rent"
+        },
+        "phone": {
+          "title": "Works on the phone",
+          "text": "In the browser. Nothing to install."
+        }
+      }
+    },
+    "faq": {
+      "title": "Common questions",
+      "items": {
+        "setup": {
+          "q": "How long does setup take?",
+          "a": "We set up your branches, dance styles, instructors and packages together on the first call. After you add your students you can take attendance the same day."
+        },
+        "devices": {
+          "q": "Which devices does it work on?",
+          "a": "Phones, tablets and computers, in the browser. There is no app to install."
+        },
+        "students": {
+          "q": "Do students need an account?",
+          "a": "No. Your studio team uses StudioDesk; students only appear in your records."
+        },
+        "data": {
+          "q": "Is my data safe?",
+          "a": "Each studio’s data is kept separate and is visible only to your authorised team. It is stored on servers in the EU (Frankfurt) and travels over encrypted connections."
+        },
+        "branches": {
+          "q": "I have several branches. Is one account enough?",
+          "a": "Yes. All branches are run from one account; timetables, rooms and the cash register are kept per branch."
+        },
+        "price": {
+          "q": "How much does it cost?",
+          "a": "Plans and prices are listed above. Setup with us is included in every plan, and for larger studios we can prepare a custom quote."
+        }
+      },
+      "lead": "The questions studios ask us most.",
+      "eyebrow": "FAQ",
+      "cardTitle": "Something else?",
+      "cardText": "Write it in the demo form and we will answer when we call.",
+      "cardButton": "Ask in the demo form"
+    },
+    "demo": {
+      "title": "See it with your own classes",
+      "lead": "Leave your details and we will call to set StudioDesk up with your timetable and packages.",
+      "steps": {
+        "form": {
+          "title": "Fill in the form",
+          "text": "Two minutes. Only name, studio and phone are required."
+        },
+        "call": {
+          "title": "We call you",
+          "text": "We go through your timetable and packages and prepare your account."
+        },
+        "start": {
+          "title": "Your team starts",
+          "text": "Your team gets their sign-in details and can take the first attendance that day."
+        }
+      },
+      "form": {
+        "name": "Full name",
+        "studioName": "Studio name",
+        "phone": "Phone",
+        "email": "Email",
+        "city": "City",
+        "studentCount": "Number of students",
+        "choose": "Choose",
+        "optional": "optional",
+        "studentCountOptions": {
+          "lt50": "Under 50",
+          "50to150": "50–150",
+          "150to400": "150–400",
+          "gt400": "Over 400"
+        },
+        "message": "Message",
+        "messagePlaceholder": "How many branches do you have? How do you track things today?",
+        "consent": "I have read the <link>Personal Data Notice</link> and agree to my details being used to reply to this request.",
+        "submit": "Send demo request",
+        "sending": "Sending…",
+        "sentTitle": "We have your request",
+        "sentText": "We will call you soon on the number you gave.",
+        "errors": {
+          "name": "Enter your name.",
+          "studioName": "Enter your studio’s name.",
+          "phone": "Enter a valid phone number.",
+          "email": "Enter a valid email address.",
+          "consent": "Confirm the notice to continue."
+        }
+      },
+      "eyebrow": "Get started",
+      "cards": {
+        "c1": {
+          "title": "Apps to install",
+          "note": "it opens in the browser"
+        },
+        "c2": {
+          "title": "Account",
+          "note": "for every branch"
+        },
+        "c3": {
+          "title": "Roles",
+          "note": "owner, manager, staff"
+        },
+        "c4": {
+          "title": "Languages",
+          "note": "Turkish and English"
+        },
+        "c5": {
+          "title": "Data location",
+          "note": "servers in Frankfurt",
+          "value": "EU"
+        }
+      }
+    },
+    "footer": {
+      "tagline": "Attendance, class packages and instructor pay for dance studios.",
+      "product": "Product",
+      "how": "How it works",
+      "features": "Features",
+      "faq": "FAQ",
+      "signIn": "Sign in",
+      "resources": "Resources",
+      "blog": "Blog",
+      "demo": "Request a demo",
+      "legal": "Legal",
+      "cookiePreferences": "Cookie preferences",
+      "copyright": "© {year} SFDYAZILIM. All rights reserved.",
+      "pricing": "Pricing"
+    },
+    "legalTitles": {
+      "kvkk": "Personal Data Notice (KVKK)",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use",
+      "cookies": "Cookie Policy",
+      "distance-sales": "Distance Sales and Refunds"
+    },
+    "legal": {
+      "updated": "Last updated {date}"
+    },
+    "blog": {
+      "title": "Blog",
+      "lead": "Practical writing on running a dance studio: attendance, packages, instructors and cash.",
+      "minutes": "{count} min read",
+      "back": "All posts",
+      "ctaTitle": "Try it with your own studio",
+      "ctaText": "We set StudioDesk up with you on a call, with your own classes and packages.",
+      "ctaButton": "Request a demo",
+      "more": "More posts"
+    },
+    "marquee": {
+      "title": "Built for every kind of dance studio",
+      "items": "Salsa,Bachata,Tango,Ballet,Hip hop,Contemporary,Kizomba,Zeybek,Folk dance,Kids ballet,Latin,Swing"
+    },
+    "compare": {
+      "title": "The same week, without the notebook",
+      "lead": "What changes at the desk when the records live in one place.",
+      "before": "Notebook and spreadsheet",
+      "after": "With StudioDesk",
+      "rows": {
+        "attendance": {
+          "job": "Attendance",
+          "before": "Written in a notebook in the evening, from memory.",
+          "after": "Taken on the phone as class ends."
+        },
+        "credits": {
+          "job": "Credits",
+          "before": "Counted from the notebook into a spreadsheet.",
+          "after": "Taken off automatically when attendance is saved."
+        },
+        "pay": {
+          "job": "Instructor pay",
+          "before": "Counted class by class at month end, then argued over.",
+          "after": "Calculated from attendance, substitutes included."
+        },
+        "renewals": {
+          "job": "Renewals",
+          "before": "You notice the credits ran out weeks later.",
+          "after": "Students with one credit left are listed on the home screen."
+        },
+        "cash": {
+          "job": "Cash",
+          "before": "Sales and the cash book never quite match.",
+          "after": "Each package sale is recorded as income when it happens."
+        }
+      },
+      "eyebrow": "Before and after"
+    },
+    "pricing": {
+      "eyebrow": "Pricing",
+      "title": "Plans that grow with your studio",
+      "lead": "Every plan includes setup with us on a call. Change or cancel any time.",
+      "billingLabel": "Billing period",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "save": "Save {percent}%",
+      "perMonth": "/ month",
+      "billedYearly": "{total} billed yearly",
+      "billedMonthly": "Billed monthly",
+      "recommended": "Recommended",
+      "cta": "Request a demo",
+      "footnote": "Prices exclude VAT.",
+      "plans": {
+        "starter": {
+          "name": "Starter",
+          "description": "For a single-room studio getting organised.",
+          "features": "1 branch|Up to 150 students|3 team members|Attendance and credit packages|Cash register"
+        },
+        "studio": {
+          "name": "Studio",
+          "description": "For studios with several teachers and a full timetable.",
+          "features": "1 branch, several rooms|Unlimited students|10 team members|Instructor pay rates and earnings|Activity history|Priority support"
+        },
+        "multi": {
+          "name": "Multi-branch",
+          "description": "For studios running more than one location.",
+          "features": "Unlimited branches|Unlimited students|Unlimited team members|Separate timetable and cash per branch|Everything in Studio|Dedicated setup help"
+        }
+      }
+    }
   }
 }

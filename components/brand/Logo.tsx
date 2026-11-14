@@ -5,18 +5,27 @@ import { cn } from '@/lib/utils'
  * Colors come from theme tokens (--primary, --highlight), so it follows light/dark.
  * Static asset copies live in /public/brand and app/icon.svg (favicon).
  */
-export function LogoMark({ className, title = 'StudioDesk' }: { className?: string; title?: string }) {
+export function LogoMark({
+  className,
+  title = 'StudioDesk',
+  inverted = false,
+}: {
+  className?: string
+  title?: string
+  /** On dark backgrounds: lime body, light head */
+  inverted?: boolean
+}) {
   return (
     <svg viewBox="0 0 64 64" fill="none" role="img" aria-label={title} className={cn('size-8 shrink-0', className)}>
-      <circle cx="41" cy="8.5" r="5" className="fill-highlight" />
+      <circle cx="41" cy="8.5" r="5" className={inverted ? 'fill-background' : 'fill-highlight'} />
       <path
         d="M40 19c-8-1-17 2-16 9 1 7 17 7 17 16 0 7-9 10-19 8"
-        className="stroke-primary"
+        className={inverted ? 'stroke-highlight' : 'stroke-primary'}
         strokeWidth="6.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M30 19.5C24 16 21 11 20 5" className="stroke-primary" strokeWidth="4.5" strokeLinecap="round" />
+      <path d="M30 19.5C24 16 21 11 20 5" className={inverted ? 'stroke-highlight' : 'stroke-primary'} strokeWidth="4.5" strokeLinecap="round" />
     </svg>
   )
 }
@@ -33,14 +42,14 @@ export function Logo({
 }) {
   return (
     <span className={cn('inline-flex items-center gap-1.5', className)}>
-      <LogoMark className={markClassName} title="" />
+      <LogoMark className={markClassName} title="" inverted={inverted} />
       <span
         className={cn(
           'text-lg font-bold tracking-tight',
           inverted ? 'text-white' : 'text-foreground'
         )}
       >
-        Studio<span className="text-primary">Desk</span>
+        Studio<span className={inverted ? 'text-highlight' : 'text-primary'}>Desk</span>
       </span>
     </span>
   )

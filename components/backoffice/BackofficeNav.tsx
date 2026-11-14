@@ -3,7 +3,7 @@
 import { Link } from '@/i18n/navigation'
 import { usePathname } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
-import { Building2, Users } from 'lucide-react'
+import { Building2, Inbox, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +16,7 @@ export function BackofficeNav() {
   const items = [
     { href: '/backoffice/stores', label: t('nav.stores'), icon: Building2 },
     { href: '/backoffice/accounts', label: t('nav.accounts'), icon: Users },
+    { href: '/backoffice/demo-requests', label: t('nav.demoRequests'), icon: Inbox },
   ]
 
   return (

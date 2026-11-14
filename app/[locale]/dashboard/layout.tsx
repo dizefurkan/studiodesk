@@ -39,7 +39,7 @@ export default async function DashboardLayout({
       value={{ weekStartDay: organization.week_start_day ?? 1, currency: organization.currency ?? 'TRY' }}
     >
     <SidebarProvider>
-      <div className="flex h-screen bg-muted/50">
+      <div className="flex h-screen bg-background">
         {/* Sidebar - Always rendered, handles responsive visibility internally */}
         <Sidebar />
 

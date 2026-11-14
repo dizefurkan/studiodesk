@@ -1,27 +1,31 @@
 'use client'
 
-import { useState } from 'react'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Calendar, Zap, BookOpen, History } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
-import { parseDateOnly } from '@/lib/i18n/dates'
+import { CalendarX2, Check, PackageOpen, X } from 'lucide-react'
+import { Link } from '@/i18n/navigation'
+import { cn } from '@/lib/utils'
+import { formatDay, parseDateOnly } from '@/lib/i18n/dates'
+import { Card } from '@/components/ui/card'
 
-interface AttendanceHistoryItem {
+export interface AttendanceHistoryItem {
   id: string
   created_at: string
+  is_present?: boolean
+  deduct_credits?: boolean
+  notes?: string | null
   course_sessions?: {
+    id?: string
     session_date: string
     course?: {
       id: string
       name: string
-      dance_types?: { name: string }
-      branches?: { name: string }
-    }
-  }
+      dance_types?: { name: string } | null
+      branches?: { name: string } | null
+    } | null
+  } | null
 }
 
-interface PackageHistoryItem {
+export interface PackageHistoryItem {
   id: string
   created_at: string
   remaining_credits: number
@@ -31,221 +35,144 @@ interface PackageHistoryItem {
     id: string
     name: string
     total_credits: number
-    dance_types?: { name: string }
-  }
+    dance_types?: { name: string } | null
+  } | null
 }
 
 interface StudentHistoryProps {
   attendanceHistory: AttendanceHistoryItem[]
   packageHistory: PackageHistoryItem[]
-  /** Show just one list, without the section title and the inner tab switch */
-  view?: 'attendance' | 'credits'
+  view: 'attendance' | 'credits'
 }
 
-export function StudentHistory({
-  attendanceHistory,
-  packageHistory,
-  view,
-}: StudentHistoryProps) {
+/** The student's attendance (grouped by month) or package purchases, as compact lists. */
+export function StudentHistory({ attendanceHistory, packageHistory, view }: StudentHistoryProps) {
+  return view === 'attendance' ? (
+    <AttendanceList items={attendanceHistory} />
+  ) : (
+    <PurchaseList items={packageHistory} />
+  )
+}
+
+function Empty({ icon: Icon, text }: { icon: typeof CalendarX2; text: string }) {
+  return (
+    <Card className="items-center gap-2 py-10 text-center">
+      <span className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <Icon className="size-5" />
+      </span>
+      <p className="text-sm text-muted-foreground">{text}</p>
+    </Card>
+  )
+}
+
+function AttendanceList({ items }: { items: AttendanceHistoryItem[] }) {
   const tx = useTranslations('studentHistory')
   const locale = useLocale()
-  const [selectedTab, setActiveTab] = useState<'attendance' | 'credits'>(
-    'attendance'
+  if (items.length === 0) return <Empty icon={CalendarX2} text={tx('noAttendance')} />
+
+  // newest first, grouped by the lesson's month
+  const sorted = [...items].sort((a, b) =>
+    (b.course_sessions?.session_date ?? '').localeCompare(a.course_sessions?.session_date ?? '')
   )
-  const activeTab = view ?? selectedTab
+  const groups = new Map<string, AttendanceHistoryItem[]>()
+  for (const r of sorted) {
+    const key = (r.course_sessions?.session_date ?? r.created_at).slice(0, 7)
+    groups.set(key, [...(groups.get(key) ?? []), r])
+  }
+  const monthLabel = (key: string) =>
+    new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(parseDateOnly(key + '-01'))
 
   return (
     <div className="space-y-6">
-      {!view && (<>
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <History size={24} className="text-primary" />
-          <h2 className="text-2xl font-bold text-foreground">{tx('title')}</h2>
-        </div>
-        <p className="text-muted-foreground">{tx('description')}</p>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-2 border-b border-border">
-        <Button
-          onClick={() => setActiveTab('attendance')}
-          variant="ghost"
-          className={`px-4 py-2 font-medium ${
-            activeTab === 'attendance'
-              ? 'text-primary border-b-2 border-primary'
-              : 'text-muted-foreground'
-          }`}
-        >
-          <Calendar size={16} className="mr-2" />
-          {tx('attendanceTab')}
-        </Button>
-        <Button
-          onClick={() => setActiveTab('credits')}
-          variant="ghost"
-          className={`px-4 py-2 font-medium ${
-            activeTab === 'credits'
-              ? 'text-primary border-b-2 border-primary'
-              : 'text-muted-foreground'
-          }`}
-        >
-          <Zap size={16} className="mr-2" />
-          {tx('creditTab')}
-        </Button>
-      </div>
-
-      </>)}
-
-      {/* Attendance Tab */}
-      {activeTab === 'attendance' && (
-        <div className="space-y-4">
-          {attendanceHistory.length === 0 ? (
-            <Card className="border-border p-8 text-center">
-              <Calendar size={32} className="mx-auto text-muted-foreground/70 mb-2" />
-              <p className="text-muted-foreground">{tx('noAttendance')}</p>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {attendanceHistory.map((record) => {
-                const sessionDate = record.course_sessions?.session_date
-                  ? parseDateOnly(record.course_sessions.session_date)
-                  : null
-                const course = record.course_sessions?.course
-
-                return (
-                  <Card
-                    key={record.id}
-                    className="border-green-200 bg-green-50 p-4 hover:border-green-300 transition-colors"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <h4 className="font-semibold text-foreground">
-                          {course?.name || tx('unknownCourse')}
-                        </h4>
-                        <div className="text-sm text-muted-foreground space-y-0.5">
-                          {course?.dance_types?.name && (
-                            <p>
-                              {tx('danceTypeLabel')}{' '}
-                              <span className="text-foreground">
-                                {course.dance_types.name}
-                              </span>
-                            </p>
-                          )}
-                          {course?.branches?.name && (
-                            <p>
-                              {tx('branchLabel')}{' '}
-                              <span className="text-foreground">
-                                {course.branches.name}
-                              </span>
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-green-700 mb-1">
-                          {tx('attended')}
-                        </p>
-                        {sessionDate && (
-                          <p className="text-xs text-muted-foreground">
-                            {tx('dateAt', {
-                              date: sessionDate.toLocaleDateString(locale),
-                              time: sessionDate.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }),
-                            })}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                )
-              })}
+      {[...groups.entries()].map(([key, rows]) => {
+        const present = rows.filter((r) => r.is_present !== false).length
+        return (
+          <section key={key}>
+            <div className="mb-2 flex items-baseline justify-between px-1">
+              <h3 className="text-sm font-medium text-foreground first-letter:uppercase">{monthLabel(key)}</h3>
+              <p className="text-xs text-muted-foreground">{tx('monthSummary', { present, total: rows.length })}</p>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* Credits Tab */}
-      {activeTab === 'credits' && (
-        <div className="space-y-4">
-          {packageHistory.length === 0 ? (
-            <Card className="border-border p-8 text-center">
-              <Zap size={32} className="mx-auto text-muted-foreground/70 mb-2" />
-              <p className="text-muted-foreground">{tx('noPurchases')}</p>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {packageHistory.map((pkg) => {
-                const purchaseDate = new Date(pkg.created_at)
-                const totalCredits = pkg.package?.total_credits || 0
-                const creditsRemaining = pkg.remaining_credits || 0
-                const creditsUsed = totalCredits - creditsRemaining
-
+            <Card className="gap-0 divide-y divide-border p-0">
+              {rows.map((r) => {
+                const ok = r.is_present !== false
+                const course = r.course_sessions?.course
+                const date = r.course_sessions?.session_date
                 return (
-                  <Card key={pkg.id} className="border-border p-4">
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h4 className="font-semibold text-foreground">
-                            {pkg.package?.name || tx('unknownPackage')}
-                          </h4>
-                          {pkg.package?.dance_types?.name && (
-                            <p className="text-sm text-muted-foreground">
-                              {pkg.package.dance_types.name}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-right text-sm">
-                          <p className="text-muted-foreground">
-                            {tx('purchased', { date: purchaseDate.toLocaleDateString(locale) })}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Credit Stats */}
-                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
-                        <div className="text-center">
-                          <p className="text-xs text-muted-foreground mb-1">{tx('total')}</p>
-                          <p className="text-lg font-bold text-foreground">
-                            {totalCredits}
-                          </p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-xs text-muted-foreground mb-1">{tx('used')}</p>
-                          <p className="text-lg font-bold text-amber-600">
-                            {creditsUsed}
-                          </p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-xs text-muted-foreground mb-1">
-                            {tx('remaining')}
-                          </p>
-                          <p
-                            className={`text-lg font-bold ${
-                              creditsRemaining === 0
-                                ? 'text-red-600'
-                                : 'text-green-600'
-                            }`}
-                          >
-                            {creditsRemaining}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Attendance count */}
-                      {pkg.attendanceCount > 0 && (
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground pt-2 border-t border-border">
-                          <BookOpen size={14} />
-                          <span>
-                            {tx('classesAttended', { count: pkg.attendanceCount })}
-                          </span>
-                        </div>
+                  <div key={r.id} className="flex items-center gap-3 px-4 py-3">
+                    <span
+                      className={cn(
+                        'flex size-8 shrink-0 items-center justify-center rounded-lg',
+                        ok ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'
+                      )}
+                      aria-label={ok ? tx('present') : tx('absent')}
+                    >
+                      {ok ? <Check className="size-4" /> : <X className="size-4" />}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      {course ? (
+                        <Link href={`/dashboard/courses/${course.id}`} className="block truncate text-sm font-medium hover:underline">
+                          {course.name}
+                        </Link>
+                      ) : (
+                        <p className="truncate text-sm font-medium">{tx('unknownCourse')}</p>
+                      )}
+                      <p className="truncate text-xs text-muted-foreground">
+                        {[course?.dance_types?.name, course?.branches?.name, r.notes].filter(Boolean).join(', ')}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      {date && <p className="text-sm tabular-nums">{formatDay(locale, parseDateOnly(date), 'short')}</p>}
+                      {r.deduct_credits === false && (
+                        <p className="text-xs text-muted-foreground">{tx('noCreditTaken')}</p>
                       )}
                     </div>
-                  </Card>
+                  </div>
                 )
               })}
-            </div>
-          )}
-        </div>
-      )}
+            </Card>
+          </section>
+        )
+      })}
     </div>
+  )
+}
+
+function PurchaseList({ items }: { items: PackageHistoryItem[] }) {
+  const tx = useTranslations('studentHistory')
+  const locale = useLocale()
+  if (items.length === 0) return <Empty icon={PackageOpen} text={tx('noPurchases')} />
+
+  return (
+    <Card className="gap-0 divide-y divide-border p-0">
+      {items.map((p) => {
+        const total = p.package?.total_credits ?? 0
+        const left = p.remaining_credits ?? 0
+        const used = Math.max(0, total - left)
+        const pct = total > 0 ? (used / total) * 100 : 0
+        return (
+          <div key={p.id} className="grid gap-3 px-4 py-4 sm:grid-cols-[1fr_200px] sm:items-center">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">{p.package?.name ?? tx('unknownPackage')}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {[p.package?.dance_types?.name, tx('purchased', { date: formatDay(locale, new Date(p.created_at), 'medium') })]
+                  .filter(Boolean)
+                  .join(', ')}
+              </p>
+            </div>
+            <div>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">{tx('usedOf', { used, total })}</span>
+                <span className={cn('font-medium tabular-nums', left === 0 ? 'text-muted-foreground' : 'text-foreground')}>
+                  {left === 0 ? tx('finished') : tx('left', { count: left })}
+                </span>
+              </div>
+              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </Card>
   )
 }

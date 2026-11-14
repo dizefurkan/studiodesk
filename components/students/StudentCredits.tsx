@@ -1,170 +1,153 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from '@/i18n/navigation'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { BookOpen, AlertCircle, Plus, Minus, X } from 'lucide-react'
-import { updateStudentPackageCredits } from '@/lib/actions/students.actions'
+import { useLocale, useTranslations } from 'next-intl'
 import { toast } from 'sonner'
-import { useTranslations } from 'next-intl'
+import { Minus, Pencil, Plus } from 'lucide-react'
+import { useRouter } from '@/i18n/navigation'
+import { updateStudentPackageCredits } from '@/lib/actions/students.actions'
+import { formatDay, parseDateOnly, toDateString } from '@/lib/i18n/dates'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 
 interface StudentCreditsProps {
   packages: Array<{
     id: string
     remaining_credits: number
+    expire_date?: string | null
     packages?: {
       name: string
       total_credits: number
       dance_types?: { name: string } | null
     } | null
   }>
-  loading?: boolean
+  /** Shown in the empty state */
+  sellAction?: React.ReactNode
 }
 
-export function StudentCredits({ packages, loading }: StudentCreditsProps) {
+const SOON_DAYS = 7
+
+/**
+ * Sidebar card: credits left in total and per package, with expiry and a quick ±1 correction.
+ * Used-up and expired packages are left out here; they stay listed under "Purchases".
+ */
+export function StudentCredits({ packages, sellAction }: StudentCreditsProps) {
   const tx = useTranslations('studentCredits')
+  const locale = useLocale()
   const router = useRouter()
   const [updating, setUpdating] = useState<string | null>(null)
-  const [editingPackageId, setEditingPackageId] = useState<string | null>(null)
+  const [editing, setEditing] = useState<string | null>(null)
 
-  const handleUpdateCredits = async (packageId: string, newAmount: number) => {
-    if (!packageId) {
-      toast.error(tx('missingPackage'))
-      return
-    }
-    if (newAmount < 0) return
-    
-    setUpdating(packageId)
-    try {
-      const result = await updateStudentPackageCredits(packageId, newAmount)
-      if (result.error) {
-        toast.error(result.error)
-      } else {
-        router.refresh()
-      }
-    } catch (err) {
-      toast.error(tx('updateFailed'))
-    } finally {
-      setUpdating(null)
-    }
-  }
+  const today = toDateString()
+  const active = packages.filter(
+    (p) => p.remaining_credits > 0 && (!p.expire_date || p.expire_date.slice(0, 10) >= today)
+  )
+  const total = active.reduce((s, p) => s + p.remaining_credits, 0)
 
-  if (loading) {
-    return (
-      <Card className="border-border p-6">
-        <div className="animate-pulse space-y-3">
-          <div className="h-6 bg-muted rounded w-1/3"></div>
-          <div className="h-12 bg-muted rounded"></div>
-          <div className="h-12 bg-muted rounded"></div>
-        </div>
-      </Card>
-    )
-  }
-
-  if (!packages || packages.length === 0) {
-    return (
-      <Card className="border-border p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <BookOpen className="text-primary" size={20} />
-          <h2 className="text-lg font-semibold text-foreground">{tx('title')}</h2>
-        </div>
-        <div className="text-center py-8">
-          <AlertCircle className="mx-auto text-input mb-2" size={32} />
-          <p className="text-muted-foreground">{tx('empty')}</p>
-        </div>
-      </Card>
-    )
+  const update = async (id: string, value: number) => {
+    if (value < 0) return
+    setUpdating(id)
+    const res = await updateStudentPackageCredits(id, value)
+    setUpdating(null)
+    if (res.error) toast.error(res.error)
+    else router.refresh()
   }
 
   return (
-    <Card className="border-border">
-      <div className="p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <BookOpen className="text-primary" size={20} />
-          <h2 className="text-lg font-semibold text-foreground">{tx('title')}</h2>
+    <Card className="gap-0 p-0">
+      <div className="flex items-end justify-between gap-3 p-5">
+        <div>
+          <p className="text-sm text-muted-foreground">{tx('title')}</p>
+          <p className="mt-1 font-display text-4xl font-medium tabular-nums leading-none">{total}</p>
         </div>
+        <span
+          className={cn(
+            'rounded-full px-2.5 py-1 text-xs font-medium',
+            total === 0
+              ? 'bg-danger/10 text-danger'
+              : total <= 1
+                ? 'bg-warning/10 text-warning'
+                : 'bg-highlight text-highlight-foreground'
+          )}
+        >
+          {total === 0 ? tx('none') : total <= 1 ? tx('low') : tx('ok')}
+        </span>
+      </div>
 
-        <div className="space-y-4">
-          {packages.map((pkg, idx) => {
-            const danceType = pkg.packages?.dance_types?.name || tx('unknownDanceType')
-            const name = pkg.packages?.name || tx('packageFallback')
-            const total = pkg.packages?.total_credits || 0
-            const remaining = pkg.remaining_credits || 0
-            const used = Math.max(0, total - remaining)
-            const percentage = total > 0 ? (remaining / total) * 100 : 0
-
-            const statusColor =
-              percentage > 50 ? 'bg-green-50' : percentage > 25 ? 'bg-yellow-50' : 'bg-red-50'
-            const badgeColor =
-              percentage > 50 ? 'bg-green-100 text-green-800' : percentage > 25 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
-
+      {active.length === 0 ? (
+        <div className="border-t border-border p-5">
+          <p className="text-sm text-muted-foreground">{tx('empty')}</p>
+          {sellAction && <div className="mt-3">{sellAction}</div>}
+        </div>
+      ) : (
+        <ul className="divide-y divide-border border-t border-border">
+          {active.map((p) => {
+            const totalCredits = p.packages?.total_credits ?? 0
+            const left = p.remaining_credits
+            const pct = totalCredits > 0 ? (left / totalCredits) * 100 : 0
+            const expires = p.expire_date ? parseDateOnly(p.expire_date) : null
+            const soon =
+              !!expires && (expires.getTime() - parseDateOnly(today).getTime()) / 86400000 <= SOON_DAYS
             return (
-              <div key={idx} className={`p-4 rounded-lg border border-border ${statusColor}`}>
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="font-semibold text-foreground">{name}</p>
-                    <p className="text-sm text-muted-foreground">{danceType}</p>
+              <li key={p.id} className="p-5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{p.packages?.name ?? tx('packageFallback')}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {p.packages?.dance_types?.name ?? tx('unknownDanceType')}
+                    </p>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-sm font-semibold ${badgeColor}`}>
-                    {remaining} / {total}
-                  </div>
+                  <p className="shrink-0 text-sm tabular-nums">
+                    <span className="font-semibold">{left}</span>
+                    <span className="text-muted-foreground">/{totalCredits}</span>
+                  </p>
                 </div>
-
-                {/* Progress Bar */}
-                <div className="w-full bg-input rounded-full h-2 overflow-hidden mb-3">
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
                   <div
-                    className="bg-primary h-full transition-all duration-300"
-                    style={{ width: `${percentage}%` }}
+                    className={cn('h-full rounded-full', left <= 1 ? 'bg-warning' : 'bg-primary')}
+                    style={{ width: `${pct}%` }}
                   />
                 </div>
-
-                <div className="text-xs text-muted-foreground mb-4 flex items-center justify-between">
-                  <span>{tx('usedLeft', { used, remaining })}</span>
-                  {editingPackageId === pkg.id ? (
-                    <div className="flex items-center gap-2">
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <p className={cn('text-xs', soon ? 'font-medium text-warning' : 'text-muted-foreground')}>
+                    {expires ? tx('expires', { date: formatDay(locale, expires, 'medium') }) : tx('noExpiry')}
+                  </p>
+                  {editing === p.id ? (
+                    <div className="flex items-center gap-1">
                       <Button
-                        size="sm"
+                        size="icon-sm"
                         variant="outline"
-                        onClick={() => handleUpdateCredits(pkg.id, remaining - 1)}
-                        disabled={updating === pkg.id || remaining === 0}
-                        className="text-red-600 border-red-300 hover:bg-red-50 h-7 px-2"
+                        onClick={() => update(p.id, left - 1)}
+                        disabled={updating === p.id || left === 0}
+                        aria-label={tx('decrease')}
                       >
-                        <Minus size={14} />
-                      </Button>
-                      <span className="text-sm font-semibold min-w-[40px] text-center">{remaining}</span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleUpdateCredits(pkg.id, remaining + 1)}
-                        disabled={updating === pkg.id || remaining === total}
-                        className="text-green-600 border-green-300 hover:bg-green-50 h-7 px-2"
-                      >
-                        <Plus size={14} />
+                        <Minus />
                       </Button>
                       <Button
-                        size="sm"
+                        size="icon-sm"
                         variant="outline"
-                        onClick={() => setEditingPackageId(null)}
-                        disabled={updating === pkg.id}
-                        className="text-muted-foreground border-input hover:bg-muted/50 h-7 px-2"
+                        onClick={() => update(p.id, left + 1)}
+                        disabled={updating === p.id || left >= totalCredits}
+                        aria-label={tx('increase')}
                       >
-                        <X size={14} />
+                        <Plus />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>
+                        {tx('done')}
                       </Button>
                     </div>
                   ) : (
-                    <Button variant="link" size="sm" className="h-auto p-0"
-                      onClick={() => setEditingPackageId(pkg.id)}
-                    >
-                      {tx('edit')}
+                    <Button size="sm" variant="ghost" className="text-xs" onClick={() => setEditing(p.id)}>
+                      <Pencil /> {tx('edit')}
                     </Button>
                   )}
                 </div>
-              </div>
+              </li>
             )
           })}
-        </div>
-      </div>
+        </ul>
+      )}
     </Card>
   )
 }

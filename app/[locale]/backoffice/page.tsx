@@ -1,6 +1,3 @@
-import { redirect } from '@/i18n/navigation'
-import { getLocale } from 'next-intl/server'
-
-export default async function BackofficeIndex() {
-  redirect({ href: '/backoffice/stores', locale: await getLocale() })
-}
+// /backoffice shows the store list directly. A redirect here raced with the layout's own
+// admin-check redirect in dev and ended up as a 404 for signed-in non-admins.
+export { default } from './stores/page'

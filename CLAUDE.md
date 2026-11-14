@@ -46,7 +46,8 @@
 - Colors are tokens in `app/globals.css` (`primary`, `highlight`, `muted-foreground`, `border`, …).
   **No hardcoded hex / Tailwind gray|indigo classes** in components.
   Status colors (green/amber/red/blue) are fine for success/warning/error/info only.
-- Brand: rose primary `#D9265F`, amber highlight `#FFC857`, warm stone neutrals.
+- Brand: ink-green primary `#1E2A14` (buttons, links, active), lime highlight `#C6F432` (CTAs, badges; ink text on it),
+  green-tinted ink `#1C2114`. App screens on white; the public site on `bg-canvas`. Status: `success` / `warning` / `danger` tokens.
   Logo: `components/brand/Logo.tsx` (`<Logo />`, `<LogoMark />`); static assets in `public/brand`, favicon `app/icon.svg`.
 
 ## Database

@@ -130,7 +130,11 @@ export async function getStudentAttendanceHistory(studentId: string) {
         `
         id,
         created_at,
+        is_present,
+        deduct_credits,
+        notes,
         course_sessions!inner(
+          id,
           session_date,
           course:courses(
             id,

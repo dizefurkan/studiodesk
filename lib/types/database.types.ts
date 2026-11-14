@@ -457,6 +457,51 @@ export type Database = {
           },
         ]
       }
+      demo_requests: {
+        Row: {
+          city: string | null
+          created_at: string
+          email: string | null
+          id: string
+          locale: string
+          message: string | null
+          name: string
+          phone: string
+          status: string
+          student_count: string | null
+          studio_name: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          locale?: string
+          message?: string | null
+          name: string
+          phone: string
+          status?: string
+          student_count?: string | null
+          studio_name: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          locale?: string
+          message?: string | null
+          name?: string
+          phone?: string
+          status?: string
+          student_count?: string | null
+          studio_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       history_logs: {
         Row: {
           action: string

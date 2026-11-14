@@ -114,6 +114,8 @@ export function formatHistoryMessage(
     case "update":
       if (data?.changes && typeof data.changes === "object") {
         const changes = describeChanges(t, data.changes)
+        // An update with nothing readable to list reads as a plain "updated"
+        if (!changes) return t("updated", { user, entity: entityLabel })
         if (entity === "student_package" && data?.packageName) {
           return t("updatedWithChanges", { user, entity: data.packageName, changes })
         }
@@ -140,50 +142,3 @@ export function formatHistoryMessage(
   }
 }
 
-/**
- * Get icon for history action
- */
-export function getHistoryActionIcon(action: HistoryAction): string {
-  const icons: Record<HistoryAction, string> = {
-    CREATE: "➕",
-    UPDATE: "✏️",
-    DELETE: "🗑️",
-    add: "➕",
-    remove: "➖",
-    view: "👁️",
-    import: "⬇️",
-    export: "⬆️",
-  };
-  // Handle both uppercase and lowercase
-  const found = icons[action];
-  if (found) return found;
-
-  // Fallback: try lowercase
-  const actionLower = ((action || "") as string).toLowerCase() as HistoryAction;
-  return icons[actionLower] || "📝";
-}
-
-/**
- * Get color for history entity
- */
-export function getHistoryEntityColor(entity: HistoryEntity): string {
-  const colors: Record<string, string> = {
-    student: "bg-blue-100 text-blue-800 border-blue-300",
-    instructor: "bg-purple-100 text-purple-800 border-purple-300",
-    course: "bg-green-100 text-green-800 border-green-300",
-    course_student: "bg-teal-100 text-teal-800 border-teal-300",
-    student_package: "bg-violet-100 text-violet-800 border-violet-300",
-    branch: "bg-yellow-100 text-yellow-800 border-yellow-300",
-    package: "bg-pink-100 text-pink-800 border-pink-300",
-    dance_type: "bg-orange-100 text-orange-800 border-orange-300",
-    attendance: "bg-primary/10 text-primary border-primary/30",
-    cash_register: "bg-emerald-100 text-emerald-800 border-emerald-300",
-    organization: "bg-red-100 text-red-800 border-red-300",
-    user: "bg-cyan-100 text-cyan-800 border-cyan-300",
-    studio: "bg-amber-100 text-amber-800 border-amber-300",
-    instructor_rate: "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300",
-    organization_settings: "bg-muted text-muted-foreground border-border",
-    invitation: "bg-sky-100 text-sky-800 border-sky-300",
-  };
-  return colors[entity] || "bg-muted text-muted-foreground border-border";
-}

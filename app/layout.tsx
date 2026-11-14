@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
+import { Inter, Geist, Geist_Mono } from "next/font/google";
+import { ConsentAnalytics } from "@/components/consent/ConsentAnalytics";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +9,12 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+// Display face for headings on the public site (landing, blog, legal)
+const display = Geist({
+  variable: "--font-display-face",
+  subsets: ["latin", "latin-ext"],
 });
 
 const geistMono = Geist_Mono({
@@ -31,12 +37,12 @@ export default function RootLayout({
   return (
     <html suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${geistMono.variable} ${display.variable} antialiased`}
         suppressHydrationWarning
       >
         <TooltipProvider>{children}</TooltipProvider>
         <Toaster richColors position="top-right" />
-        <Analytics />
+        <ConsentAnalytics />
       </body>
     </html>
   );

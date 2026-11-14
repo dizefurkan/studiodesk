@@ -72,7 +72,8 @@
     "today": "Bugün",
     "yesterday": "Dün",
     "changeLanguage": "Dili değiştir",
-    "pickDate": "Tarih seç"
+    "pickDate": "Tarih seç",
+    "refresh": "Yenile"
   },
   "dates": {
     "days": {
@@ -711,25 +712,6 @@
     "from": "Başlangıç",
     "to": "Bitiş"
   },
-  "pages": {
-    "home": {
-      "title": "StudioDesk",
-      "subtitle": "Güçlü Özellikler",
-      "description": "Öğrencileri, eğitmenleri, kursları, yoklamayı ve ödemeleri yönetmek için hepsi bir arada platform. Modern dans stüdyoları için tasarlanmıştır.",
-      "studentManagement": "Öğrenci Yönetimi",
-      "studentManagementDesc": "Öğrencileri takip edin, kredileri yönetin ve ilerlemeyi izleyin",
-      "courseManagement": "Kurs Yönetimi",
-      "courseManagementDesc": "Birden fazla eğitmeni olan kurslar oluşturun ve yönetin",
-      "attendanceTracking": "Yoklama Takibi",
-      "attendanceTrackingDesc": "Yoklamayı işaretleyin ve öğrenci katılımını izleyin",
-      "paymentProcessing": "Ödeme İşleme",
-      "paymentProcessingDesc": "Ödeme kabul edin ve kredi paketlerini yönetin",
-      "instructorManagement": "Eğitmen Yönetimi",
-      "instructorManagementDesc": "Eğitmen profillerini yönetin ve kazançları hesaplayın",
-      "reporting": "Raporlama",
-      "reportingDesc": "Raporlar oluşturun ve stüdyo performansını analiz edin"
-    }
-  },
   "data": {
     "roles": {
       "owner": "Sahibi",
@@ -821,7 +803,8 @@
       "stores": "Store'lar",
       "accounts": "Hesaplar",
       "dashboard": "Dashboard",
-      "logout": "Çıkış"
+      "logout": "Çıkış",
+      "demoRequests": "Demo talepleri"
     },
     "common": {
       "save": "Kaydet",
@@ -918,7 +901,24 @@
       "suspendedText": "Bağlı olduğunuz store şu anda askıda. Yöneticinizle iletişime geçin.",
       "logout": "Çıkış yap"
     },
-    "copy": "Kopyala"
+    "copy": "Kopyala",
+    "demoRequests": {
+      "title": "Demo talepleri",
+      "subtitle": "Web sitesinden gelen talepler, en yenisi üstte.",
+      "empty": "Henüz talep yok.",
+      "statusLabel": "Durum",
+      "status": {
+        "new": "Yeni",
+        "contacted": "Arandı",
+        "closed": "Kapandı"
+      },
+      "studentCount": {
+        "lt50": "50'den az öğrenci",
+        "50to150": "50–150 öğrenci",
+        "150to400": "150–400 öğrenci",
+        "gt400": "400'den fazla öğrenci"
+      }
+    }
   },
   "confirmDialog": {
     "confirm": "Onayla",
@@ -1058,7 +1058,10 @@
     "information": "Bilgiler",
     "joined": "Kayıt tarihi",
     "updated": "Son güncelleme",
-    "timelineDescription": "Bu öğrenciyle ilgili tüm değişiklikler ve işlemler"
+    "timelineDescription": "Bu öğrenciyle ilgili tüm değişiklikler ve işlemler",
+    "lessonsAttended": "Katıldığı ders",
+    "lastLesson": "Son ders",
+    "addNote": "Not ekle"
   },
   "instructorDetail": {
     "backToList": "← Eğitmenlere dön",
@@ -1211,19 +1214,6 @@
     "confirm": "Satın almayı onayla",
     "creditsCount": "{count} kredi"
   },
-  "landing": {
-    "featuresDescription": "Başarılı bir dans stüdyosu yönetmek için ihtiyacın olan her şey",
-    "ctaTitle": "Stüdyonuzu dönüştürmeye hazır mısınız?",
-    "ctaDescription": "StudioDesk kullanan dans stüdyolarına katılın",
-    "ctaButton": "Ücretsiz denemeni bugün başlat",
-    "secureTitle": "Güvenli ve gizli",
-    "secureDescription": "Veri izolasyonuyla kurumsal düzeyde güvenlik",
-    "fastTitle": "Hızlı ve güvenilir",
-    "fastDescription": "Modern bulut altyapısı üzerine kurulu",
-    "heroTitle": "Dans stüdyonuzu yönetin",
-    "heroHighlight": "hiç olmadığı kadar kolay",
-    "copyright": "© {year} StudioDesk. Tüm hakları saklıdır."
-  },
   "studentHistory": {
     "title": "Geçmiş",
     "description": "Yoklama kayıtları ve kredi kullanımı",
@@ -1236,12 +1226,19 @@
     "used": "Kullanılan",
     "remaining": "Kalan",
     "dateAt": "{date}, {time}",
-    "purchased": "Satın alındı: {date}",
+    "purchased": "{date} tarihinde alındı",
     "unknownCourse": "Bilinmeyen kurs",
     "unknownPackage": "Bilinmeyen paket",
     "danceTypeLabel": "Dans türü:",
     "branchLabel": "Şube:",
-    "classesAttended": "{count} derse katıldı"
+    "classesAttended": "{count} derse katıldı",
+    "monthSummary": "Katılım {present}/{total}",
+    "present": "Geldi",
+    "absent": "Gelmedi",
+    "noCreditTaken": "Kredi düşülmedi",
+    "usedOf": "Kullanılan {used}/{total}",
+    "left": "{count} kaldı",
+    "finished": "Bitti"
   },
   "studentCourses": {
     "loading": "Kurslar yükleniyor…",
@@ -1254,7 +1251,9 @@
     "creditsUnit": "kredi",
     "enrolledOn": "Kayıt: {date}",
     "noActive": "Kalan kredisi olan aktif kurs yok",
-    "noCompleted": "Henüz tamamlanan kurs yok"
+    "noCompleted": "Henüz tamamlanan kurs yok",
+    "lessons": "{count} ders",
+    "creditsLeft": "{count} kredi kaldı"
   },
   "branchDetail": {
     "backToList": "← Şubelere dön",
@@ -1275,14 +1274,22 @@
     "count": "{count} ders"
   },
   "studentCredits": {
-    "title": "Krediler",
-    "empty": "Aktif paket yok",
+    "title": "Kalan kredi",
+    "empty": "Aktif paket yok. Yoklamaya katılabilmesi için paket satın.",
     "edit": "Düzenle",
     "missingPackage": "Paket bulunamadı",
     "updateFailed": "Krediler güncellenemedi",
     "unknownDanceType": "Bilinmiyor",
     "packageFallback": "Paket",
-    "usedLeft": "{used} kullanıldı • {remaining} kaldı"
+    "usedLeft": "{used} kullanıldı • {remaining} kaldı",
+    "none": "Kredi yok",
+    "low": "Bitmek üzere",
+    "ok": "Aktif",
+    "expires": "{date} tarihine kadar geçerli",
+    "noExpiry": "Süresiz",
+    "decrease": "Bir kredi azalt",
+    "increase": "Bir kredi ekle",
+    "done": "Tamam"
   },
   "instructorAttendance": {
     "title": "Yoklama geçmişi",
@@ -1595,7 +1602,10 @@
     "unexpectedWithDetail": "Beklenmeyen bir hata oluştu: {detail}",
     "attendanceAlreadyTaken": "Bu tarih için yoklama zaten alınmış.",
     "missingPackageData": "Bazı öğrencilerin paket bilgisi eksik. Sayfayı yenileyip tekrar deneyin.",
-    "undoAttendanceFailed": "Yoklama geri alınamadı."
+    "undoAttendanceFailed": "Yoklama geri alınamadı.",
+    "demoRequestInvalid": "İşaretli alanları kontrol edip tekrar deneyin.",
+    "demoRequestFailed": "Talebiniz gönderilemedi. Birazdan tekrar deneyin.",
+    "notAuthorized": "Bunu yapmaya yetkiniz yok."
   },
   "attendanceSheet": {
     "markEveryone": "Kaydetmeden önce {count} öğrenciyi daha işaretleyin.",
@@ -1715,5 +1725,363 @@
     "schedule": "Program",
     "earnings": "Kazançlar",
     "studios": "Salonlar"
+  },
+  "consent": {
+    "bannerLabel": "Çerez izni",
+    "bannerText": "Oturumunuzu açık tutmak ve dil tercihinizi hatırlamak için gerekli çerezleri kullanıyoruz. İzin verirseniz site ziyaretlerini anonim olarak da ölçüyoruz.",
+    "policyLink": "Çerez Politikası",
+    "acceptAll": "Kabul et",
+    "rejectAll": "Yalnızca gerekli",
+    "preferences": "Tercihler",
+    "dialogTitle": "Çerez tercihleri",
+    "dialogDescription": "Hangi çerezleri kullanabileceğimizi seçin. Bu tercihi sayfanın altındaki bağlantıdan istediğiniz zaman değiştirebilirsiniz.",
+    "necessaryTitle": "Gerekli",
+    "necessaryText": "Oturum, dil ve bu tercihler. Her zaman açık.",
+    "analyticsTitle": "Analitik",
+    "analyticsText": "Tanıtım sayfalarında anonim ziyaret istatistikleri. Uygulamanın içinde kullanılmaz.",
+    "save": "Tercihleri kaydet"
+  },
+  "site": {
+    "meta": {
+      "title": "StudioDesk: dans stüdyoları için yoklama, ders paketi ve eğitmen hakedişi",
+      "description": "Ders paketlerini satın, haftalık programı yönetin, yoklamayı telefondan alın ve ayı eğitmen hakedişleri hesaplanmış olarak kapatın."
+    },
+    "skip": "İçeriğe geç",
+    "nav": {
+      "label": "Ana menü",
+      "how": "Nasıl çalışır",
+      "features": "Özellikler",
+      "faq": "SSS",
+      "blog": "Blog",
+      "signIn": "Giriş yap",
+      "demo": "Demo iste",
+      "openMenu": "Menüyü aç",
+      "closeMenu": "Menüyü kapat",
+      "pricing": "Fiyatlar"
+    },
+    "hero": {
+      "title": "Stüdyonuzu defterle değil, StudioDesk'le yönetin",
+      "lead": "Ders paketleri, haftalık program, yoklama ve eğitmen hakedişi tek yerde. Gelen öğrencinin kredisi kendiliğinden düşer, ay sonu hesabı hazır olur.",
+      "primary": "Demo iste",
+      "secondary": "Nasıl çalıştığını görün",
+      "sheet": {
+        "course": "Salsa başlangıç",
+        "when": "Salı 19:00, Kadıköy şubesi",
+        "marked": "{done}/{total}",
+        "credits": "{count} kredi",
+        "present": "Geldi",
+        "save": "Yoklamayı kaydet",
+        "saved": "Kaydedildi: {present} geldi, {absent} gelmedi"
+      },
+      "badge": "Dans stüdyoları için",
+      "stage": {
+        "today": "Bugün",
+        "lessons": "ders",
+        "revenue": "Bu ay gelir",
+        "renewals": "Kredisi bitmek üzere",
+        "credits": "{count, plural, =0 {bitti} other {# kaldı}}",
+        "sell": "Paket sat",
+        "pay": "Bu ay verilen ders",
+        "payNote": "eğitmen hakedişi"
+      }
+    },
+    "how": {
+      "title": "Satıştan ay sonuna kadar",
+      "lead": "Her adım bir öncekinden beslenir; aynı bilgiyi iki kez girmezsiniz.",
+      "steps": {
+        "sell": {
+          "title": "Paketi satın",
+          "text": "Öğrenciye dans türüne özel kredi paketi satın; ödeme o anda kasaya işlenir."
+        },
+        "schedule": {
+          "title": "Programı kurun",
+          "text": "Kursları gün, saat, şube ve eğitmenle bir kez tanımlayın; takvim her hafta kendini tekrarlar."
+        },
+        "attend": {
+          "title": "Yoklamayı alın",
+          "text": "Ders sonunda telefondan işaretleyin. Gelenin kredisi düşer, kredisi biten öğrenci uyarı olarak çıkar."
+        },
+        "pay": {
+          "title": "Ayı kapatın",
+          "text": "Eğitmen hakedişleri yoklamalardan hesaplanır; gelir ve giderleri kasada yan yana görürsünüz."
+        }
+      },
+      "panels": {
+        "sell": {
+          "student": "Öğrenci",
+          "package": "8 ders bachata",
+          "credits": "8 kredi, 6 hafta geçerli",
+          "cash": "Kasaya gelir olarak işlendi"
+        },
+        "schedule": {
+          "title": "Haftalık program",
+          "days": "Pzt,Sal,Çar,Per,Cum,Cmt,Paz"
+        },
+        "attend": {
+          "title": "Salsa 1, Pazartesi 19:00",
+          "credits": "{count} kredi kaldı",
+          "present": "Geldi",
+          "absent": "Gelmedi",
+          "renewal": "Mert Aydın'ın 1 kredisi kaldı."
+        },
+        "pay": {
+          "title": "Kasım hakedişleri",
+          "lessons": "{count} ders",
+          "income": "Gelir",
+          "expense": "Gider"
+        }
+      },
+      "eyebrow": "Nasıl çalışır",
+      "stepLabel": "Adım {n}/{total}"
+    },
+    "features": {
+      "title": "Masada her gün yapılan işler, tek ekranda",
+      "lead": "Muhasebe programı ya da genel bir CRM değil. Ders, kredi ve eğitmen üzerine kurulu.",
+      "eyebrow": "Özellikler",
+      "bento": {
+        "attendance": {
+          "title": "Yoklama, öğrenciler çıkmadan",
+          "text": "Dersin son dakikasında telefondan işaretleyin. Hepsini \"geldi\" yapıp gelmeyenlere dokunmanız yeterli.",
+          "course": "Salsa 1, Pazartesi 19:00",
+          "all": "Hepsi geldi",
+          "present": "Geldi",
+          "absent": "Gelmedi"
+        },
+        "credits": {
+          "title": "Kredi kendiliğinden düşer",
+          "text": "Yoklamayı kaydettiğiniz an kredi doğru paketten düşer.",
+          "unit": "kredi kaldı"
+        },
+        "pay": {
+          "title": "Hakediş yoklamadan çıkar",
+          "text": "Eğitmen, şube ve dans türüne göre ücret. Yerine giren eğitmen kendi dersinin hakedişini alır."
+        },
+        "branches": {
+          "title": "Tüm şubeler tek hesapta",
+          "text": "Programlar, salonlar ve kasa şubeye göre ayrı."
+        },
+        "cash": {
+          "title": "Kasa",
+          "text": "Paket satışları gelir olarak düşer; diğerlerini elle eklersiniz.",
+          "income": "Paket satışı",
+          "expense": "Kira"
+        },
+        "phone": {
+          "title": "Telefonda çalışır",
+          "text": "Tarayıcıdan açılır, uygulama indirmeye gerek yok."
+        }
+      }
+    },
+    "faq": {
+      "title": "Sık sorulanlar",
+      "items": {
+        "setup": {
+          "q": "Kurulum ne kadar sürer?",
+          "a": "Şube, dans türü, eğitmen ve paketlerinizi ilk görüşmede birlikte tanımlıyoruz. Öğrencilerinizi ekledikten sonra aynı gün yoklama almaya başlayabilirsiniz."
+        },
+        "devices": {
+          "q": "Hangi cihazlarda çalışır?",
+          "a": "Telefon, tablet ve bilgisayarda, tarayıcıdan çalışır. Uygulama indirmeniz gerekmez."
+        },
+        "students": {
+          "q": "Öğrencilerin hesap açması gerekiyor mu?",
+          "a": "Hayır. StudioDesk'i stüdyo ekibiniz kullanır; öğrenciler yalnızca sizin kayıtlarınızda yer alır."
+        },
+        "data": {
+          "q": "Verilerim güvende mi?",
+          "a": "Her stüdyonun verisi ayrı tutulur ve yalnızca yetkili ekip üyelerinize görünür. Veriler Avrupa Birliği'ndeki (Frankfurt) sunucularda saklanır ve şifreli bağlantılarla taşınır."
+        },
+        "branches": {
+          "q": "Birden fazla şubem var, tek hesap yeterli mi?",
+          "a": "Evet. Tüm şubeler tek hesaptan yönetilir; programlar, salonlar ve kasa şubeye göre ayrılır."
+        },
+        "price": {
+          "q": "Ücreti ne kadar?",
+          "a": "Planlar ve fiyatlar yukarıda. Kurulum desteği her plana dahil; daha büyük stüdyolar için özel teklif de hazırlayabiliriz."
+        }
+      },
+      "lead": "Stüdyoların bize en çok sorduğu sorular.",
+      "eyebrow": "SSS",
+      "cardTitle": "Başka bir sorunuz mu var?",
+      "cardText": "Demo formuna yazın, aradığımızda cevaplayalım.",
+      "cardButton": "Demo formuna yazın"
+    },
+    "demo": {
+      "title": "Kendi derslerinizle görün",
+      "lead": "Bilgilerinizi bırakın; sizi arayıp StudioDesk'i kendi programınız ve paketlerinizle birlikte kuralım.",
+      "steps": {
+        "form": {
+          "title": "Formu doldurun",
+          "text": "İki dakika sürer; yalnızca ad, stüdyo ve telefon zorunlu."
+        },
+        "call": {
+          "title": "Sizi arıyoruz",
+          "text": "Programınızı ve paketlerinizi dinleyip hesabınızı hazırlıyoruz."
+        },
+        "start": {
+          "title": "Ekibiniz başlar",
+          "text": "Giriş bilgileri ekibinize iletilir; ilk yoklama aynı gün alınabilir."
+        }
+      },
+      "form": {
+        "name": "Ad soyad",
+        "studioName": "Stüdyo adı",
+        "phone": "Telefon",
+        "email": "E-posta",
+        "city": "Şehir",
+        "studentCount": "Öğrenci sayısı",
+        "choose": "Seçin",
+        "optional": "isteğe bağlı",
+        "studentCountOptions": {
+          "lt50": "50'den az",
+          "50to150": "50–150",
+          "150to400": "150–400",
+          "gt400": "400'den fazla"
+        },
+        "message": "Mesaj",
+        "messagePlaceholder": "Kaç şubeniz var, şu an nasıl takip ediyorsunuz?",
+        "consent": "<link>KVKK Aydınlatma Metni</link>'ni okudum; talebime dönüş yapılması için bilgilerimin işlenmesini kabul ediyorum.",
+        "submit": "Demo talebini gönder",
+        "sending": "Gönderiliyor…",
+        "sentTitle": "Talebiniz bize ulaştı",
+        "sentText": "Verdiğiniz numaradan sizi en kısa sürede arayacağız.",
+        "errors": {
+          "name": "Adınızı girin.",
+          "studioName": "Stüdyonuzun adını girin.",
+          "phone": "Geçerli bir telefon numarası girin.",
+          "email": "Geçerli bir e-posta adresi girin.",
+          "consent": "Devam etmek için aydınlatma metnini onaylayın."
+        }
+      },
+      "eyebrow": "Başlayın",
+      "cards": {
+        "c1": {
+          "title": "İndirilecek uygulama",
+          "note": "tarayıcıdan açılır"
+        },
+        "c2": {
+          "title": "Hesap",
+          "note": "tüm şubeler için"
+        },
+        "c3": {
+          "title": "Rol",
+          "note": "sahip, yönetici, personel"
+        },
+        "c4": {
+          "title": "Dil",
+          "note": "Türkçe ve İngilizce"
+        },
+        "c5": {
+          "title": "Veri konumu",
+          "note": "Frankfurt sunucuları",
+          "value": "AB"
+        }
+      }
+    },
+    "footer": {
+      "tagline": "Dans stüdyoları için yoklama, ders paketi ve eğitmen hakedişi.",
+      "product": "Ürün",
+      "how": "Nasıl çalışır",
+      "features": "Özellikler",
+      "faq": "SSS",
+      "signIn": "Giriş yap",
+      "resources": "Kaynaklar",
+      "blog": "Blog",
+      "demo": "Demo iste",
+      "legal": "Yasal",
+      "cookiePreferences": "Çerez tercihleri",
+      "copyright": "© {year} SFDYAZILIM. Tüm hakları saklıdır.",
+      "pricing": "Fiyatlar"
+    },
+    "legalTitles": {
+      "kvkk": "KVKK Aydınlatma Metni",
+      "privacy": "Gizlilik Politikası",
+      "terms": "Kullanım Şartları",
+      "cookies": "Çerez Politikası",
+      "distance-sales": "Mesafeli Satış ve İade"
+    },
+    "legal": {
+      "updated": "Son güncelleme: {date}"
+    },
+    "blog": {
+      "title": "Blog",
+      "lead": "Dans stüdyosu işletmek üzerine pratik yazılar: yoklama, paketler, eğitmenler ve kasa.",
+      "minutes": "{count} dk okuma",
+      "back": "Tüm yazılar",
+      "ctaTitle": "Kendi stüdyonuzla deneyin",
+      "ctaText": "StudioDesk'i kendi ders ve paketlerinizle, görüşerek birlikte kuruyoruz.",
+      "ctaButton": "Demo iste",
+      "more": "Diğer yazılar"
+    },
+    "marquee": {
+      "title": "Her türden dans stüdyosu için",
+      "items": "Salsa,Bachata,Tango,Bale,Hip hop,Modern dans,Kizomba,Zeybek,Halk dansları,Çocuk balesi,Latin,Swing"
+    },
+    "compare": {
+      "title": "Aynı hafta, defter olmadan",
+      "lead": "Kayıtlar tek yerde olunca masada neyin değiştiği.",
+      "before": "Defter ve Excel",
+      "after": "StudioDesk ile",
+      "rows": {
+        "attendance": {
+          "job": "Yoklama",
+          "before": "Akşam, hatırladığınız kadarıyla deftere yazılır.",
+          "after": "Ders biterken telefondan alınır."
+        },
+        "credits": {
+          "job": "Kredi takibi",
+          "before": "Defterden Excel'e sayılarak aktarılır.",
+          "after": "Yoklama kaydedilince kendiliğinden düşer."
+        },
+        "pay": {
+          "job": "Eğitmen hakedişi",
+          "before": "Ay sonunda ders ders sayılır, sonra tartışılır.",
+          "after": "Yerine girenler dahil, yoklamadan hesaplanır."
+        },
+        "renewals": {
+          "job": "Paket yenileme",
+          "before": "Kredinin bittiği haftalar sonra fark edilir.",
+          "after": "Bir kredisi kalanlar ana ekranda listelenir."
+        },
+        "cash": {
+          "job": "Kasa",
+          "before": "Satışlar ile kasa defteri bir türlü tutmaz.",
+          "after": "Her paket satışı anında gelir olarak işlenir."
+        }
+      },
+      "eyebrow": "Önce ve sonra"
+    },
+    "pricing": {
+      "eyebrow": "Fiyatlar",
+      "title": "Stüdyonuzla birlikte büyüyen planlar",
+      "lead": "Her planda kurulumu sizinle birlikte yapıyoruz. İstediğiniz zaman değiştirebilir ya da bırakabilirsiniz.",
+      "billingLabel": "Ödeme dönemi",
+      "monthly": "Aylık",
+      "yearly": "Yıllık",
+      "save": "%{percent} indirim",
+      "perMonth": "/ ay",
+      "billedYearly": "Yıllık {total} olarak faturalanır",
+      "billedMonthly": "Aylık faturalanır",
+      "recommended": "Önerilen",
+      "cta": "Demo iste",
+      "footnote": "Fiyatlara KDV dahil değildir.",
+      "plans": {
+        "starter": {
+          "name": "Başlangıç",
+          "description": "Tek salonlu, düzen kurmak isteyen stüdyolar için.",
+          "features": "1 şube|150 öğrenciye kadar|3 ekip üyesi|Yoklama ve kredi paketleri|Kasa"
+        },
+        "studio": {
+          "name": "Stüdyo",
+          "description": "Birden fazla eğitmeni ve dolu programı olan stüdyolar için.",
+          "features": "1 şube, birden fazla salon|Sınırsız öğrenci|10 ekip üyesi|Eğitmen ücretleri ve hakediş|İşlem geçmişi|Öncelikli destek"
+        },
+        "multi": {
+          "name": "Çok şubeli",
+          "description": "Birden fazla şubesi olan stüdyolar için.",
+          "features": "Sınırsız şube|Sınırsız öğrenci|Sınırsız ekip üyesi|Şubeye göre ayrı program ve kasa|Stüdyo planındaki her şey|Kuruluma özel destek"
+        }
+      }
+    }
   }
 }
