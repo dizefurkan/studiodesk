@@ -116,7 +116,7 @@ export function InstructorSelectionModal({
                           {instructor.first_name} {instructor.last_name}
                         </span>
                       </FieldContent>
-                      {ratio !== undefined && <Badge variant="secondary">%{ratio}</Badge>}
+                      {ratio ? <Badge variant="secondary">%{ratio}</Badge> : null}
                     </Field>
                   </FieldLabel>
                 )

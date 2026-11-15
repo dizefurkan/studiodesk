@@ -11,6 +11,7 @@ import { getEarningsColumns, type EarningRecord } from './columns'
 interface InstructorEarningsTableProps {
   earnings: EarningRecord[]
   currency: string
+  canManage: boolean
   searchQuery?: string
   currentPage: number
   totalCount: number
@@ -20,6 +21,7 @@ interface InstructorEarningsTableProps {
 export function InstructorEarningsTable({
   earnings: initialEarnings,
   currency,
+  canManage,
   searchQuery,
   currentPage,
   totalCount,
@@ -45,9 +47,7 @@ export function InstructorEarningsTable({
     router.push(`?${params.toString()}`)
   }
 
-  const columns = getEarningsColumns({
-    currency,
-  })
+  const columns = getEarningsColumns({ currency, canManage })
 
   return (
     <>

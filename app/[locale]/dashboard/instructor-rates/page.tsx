@@ -4,7 +4,7 @@ import { Link } from '@/i18n/navigation'
 import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { getInstructorRates, getInstructorsAndBranchesAndDanceTypes, getInstructorRate } from '@/lib/actions/instructor-rates.actions'
+import { getInstructorRates, getInstructorsAndBranchesAndDanceTypes } from '@/lib/actions/instructor-rates.actions'
 import { InstructorRatesTable } from '@/components/instructor-rates/InstructorRatesTable'
 import { AddInstructorRateDrawer } from '@/components/instructor-rates/AddInstructorRateDrawer'
 import { Card } from '@/components/ui/card'
@@ -15,6 +15,7 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
 import type { ActionData } from '@/lib/types/actions'
 import { InstructorsTabs } from '@/components/instructors/InstructorsTabs'
+import { NoPayAccess } from '@/components/instructor-pay/NoPayAccess'
 
 export default function InstructorRatesPage() {
   const t = useTranslations()
@@ -22,8 +23,7 @@ export default function InstructorRatesPage() {
   const [rates, setRates] = useState<ActionData<typeof getInstructorRates>>([])
   const [loading, setLoading] = useState(true)
   const [drawerData, setDrawerData] = useState<ActionData<typeof getInstructorsAndBranchesAndDanceTypes> | null>(null)
-  // Rate loaded for the edit drawer, keyed by id so a stale one is never shown
-  const [loadedRate, setLoadedRate] = useState<{ id: string; data: ActionData<typeof getInstructorRate> | null } | null>(null)
+  const [noAccess, setNoAccess] = useState(false)
 
   // Local state, initialised from the URL (?modal=new|edit&editId=…)
   const [modalType, setModalType] = useState<string | null>(() => searchParams?.get('modal') ?? null)
@@ -45,6 +45,7 @@ export default function InstructorRatesPage() {
       
       if (ratesResult.error) {
         console.error('Error fetching rates:', ratesResult.error)
+        setNoAccess(true)
       }
       if (drawerDataResult.error) {
         console.error('Error fetching drawer data:', drawerDataResult.error)
@@ -61,21 +62,7 @@ export default function InstructorRatesPage() {
     }
   }, [])
 
-  const isEditing = modalType === 'edit' && !!editId
-  const editingRate = isEditing && loadedRate?.id === editId ? loadedRate.data : null
-  const editLoading = isEditing && loadedRate?.id !== editId
-
-  // Load editing rate if in edit mode
-  useEffect(() => {
-    if (modalType !== 'edit' || !editId) return
-    let isMounted = true
-    getInstructorRate(editId).then((result) => {
-      if (isMounted) setLoadedRate({ id: editId, data: result.data ?? null })
-    })
-    return () => {
-      isMounted = false
-    }
-  }, [modalType, editId])
+  const editingRate = modalType === 'edit' && editId ? rates.find((r) => r.id === editId) : undefined
 
   // Refresh rates after they're modified (instead of full page reload)
   const handleRatesChange = useCallback(async () => {
@@ -132,7 +119,9 @@ export default function InstructorRatesPage() {
         </AlertDescription>
       </Alert>
 
-      {!loading && (drawerData?.instructors || []).length === 0 ? (
+      {noAccess ? (
+        <NoPayAccess />
+      ) : !loading && (drawerData?.instructors || []).length === 0 ? (
         <EmptyState
           title={t('emptyStates.instructorRates.title')}
           description={t('emptyStates.instructorRates.description')}
@@ -157,7 +146,7 @@ export default function InstructorRatesPage() {
       )}
 
       {/* Rate Form Drawer (for 'new' with instructor selected, or 'edit' mode) */}
-      {!loading && drawerData && ((modalType === 'new' && selectedInstructor) || modalType === 'edit') && !editLoading && (
+      {!loading && drawerData && ((modalType === 'new' && selectedInstructor) || editingRate) && (
         <AddInstructorRateDrawer
           instructors={drawerData.instructors || []}
           branches={drawerData.branches || []}
@@ -165,7 +154,7 @@ export default function InstructorRatesPage() {
           rates={rates}
           isOpen={true}
           onOpenChange={handleCloseDrawer}
-          initialRate={editingRate ?? undefined}
+          initialRate={editingRate}
           selectedInstructorId={modalType === 'new' && selectedInstructor ? selectedInstructor : undefined}
           onSuccess={() => {
             handleCloseDrawer()

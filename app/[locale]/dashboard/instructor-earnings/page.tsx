@@ -1,13 +1,17 @@
 import { getInstructorEarnings } from '@/lib/actions/instructor-earnings.actions'
-import { getInstructors } from '@/lib/actions/instructors.actions'
+import { getStatementInstructors } from '@/lib/actions/instructor-pay.actions'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/format'
-import { TrendingUp, DollarSign } from 'lucide-react'
+import { TrendingUp, DollarSign, FileText } from 'lucide-react'
+import { Link } from '@/i18n/navigation'
+import { Button } from '@/components/ui/button'
 import { getTranslations } from 'next-intl/server'
 import { InstructorEarningsTable } from './instructor-earnings-client'
 import { InstructorEarningsFilters } from '@/components/instructor-earnings/EarningsFilters'
 import { PageHeader } from '@/components/common/PageHeader'
+import { NoPayAccess } from '@/components/instructor-pay/NoPayAccess'
+import { getPayAccess } from '@/lib/auth/payAccess'
 import { InstructorsTabs } from '@/components/instructors/InstructorsTabs'
 
 export default async function InstructorEarningsPage({
@@ -28,9 +32,20 @@ export default async function InstructorEarningsPage({
   const organization = await getOrganization()
   const currency = organization?.currency || 'TRY'
 
+  const access = await getPayAccess()
+  if (!access || (!access.canManage && access.ownInstructorIds.length === 0)) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title={t('title')} description={t('description')} />
+        <InstructorsTabs />
+        <NoPayAccess />
+      </div>
+    )
+  }
+
   const [earningsResult, instructorsResult] = await Promise.all([
     getInstructorEarnings({ search: searchQuery, instructorId, from: fromDate, to: toDate }, page, PAGE_SIZE),
-    getInstructors(),
+    getStatementInstructors(),
   ])
 
   const earnings = earningsResult.data || []
@@ -41,7 +56,17 @@ export default async function InstructorEarningsPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')} />
+      <PageHeader
+        title={t('title')}
+        description={t('description')}
+        action={
+          <Button asChild variant="outline">
+            <Link href="/dashboard/instructor-earnings/statement">
+              <FileText /> {t('statement')}
+            </Link>
+          </Button>
+        }
+      />
       <InstructorsTabs />
 
       {/* Summary */}
@@ -77,6 +102,7 @@ export default async function InstructorEarningsPage({
       <InstructorEarningsTable
         earnings={earnings}
         currency={currency}
+        canManage={!!earningsResult.canManage}
         searchQuery={searchQuery}
         currentPage={page}
         totalCount={totalCount}

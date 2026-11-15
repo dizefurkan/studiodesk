@@ -53,7 +53,12 @@ export function Sidebar() {
       label: t('instructors'),
       icon: UserCheck,
       href: '/dashboard/instructors',
-      also: ['/dashboard/instructor-rates', '/dashboard/instructor-earnings'],
+      also: [
+        '/dashboard/instructor-rates',
+        '/dashboard/instructor-earnings',
+        '/dashboard/instructor-payouts',
+        '/dashboard/course-profitability',
+      ],
     },
     { label: t('cashRegister'), icon: Wallet, href: '/dashboard/cash-register' },
   ]
@@ -109,7 +114,7 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="hidden h-full w-64 flex-col overflow-hidden border-r border-border bg-background md:flex">
+      <aside className="hidden h-full w-64 flex-col overflow-hidden border-r border-border bg-background md:flex print:hidden">
         {content}
       </aside>
       <Sheet open={isOpen} onOpenChange={(open) => open !== isOpen && toggleSidebar()}>

@@ -145,7 +145,22 @@
     "system": "Sistem",
     "notAvailable": "—",
     "firstPage": "İlk sayfa",
-    "lastPage": "Son sayfa"
+    "lastPage": "Son sayfa",
+    "lessonDate": "Ders tarihi",
+    "course": "Kurs",
+    "rate": "Ücret",
+    "method": "Yöntem",
+    "openingBalance": "Devreden",
+    "earned": "Hakediş",
+    "adjustments": "Ek kalemler",
+    "paid": "Ödenen",
+    "balance": "Bakiye",
+    "sessions": "Ders",
+    "avgAttendance": "Ort. katılım",
+    "revenue": "Gelir",
+    "cost": "Eğitmen maliyeti",
+    "profit": "Kâr",
+    "margin": "Marj"
   },
   "auth": {
     "login": "Giriş Yap",
@@ -539,12 +554,12 @@
   },
   "instructorRates": {
     "title": "Eğitmen Ücretleri",
-    "description": "Eğitmenlerin her dersin değerinden alacağı payı belirleyin",
+    "description": "Eğitmenlerin ders başına ne kazanacağını belirleyin",
     "aboutTitle": "Eğitmen ücretleri hakkında",
-    "aboutDescription": "Kredisi düşülen her öğrenci, paketinin ders değerini (ödediği tutar ÷ ders sayısı) derse ekler. Eğitmen bu toplamdan kendi oranı kadar kazanır. Kredisi düşülmeyen öğrenciler hakedişe sayılmaz.",
+    "aboutDescription": "Her eğitmen için şube ve dans türü bazında bir ücret modeli seçin: ders değerinden yüzde, ders başı sabit, saatlik ya da öğrenci başı. İsterseniz asgari ders ücreti de tanımlayın.",
     "specificToInstructor": "Oranlar Eğitmen + Şube + Dans Türü kombinasyonuna özgüdür",
     "earnAutomatically": "Hakediş yoklama kaydedildiğinde hesaplanır, bir kayıt silindiğinde güncellenir",
-    "multipleRates": "Aynı eğitmenin farklı şubeler ve dans türleri arasında birden fazla oranı yapılandırılabilir",
+    "multipleRates": "Ücret değişince yeni bir dönem ekleyin: o tarihten önceki dersler eski ücretle kalır, kapatılmış aylar hiç değişmez",
     "addNew": "Yeni Oran Ekle",
     "editRate": "Oranı Düzenle",
     "deleteRate": "Oranı Sil",
@@ -966,7 +981,7 @@
   },
   "instructorEarnings": {
     "title": "Eğitmen kazançları",
-    "description": "Eğitmen ödemelerini ve ders başı kazançları takip edin",
+    "description": "Ders başı hakedişleri ders tarihine göre görün",
     "totalEarnings": "Toplam kazanç (filtreye göre)",
     "totalRecords": "Kayıt",
     "searchPlaceholder": "Eğitmen adına göre ara…",
@@ -975,7 +990,15 @@
     "allInstructors": "Tüm eğitmenler",
     "fromDate": "Başlangıç",
     "toDate": "Bitiş",
-    "selectDate": "Tarih seç"
+    "selectDate": "Tarih seç",
+    "statement": "Hakediş dökümü",
+    "amountSaved": "Hakediş güncellendi",
+    "editAmount": "Tutarı düzelt",
+    "resetToCalculated": "Hesaplanan tutara dön",
+    "resetConfirm": "Elle girilen tutar silinip hesaplanan tutara dönülsün mü?",
+    "manual": "Elle",
+    "manualHint": "Tutar elle girildi; yeniden hesaplamada korunur",
+    "calculatedAmount": "Hesaplanan tutar: {amount}"
   },
   "studios": {
     "loading": "Yükleniyor...",
@@ -1074,7 +1097,8 @@
     "classCount": "{count} ders",
     "sessionCount": "{count} ders",
     "studentsMarked": "{count} öğrenci işaretlendi",
-    "assignedCourses": "Atandığı kurslar ({count})"
+    "assignedCourses": "Atandığı kurslar ({count})",
+    "statement": "Hakediş dökümü"
   },
   "cashRegister": {
     "branch": "Şube",
@@ -1099,7 +1123,9 @@
     "loadError": "Kasa yüklenirken hata oluştu",
     "loadErrorHint": "Sayfayı yenilemeyi deneyin",
     "instructorPayment": "Eğitmen ödemesi — {name}",
-    "deleteConfirm": "Bu işlem silinsin mi?"
+    "deleteConfirm": "Bu işlem silinsin mi?",
+    "instructorPayAccrued": "Eğitmen hakedişi",
+    "instructorEarningRow": "Hakediş: {name}"
   },
   "addStudentDialog": {
     "activeOnly": "Yalnızca bu dans türünde aktif paketi olan öğrencileri göster",
@@ -1192,13 +1218,28 @@
     "selectBranch": "Şube seç",
     "danceType": "Dans türü *",
     "selectDanceType": "Dans türü seç",
-    "ratio": "Ders değerinden pay (%) *",
+    "ratio": "Oran (%)",
     "allRequired": "Tüm alanlar zorunlu",
     "ratioRange": "Oran 0 ile 100 arasında bir yüzde olmalı",
     "saveFailed": "Ücret kaydedilemedi",
     "update": "Ücreti güncelle",
     "add": "Ücret ekle",
-    "ratioHint": "Kredisi düşülen her öğrenci için ders değeri: paket için ödediği tutar ÷ paketteki ders sayısı. Eğitmen, dersteki bu değerlerin toplamından bu yüzde kadar kazanır."
+    "ratioHint": "Kredisi düşülen her öğrenci için ders değeri: paket için ödediği tutar ÷ paketteki ders sayısı. Eğitmen, dersteki bu değerlerin toplamından bu yüzde kadar kazanır.",
+    "payModel": "Ücret modeli",
+    "amountLabels": {
+      "per_lesson": "Ders başı tutar",
+      "per_hour": "Saatlik tutar",
+      "per_student": "Öğrenci başı tutar"
+    },
+    "minAmount": "Asgari ders ücreti",
+    "optional": "İsteğe bağlı",
+    "minAmountHint": "Asgari ücret girerseniz ders yapıldığında eğitmen en az bu tutarı alır.",
+    "startOnDate": "Belirli bir tarihten itibaren geçerli olsun",
+    "alwaysHint": "Kapalıysa ücret geçmiş dersler dahil her zaman geçerlidir.",
+    "effectiveFrom": "Geçerlilik başlangıcı",
+    "effectiveFromHint": "Bu tarihten önceki dersler önceki ücretle kalır. Bu tarihten bugüne kadarki dersler yeniden hesaplanır; kapatılmış aylar etkilenmez.",
+    "saveVersion": "Yeni dönemi kaydet",
+    "saved": "Ücret kaydedildi"
   },
   "purchaseDialog": {
     "title": "Paket satın al",
@@ -1360,7 +1401,14 @@
   },
   "instructorRatesTable": {
     "delete": "Ücreti sil",
-    "deleteFailed": "Ücret silinemedi"
+    "deleteFailed": "Ücret silinemedi",
+    "current": "Geçerli ücret",
+    "periods": "Dönemler",
+    "always": "Başlangıçtan beri",
+    "newPeriod": "Yeni ücret dönemi",
+    "deletePeriod": "Bu dönemi sil",
+    "deletePeriodConfirm": "Bu ücret dönemi silinsin mi? Önceki dönem bu tarihten itibaren yeniden geçerli olur.",
+    "deleteRateHint": "Hesaplanmış hakedişler değişmez; bu ücretle yeni hakediş yazılmaz."
   },
   "attendancePage": {
     "error": "Hata",
@@ -1374,7 +1422,9 @@
   "instructorRateDrawer": {
     "description": "Şube ve dans türüne göre eğitmen ücreti",
     "editTitle": "Ücreti düzenle",
-    "addTitle": "Yeni ücret ekle"
+    "addTitle": "Yeni ücret ekle",
+    "newPeriodTitle": "Yeni ücret dönemi",
+    "newPeriodDescription": "Seçtiğiniz tarihten itibaren geçerli olacak ücreti girin"
   },
   "meta": {
     "defaultTitle": "StudioDesk — Dans stüdyosu yönetimi",
@@ -1433,7 +1483,11 @@
       "studio": "salon",
       "instructor_rate": "eğitmen ücreti",
       "organization_settings": "stüdyo ayarları",
-      "invitation": "ekip daveti"
+      "invitation": "ekip daveti",
+      "instructor_earning": "eğitmen hakedişi",
+      "instructor_adjustment": "hakediş ek kalemi",
+      "instructor_payout": "eğitmen ödemesi",
+      "instructor_pay_period": "hakediş dönemi"
     },
     "fields": {
       "name": "Ad",
@@ -1606,7 +1660,34 @@
     "undoAttendanceFailed": "Yoklama geri alınamadı.",
     "demoRequestInvalid": "İşaretli alanları kontrol edip tekrar deneyin.",
     "demoRequestFailed": "Talebiniz gönderilemedi. Birazdan tekrar deneyin.",
-    "notAuthorized": "Bunu yapmaya yetkiniz yok."
+    "notAuthorized": "Bunu yapmaya yetkiniz yok.",
+    "noPayPermission": "Bu işlem için yetkiniz yok",
+    "invalidAmount": "Lütfen geçerli bir tutar girin",
+    "invalidInput": "Girilen bilgiler geçersiz",
+    "periodLocked": "Bu ay kapatıldı; kayıtları değiştirilemez",
+    "periodNotEnded": "Yalnızca bitmiş aylar kapatılabilir",
+    "periodAlreadyClosed": "Bu ay zaten kapatılmış",
+    "periodNotClosed": "Bu ay kapatılmamış",
+    "reopenLatestOnly": "Yalnızca en son kapatılan ay yeniden açılabilir",
+    "onlyOwnerReopens": "Kapatılmış bir ayı yalnızca stüdyo sahibi yeniden açabilir",
+    "closePeriodFailed": "Ay kapatılamadı",
+    "reopenPeriodFailed": "Ay yeniden açılamadı",
+    "updateEarningFailed": "Hakediş güncellenemedi",
+    "createAdjustmentFailed": "Ek kalem eklenemedi",
+    "deleteAdjustmentFailed": "Ek kalem silinemedi",
+    "adjustmentNotFound": "Ek kalem bulunamadı",
+    "createPayoutFailed": "Ödeme kaydedilemedi",
+    "deletePayoutFailed": "Ödeme silinemedi",
+    "payoutNotFound": "Ödeme bulunamadı",
+    "payoutInFuture": "İleri tarihli ödeme girilemez",
+    "fetchPaySummaryFailed": "Ödeme özeti yüklenemedi",
+    "fetchStatementFailed": "Hakediş dökümü yüklenemedi",
+    "fetchProfitabilityFailed": "Kârlılık raporu yüklenemedi",
+    "invalidPayModel": "Geçersiz ücret modeli",
+    "ratioRange": "Oran 0 ile 100 arasında olmalı",
+    "rateVersionNotFound": "Ücret dönemi bulunamadı",
+    "cannotDeleteLastVersion": "Ücretin tek dönemi silinemez; gerekirse ücretin kendisini silin",
+    "linkedPayoutLocked": "Bu kasa kaydı kapatılmış bir aydaki eğitmen ödemesine bağlı; silinemez"
   },
   "attendanceSheet": {
     "markEveryone": "Kaydetmeden önce {count} öğrenciyi daha işaretleyin.",
@@ -1714,7 +1795,9 @@
     "packages": "Paketler",
     "branches": "Şubeler",
     "danceTypes": "Dans türleri",
-    "settings": "Ayarlar"
+    "settings": "Ayarlar",
+    "instructorPayouts": "Ödemeler",
+    "courseProfitability": "Kârlılık"
   },
   "detailTabs": {
     "courses": "Kurslar",
@@ -2086,6 +2169,166 @@
           "features": "Sınırsız şube|Sınırsız öğrenci|Sınırsız ekip üyesi|Şubeye göre ayrı program ve kasa|Stüdyo planındaki her şey|Kuruluma özel destek"
         }
       }
+    }
+  },
+  "instructorPay": {
+    "payoutCashDescription": "Eğitmen ödemesi: {name}",
+    "month": {
+      "previous": "Önceki ay",
+      "next": "Sonraki ay"
+    },
+    "models": {
+      "percentage": "Ders değerinden yüzde",
+      "per_lesson": "Ders başı sabit",
+      "per_hour": "Saatlik",
+      "per_student": "Öğrenci başı"
+    },
+    "modelHints": {
+      "percentage": "Kredisi düşülen her öğrencinin ders değeri (pakete ödediği tutar ÷ ders sayısı) toplanır; eğitmen bu toplamın yüzdesini alır.",
+      "per_lesson": "Derse en az bir öğrenci geldiğinde eğitmen sabit bir tutar alır.",
+      "per_hour": "Ders süresi saat olarak hesaplanır ve saatlik ücretle çarpılır.",
+      "per_student": "Derse gelen her öğrenci için eğitmen sabit bir tutar alır."
+    },
+    "terms": {
+      "percentage": "%{ratio}",
+      "per_lesson": "Ders başı {amount}",
+      "per_hour": "Saatlik {amount}",
+      "per_student": "Öğrenci başı {amount}",
+      "min": "en az {amount}"
+    },
+    "kinds": {
+      "bonus": "Prim",
+      "deduction": "Kesinti",
+      "private_lesson": "Özel ders",
+      "travel": "Yol ücreti",
+      "correction": "Otomatik düzeltme",
+      "other": "Diğer"
+    },
+    "methods": {
+      "cash": "Nakit",
+      "bank_transfer": "Havale / EFT",
+      "other": "Diğer"
+    },
+    "summary": {
+      "opening": "Devreden bakiye",
+      "earned": "Bu ayki hakediş",
+      "adjustments": "Ek kalemler",
+      "paid": "Ödenen",
+      "closing": "Ödenecek bakiye",
+      "lessons": "{count, plural, one {# ders} other {# ders}}"
+    },
+    "period": {
+      "open": "Açık ay",
+      "closed": "Kapatıldı",
+      "close": "Ayı kapat",
+      "reopen": "Ayı yeniden aç",
+      "closeConfirmTitle": "{month} kapatılsın mı?",
+      "closeConfirmDescription": "Kapatılan ayın hakedişleri, ek kalemleri ve ödemeleri artık değiştirilemez. Sonradan değişen bir yoklama bu ayı değiştirmez; fark içinde bulunduğunuz aya otomatik düzeltme olarak yazılır.",
+      "reopenConfirmTitle": "{month} yeniden açılsın mı?",
+      "reopenConfirmDescription": "Bu ayın dersleri için yazılmış otomatik düzeltmeler silinir ve dersler yeniden hesaplanır.",
+      "closedSuccess": "Ay kapatıldı",
+      "reopenedSuccess": "Ay yeniden açıldı",
+      "lockedNotice": "Bu ay kapatıldı. Kayıtları değiştirilemez; yeni ödeme ve ek kalemleri açık bir aya girin."
+    },
+    "payouts": {
+      "title": "Eğitmen ödemeleri",
+      "description": "Hakediş, ek kalem ve ödemelerden kalan bakiyeyi takip edin",
+      "pay": "Ödeme yap",
+      "addItem": "Ek kalem ekle",
+      "statement": "Hakediş dökümü",
+      "archived": "Arşivde",
+      "searchPlaceholder": "Eğitmen ara…",
+      "empty": "Bu ay için gösterilecek eğitmen yok"
+    },
+    "payoutDialog": {
+      "title": "Ödeme yap",
+      "description": "{name} için ödeme kaydı. Ödeme kasaya gider olarak da yazılır.",
+      "amount": "Tutar",
+      "balanceHint": "Ödenecek bakiye: {amount}",
+      "date": "Ödeme tarihi",
+      "branch": "Kasa (şube)",
+      "selectBranch": "Şube seç",
+      "method": "Ödeme yöntemi",
+      "note": "Not",
+      "notePlaceholder": "İsteğe bağlı",
+      "submit": "Ödemeyi kaydet",
+      "saved": "Ödeme kaydedildi"
+    },
+    "adjustmentDialog": {
+      "title": "Ek kalem ekle",
+      "description": "{name} için prim, kesinti ya da ek ödeme",
+      "kind": "Tür",
+      "amount": "Tutar",
+      "deductionHint": "Kesintide de tutarı pozitif girin; bakiyeden düşülür.",
+      "date": "Tarih",
+      "descriptionLabel": "Açıklama",
+      "descriptionPlaceholder": "Örn. gösteri provası",
+      "saved": "Ek kalem eklendi"
+    },
+    "statement": {
+      "title": "Hakediş dökümü",
+      "description": "Eğitmenin aylık dersleri, ek kalemleri ve ödemeleri",
+      "pickInstructorTitle": "Eğitmen seçin",
+      "pickInstructor": "Dökümü görmek için yukarıdan bir eğitmen seçin.",
+      "instructor": "Eğitmen",
+      "selectInstructor": "Eğitmen seç",
+      "print": "Yazdır / PDF",
+      "downloadCsv": "CSV indir",
+      "lessons": "Dersler",
+      "noLessons": "Bu ay hakediş yazılan ders yok",
+      "items": "Ek kalemler",
+      "noItems": "Bu ay ek kalem yok",
+      "payments": "Ödemeler",
+      "noPayments": "Bu ay ödeme yok",
+      "showDetails": "Hesap detayını göster",
+      "manual": "Elle düzeltildi",
+      "calculated": "hesaplanan {amount}",
+      "hours": "{hours} saat",
+      "rateFrom": "geçerlilik:",
+      "substitute": "Yerine girdi",
+      "minApplied": "Asgari ücret uygulandı",
+      "studentsCounted": "{present} öğrenci geldi · {credits} kredi düşüldü",
+      "student": "Öğrenci",
+      "attendance": "Durum",
+      "lessonValue": "Ders değeri",
+      "present": "Geldi",
+      "absent": "Gelmedi",
+      "creditTaken": "kredi düşüldü",
+      "noCredit": "kredi düşülmedi",
+      "correctionFor": "Düzeltme: {course}, {date}",
+      "deleteItemConfirm": "Bu ek kalem silinsin mi?",
+      "deletePaymentConfirm": "Bu ödeme silinsin mi? Kasadaki gider kaydı da silinir.",
+      "deleted": "Silindi"
+    },
+    "csv": {
+      "type": "Tür",
+      "date": "Tarih",
+      "description": "Açıklama",
+      "amount": "Tutar",
+      "lesson": "Ders",
+      "item": "Ek kalem",
+      "payment": "Ödeme"
+    },
+    "profitability": {
+      "title": "Grup kârlılığı",
+      "description": "Her grubun geliri ile eğitmen maliyetini karşılaştırın",
+      "from": "Başlangıç",
+      "to": "Bitiş",
+      "branch": "Şube",
+      "allBranches": "Tüm şubeler",
+      "revenue": "Gelir",
+      "cost": "Eğitmen maliyeti",
+      "profit": "Kâr",
+      "margin": "Kâr marjı",
+      "loss": "Zarar",
+      "searchPlaceholder": "Kurs ara…",
+      "empty": "Bu aralıkta ders yok",
+      "note": "Gelir, kredisi düşülen her yoklamanın ders değeridir (öğrencinin pakete ödediği tutar ÷ paketteki ders sayısı). Maliyet, bu derslerin hakedişleri ve otomatik düzeltmeleridir; prim gibi ek kalemler dahil değildir. Liste en az kârlı gruptan başlar.",
+      "marginValue": "%{value}"
+    },
+    "noAccess": {
+      "title": "Yetkiniz yok",
+      "description": "Bu sayfayı stüdyo sahibi ve yöneticiler görebilir. Eğitmenler yalnızca kendi hakediş dökümlerini görür."
     }
   }
 }

@@ -39,19 +39,19 @@ export default async function DashboardLayout({
       value={{ weekStartDay: organization.week_start_day ?? 1, currency: organization.currency ?? 'TRY' }}
     >
     <SidebarProvider>
-      <div className="flex h-screen bg-background">
+      <div className="flex h-screen bg-background print:block print:h-auto">
         {/* Sidebar - Always rendered, handles responsive visibility internally */}
         <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden w-full">
+      <div className="flex-1 flex flex-col overflow-hidden w-full print:overflow-visible">
         {/* Top Bar */}
-        <header className="bg-background border-b border-border h-14 md:h-16">
+        <header className="bg-background border-b border-border h-14 md:h-16 print:hidden">
           <TopBar />
         </header>
 
         {/* Page Content - Responsive padding */}
-        <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 lg:p-8">
+        <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 lg:p-8 print:overflow-visible print:p-0">
           {children}
         </main>
       </div>

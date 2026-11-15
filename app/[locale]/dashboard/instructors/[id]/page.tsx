@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getLocale, getTranslations } from 'next-intl/server'
-import { ChevronRight, Mail, Pencil, Phone } from 'lucide-react'
+import { ChevronRight, FileText, Mail, Pencil, Phone } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
 import { getInstructor } from '@/lib/actions/instructors.actions'
 import {
@@ -10,6 +10,7 @@ import {
 } from '@/lib/actions/instructor-detail.actions'
 import { getEntityHistory } from '@/lib/actions/history.actions'
 import { getOrganization } from '@/lib/auth/getOrganization'
+import { canSeeInstructor, getPayAccess } from '@/lib/auth/payAccess'
 import { formatTime } from '@/lib/utils/formatTime'
 import { formatCurrency } from '@/lib/utils/format'
 import { weekdayNames } from '@/lib/i18n/dates'
@@ -41,8 +42,12 @@ export default async function InstructorDetailPage({ params }: { params: Promise
   const stats = statsResult.data
   const totalStats = totalEarningsResult.data
 
+  const access = await getPayAccess()
+  const canSeePay = !!access && canSeeInstructor(access, id)
+
   const tiles = [
     {
+      pay: true,
       label: tx('monthEarnings'),
       value: formatCurrency(stats?.totalEarnings ?? 0, currency),
       hint: tx('sessionCount', { count: stats?.earningCount || 0 }),
@@ -53,6 +58,7 @@ export default async function InstructorDetailPage({ params }: { params: Promise
       hint: tx('studentsMarked', { count: stats?.attendanceCount || 0 }),
     },
     {
+      pay: true,
       label: tx('totalEarnings'),
       value: formatCurrency(totalStats?.totalEarnings ?? 0, currency),
       hint: tx('classCount', { count: totalStats?.sessionCount || 0 }),
@@ -80,17 +86,26 @@ export default async function InstructorDetailPage({ params }: { params: Promise
           </span>
         }
         actions={
-          <Button asChild variant="outline">
-            <Link href={`/dashboard/instructors/${instructor.id}/edit`}>
-              <Pencil /> {td('edit')}
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {canSeePay && (
+              <Button asChild variant="outline">
+                <Link href={`/dashboard/instructor-earnings/statement?instructor=${instructor.id}`}>
+                  <FileText /> {tx('statement')}
+                </Link>
+              </Button>
+            )}
+            <Button asChild variant="outline">
+              <Link href={`/dashboard/instructors/${instructor.id}/edit`}>
+                <Pencil /> {td('edit')}
+              </Link>
+            </Button>
+          </div>
         }
       />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-        {tiles.map((tile, i) => (
-          <Card key={tile.label} className={i === 2 ? 'col-span-2 gap-1 p-4 md:col-span-1' : 'gap-1 p-4'}>
+        {tiles.filter((tile) => canSeePay || !tile.pay).map((tile, i, shown) => (
+          <Card key={tile.label} className={i === 2 && shown.length === 3 ? 'col-span-2 gap-1 p-4 md:col-span-1' : 'gap-1 p-4'}>
             <p className="truncate text-xs text-muted-foreground sm:text-sm">{tile.label}</p>
             <p className="truncate text-xl font-bold tabular-nums sm:text-2xl">{tile.value}</p>
             <p className="truncate text-xs text-muted-foreground">{tile.hint}</p>

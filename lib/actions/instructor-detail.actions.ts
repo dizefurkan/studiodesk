@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { actionError } from '@/lib/i18n/actionError'
+import { canSeeInstructor, getPayAccess } from '@/lib/auth/payAccess'
 
 export async function getInstructorCourses(instructorId: string) {
   const user = await getCurrentUser()
@@ -89,18 +90,21 @@ export async function getInstructorMonthlyStats(instructorId: string) {
     // Get earnings for this month
     const { data: earningsData, error: earningsError } = await (adminSupabase
       .from('instructor_earnings'))
-      .select('amount, created_at')
+      .select('amount, earned_on')
       .eq('instructor_id', instructorId)
-      .gte('created_at', startOfMonth)
-      .lte('created_at', endOfMonth)
+      .gte('earned_on', startOfMonth)
+      .lte('earned_on', endOfMonth)
 
     if (earningsError) {
       console.error('Error fetching monthly earnings:', earningsError)
       return { error: await actionError('fetchEarningsFailed') }
     }
 
-    const totalEarnings = ((earningsData || [])).reduce((sum, e) => sum + Number(e.amount), 0)
-    const earningCount = earningsData?.length || 0
+    // Pay is visible to owners/managers and to the instructor themself only
+    const access = await getPayAccess()
+    const canSeePay = !!access && canSeeInstructor(access, instructorId)
+    const totalEarnings = canSeePay ? (earningsData || []).reduce((sum, e) => sum + Number(e.amount), 0) : 0
+    const earningCount = canSeePay ? earningsData?.length || 0 : 0
 
     // Get sessions for this month where instructor is assigned
     const { data: instructorSessions, error: sessionsError } = await (adminSupabase
@@ -137,8 +141,6 @@ export async function getInstructorMonthlyStats(instructorId: string) {
         .from('attendances'))
         .select('id, student_id, is_present, notes, created_at, students(first_name, last_name)')
         .in('session_id', sessionIds)
-        .gte('created_at', startOfMonth)
-        .lte('created_at', endOfMonth)
 
       if (attendanceError) {
         console.error('Error fetching monthly attendance:', attendanceError)
@@ -186,6 +188,9 @@ export async function getInstructorTotalEarnings(instructorId: string) {
     if (instructorError || !instructor || instructor.organization_id !== organization.id) {
       return { error: await actionError('instructorAccessDenied') }
     }
+
+    const access = await getPayAccess()
+    if (!access || !canSeeInstructor(access, instructorId)) return { error: await actionError('noPayPermission') }
 
     // Get all earnings for this instructor
     const { data: earningsData, error: earningsError } = await (adminSupabase

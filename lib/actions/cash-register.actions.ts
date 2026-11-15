@@ -9,6 +9,11 @@ import type { Database } from '@/lib/types/database.types'
 import type { PostgrestError } from '@supabase/supabase-js'
 import { sanitizeSearch } from '@/lib/utils/search'
 import { actionError } from '@/lib/i18n/actionError'
+import { unstable_rethrow } from 'next/navigation'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getPayAccess } from '@/lib/auth/payAccess'
+import { isDateLocked, parseDate } from '@/lib/earnings/periods'
+import { recalculateEarningsForStudentPackage } from '@/lib/earnings/sessionEarnings'
 
 type CashTransaction = Database['public']['Tables']['cash_transactions']['Row']
 type Branch = Database['public']['Tables']['branches']['Row']
@@ -125,6 +130,12 @@ export async function createTransaction(
       return { error: await actionError('createTransactionFailed') }
     }
 
+    // A package payment changes what its lessons are worth, so their earnings follow
+    if (data.student_package_id) {
+      const recalc = await recalculateEarningsForStudentPackage(data.student_package_id)
+      if (recalc.error) console.error('Error recalculating earnings:', recalc.error)
+    }
+
     // Log the create operation
     void logOperation('CREATE', 'cash_register', data.id, {
       after: {
@@ -169,6 +180,17 @@ export async function deleteTransaction(
       return { error: await actionError('transactionNotFound') }
     }
 
+    // An instructor payment in a closed month stays (deleting this entry would delete it)
+    const admin = createAdminClient()
+    const { data: payout } = await admin
+      .from('instructor_payouts')
+      .select('paid_on, organization_id')
+      .eq('cash_transaction_id', id)
+      .maybeSingle()
+    if (payout && (await isDateLocked(admin, payout.organization_id, payout.paid_on))) {
+      return { error: await actionError('linkedPayoutLocked') }
+    }
+
     const { error } = await supabase
       .from('cash_transactions')
       .delete()
@@ -178,6 +200,11 @@ export async function deleteTransaction(
     if (error) {
       console.error('Error deleting transaction:', error)
       return { error: await actionError('deleteTransactionFailed') }
+    }
+
+    if (beforeTransaction.student_package_id) {
+      const recalc = await recalculateEarningsForStudentPackage(beforeTransaction.student_package_id)
+      if (recalc.error) console.error('Error recalculating earnings:', recalc.error)
     }
 
     // Log the delete operation
@@ -322,138 +349,40 @@ export async function getMonthlyReport(
   }
 }
 
-type Instructor = Database['public']['Tables']['instructors']['Row']
-type CourseSession = Database['public']['Tables']['course_sessions']['Row']
-type Course = Database['public']['Tables']['courses']['Row']
-
-type Earnings = {
-  id: string
-  instructor_id: string
-  session_id: string
-  amount: number
-  created_at: string
-}
-
-type EnrichedEarnings = Earnings & {
-  instructors?: Instructor
-  course_sessions?: CourseSession & {
-    courses?: Course & {
-      branches?: Branch
-    }
-  }
-}
-
-export async function getInstructorEarningsByBranch(
-  branchId?: string,
-  fromDate?: string,
-  toDate?: string,
-): Promise<{ data?: EnrichedEarnings[]; error?: string }> {
-  const user = await getCurrentUser()
-  if (!user) return { error: await actionError('notAuthenticated') }
-
-  const organization = await getOrganization()
-  if (!organization) return { error: await actionError('noOrganization') }
+/**
+ * Instructor earnings of lessons held between two dates (lesson date), optionally at one
+ * branch. Earnings are what instructors are owed, not cash; payments show up as expenses.
+ * Owners and managers only.
+ */
+export async function getInstructorEarningsByBranch(branchId?: string, fromDate?: string, toDate?: string) {
+  const access = await getPayAccess()
+  if (!access?.canManage) return { data: [] }
 
   try {
-    const supabase = await createServerSupabaseClient()
-
-    // Verify branch belongs to organization if specified
-    if (branchId) {
-      const result = await supabase
-        .from('branches')
-        .select('id')
-        .eq('id', branchId)
-        .eq('organization_id', organization.id)
-        .maybeSingle()
-        .overrideTypes<Branch>()
-
-      const { data: branch, error: branchError } = result as { data: Branch | null; error: PostgrestError | null }
-
-      if (branchError || !branch) {
-        console.warn('[getInstructorEarningsByBranch] Branch not found or access denied:', branchId)
-        return { data: [] }
-      }
-    }
-
-    // Get earnings for instructors with safer query structure
-    let query = supabase
+    const admin = createAdminClient()
+    let query = admin
       .from('instructor_earnings')
-      .select('id, instructor_id, session_id, amount, created_at')
-      .order('created_at', { ascending: false })
-      .limit(1000)  // Add limit to prevent excessive data
+      .select(
+        'id, instructor_id, session_id, amount, earned_on, created_at, instructors!inner(first_name, last_name, organization_id), course_sessions!inner(courses!inner(branch_id, name, branches(id, name)))'
+      )
+      // Service-role client: the organization filter is part of the query
+      .eq('instructors.organization_id', access.organizationId)
+      .order('earned_on', { ascending: false })
+    const from = parseDate(fromDate)
+    const to = parseDate(toDate)
+    if (from) query = query.gte('earned_on', from)
+    if (to) query = query.lte('earned_on', to)
+    if (branchId) query = query.eq('course_sessions.courses.branch_id', branchId)
 
-    // Convert date strings to ISO format with time boundaries
-    if (fromDate) {
-      const startOfDay = `${fromDate}T00:00:00`
-      query = query.gte('created_at', startOfDay)
-    }
-
-    if (toDate) {
-      const endOfDay = `${toDate}T23:59:59`
-      query = query.lte('created_at', endOfDay)
-    }
-
-    const result = await query.overrideTypes<Earnings[]>()
-    const { data: earnings, error } = result as { data: Earnings[] | null; error: PostgrestError | null }
-
+    const { data, error } = await query
     if (error) {
       console.error('Error fetching earnings:', error)
-      return { error: await actionError('fetchEarningsFailed') }
-    }
-
-    if (!earnings || earnings.length === 0) {
       return { data: [] }
     }
-
-    // Fetch related data more safely
-    const instructorIds = [...new Set(earnings.map((e) => e.instructor_id))]
-    const sessionIds = [...new Set(earnings.map((e) => e.session_id))]
-
-    const [
-      { data: instructors },
-      { data: sessions },
-    ] = await Promise.all([
-      supabase
-        .from('instructors')
-        .select('id, first_name, last_name')
-        .in('id', instructorIds)
-        .overrideTypes<Instructor[]>(),
-      supabase
-        .from('course_sessions')
-        .select('id, course_id, courses(id, branch_id, name, branches(id, name))')
-        .in('id', sessionIds)
-        .overrideTypes<(CourseSession & {
-          courses: Course & { branches: Branch }
-        })[]>(),
-    ])
-
-    const instructorMap = new Map(instructors?.map((i: Instructor) => [i.id, i]) || [])
-    const sessionMap = new Map(sessions?.map((s) => [s.id, s]) || [])
-
-    // Enrich earnings with related data
-    const enrichedEarnings = earnings.map((e) => ({
-      ...e,
-      instructors: instructorMap.get(e.instructor_id) as Instructor | undefined,
-      course_sessions: sessionMap.get(e.session_id) as (CourseSession & { courses: Course & { branches: Branch } }) | undefined,
-    })) as EnrichedEarnings[]
-
-    // Filter by branch if specified
-    let filtered = enrichedEarnings
-    if (branchId) {
-      filtered = filtered.filter((earning) => earning.course_sessions?.courses?.branch_id === branchId)
-    }
-
-    console.log('[getInstructorEarningsByBranch] Fetched:', { 
-      total: earnings.length, 
-      filtered: filtered.length, 
-      branchId,
-      dates: { fromDate, toDate }
-    })
-
-    return { data: filtered }
+    return { data: data ?? [] }
   } catch (error) {
-    console.error('Unexpected error:', error)
-    // Return empty array instead of error to prevent page crash
+    unstable_rethrow(error)
+    console.error('Unexpected error in getInstructorEarningsByBranch:', error)
     return { data: [] }
   }
 }

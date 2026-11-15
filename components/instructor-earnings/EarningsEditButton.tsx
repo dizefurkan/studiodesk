@@ -1,148 +1,108 @@
 'use client'
 
 import { useState } from 'react'
-import { updateInstructorEarnings, deleteInstructorEarnings } from '@/lib/actions/instructor-earnings.actions'
-import { Button } from '@/components/ui/button'
-import { Edit2, Trash2, X, Check } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useConfirm } from '@/components/common/ConfirmProvider'
+import { Check, Pencil, RotateCcw, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useRouter } from '@/i18n/navigation'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useConfirm } from '@/components/common/ConfirmProvider'
+import { useServerAction } from '@/hooks/useServerAction'
+import { resetInstructorEarnings, updateInstructorEarnings } from '@/lib/actions/instructor-earnings.actions'
 
-interface EarningsEditButtonProps {
+/**
+ * Set an earning's amount by hand (it then survives recalculation) or go back to the
+ * calculated amount.
+ */
+export function EarningsEditButton({
+  earningsId,
+  currentAmount,
+  isManual,
+}: {
   earningsId: string
   currentAmount: number
-  onUpdate?: () => void
-}
-
-export function EarningsEditButton({ earningsId, currentAmount, onUpdate }: EarningsEditButtonProps) {
-  const t = useTranslations()
-  const router = useRouter()
+  isManual: boolean
+}) {
+  const t = useTranslations('instructorEarnings')
+  const tc = useTranslations('common')
+  const confirm = useConfirm()
+  const { pending, run } = useServerAction()
   const [isEditing, setIsEditing] = useState(false)
   const [amount, setAmount] = useState(currentAmount.toString())
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const handleSave = async () => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const result = await updateInstructorEarnings(earningsId, parseFloat(amount))
-
-      if (!result) {
-        setError(t('errors.noResponse'))
-        setIsLoading(false)
-        return
-      }
-
-      if (result.error) {
-        console.error('[EarningsEditButton] Error:', result.error)
-        setError(result.error)
-        setIsLoading(false)
-      } else if (result.success) {
-                setIsEditing(false)
-        setIsLoading(false)
-        onUpdate?.()
-        router.refresh()
-      } else {
-        setError(t('errors.unexpectedResponse'))
-        setIsLoading(false)
-      }
-    } catch (err) {
-      console.error('[EarningsEditButton] Exception:', err)
-      setError(err instanceof Error ? err.message : t('errors.unexpected'))
-      setIsLoading(false)
-    }
-  }
-
-  const confirm = useConfirm()
-
-  const handleDelete = async () => {
-    if (!(await confirm({ title: t('common.deleteConfirm'), destructive: true }))) {
-      return
-    }
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const result = await deleteInstructorEarnings(earningsId)
-
-      if (!result) {
-        setError(t('errors.noResponse'))
-        setIsLoading(false)
-        return
-      }
-
-      if (result.error) {
-        console.error('[EarningsEditButton] Delete error:', result.error)
-        setError(result.error)
-        setIsLoading(false)
-      } else if (result.success) {
-                onUpdate?.()
-        setIsLoading(false)
-        router.refresh()
-      } else {
-        setError(t('errors.unexpectedResponse'))
-        setIsLoading(false)
-      }
-    } catch (err) {
-      console.error('[EarningsEditButton] Delete exception:', err)
-      setError(err instanceof Error ? err.message : t('errors.unexpected'))
-      setIsLoading(false)
-    }
-  }
 
   if (isEditing) {
     return (
-      <div className="flex items-center gap-2">
+      <form
+        className="flex items-center gap-1"
+        onSubmit={(e) => {
+          e.preventDefault()
+          run(() => updateInstructorEarnings(earningsId, Number(amount)), {
+            success: t('amountSaved'),
+            onSuccess: () => setIsEditing(false),
+          })
+        }}
+      >
         <Input
           type="number"
+          inputMode="decimal"
+          min="0"
           step="0.01"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          className="w-24 text-right"
-          disabled={isLoading}
+          className="w-28 text-right"
+          aria-label={t('editAmount')}
+          disabled={pending}
+          autoFocus
         />
-        <Button variant="ghost" size="icon-sm" className="text-green-600" aria-label={t('common.save')}
-          onClick={handleSave}
-          disabled={isLoading}
-          title={t('common.save')}
-        >
-          <Check size={18} />
+        <Button type="submit" variant="ghost" size="icon-sm" aria-label={tc('save')} disabled={pending}>
+          <Check />
         </Button>
-        <Button variant="ghost" size="icon-sm" aria-label={t('common.cancel')}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label={tc('cancel')}
+          disabled={pending}
           onClick={() => {
             setIsEditing(false)
             setAmount(currentAmount.toString())
-            setError(null)
           }}
-          disabled={isLoading}
-          title={t('common.cancel')}
         >
-          <X size={18} />
+          <X />
         </Button>
-        {error && <span className="text-red-600 text-sm">{error}</span>}
-      </div>
+      </form>
     )
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <Button variant="ghost" size="icon-sm" className="text-primary" aria-label={t('common.edit')}
-        onClick={() => setIsEditing(true)}
-        title={t('common.edit')}
-      >
-        <Edit2 size={18} />
-      </Button>
-      <Button variant="ghost" size="icon-sm" className="text-destructive" aria-label={t('common.delete')}
-        onClick={handleDelete}
-        disabled={isLoading}
-        title={t('common.delete')}
-      >
-        <Trash2 size={18} />
-      </Button>
+    <div className="flex items-center justify-end gap-1">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" size="icon-sm" aria-label={t('editAmount')} onClick={() => setIsEditing(true)}>
+            <Pencil />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{t('editAmount')}</TooltipContent>
+      </Tooltip>
+      {isManual && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t('resetToCalculated')}
+              disabled={pending}
+              onClick={async () => {
+                if (!(await confirm({ title: t('resetConfirm'), confirmLabel: t('resetToCalculated') }))) return
+                run(() => resetInstructorEarnings(earningsId), { success: t('amountSaved') })
+              }}
+            >
+              <RotateCcw />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t('resetToCalculated')}</TooltipContent>
+        </Tooltip>
+      )}
     </div>
   )
 }

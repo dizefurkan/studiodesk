@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
 
-/** Tabs that join the three instructor pages: list, pay rates, earnings. */
+/** Tabs that join the instructor pages: list, pay rates, earnings, payouts, course profitability. */
 export function InstructorsTabs() {
   const t = useTranslations('nav')
   const pathname = usePathname()
@@ -16,12 +16,14 @@ export function InstructorsTabs() {
     { href: '/dashboard/instructors', label: t('instructors') },
     { href: '/dashboard/instructor-rates', label: t('instructorRates') },
     { href: '/dashboard/instructor-earnings', label: t('instructorEarnings') },
+    { href: '/dashboard/instructor-payouts', label: t('instructorPayouts') },
+    { href: '/dashboard/course-profitability', label: t('courseProfitability') },
   ]
 
   return (
     <nav className="-mx-1 flex gap-1 overflow-x-auto border-b border-border" aria-label={t('instructors')}>
       {tabs.map((tab) => {
-        const active = path === tab.href
+        const active = path === tab.href || path.startsWith(tab.href + '/')
         return (
           <Link
             key={tab.href}

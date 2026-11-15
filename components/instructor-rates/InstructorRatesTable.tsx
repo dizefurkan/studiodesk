@@ -2,26 +2,21 @@
 
 import { useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { toast } from 'sonner'
 import type { ColumnDef } from '@tanstack/react-table'
-import { ChevronDown, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
+import { CalendarPlus, ChevronDown, ChevronRight, Plus, Trash2, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { DataTable } from '@/components/table/data-table'
+import { FormattedDate } from '@/components/common/FormattedDate'
 import { useConfirm } from '@/components/common/ConfirmProvider'
-import { deleteInstructorRate } from '@/lib/actions/instructor-rates.actions'
+import { useTermsLabel } from '@/components/instructor-pay/useTermsLabel'
+import { useServerAction } from '@/hooks/useServerAction'
+import { deleteInstructorRate, deleteRateVersion } from '@/lib/actions/instructor-rates.actions'
+import { ALWAYS, type InstructorRate } from './types'
 
 const PAGE_SIZE = 10
-
-interface InstructorRate {
-  id: string
-  ratio_per_class: number
-  instructors: { id: string; first_name: string; last_name: string }
-  branches: { id: string; name: string }
-  dance_types: { id: string; name: string }
-}
 
 interface InstructorRow {
   id: string
@@ -47,36 +42,23 @@ export function InstructorRatesTable({
   const tx = useTranslations('instructorRatesTable')
   const t = useTranslations()
   const confirm = useConfirm()
-  const [busy, setBusy] = useState(false)
+  const termsLabel = useTermsLabel()
+  const { pending, run } = useServerAction()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
 
   const rows = useMemo<InstructorRow[]>(() => {
-    const q = search.trim().toLowerCase()
+    const q = search.trim().toLocaleLowerCase()
     return (instructors || [])
       .map((i) => ({
         id: i.id,
         name: `${i.first_name} ${i.last_name}`,
         rates: rates.filter((r) => r.instructors.id === i.id),
       }))
-      .filter((r) => !q || r.name.toLowerCase().includes(q))
+      .filter((r) => !q || r.name.toLocaleLowerCase().includes(q))
   }, [instructors, rates, search])
 
   const pageRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-
-  const handleDelete = async (rateId: string) => {
-    if (!(await confirm({ title: t('common.confirm') + '?', destructive: true }))) return
-    setBusy(true)
-    try {
-      const result = await deleteInstructorRate(rateId)
-      if (result.error) toast.error(result.error)
-      else await onRatesChange?.()
-    } catch {
-      toast.error(tx('deleteFailed'))
-    } finally {
-      setBusy(false)
-    }
-  }
 
   const columns: ColumnDef<InstructorRow>[] = [
     {
@@ -145,7 +127,8 @@ export function InstructorRatesTable({
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className="pl-12">{t('instructorRates.tableHeaders.rates')}</TableHead>
-              <TableHead>%</TableHead>
+              <TableHead>{tx('current')}</TableHead>
+              <TableHead>{tx('periods')}</TableHead>
               <TableHead className="text-right">
                 <span className="sr-only">{t('instructorRates.tableHeaders.actions')}</span>
               </TableHead>
@@ -153,32 +136,74 @@ export function InstructorRatesTable({
           </TableHeader>
           <TableBody>
             {row.original.rates.map((rate) => (
-              <TableRow key={rate.id}>
+              <TableRow key={rate.id} className="align-top">
                 <TableCell className="pl-12 text-muted-foreground">
-                  {rate.branches.name} · {rate.dance_types.name}
+                  {rate.branches?.name} · {rate.dance_types?.name}
                 </TableCell>
-                <TableCell className="font-semibold">%{Number(rate.ratio_per_class).toFixed(2)}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="font-semibold">
+                  {termsLabel({
+                    pay_model: rate.pay_model,
+                    ratio: rate.ratio_per_class,
+                    amount: rate.amount,
+                    min_amount: rate.min_amount,
+                  })}
+                </TableCell>
+                <TableCell>
+                  <ul className="space-y-1 text-sm">
+                    {rate.instructor_rate_versions.map((v) => (
+                      <li key={v.id} className="flex items-center gap-1">
+                        <span className="text-muted-foreground">
+                          {v.effective_from === ALWAYS ? (
+                            tx('always')
+                          ) : (
+                            <FormattedDate value={`${v.effective_from}T00:00:00`} />
+                          )}
+                          :
+                        </span>
+                        <span>{termsLabel(v)}</span>
+                        {rate.instructor_rate_versions.length > 1 && (
+                          <Button
+                            variant="ghost"
+                            size="icon-xs"
+                            aria-label={tx('deletePeriod')}
+                            disabled={pending}
+                            onClick={async () => {
+                              if (!(await confirm({ title: tx('deletePeriodConfirm'), destructive: true }))) return
+                              run(() => deleteRateVersion(v.id), { onSuccess: onRatesChange })
+                            }}
+                          >
+                            <X />
+                          </Button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-right">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon-sm"
                         onClick={() => onOpenEdit?.(rate.id)}
-                        disabled={busy}
-                        aria-label={t('instructorRates.edit')}
+                        disabled={pending}
+                        aria-label={tx('newPeriod')}
                       >
-                        <Pencil />
+                        <CalendarPlus />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>{t('instructorRates.edit')}</TooltipContent>
+                    <TooltipContent>{tx('newPeriod')}</TooltipContent>
                   </Tooltip>
                   <Button
                     variant="ghost"
                     size="icon-sm"
                     className="text-destructive"
-                    onClick={() => handleDelete(rate.id)}
-                    disabled={busy}
+                    onClick={async () => {
+                      if (!(await confirm({ title: t('common.deleteRateConfirm'), description: tx('deleteRateHint'), destructive: true })))
+                        return
+                      run(() => deleteInstructorRate(rate.id), { onSuccess: onRatesChange })
+                    }}
+                    disabled={pending}
                     aria-label={tx('delete')}
                   >
                     <Trash2 />

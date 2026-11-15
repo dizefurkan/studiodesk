@@ -51,6 +51,10 @@ const ENTITY_ICONS: Record<string, LucideIcon> = {
   user: User,
   studio: DoorOpen,
   instructor_rate: Percent,
+  instructor_earning: Wallet,
+  instructor_adjustment: Wallet,
+  instructor_payout: Wallet,
+  instructor_pay_period: Wallet,
   organization_settings: Settings,
   invitation: UserPlus,
 };

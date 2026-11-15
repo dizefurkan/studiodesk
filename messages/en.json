@@ -145,7 +145,22 @@
     "system": "System",
     "notAvailable": "N/A",
     "firstPage": "First page",
-    "lastPage": "Last page"
+    "lastPage": "Last page",
+    "lessonDate": "Lesson date",
+    "course": "Course",
+    "rate": "Rate",
+    "method": "Method",
+    "openingBalance": "Carried over",
+    "earned": "Earned",
+    "adjustments": "Extra items",
+    "paid": "Paid",
+    "balance": "Balance",
+    "sessions": "Lessons",
+    "avgAttendance": "Avg. attendance",
+    "revenue": "Revenue",
+    "cost": "Instructor cost",
+    "profit": "Profit",
+    "margin": "Margin"
   },
   "auth": {
     "login": "Login",
@@ -539,12 +554,12 @@
   },
   "instructorRates": {
     "title": "Instructor Rates",
-    "description": "Set the share of each class's value that instructors earn",
+    "description": "Decide what instructors earn per lesson",
     "aboutTitle": "About Instructor Rates",
-    "aboutDescription": "Each student whose credit is taken adds the lesson value of their package (what they paid ÷ number of lessons) to the class. The instructor earns their percentage of that total. Students who came without a credit being taken add nothing.",
+    "aboutDescription": "For each instructor, choose a pay model per branch and dance type: a share of the lesson value, a fixed amount per lesson, an hourly rate or an amount per student. You can also set a minimum per lesson.",
     "specificToInstructor": "Rates are specific to Instructor + Branch + Dance Type combination",
     "earnAutomatically": "Earnings are calculated when attendance is saved and updated when a record is removed",
-    "multipleRates": "Multiple rates can be configured for the same instructor across different branches/dance types",
+    "multipleRates": "When pay changes, add a new period: lessons before its start keep the old rate and closed months never change",
     "addNew": "Add New Rate",
     "editRate": "Edit Rate",
     "deleteRate": "Delete Rate",
@@ -966,7 +981,7 @@
   },
   "instructorEarnings": {
     "title": "Instructor earnings",
-    "description": "Track instructor compensation and session payments",
+    "description": "See per-lesson earnings by lesson date",
     "totalEarnings": "Total earnings (filtered)",
     "totalRecords": "Records",
     "searchPlaceholder": "Search by instructor…",
@@ -975,7 +990,15 @@
     "allInstructors": "All instructors",
     "fromDate": "From",
     "toDate": "To",
-    "selectDate": "Select date"
+    "selectDate": "Select date",
+    "statement": "Pay statement",
+    "amountSaved": "Earning updated",
+    "editAmount": "Correct amount",
+    "resetToCalculated": "Back to calculated amount",
+    "resetConfirm": "Remove the amount set by hand and go back to the calculated amount?",
+    "manual": "Manual",
+    "manualHint": "Amount set by hand; kept when lessons are recalculated",
+    "calculatedAmount": "Calculated amount: {amount}"
   },
   "studios": {
     "loading": "Loading...",
@@ -1074,7 +1097,8 @@
     "classCount": "{count, plural, one {# class} other {# classes}}",
     "sessionCount": "{count, plural, one {# session} other {# sessions}}",
     "studentsMarked": "{count, plural, one {# student marked} other {# students marked}}",
-    "assignedCourses": "Assigned courses ({count})"
+    "assignedCourses": "Assigned courses ({count})",
+    "statement": "Pay statement"
   },
   "cashRegister": {
     "branch": "Branch",
@@ -1099,7 +1123,9 @@
     "loadError": "Error loading the cash register",
     "loadErrorHint": "Please try refreshing the page",
     "instructorPayment": "Instructor payment — {name}",
-    "deleteConfirm": "Delete this transaction?"
+    "deleteConfirm": "Delete this transaction?",
+    "instructorPayAccrued": "Instructor earnings",
+    "instructorEarningRow": "Earning: {name}"
   },
   "addStudentDialog": {
     "activeOnly": "Show only students with active packages for this dance type",
@@ -1192,13 +1218,28 @@
     "selectBranch": "Select branch",
     "danceType": "Dance type *",
     "selectDanceType": "Select dance type",
-    "ratio": "Share of lesson value (%) *",
+    "ratio": "Rate (%)",
     "allRequired": "All fields are required",
     "ratioRange": "Ratio must be a percentage between 0 and 100",
     "saveFailed": "Failed to save the rate",
     "update": "Update rate",
     "add": "Add rate",
-    "ratioHint": "For each student whose credit is taken, a lesson is worth what they paid for the package ÷ its number of lessons. The instructor earns this percentage of the class total."
+    "ratioHint": "For each student whose credit is taken, a lesson is worth what they paid for the package ÷ its number of lessons. The instructor earns this percentage of the class total.",
+    "payModel": "Pay model",
+    "amountLabels": {
+      "per_lesson": "Amount per lesson",
+      "per_hour": "Amount per hour",
+      "per_student": "Amount per student"
+    },
+    "minAmount": "Minimum per lesson",
+    "optional": "Optional",
+    "minAmountHint": "With a minimum, the instructor gets at least this amount for every lesson that takes place.",
+    "startOnDate": "Applies from a specific date",
+    "alwaysHint": "When off, the rate applies to every lesson, past ones included.",
+    "effectiveFrom": "Start date",
+    "effectiveFromHint": "Lessons before this date keep the previous rate. Lessons from this date up to today are recalculated; closed months are not affected.",
+    "saveVersion": "Save new period",
+    "saved": "Rate saved"
   },
   "purchaseDialog": {
     "title": "Purchase package",
@@ -1360,7 +1401,14 @@
   },
   "instructorRatesTable": {
     "delete": "Delete rate",
-    "deleteFailed": "Failed to delete the rate"
+    "deleteFailed": "Failed to delete the rate",
+    "current": "Current rate",
+    "periods": "Periods",
+    "always": "Since the start",
+    "newPeriod": "New rate period",
+    "deletePeriod": "Delete this period",
+    "deletePeriodConfirm": "Delete this rate period? The previous period applies again from this date.",
+    "deleteRateHint": "Earnings already calculated stay; no new earnings are written with this rate."
   },
   "attendancePage": {
     "error": "Error",
@@ -1374,7 +1422,9 @@
   "instructorRateDrawer": {
     "description": "Instructor rate per branch and dance type",
     "editTitle": "Edit rate",
-    "addTitle": "Add new rate"
+    "addTitle": "Add new rate",
+    "newPeriodTitle": "New rate period",
+    "newPeriodDescription": "Enter the rate that applies from the date you choose"
   },
   "meta": {
     "defaultTitle": "StudioDesk — Dance studio management",
@@ -1433,7 +1483,11 @@
       "studio": "studio room",
       "instructor_rate": "instructor rate",
       "organization_settings": "studio settings",
-      "invitation": "team invitation"
+      "invitation": "team invitation",
+      "instructor_earning": "instructor earning",
+      "instructor_adjustment": "extra pay item",
+      "instructor_payout": "instructor payment",
+      "instructor_pay_period": "pay period"
     },
     "fields": {
       "name": "Name",
@@ -1606,7 +1660,34 @@
     "undoAttendanceFailed": "Could not undo the attendance.",
     "demoRequestInvalid": "Check the highlighted fields and try again.",
     "demoRequestFailed": "Your request couldn't be sent. Try again in a moment.",
-    "notAuthorized": "You don't have permission to do this."
+    "notAuthorized": "You don't have permission to do this.",
+    "noPayPermission": "You don't have permission for this",
+    "invalidAmount": "Please enter a valid amount",
+    "invalidInput": "The information entered is not valid",
+    "periodLocked": "This month is closed; its records can't be changed",
+    "periodNotEnded": "Only months that have ended can be closed",
+    "periodAlreadyClosed": "This month is already closed",
+    "periodNotClosed": "This month isn't closed",
+    "reopenLatestOnly": "Only the most recently closed month can be reopened",
+    "onlyOwnerReopens": "Only the studio owner can reopen a closed month",
+    "closePeriodFailed": "Couldn't close the month",
+    "reopenPeriodFailed": "Couldn't reopen the month",
+    "updateEarningFailed": "Couldn't update the earning",
+    "createAdjustmentFailed": "Couldn't add the extra item",
+    "deleteAdjustmentFailed": "Couldn't delete the extra item",
+    "adjustmentNotFound": "Extra item not found",
+    "createPayoutFailed": "Couldn't record the payment",
+    "deletePayoutFailed": "Couldn't delete the payment",
+    "payoutNotFound": "Payment not found",
+    "payoutInFuture": "A payment can't be dated in the future",
+    "fetchPaySummaryFailed": "Couldn't load the pay summary",
+    "fetchStatementFailed": "Couldn't load the pay statement",
+    "fetchProfitabilityFailed": "Couldn't load the profitability report",
+    "invalidPayModel": "Invalid pay model",
+    "ratioRange": "The rate must be between 0 and 100",
+    "rateVersionNotFound": "Rate period not found",
+    "cannotDeleteLastVersion": "A rate's only period can't be deleted; delete the rate itself if needed",
+    "linkedPayoutLocked": "This cash entry belongs to an instructor payment in a closed month and can't be deleted"
   },
   "attendanceSheet": {
     "markEveryone": "Mark {count, plural, one {# more student} other {# more students}} before saving.",
@@ -1714,7 +1795,9 @@
     "packages": "Packages",
     "branches": "Branches",
     "danceTypes": "Dance types",
-    "settings": "Settings"
+    "settings": "Settings",
+    "instructorPayouts": "Payments",
+    "courseProfitability": "Profitability"
   },
   "detailTabs": {
     "courses": "Courses",
@@ -2086,6 +2169,166 @@
           "features": "Unlimited branches|Unlimited students|Unlimited team members|Separate timetable and cash per branch|Everything in Studio|Dedicated setup help"
         }
       }
+    }
+  },
+  "instructorPay": {
+    "payoutCashDescription": "Instructor payment: {name}",
+    "month": {
+      "previous": "Previous month",
+      "next": "Next month"
+    },
+    "models": {
+      "percentage": "Share of lesson value",
+      "per_lesson": "Fixed per lesson",
+      "per_hour": "Hourly",
+      "per_student": "Per student"
+    },
+    "modelHints": {
+      "percentage": "The lesson value of every student who used a credit (package amount paid ÷ lessons) is added up; the instructor gets this percentage of the total.",
+      "per_lesson": "The instructor gets a fixed amount whenever at least one student attends.",
+      "per_hour": "The lesson length in hours is multiplied by the hourly rate.",
+      "per_student": "The instructor gets a fixed amount for every student who attends."
+    },
+    "terms": {
+      "percentage": "{ratio}%",
+      "per_lesson": "{amount} per lesson",
+      "per_hour": "{amount} per hour",
+      "per_student": "{amount} per student",
+      "min": "at least {amount}"
+    },
+    "kinds": {
+      "bonus": "Bonus",
+      "deduction": "Deduction",
+      "private_lesson": "Private lesson",
+      "travel": "Travel",
+      "correction": "Automatic correction",
+      "other": "Other"
+    },
+    "methods": {
+      "cash": "Cash",
+      "bank_transfer": "Bank transfer",
+      "other": "Other"
+    },
+    "summary": {
+      "opening": "Carried over",
+      "earned": "Earned this month",
+      "adjustments": "Extra items",
+      "paid": "Paid",
+      "closing": "Balance to pay",
+      "lessons": "{count, plural, one {# lesson} other {# lessons}}"
+    },
+    "period": {
+      "open": "Open month",
+      "closed": "Closed",
+      "close": "Close month",
+      "reopen": "Reopen month",
+      "closeConfirmTitle": "Close {month}?",
+      "closeConfirmDescription": "The month's earnings, extra items and payments can no longer be changed. If an attendance record changes later, this month stays as it is and the difference is booked as an automatic correction in the current month.",
+      "reopenConfirmTitle": "Reopen {month}?",
+      "reopenConfirmDescription": "Automatic corrections booked for this month's lessons are removed and the lessons are recalculated.",
+      "closedSuccess": "Month closed",
+      "reopenedSuccess": "Month reopened",
+      "lockedNotice": "This month is closed. Its records can't be changed; enter new payments and extra items in an open month."
+    },
+    "payouts": {
+      "title": "Instructor payments",
+      "description": "Track what is left to pay after earnings, extra items and payments",
+      "pay": "Pay",
+      "addItem": "Add extra item",
+      "statement": "Pay statement",
+      "archived": "Archived",
+      "searchPlaceholder": "Search instructors…",
+      "empty": "No instructors to show for this month"
+    },
+    "payoutDialog": {
+      "title": "Pay instructor",
+      "description": "Record a payment to {name}. It is also written to the cash register as an expense.",
+      "amount": "Amount",
+      "balanceHint": "Balance to pay: {amount}",
+      "date": "Payment date",
+      "branch": "Cash register (branch)",
+      "selectBranch": "Select branch",
+      "method": "Payment method",
+      "note": "Note",
+      "notePlaceholder": "Optional",
+      "submit": "Save payment",
+      "saved": "Payment saved"
+    },
+    "adjustmentDialog": {
+      "title": "Add extra item",
+      "description": "A bonus, deduction or extra payment for {name}",
+      "kind": "Type",
+      "amount": "Amount",
+      "deductionHint": "Enter deductions as a positive amount too; they are subtracted from the balance.",
+      "date": "Date",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "E.g. show rehearsal",
+      "saved": "Extra item added"
+    },
+    "statement": {
+      "title": "Pay statement",
+      "description": "An instructor's lessons, extra items and payments for a month",
+      "pickInstructorTitle": "Select an instructor",
+      "pickInstructor": "Select an instructor above to see their statement.",
+      "instructor": "Instructor",
+      "selectInstructor": "Select instructor",
+      "print": "Print / PDF",
+      "downloadCsv": "Download CSV",
+      "lessons": "Lessons",
+      "noLessons": "No paid lessons this month",
+      "items": "Extra items",
+      "noItems": "No extra items this month",
+      "payments": "Payments",
+      "noPayments": "No payments this month",
+      "showDetails": "Show calculation",
+      "manual": "Set by hand",
+      "calculated": "calculated {amount}",
+      "hours": "{hours} h",
+      "rateFrom": "in force from",
+      "substitute": "Substitute",
+      "minApplied": "Minimum applied",
+      "studentsCounted": "{present} present · {credits} credits taken",
+      "student": "Student",
+      "attendance": "Status",
+      "lessonValue": "Lesson value",
+      "present": "Present",
+      "absent": "Absent",
+      "creditTaken": "credit taken",
+      "noCredit": "no credit taken",
+      "correctionFor": "Correction: {course}, {date}",
+      "deleteItemConfirm": "Delete this extra item?",
+      "deletePaymentConfirm": "Delete this payment? Its cash register expense is deleted too.",
+      "deleted": "Deleted"
+    },
+    "csv": {
+      "type": "Type",
+      "date": "Date",
+      "description": "Description",
+      "amount": "Amount",
+      "lesson": "Lesson",
+      "item": "Extra item",
+      "payment": "Payment"
+    },
+    "profitability": {
+      "title": "Course profitability",
+      "description": "Compare each group's revenue with its instructor cost",
+      "from": "From",
+      "to": "To",
+      "branch": "Branch",
+      "allBranches": "All branches",
+      "revenue": "Revenue",
+      "cost": "Instructor cost",
+      "profit": "Profit",
+      "margin": "Margin",
+      "loss": "Loss",
+      "searchPlaceholder": "Search courses…",
+      "empty": "No lessons in this range",
+      "note": "Revenue is the lesson value of every attendance that took a credit (what the student paid for the package ÷ its lessons). Cost is these lessons' instructor earnings and automatic corrections; extra items such as bonuses are not included. The list starts with the least profitable group.",
+      "marginValue": "{value}%"
+    },
+    "noAccess": {
+      "title": "No permission",
+      "description": "Studio owners and managers can see this page. Instructors only see their own pay statement."
     }
   }
 }

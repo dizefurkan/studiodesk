@@ -1,43 +1,30 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { createInstructorRate, updateInstructorRate } from '@/lib/actions/instructor-rates.actions'
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
-import { Label } from '@/components/ui/label'
+import { useState } from 'react'
+import { format, parse } from 'date-fns'
 import { useTranslations } from 'next-intl'
+import { Button } from '@/components/ui/button'
+import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Spinner } from '@/components/ui/spinner'
+import { Switch } from '@/components/ui/switch'
+import { DatePicker } from '@/components/common/DatePicker'
+import { useServerAction } from '@/hooks/useServerAction'
+import { toDateString } from '@/lib/i18n/dates'
+import { createInstructorRate, saveRateVersion } from '@/lib/actions/instructor-rates.actions'
+import { PAY_MODELS } from '@/lib/earnings/payModels'
+import type { InstructorRate } from './types'
 
-interface Instructor {
-  id: string
-  first_name: string
-  last_name: string
-}
-
-interface Branch {
-  id: string
-  name: string
-}
-
-interface DanceType {
-  id: string
-  name: string
-}
-
-interface InstructorRate {
-  id: string
-  ratio_per_class: number
-  instructors: Instructor
-  branches: Branch
-  dance_types: DanceType
-}
+type Option = { id: string; name: string }
 
 interface InstructorRateFormProps {
-  instructors: Instructor[]
-  branches: Branch[]
-  danceTypes: DanceType[]
+  instructors: Array<{ id: string; first_name: string; last_name: string }>
+  branches: Option[]
+  danceTypes: Option[]
   rates: InstructorRate[]
-  initialRate?: InstructorRate
+  /** Set: add a new pay period to this rate. Unset: create a rate. */
+  rate?: InstructorRate
   selectedInstructorId?: string
   onSuccess?: () => void
   onCancel?: () => void
@@ -48,225 +35,210 @@ export function InstructorRateForm({
   branches,
   danceTypes,
   rates,
-  initialRate,
+  rate,
   selectedInstructorId,
   onSuccess,
   onCancel,
 }: InstructorRateFormProps) {
   const tx = useTranslations('instructorRateForm')
+  const tp = useTranslations('instructorPay')
   const tf = useTranslations('forms')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string>('')
-  const [formData, setFormData] = useState({
-    instructorId: initialRate?.instructors.id || selectedInstructorId || '',
-    branchId: initialRate?.branches.id || '',
-    danceTypeId: initialRate?.dance_types.id || '',
-    ratio: initialRate?.ratio_per_class.toString() || '',
-  })
+  const { pending, run } = useServerAction()
 
-  // Update form data when initialRate or selectedInstructorId changes
-  useEffect(() => {
-    if (initialRate) {
-      setFormData({
-        instructorId: initialRate.instructors?.id || '',
-        branchId: initialRate.branches?.id || '',
-        danceTypeId: initialRate.dance_types?.id || '',
-        ratio: initialRate.ratio_per_class?.toString() || '',
-      })
-    } else if (selectedInstructorId) {
-      setFormData((prev) => ({
-        ...prev,
-        instructorId: selectedInstructorId,
-      }))
-    }
-  }, [initialRate, selectedInstructorId])
+  const [instructorId, setInstructorId] = useState(rate?.instructors.id ?? selectedInstructorId ?? '')
+  const [branchId, setBranchId] = useState(rate?.branches?.id ?? '')
+  const [danceTypeId, setDanceTypeId] = useState(rate?.dance_types?.id ?? '')
+  const [payModel, setPayModel] = useState<string>(rate?.pay_model ?? 'percentage')
+  const [ratio, setRatio] = useState(rate && rate.pay_model === 'percentage' ? String(rate.ratio_per_class) : '')
+  const [amount, setAmount] = useState(rate?.amount ? String(rate.amount) : '')
+  const [minAmount, setMinAmount] = useState(rate?.min_amount ? String(rate.min_amount) : '')
+  // A new rate applies to every lesson unless a start date is chosen; a new period always has one
+  const [dated, setDated] = useState(!!rate)
+  const [effectiveFrom, setEffectiveFrom] = useState(toDateString())
 
-  // Reset dance type when branch changes
-  useEffect(() => {
-    if (!initialRate) {
-      setFormData((prev) => ({
-        ...prev,
-        danceTypeId: '',
-      }))
-    }
-  }, [formData.branchId, initialRate])
-
-  // Get unavailable dance types for the selected instructor + branch
-  const getUnavailableDanceTypeIds = () => {
-    if (!formData.instructorId || !formData.branchId || initialRate) {
-      // When editing, allow all dance types (keep the selected one)
-      return []
-    }
-    
-    return rates
-      .filter(
-        (rate) =>
-          rate.instructors.id === formData.instructorId &&
-          rate.branches.id === formData.branchId
-      )
-      .map((rate) => rate.dance_types.id)
-  }
-
-  const unavailableDanceTypeIds = getUnavailableDanceTypeIds()
-  const availableDanceTypes = danceTypes.filter(
-    (danceType) => !unavailableDanceTypeIds.includes(danceType.id)
+  // Dance types that already have a rate for this instructor at this branch
+  const taken = new Set(
+    rates.filter((r) => r.instructors.id === instructorId && r.branches?.id === branchId).map((r) => r.dance_types?.id)
   )
+  const availableDanceTypes = rate ? danceTypes : danceTypes.filter((d) => !taken.has(d.id))
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const valid =
+    (rate || (instructorId && branchId && danceTypeId)) &&
+    (payModel === 'percentage' ? Number(ratio) > 0 && Number(ratio) <= 100 : Number(amount) > 0)
+
+  const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-
-    if (!formData.instructorId || !formData.branchId || !formData.danceTypeId || !formData.ratio) {
-      setError(tx('allRequired'))
-      return
+    const terms = {
+      payModel,
+      ratio: payModel === 'percentage' ? Number(ratio) : null,
+      amount: payModel === 'percentage' ? null : Number(amount),
+      minAmount: minAmount ? Number(minAmount) : null,
+      effectiveFrom: dated ? effectiveFrom : null,
     }
-
-    const ratio = parseFloat(formData.ratio)
-    if (isNaN(ratio) || ratio <= 0 || ratio > 100) {
-      setError(tx('ratioRange'))
-      return
-    }
-
-    setLoading(true)
-    try {
-      let result
-      if (initialRate) {
-        result = await updateInstructorRate(initialRate.id, ratio)
-      } else {
-        result = await createInstructorRate(
-          formData.instructorId,
-          formData.branchId,
-          formData.danceTypeId,
-          ratio,
-        )
-      }
-
-      if (result.error) {
-        setError(result.error)
-      } else {
-        onSuccess?.()
-      }
-    } catch (err) {
-      setError(tx('saveFailed'))
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleCancel = () => {
-    setFormData({
-      instructorId: initialRate?.instructors.id || '',
-      branchId: initialRate?.branches.id || '',
-      danceTypeId: initialRate?.dance_types.id || '',
-      ratio: initialRate?.ratio_per_class.toString() || '',
-    })
-    setError('')
-    onCancel?.()
+    run(
+      () => (rate ? saveRateVersion(rate.id, terms) : createInstructorRate({ instructorId, branchId, danceTypeId, terms })),
+      { success: tx('saved'), onSuccess }
+    )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
-      {error && (
-        <div className="p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-xs sm:text-sm text-red-700">{error}</p>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4">
-        <div>
-          <Label className="block mb-2">
-            {tx('instructor')}
-          </Label>
-          <NativeSelect
-            value={formData.instructorId}
-            onChange={(e) => setFormData({ ...formData, instructorId: e.target.value })}
-            disabled={!!initialRate || !!selectedInstructorId}
-            className="w-full"
-          >
-            <NativeSelectOption value="">{tx('selectInstructor')}</NativeSelectOption>
-            {instructors.map((instructor) => (
-              <NativeSelectOption key={instructor.id} value={instructor.id}>
-                {instructor.first_name} {instructor.last_name}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-        </div>
-
-        <div>
-          <Label className="block mb-2">
-            {tx('branch')}
-          </Label>
-          <NativeSelect
-            value={formData.branchId}
-            onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
-            disabled={!!initialRate}
-            className="w-full"
-          >
-            <NativeSelectOption value="">{tx('selectBranch')}</NativeSelectOption>
-            {branches.map((branch) => (
-              <NativeSelectOption key={branch.id} value={branch.id}>
-                {branch.name}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-        </div>
-
-        <div>
-          <Label className="block mb-2">
-            {tx('danceType')}
-          </Label>
-          <NativeSelect
-            value={formData.danceTypeId}
-            onChange={(e) => setFormData({ ...formData, danceTypeId: e.target.value })}
-            disabled={!!initialRate || !formData.branchId}
-            className="w-full"
-          >
-            <NativeSelectOption value="">{tx('selectDanceType')}</NativeSelectOption>
-            {availableDanceTypes.map((danceType) => (
-              <NativeSelectOption key={danceType.id} value={danceType.id}>
-                {danceType.name}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-        </div>
-
-        <div>
-          <Label className="block mb-2">
-            {tx('ratio')}
-          </Label>
-          <Input
-            type="number"
-            step="0.01"
-            min="0"
-            max="100"
-            value={formData.ratio}
-            onChange={(e) => setFormData({ ...formData, ratio: e.target.value })}
-            placeholder="0.00"
-            className="border-input"
-            aria-describedby="ratio-hint"
-          />
-          <p id="ratio-hint" className="mt-1.5 text-xs text-muted-foreground">
-            {tx('ratioHint')}
+    <form onSubmit={submit} className="grid gap-6">
+      <FieldGroup>
+        {rate ? (
+          <p className="text-sm text-muted-foreground">
+            {rate.instructors.first_name} {rate.instructors.last_name} · {rate.branches?.name} · {rate.dance_types?.name}
           </p>
-        </div>
-      </div>
+        ) : (
+          <>
+            <Field>
+              <FieldLabel htmlFor="rate-instructor">{tx('instructor')}</FieldLabel>
+              <Select value={instructorId} onValueChange={setInstructorId} disabled={!!selectedInstructorId}>
+                <SelectTrigger id="rate-instructor" className="w-full">
+                  <SelectValue placeholder={tx('selectInstructor')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {instructors.map((i) => (
+                    <SelectItem key={i.id} value={i.id}>
+                      {i.first_name} {i.last_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field>
+                <FieldLabel htmlFor="rate-branch">{tx('branch')}</FieldLabel>
+                <Select
+                  value={branchId}
+                  onValueChange={(v) => {
+                    setBranchId(v)
+                    setDanceTypeId('')
+                  }}
+                >
+                  <SelectTrigger id="rate-branch" className="w-full">
+                    <SelectValue placeholder={tx('selectBranch')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {branches.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="rate-dance-type">{tx('danceType')}</FieldLabel>
+                <Select value={danceTypeId} onValueChange={setDanceTypeId} disabled={!branchId}>
+                  <SelectTrigger id="rate-dance-type" className="w-full">
+                    <SelectValue placeholder={tx('selectDanceType')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableDanceTypes.map((d) => (
+                      <SelectItem key={d.id} value={d.id}>
+                        {d.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
+          </>
+        )}
 
-      <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleCancel}
-          disabled={loading}
-          className="border-input text-sm md:text-base h-9 md:h-10"
-        >
+        <Field>
+          <FieldLabel htmlFor="rate-model">{tx('payModel')}</FieldLabel>
+          <Select value={payModel} onValueChange={setPayModel}>
+            <SelectTrigger id="rate-model" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAY_MODELS.map((m) => (
+                <SelectItem key={m} value={m}>
+                  {tp(`models.${m}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FieldDescription>{tp(`modelHints.${payModel}`)}</FieldDescription>
+        </Field>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {payModel === 'percentage' ? (
+            <Field>
+              <FieldLabel htmlFor="rate-ratio">{tx('ratio')}</FieldLabel>
+              <Input
+                id="rate-ratio"
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min="0.01"
+                max="100"
+                value={ratio}
+                onChange={(e) => setRatio(e.target.value)}
+                required
+              />
+            </Field>
+          ) : (
+            <Field>
+              <FieldLabel htmlFor="rate-amount">{tx(`amountLabels.${payModel}`)}</FieldLabel>
+              <Input
+                id="rate-amount"
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+              />
+            </Field>
+          )}
+          <Field>
+            <FieldLabel htmlFor="rate-min">{tx('minAmount')}</FieldLabel>
+            <Input
+              id="rate-min"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min="0"
+              value={minAmount}
+              onChange={(e) => setMinAmount(e.target.value)}
+              placeholder={tx('optional')}
+            />
+          </Field>
+        </div>
+        <FieldDescription>{tx('minAmountHint')}</FieldDescription>
+
+        {!rate && (
+          <Field orientation="horizontal">
+            <Switch id="rate-dated" checked={dated} onCheckedChange={setDated} />
+            <FieldContent>
+              <FieldLabel htmlFor="rate-dated">{tx('startOnDate')}</FieldLabel>
+              <FieldDescription>{tx('alwaysHint')}</FieldDescription>
+            </FieldContent>
+          </Field>
+        )}
+        {dated && (
+          <Field>
+            <FieldLabel>{tx('effectiveFrom')}</FieldLabel>
+            <DatePicker
+              value={parse(effectiveFrom, 'yyyy-MM-dd', new Date())}
+              onDateChange={(d) => setEffectiveFrom(format(d, 'yyyy-MM-dd'))}
+              className="w-full"
+            />
+            <FieldDescription>{tx('effectiveFromHint')}</FieldDescription>
+          </Field>
+        )}
+      </FieldGroup>
+
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={pending}>
           {tf('cancel')}
         </Button>
-        <Button
-          type="submit"
-          disabled={loading}
-          className="text-sm md:text-base h-9 md:h-10"
-        >
-          {loading ? tf('saving') : initialRate ? tx('update') : tx('add')}
+        <Button type="submit" disabled={pending || !valid}>
+          {pending && <Spinner />}
+          {pending ? tf('saving') : rate ? tx('saveVersion') : tx('add')}
         </Button>
       </div>
     </form>

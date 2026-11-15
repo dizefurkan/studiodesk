@@ -174,7 +174,7 @@ export function InstructorSelector({
                       <TableCell>
                         {rateExists ? (
                           <Badge className="bg-green-100 text-green-700">
-                            {tx('hasRate')} {rateAmount !== null && `(%${rateAmount})`}
+                            {tx('hasRate')} {rateAmount ? `(%${rateAmount})` : null}
                           </Badge>
                         ) : (
                           <Badge variant="destructive">{tx('noRate')}</Badge>

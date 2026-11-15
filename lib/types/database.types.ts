@@ -543,28 +543,104 @@ export type Database = {
           },
         ]
       }
+      instructor_adjustments: {
+        Row: {
+          amount: number
+          applies_on: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          instructor_id: string
+          kind: string
+          organization_id: string
+          source_session_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          applies_on: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          instructor_id: string
+          kind: string
+          organization_id: string
+          source_session_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          applies_on?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          instructor_id?: string
+          kind?: string
+          organization_id?: string
+          source_session_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_adjustments_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_adjustments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_adjustments_source_session_id_fkey"
+            columns: ["source_session_id"]
+            isOneToOne: false
+            referencedRelation: "course_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_earnings: {
         Row: {
           amount: number
+          breakdown: Json | null
+          calculated_amount: number | null
           created_at: string
+          earned_on: string
           id: string
           instructor_id: string
+          is_manual: boolean
           session_id: string
           updated_at: string
         }
         Insert: {
           amount: number
+          breakdown?: Json | null
+          calculated_amount?: number | null
           created_at?: string
+          earned_on: string
           id?: string
           instructor_id: string
+          is_manual?: boolean
           session_id: string
           updated_at?: string
         }
         Update: {
           amount?: number
+          breakdown?: Json | null
+          calculated_amount?: number | null
           created_at?: string
+          earned_on?: string
           id?: string
           instructor_id?: string
+          is_manual?: boolean
           session_id?: string
           updated_at?: string
         }
@@ -585,31 +661,202 @@ export type Database = {
           },
         ]
       }
+      instructor_pay_periods: {
+        Row: {
+          closed_at: string
+          closed_by: string | null
+          created_at: string
+          id: string
+          organization_id: string
+          period_month: string
+          summary: Json | null
+          updated_at: string
+        }
+        Insert: {
+          closed_at?: string
+          closed_by?: string | null
+          created_at?: string
+          id?: string
+          organization_id: string
+          period_month: string
+          summary?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          closed_at?: string
+          closed_by?: string | null
+          created_at?: string
+          id?: string
+          organization_id?: string
+          period_month?: string
+          summary?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_pay_periods_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_payouts: {
+        Row: {
+          amount: number
+          branch_id: string
+          cash_transaction_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          instructor_id: string
+          method: string
+          note: string | null
+          organization_id: string
+          paid_on: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          branch_id: string
+          cash_transaction_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          instructor_id: string
+          method?: string
+          note?: string | null
+          organization_id: string
+          paid_on: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          branch_id?: string
+          cash_transaction_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          instructor_id?: string
+          method?: string
+          note?: string | null
+          organization_id?: string
+          paid_on?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_payouts_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_payouts_cash_transaction_id_fkey"
+            columns: ["cash_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "cash_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_payouts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_payouts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_rate_versions: {
+        Row: {
+          amount: number | null
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          id: string
+          min_amount: number | null
+          pay_model: string
+          rate_id: string
+          ratio: number
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          effective_from: string
+          id?: string
+          min_amount?: number | null
+          pay_model: string
+          rate_id: string
+          ratio?: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          id?: string
+          min_amount?: number | null
+          pay_model?: string
+          rate_id?: string
+          ratio?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_rate_versions_rate_id_fkey"
+            columns: ["rate_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_rates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_rates: {
         Row: {
+          amount: number | null
           branch_id: string
           created_at: string
           dance_type_id: string
           id: string
           instructor_id: string
+          min_amount: number | null
+          pay_model: string
           ratio_per_class: number
           updated_at: string
         }
         Insert: {
+          amount?: number | null
           branch_id: string
           created_at?: string
           dance_type_id: string
           id?: string
           instructor_id: string
-          ratio_per_class: number
+          min_amount?: number | null
+          pay_model?: string
+          ratio_per_class?: number
           updated_at?: string
         }
         Update: {
+          amount?: number | null
           branch_id?: string
           created_at?: string
           dance_type_id?: string
           id?: string
           instructor_id?: string
+          min_amount?: number | null
+          pay_model?: string
           ratio_per_class?: number
           updated_at?: string
         }
@@ -1132,8 +1379,38 @@ export type Database = {
     Functions: {
       branch_org_id: { Args: { p_branch_id: string }; Returns: string }
       course_org_id: { Args: { p_course_id: string }; Returns: string }
+      course_profitability: {
+        Args: {
+          p_branch_id?: string
+          p_from: string
+          p_organization_id: string
+          p_to: string
+        }
+        Returns: {
+          branch_name: string
+          course_id: string
+          course_name: string
+          credit_count: number
+          dance_type_name: string
+          instructor_cost: number
+          present_count: number
+          revenue: number
+          session_count: number
+        }[]
+      }
       get_user_organization_id: { Args: never; Returns: string }
       instructor_org_id: { Args: { p_instructor_id: string }; Returns: string }
+      instructor_pay_balances: {
+        Args: { p_from: string; p_organization_id: string; p_to: string }
+        Returns: {
+          adjustments: number
+          earned: number
+          instructor_id: string
+          lesson_count: number
+          opening: number
+          paid: number
+        }[]
+      }
       session_org_id: { Args: { p_session_id: string }; Returns: string }
       student_org_id: { Args: { p_student_id: string }; Returns: string }
       user_co_member_ids: { Args: never; Returns: string[] }

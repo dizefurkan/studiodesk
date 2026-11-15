@@ -57,7 +57,7 @@ export default async function CashRegisterPage({
         id: e.id,
         type: 'earning' as const,
         amount: e.amount,
-        description: tx('instructorPayment', { name: `${e.instructors?.first_name ?? ''} ${e.instructors?.last_name ?? ''}`.trim() }),
+        description: tx('instructorEarningRow', { name: `${e.instructors?.first_name ?? ''} ${e.instructors?.last_name ?? ''}`.trim() }),
         created_at: e.created_at,
         instructors: e.instructors,
         branches: e.course_sessions?.courses?.branches || null,
@@ -72,7 +72,8 @@ export default async function CashRegisterPage({
       .filter((t) => t.type === 'expense')
       .reduce((sum: number, t) => sum + Number(t.amount), 0)
     const totalEarnings = earnings.reduce((sum: number, e) => sum + Number(e.amount), 0)
-    const netBalance = income - expenses - totalEarnings
+    // Earnings are what instructors are owed, not cash: payments to them are already expenses
+    const netBalance = income - expenses
 
     return (
       <div className="space-y-6">
@@ -114,7 +115,7 @@ export default async function CashRegisterPage({
           <Card className="border-border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">{tx('instructorPay')}</p>
+                <p className="text-sm text-muted-foreground mb-1">{tx('instructorPayAccrued')}</p>
                 <p className="text-3xl font-bold text-purple-600">{formatCurrency(totalEarnings, currency)}</p>
               </div>
               <Users className="text-purple-600" size={32} />
