@@ -5,7 +5,7 @@
 export const COMPANY = {
   name: 'SFDYAZILIM',
   product: 'StudioDesk',
-  website: 'studiodesk.app',
+  website: 'studiodesk.sfdyazilim.com',
   address: '',
   email: '',
   kep: '',

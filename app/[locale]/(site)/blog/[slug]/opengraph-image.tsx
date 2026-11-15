@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { OG_SIZE, ogImage } from '@/lib/og'
+import { SITE_HOST } from '@/lib/seo'
 import { getPost, localeParams } from '@/content/blog'
 
 export const size = OG_SIZE
@@ -14,5 +15,5 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
   const { locale, slug } = await params
   const t = await getTranslations({ locale, namespace: 'site.blog' })
   const post = getPost(locale, slug)
-  return ogImage({ title: post?.title ?? t('title'), label: post ? `${t('title')}, ${post.category}` : 'studiodesk.app' })
+  return ogImage({ title: post?.title ?? t('title'), label: post ? `${t('title')}, ${post.category}` : SITE_HOST })
 }

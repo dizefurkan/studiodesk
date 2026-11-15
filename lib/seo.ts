@@ -2,7 +2,10 @@ import type { Metadata } from 'next'
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from '@/lib/i18n/config'
 
 /** Public origin of the marketing site, used for canonical URLs, hreflang, sitemap and JSON-LD. */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://studiodesk.app').replace(/\/$/, '')
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://studiodesk.sfdyazilim.com').replace(/\/$/, '')
+
+/** Host name without the protocol, for display (e.g. on social cards). */
+export const SITE_HOST = new URL(SITE_URL).host
 
 export const OG_LOCALE: Record<Locale, string> = { tr: 'tr_TR', en: 'en_US' }
 
