@@ -1305,7 +1305,28 @@
     "noActive": "Kalan kredisi olan aktif kurs yok",
     "noCompleted": "Henüz tamamlanan kurs yok",
     "lessons": "{count} ders",
-    "creditsLeft": "{count} kredi kaldı"
+    "creditsLeft": "{count} kredi kaldı",
+    "addToCourse": "Kursa ekle",
+    "actions": "{course} işlemleri",
+    "changeCourse": "Sınıfını değiştir",
+    "remove": "Kurstan çıkar",
+    "removed": "Öğrenci kurstan çıkarıldı",
+    "removeConfirmTitle": "{course} kursundan çıkarılsın mı?",
+    "removeConfirmDescription": "Öğrencinin geçmiş yoklamaları ve kredileri korunur.",
+    "change": {
+      "addTitle": "Kursa ekle",
+      "addDescription": "Öğrenciyi eklemek istediğiniz sınıfı seçin. Öğrenciyle aynı etikete sahip sınıflar en üstte.",
+      "moveTitle": "Sınıfını değiştir",
+      "moveDescription": "{course} yerine geçeceği sınıfı seçin. Geçmiş yoklamalar ve krediler korunur.",
+      "noCourses": "Öğrencinin kayıtlı olmadığı başka sınıf yok.",
+      "students": "{count, plural, one {# öğrenci} other {# öğrenci}}",
+      "noCredits": "Bu dans türünde kredisi yok",
+      "cancel": "Vazgeç",
+      "add": "Ekle",
+      "move": "Taşı",
+      "added": "Öğrenci kursa eklendi",
+      "moved": "Öğrencinin sınıfı değiştirildi"
+    }
   },
   "branchDetail": {
     "backToList": "← Şubelere dön",
@@ -1526,7 +1547,8 @@
       "role": "Rol",
       "isActive": "Durum",
       "birthDate": "Doğum tarihi",
-      "labels": "Etiketler"
+      "labels": "Etiketler",
+      "course": "Sınıf"
     },
     "values": {
       "isActive": {
@@ -1719,7 +1741,8 @@
     "invalidLabelName": "Etiket adı 1–40 karakter olmalıdır",
     "labelExists": "Bu adla bir etiket zaten var",
     "saveLabelFailed": "Etiket kaydedilemedi",
-    "deleteLabelFailed": "Etiket silinemedi"
+    "deleteLabelFailed": "Etiket silinemedi",
+    "moveStudentFailed": "Öğrencinin sınıfı değiştirilemedi"
   },
   "attendanceSheet": {
     "markEveryone": "Kaydetmeden önce {count} öğrenciyi daha işaretleyin.",

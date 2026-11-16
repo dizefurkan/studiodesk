@@ -1305,7 +1305,28 @@
     "noActive": "No active courses with remaining credits",
     "noCompleted": "No completed courses yet",
     "lessons": "{count, plural, one {# lesson} other {# lessons}}",
-    "creditsLeft": "{count, plural, one {# credit left} other {# credits left}}"
+    "creditsLeft": "{count, plural, one {# credit left} other {# credits left}}",
+    "addToCourse": "Add to class",
+    "actions": "{course} actions",
+    "changeCourse": "Change class",
+    "remove": "Remove from class",
+    "removed": "Student removed from the class",
+    "removeConfirmTitle": "Remove from {course}?",
+    "removeConfirmDescription": "The student's past attendance and credits are kept.",
+    "change": {
+      "addTitle": "Add to class",
+      "addDescription": "Choose the class to add the student to. Classes with the same label as the student are listed first.",
+      "moveTitle": "Change class",
+      "moveDescription": "Choose the class that replaces {course}. Past attendance and credits are kept.",
+      "noCourses": "There are no other classes the student isn't already in.",
+      "students": "{count, plural, one {# student} other {# students}}",
+      "noCredits": "No credits for this dance style",
+      "cancel": "Cancel",
+      "add": "Add",
+      "move": "Move",
+      "added": "Student added to the class",
+      "moved": "Student moved to the new class"
+    }
   },
   "branchDetail": {
     "backToList": "← Back to branches",
@@ -1526,7 +1547,8 @@
       "role": "Role",
       "isActive": "Status",
       "birthDate": "Date of birth",
-      "labels": "Labels"
+      "labels": "Labels",
+      "course": "Class"
     },
     "values": {
       "isActive": {
@@ -1719,7 +1741,8 @@
     "invalidLabelName": "A label name must be 1–40 characters",
     "labelExists": "A label with this name already exists",
     "saveLabelFailed": "Couldn't save the label",
-    "deleteLabelFailed": "Couldn't delete the label"
+    "deleteLabelFailed": "Couldn't delete the label",
+    "moveStudentFailed": "Couldn't change the student's class"
   },
   "attendanceSheet": {
     "markEveryone": "Mark {count, plural, one {# more student} other {# more students}} before saving.",

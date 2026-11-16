@@ -1,5 +1,7 @@
 'use server'
 
+import { unstable_rethrow } from 'next/navigation'
+
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
@@ -268,5 +270,133 @@ export async function getStudentEnrolledCourses(studentId: string) {
   } catch (error) {
     console.error('Unexpected error in getStudentEnrolledCourses:', error)
     return { error: await actionError('unexpected') }
+  }
+}
+
+/**
+ * Courses the student could join or move to, with what helps pick one:
+ * schedule, branch, dance type, class size, whether it shares a label (e.g. level)
+ * with the student, and whether the student has credits for its dance type.
+ */
+export async function getCourseOptionsForStudent(studentId: string) {
+  const organization = await getOrganization()
+  if (!organization) return { error: await actionError('noOrganization') }
+
+  try {
+    const admin = createAdminClient()
+    const { data: student } = await admin
+      .from('students')
+      .select('id, student_labels(label_id), course_students(course_id), student_packages(remaining_credits, expire_date, packages(dance_type_id))')
+      .eq('id', studentId)
+      .eq('organization_id', organization.id)
+      .maybeSingle()
+    if (!student) return { error: await actionError('studentNotInOrg') }
+
+    const { data: courses, error } = await admin
+      .from('courses')
+      .select(
+        'id, name, day_of_week, start_time, end_time, dance_type_id, branches!inner(name, organization_id), dance_types(name), course_labels(label_id, labels(name)), course_students(student_id, students(is_active, deleted_at))'
+      )
+      .eq('branches.organization_id', organization.id)
+      .is('deleted_at', null)
+      .order('day_of_week')
+      .order('start_time')
+    if (error) throw error
+
+    const studentLabels = new Set((student.student_labels ?? []).map((l) => l.label_id))
+    const enrolled = new Set((student.course_students ?? []).map((c) => c.course_id))
+    const today = new Date().toISOString().slice(0, 10)
+    const creditTypes = new Set(
+      (student.student_packages ?? [])
+        .filter((p) => p.remaining_credits > 0 && (!p.expire_date || p.expire_date.slice(0, 10) >= today))
+        .map((p) => p.packages?.dance_type_id)
+        .filter((id): id is string => !!id)
+    )
+
+    return {
+      data: (courses ?? []).map((c) => {
+        const labels = (c.course_labels ?? []).map((l) => ({ id: l.label_id, name: l.labels?.name ?? '' }))
+        return {
+          id: c.id,
+          name: c.name,
+          dayOfWeek: c.day_of_week,
+          startTime: c.start_time,
+          endTime: c.end_time,
+          branchName: c.branches?.name ?? null,
+          danceTypeName: c.dance_types?.name ?? null,
+          studentCount: (c.course_students ?? []).filter((cs) => cs.students?.is_active && !cs.students.deleted_at).length,
+          enrolled: enrolled.has(c.id),
+          matchingLabels: labels.filter((l) => studentLabels.has(l.id)).map((l) => l.name),
+          hasCredits: creditTypes.has(c.dance_type_id),
+        }
+      }),
+    }
+  } catch (error) {
+    unstable_rethrow(error)
+    console.error('Error in getCourseOptionsForStudent:', error)
+    return { error: await actionError('fetchCoursesFailed') }
+  }
+}
+
+/**
+ * Moves a student from one class to another in one step. Past attendance stays with
+ * the old class's lessons; only the enrollment changes.
+ */
+export async function moveStudentToCourse(studentId: string, fromCourseId: string, toCourseId: string) {
+  const user = await getCurrentUser()
+  if (!user) return { error: await actionError('notAuthenticated') }
+  const organization = await getOrganization()
+  if (!organization) return { error: await actionError('noOrganization') }
+  if (fromCourseId === toCourseId) return { error: await actionError('invalidInput') }
+
+  try {
+    const admin = createAdminClient()
+    const [{ data: student }, { data: courses }] = await Promise.all([
+      admin
+        .from('students')
+        .select('id, first_name, last_name')
+        .eq('id', studentId)
+        .eq('organization_id', organization.id)
+        .maybeSingle(),
+      admin
+        .from('courses')
+        .select('id, name, branches!inner(organization_id)')
+        .in('id', [fromCourseId, toCourseId])
+        .eq('branches.organization_id', organization.id)
+        .is('deleted_at', null),
+    ])
+    if (!student) return { error: await actionError('studentNotInOrg') }
+    const from = courses?.find((c) => c.id === fromCourseId)
+    const to = courses?.find((c) => c.id === toCourseId)
+    if (!from || !to) return { error: await actionError('courseNotFound') }
+
+    const { error: addError } = await admin
+      .from('course_students')
+      .upsert({ course_id: toCourseId, student_id: studentId }, { onConflict: 'course_id,student_id', ignoreDuplicates: true })
+    if (addError) throw addError
+    const { error: removeError } = await admin
+      .from('course_students')
+      .delete()
+      .eq('course_id', fromCourseId)
+      .eq('student_id', studentId)
+    if (removeError) throw removeError
+
+    const studentName = `${student.first_name} ${student.last_name}`.trim()
+    await Promise.all([
+      logOperation('DELETE', 'course_student', fromCourseId, { before: { studentId, studentName, courseId: fromCourseId } }, organization.id),
+      logOperation('CREATE', 'course_student', toCourseId, { after: { studentId, studentName, courseId: toCourseId } }, organization.id),
+      logOperation(
+        'UPDATE',
+        'student',
+        studentId,
+        { before: { course: from.name }, after: { course: to.name }, changes: { course: { before: from.name, after: to.name } } },
+        organization.id
+      ),
+    ])
+    return { success: true }
+  } catch (error) {
+    unstable_rethrow(error)
+    console.error('Error in moveStudentToCourse:', error)
+    return { error: await actionError('moveStudentFailed') }
   }
 }
