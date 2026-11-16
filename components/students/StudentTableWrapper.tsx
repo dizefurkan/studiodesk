@@ -16,6 +16,8 @@ interface StudentTableWrapperProps {
   danceTypes: Array<{ id: string; name: string; studentCount?: number }>
   branches: Array<{ id: string; name: string; studentCount?: number }>
   courses: Array<{ id: string; name: string; branch_id?: string; dance_type_id?: string; studentCount?: number }>
+  labels?: Array<{ id: string; name: string; studentCount?: number }>
+  labelId?: string
   searchQuery?: string
   hasCredits?: boolean
   danceTypeId?: string
@@ -34,6 +36,8 @@ export function StudentTableWrapper({
   danceTypes,
   branches,
   courses,
+  labels = [],
+  labelId,
   searchQuery,
   hasCredits,
   danceTypeId,
@@ -53,6 +57,7 @@ export function StudentTableWrapper({
     danceType: danceTypeId || '',
     branch: branchId || '',
     course: courseId || '',
+    label: labelId || '',
     withCredits: hasCredits ? 'true' : '',
   })
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
@@ -115,6 +120,7 @@ export function StudentTableWrapper({
     if (filterValues.danceType) params.set('danceType', filterValues.danceType)
     if (filterValues.branch) params.set('branch', filterValues.branch)
     if (filterValues.course) params.set('course', filterValues.course)
+    if (filterValues.label) params.set('label', filterValues.label)
     if (filterValues.withCredits) params.set('withCredits', filterValues.withCredits)
     params.set('page', newPage.toString())
     router.push(`?${params.toString()}`)
@@ -130,6 +136,7 @@ export function StudentTableWrapper({
     if (newFilterValues.danceType) params.set('danceType', newFilterValues.danceType)
     if (newFilterValues.branch) params.set('branch', newFilterValues.branch)
     if (newFilterValues.course) params.set('course', newFilterValues.course)
+    if (newFilterValues.label) params.set('label', newFilterValues.label)
     if (newFilterValues.withCredits) params.set('withCredits', newFilterValues.withCredits)
     params.set('page', '1') // Reset to first page on filter change
     router.push(`?${params.toString()}`)
@@ -141,6 +148,7 @@ export function StudentTableWrapper({
       danceType: '',
       branch: '',
       course: '',
+      label: '',
       withCredits: '',
     })
     
@@ -152,6 +160,12 @@ export function StudentTableWrapper({
 
   // Define filters
   const filters: FilterConfig[] = [
+    {
+      id: 'label',
+      label: t('labels.filter'),
+      type: 'select',
+      options: labels.map((l) => ({ label: l.name, value: l.id })),
+    },
     {
       id: 'danceType',
       label: t('students.danceType'),

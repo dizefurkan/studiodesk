@@ -4,14 +4,17 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { CourseStudentsSection } from './CourseStudentsSection'
 import { AddStudentDialog } from './AddStudentDialog'
+import { CourseCandidates } from './CourseCandidates'
 import { Users } from 'lucide-react'
 
 interface CourseStudentsContainerProps {
   courseId: string
   danceTypeId: string
+  /** The course's labels; candidates reload when they change */
+  labelIds?: string[]
 }
 
-export function CourseStudentsContainer({ courseId, danceTypeId }: CourseStudentsContainerProps) {
+export function CourseStudentsContainer({ courseId, danceTypeId, labelIds = [] }: CourseStudentsContainerProps) {
   const t = useTranslations()
   const [refreshKey, setRefreshKey] = useState(0)
   const [studentCount, setStudentCount] = useState(0)
@@ -44,6 +47,11 @@ export function CourseStudentsContainer({ courseId, danceTypeId }: CourseStudent
         courseId={courseId} 
         danceTypeId={danceTypeId}
         onStudentsLoaded={(count) => setStudentCount(count)}
+      />
+      <CourseCandidates
+        key={`candidates-${refreshKey}-${labelIds.join(',')}`}
+        courseId={courseId}
+        onAdded={handleStudentsAdded}
       />
     </div>
   )

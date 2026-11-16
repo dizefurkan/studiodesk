@@ -32,6 +32,7 @@ function useSampleVars(studioName: string) {
     credits: '1',
     package: t('package'),
     expires: new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(inTenDays),
+    course: t('course'),
     studio: studioName,
   } satisfies Record<MessageToken, string>
 }

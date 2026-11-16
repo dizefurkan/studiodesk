@@ -24,6 +24,11 @@ interface DatePickerProps {
   className?: string
   showIcon?: boolean
   variant?: "default" | "outline" | "secondary" | "ghost"
+  /** "dropdown" adds month / year selects, e.g. for birth dates far in the past */
+  captionLayout?: "label" | "dropdown"
+  startMonth?: Date
+  endMonth?: Date
+  id?: string
 }
 
 const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
@@ -36,17 +41,23 @@ const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
       className,
       showIcon = true,
       variant = "outline",
+      captionLayout,
+      startMonth,
+      endMonth,
+      id,
     },
     ref
   ) => {
     const t = useTranslations("common")
     const dateLocale = useDateFnsLocale()
     const { weekStartDay } = useOrganizationPrefs()
+    const [open, setOpen] = React.useState(false)
     return (
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             ref={ref}
+            id={id}
             variant={variant}
             className={cn(
               "justify-start text-left font-normal",
@@ -64,9 +75,14 @@ const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
             locale={dateLocale}
             weekStartsOn={weekStartDay as 0 | 1 | 2 | 3 | 4 | 5 | 6}
             selected={value}
+            defaultMonth={value}
+            captionLayout={captionLayout}
+            startMonth={startMonth}
+            endMonth={endMonth}
             onSelect={(date) => {
               if (date) {
                 onDateChange?.(date)
+                setOpen(false)
               }
             }}
             disabled={disabled}

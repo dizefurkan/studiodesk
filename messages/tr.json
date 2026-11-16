@@ -639,6 +639,10 @@
       "attendance": {
         "title": "Yoklama",
         "description": "Sanal oturumlar, haftalık limit ve telafi dersleri"
+      },
+      "labels": {
+        "title": "Etiketler",
+        "description": "Öğrenci ve kursları seviye gibi etiketlerle gruplayın"
       }
     },
     "generalForm": {
@@ -1173,7 +1177,11 @@
     "create": "Eğitmen oluştur"
   },
   "studentForm": {
-    "notesPlaceholder": "Öğrenciyle ilgili notlar…"
+    "notesPlaceholder": "Öğrenciyle ilgili notlar…",
+    "birthDate": "Doğum tarihi",
+    "birthDatePlaceholder": "Tarih seç",
+    "birthDateHint": "İsteğe bağlı. Doğum gününde kutlama mesajı göndermek için kullanılır.",
+    "clearBirthDate": "Doğum tarihini temizle"
   },
   "branchForm": {
     "name": "Şube adı",
@@ -1516,14 +1524,17 @@
       "danceTypeId": "Dans türü",
       "branchId": "Şube",
       "role": "Rol",
-      "isActive": "Durum"
+      "isActive": "Durum",
+      "birthDate": "Doğum tarihi",
+      "labels": "Etiketler"
     },
     "values": {
       "isActive": {
         "true": "Aktif",
         "false": "Pasif"
       }
-    }
+    },
+    "fieldCleared": "{field} kaldırıldı"
   },
   "serverErrors": {
     "notAuthenticated": "Giriş yapılmamış",
@@ -1703,7 +1714,12 @@
     "saveTemplateFailed": "Şablon kaydedilemedi",
     "deleteTemplateFailed": "Şablon silinemedi",
     "logMessageFailed": "Mesaj kaydedilemedi",
-    "fetchMessagesFailed": "Mesaj geçmişi yüklenemedi"
+    "fetchMessagesFailed": "Mesaj geçmişi yüklenemedi",
+    "fetchLabelsFailed": "Etiketler yüklenemedi",
+    "invalidLabelName": "Etiket adı 1–40 karakter olmalıdır",
+    "labelExists": "Bu adla bir etiket zaten var",
+    "saveLabelFailed": "Etiket kaydedilemedi",
+    "deleteLabelFailed": "Etiket silinemedi"
   },
   "attendanceSheet": {
     "markEveryone": "Kaydetmeden önce {count} öğrenciyi daha işaretleyin.",
@@ -1795,7 +1811,14 @@
     "renewalsDescription": "1 veya daha az kredisi kalan öğrenciler",
     "noRenewals": "Herkesin kredisi var.",
     "creditsLeft": "{count, plural, =0 {kredi kalmadı} other {# kredi kaldı}}",
-    "remind": "Hatırlat"
+    "remind": "Hatırlat",
+    "birthdays": {
+      "title": "Yaklaşan doğum günleri",
+      "description": "Bugün ve önümüzdeki 7 gün",
+      "celebrate": "Kutla",
+      "today": "Bugün · {age} yaşına giriyor",
+      "inDays": "{count, plural, one {Yarın} other {# gün sonra}} · {age} yaşına giriyor"
+    }
   },
   "nav": {
     "label": "Ana menü",
@@ -2388,13 +2411,18 @@
       "payment_reminder": "Ödeme hatırlatma",
       "event": "Etkinlik",
       "announcement": "Duyuru",
-      "other": "Diğer"
+      "other": "Diğer",
+      "birthday": "Doğum günü",
+      "class_invite": "Derse davet"
     },
     "audiences": {
       "all": "Tüm aktif öğrenciler",
       "course": "Bir kursun öğrencileri",
       "low_credits": "Kredisi 1 veya daha az olanlar",
-      "expiring": "Paketi 7 gün içinde bitecekler"
+      "expiring": "Paketi 7 gün içinde bitecekler",
+      "label": "Bir etikete sahip öğrenciler",
+      "course_invite": "Kursa davet: aynı etiketli, kursta olmayanlar",
+      "birthday": "Bugün doğum günü olanlar"
     },
     "tokens": {
       "first_name": "Ad",
@@ -2402,12 +2430,14 @@
       "credits": "Kalan kredi",
       "package": "Paket",
       "expires": "Paket bitişi",
-      "studio": "Stüdyo adı"
+      "studio": "Stüdyo adı",
+      "course": "Kurs"
     },
     "sample": {
       "firstName": "Ayşe",
       "lastName": "Yılmaz",
-      "package": "8 Ders Paketi"
+      "package": "8 Ders Paketi",
+      "course": "Salsa Orta"
     },
     "send": {
       "compose": "Mesaj",
@@ -2433,7 +2463,13 @@
       "openAgain": "Tekrar aç",
       "noPhone": "Telefon numarası yok",
       "optedOut": "Mesaj almak istemiyor",
-      "consentNote": "Mesajlar bu cihazdaki WhatsApp veya SMS uygulamasında hazır açılır; göndermek için uygulamada Gönder'e basmanız gerekir. Ticari duyurular için öğrencinin onayı gerekir; \"mesaj almak istemiyor\" olarak işaretlenen öğrenciler listede atlanır."
+      "consentNote": "Mesajlar bu cihazdaki WhatsApp veya SMS uygulamasında hazır açılır; göndermek için uygulamada Gönder'e basmanız gerekir. Ticari duyurular için öğrencinin onayı gerekir; \"mesaj almak istemiyor\" olarak işaretlenen öğrenciler listede atlanır.",
+      "label": "Etiket",
+      "selectLabel": "Etiket seç",
+      "noLabels": "Henüz etiket yok. Ayarlar > Etiketler'den ekleyebilirsiniz.",
+      "pickLabel": "Öğrencileri görmek için bir etiket seçin.",
+      "noInviteRecipients": "Bu kursla aynı etikete sahip, kursta olmayan aktif öğrenci yok. Kursa ve öğrencilere etiket eklediğinizden emin olun.",
+      "noBirthdays": "Bugün doğum günü olan aktif öğrenci yok."
     },
     "templates": {
       "new": "Yeni şablon",
@@ -2473,7 +2509,67 @@
       "announcement": {
         "name": "Genel duyuru",
         "body": "Merhaba {first_name}, [duyuru metni]. Bilginize sunarız. {studio}"
+      },
+      "birthday": {
+        "name": "Doğum günü kutlama",
+        "body": "Doğum gününüz kutlu olsun {first_name}! Yeni yaşınızda bol dans ve mutluluk dileriz. {studio}"
+      },
+      "classInvite": {
+        "name": "Derse davet",
+        "body": "Merhaba {first_name}, seviyenize uygun {course} dersimizde yer var. Katılmak isterseniz bu mesaja yanıt verebilirsiniz. {studio}"
       }
+    }
+  },
+  "birthdays": {
+    "today": "Bugün doğum günü",
+    "celebrate": "Kutla",
+    "birthday": "Doğum günü",
+    "age": "{age} yaş",
+    "add": "Ekle",
+    "inDays": "{count, plural, one {Doğum günü yarın} other {Doğum günü # gün sonra}}"
+  },
+  "labels": {
+    "add": "Etiket ekle",
+    "edit": "Etiketler",
+    "searchOrCreate": "Etiket ara veya yeni ad yazın",
+    "none": "Henüz etiket yok. Yeni bir ad yazın.",
+    "create": "\"{name}\" etiketini oluştur",
+    "filter": "Etiket",
+    "created": "Etiket eklendi",
+    "levelsCreated": "Seviye etiketleri eklendi",
+    "newLabel": "Yeni etiket",
+    "newLabelPlaceholder": "Örn. Orta seviye",
+    "addButton": "Ekle",
+    "emptyTitle": "Henüz etiket yok",
+    "emptyDescription": "Öğrencileri ve kursları seviyeye göre gruplamak için etiket ekleyin. Kursta yer açıldığında aynı etiketli öğrencileri davet edebilirsiniz.",
+    "addLevels": "Başlangıç, Orta, İleri ekle",
+    "levels": {
+      "beginner": "Başlangıç",
+      "intermediate": "Orta",
+      "advanced": "İleri"
+    },
+    "name": "Ad",
+    "actions": "İşlemler",
+    "rename": "Yeniden adlandır",
+    "renameHint": "Etiket, bağlı olduğu tüm öğrenci ve kurslarda yeni adıyla görünür.",
+    "renamed": "Etiket güncellendi",
+    "delete": "Sil",
+    "deleteConfirmTitle": "\"{name}\" etiketi silinsin mi?",
+    "deleteConfirmDescription": "Etiket tüm öğrenci ve kurslardan kaldırılır. Öğrenciler ve kurslar silinmez.",
+    "deleted": "Etiket silindi",
+    "cancel": "Vazgeç",
+    "save": "Kaydet",
+    "candidates": {
+      "title": "Aynı seviyedeki öğrenciler",
+      "description": "Bu kursla aynı etikete sahip, kursta olmayan aktif öğrenciler. Kursta yer varsa davet edebilirsiniz.",
+      "invite": "{count, plural, one {# öğrenciyi davet et} other {# öğrenciyi davet et}}",
+      "noLabels": "Bu kursa bir etiket ekleyin (ör. Orta). Aynı etiketli öğrenciler burada listelenir.",
+      "empty": "Bu etiketlere sahip, kursta olmayan aktif öğrenci yok.",
+      "credits": "{count, plural, one {# kredi} other {# kredi}}",
+      "optedOut": "mesaj almak istemiyor",
+      "noPhone": "telefon yok",
+      "addToCourse": "Kursa ekle",
+      "added": "Öğrenci kursa eklendi"
     }
   }
 }

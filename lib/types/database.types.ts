@@ -297,6 +297,39 @@ export type Database = {
           },
         ]
       }
+      course_labels: {
+        Row: {
+          course_id: string
+          created_at: string
+          label_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          label_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          label_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_labels_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_labels_label_id_fkey"
+            columns: ["label_id"]
+            isOneToOne: false
+            referencedRelation: "labels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_students: {
         Row: {
           course_id: string
@@ -1068,6 +1101,41 @@ export type Database = {
           },
         ]
       }
+      labels: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "labels_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_templates: {
         Row: {
           body: string
@@ -1146,6 +1214,7 @@ export type Database = {
       }
       organizations: {
         Row: {
+          seeded_message_templates: string[]
           allow_makeup_sessions: boolean | null
           allow_manager_invite: boolean | null
           allow_member_delete: boolean | null
@@ -1162,6 +1231,7 @@ export type Database = {
           week_start_day: number | null
         }
         Insert: {
+          seeded_message_templates?: string[]
           allow_makeup_sessions?: boolean | null
           allow_manager_invite?: boolean | null
           allow_member_delete?: boolean | null
@@ -1178,6 +1248,7 @@ export type Database = {
           week_start_day?: number | null
         }
         Update: {
+          seeded_message_templates?: string[]
           allow_makeup_sessions?: boolean | null
           allow_manager_invite?: boolean | null
           allow_member_delete?: boolean | null
@@ -1385,6 +1456,39 @@ export type Database = {
           },
         ]
       }
+      student_labels: {
+        Row: {
+          created_at: string
+          label_id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          label_id: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          label_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_labels_label_id_fkey"
+            columns: ["label_id"]
+            isOneToOne: false
+            referencedRelation: "labels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_labels_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       students: {
         Row: {
           created_at: string
@@ -1396,6 +1500,7 @@ export type Database = {
           id: string
           is_active: boolean
           last_name: string
+          birth_date: string | null
           messages_opt_out: boolean
           notes: string | null
           organization_id: string
@@ -1413,6 +1518,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_name: string
+          birth_date?: string | null
           messages_opt_out?: boolean
           notes?: string | null
           organization_id: string
@@ -1430,6 +1536,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_name?: string
+          birth_date?: string | null
           messages_opt_out?: boolean
           notes?: string | null
           organization_id?: string

@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getMemberAccess } from '@/lib/auth/memberAccess'
 import { actionError } from '@/lib/i18n/actionError'
 import { addDaysToDateString, todayInTimeZone } from '@/lib/i18n/dates'
+import { daysUntilBirthday } from '@/lib/students/birthday'
 import {
   MESSAGE_AUDIENCES,
   MESSAGE_CATEGORIES,
@@ -19,6 +20,8 @@ const DEFAULT_TEMPLATES = [
   { key: 'packageExpiring', category: 'payment_reminder' },
   { key: 'event', category: 'event' },
   { key: 'announcement', category: 'announcement' },
+  { key: 'birthday', category: 'birthday' },
+  { key: 'classInvite', category: 'class_invite' },
 ] as const
 
 async function messageAccess() {
@@ -48,13 +51,19 @@ export async function getMessageTemplates() {
         .order('category')
         .order('name')
 
-    let { data, error } = await load()
-    if (error) throw error
-
-    if ((data ?? []).length === 0) {
+    // Defaults the studio has not been given yet (new ones reach existing studios once;
+    // a default the studio deleted does not come back)
+    const { data: org } = await admin
+      .from('organizations')
+      .select('seeded_message_templates')
+      .eq('id', access.organizationId)
+      .single()
+    const seeded = new Set(org?.seeded_message_templates ?? [])
+    const missing = DEFAULT_TEMPLATES.filter((d) => !seeded.has(d.key))
+    if (missing.length > 0) {
       const t = await getTranslations('messages.defaults')
       const { error: seedError } = await admin.from('message_templates').insert(
-        DEFAULT_TEMPLATES.map((d) => ({
+        missing.map((d) => ({
           organization_id: access.organizationId,
           name: t(`${d.key}.name`),
           category: d.category,
@@ -64,9 +73,15 @@ export async function getMessageTemplates() {
         }))
       )
       if (seedError) throw seedError
-      ;({ data, error } = await load())
-      if (error) throw error
+      const { error: markError } = await admin
+        .from('organizations')
+        .update({ seeded_message_templates: [...seeded, ...missing.map((d) => d.key)] })
+        .eq('id', access.organizationId)
+      if (markError) throw markError
     }
+
+    const { data, error } = await load()
+    if (error) throw error
 
     return { data: data ?? [] }
   } catch (error) {
@@ -141,9 +156,15 @@ export async function getMessageSetup() {
     .eq('branches.organization_id', access.organizationId)
     .is('deleted_at', null)
     .order('name')
+  const { data: labels } = await admin
+    .from('labels')
+    .select('id, name')
+    .eq('organization_id', access.organizationId)
+    .order('name')
   return {
     data: {
       studioName: access.organizationName,
+      labels: labels ?? [],
       today: todayInTimeZone(access.timezone),
       courses: (courses ?? []).map((c) => ({ id: c.id, name: c.name })),
     },
@@ -154,7 +175,7 @@ export async function getMessageSetup() {
  * Active students for an audience, with what templates need (credits, package, expiry).
  * Students who opted out are returned flagged so the screen can say why they are skipped.
  */
-export async function getMessageRecipients(input: { audience: string; courseId?: string }) {
+export async function getMessageRecipients(input: { audience: string; courseId?: string; labelId?: string }) {
   const res = await messageAccess()
   if ('error' in res) return { error: res.error }
   const { access } = res
@@ -167,21 +188,43 @@ export async function getMessageRecipients(input: { audience: string; courseId?:
     const admin = createAdminClient()
     const today = todayInTimeZone(access.timezone)
 
-    let courseStudentIds: Set<string> | null = null
-    if (audience === 'course') {
+    // Students to include (null = everyone) and to leave out
+    let include: Set<string> | null = null
+    let exclude: Set<string> | null = null
+    if (audience === 'course' || audience === 'course_invite') {
       if (!input.courseId) return { data: [] }
-      const { data: enrolled } = await admin
-        .from('course_students')
-        .select('student_id, courses!inner(branches!inner(organization_id))')
-        .eq('course_id', input.courseId)
-        .eq('courses.branches.organization_id', access.organizationId)
-      courseStudentIds = new Set((enrolled ?? []).map((e) => e.student_id))
+      const { data: course } = await admin
+        .from('courses')
+        .select('id, branches!inner(organization_id), course_students(student_id), course_labels(label_id)')
+        .eq('id', input.courseId)
+        .eq('branches.organization_id', access.organizationId)
+        .maybeSingle()
+      if (!course) return { data: [] }
+      const enrolled = new Set((course.course_students ?? []).map((e) => e.student_id))
+      if (audience === 'course') {
+        include = enrolled
+      } else {
+        // Same level, not in the class yet
+        const labelIds = (course.course_labels ?? []).map((l) => l.label_id)
+        if (labelIds.length === 0) return { data: [] }
+        const { data: labelled } = await admin.from('student_labels').select('student_id').in('label_id', labelIds)
+        include = new Set((labelled ?? []).map((l) => l.student_id))
+        exclude = enrolled
+      }
+    } else if (audience === 'label') {
+      if (!input.labelId) return { data: [] }
+      const { data: labelled } = await admin
+        .from('student_labels')
+        .select('student_id, labels!inner(organization_id)')
+        .eq('label_id', input.labelId)
+        .eq('labels.organization_id', access.organizationId)
+      include = new Set((labelled ?? []).map((l) => l.student_id))
     }
 
     const { data: students, error } = await admin
       .from('students')
       .select(
-        'id, first_name, last_name, phone, messages_opt_out, student_packages(remaining_credits, expire_date, purchase_date, packages(name))'
+        'id, first_name, last_name, phone, messages_opt_out, birth_date, student_packages(remaining_credits, expire_date, purchase_date, packages(name))'
       )
       .eq('organization_id', access.organizationId)
       .is('deleted_at', null)
@@ -191,7 +234,8 @@ export async function getMessageRecipients(input: { audience: string; courseId?:
 
     const soon = addDaysToDateString(today, 7)
     const rows = (students ?? [])
-      .filter((s) => !courseStudentIds || courseStudentIds.has(s.id))
+      .filter((s) => (!include || include.has(s.id)) && !exclude?.has(s.id))
+      .filter((s) => audience !== 'birthday' || (!!s.birth_date && daysUntilBirthday(s.birth_date, today) === 0))
       .map((s) => {
         const usable = (s.student_packages ?? []).filter(
           (p) => !p.expire_date || p.expire_date.slice(0, 10) >= today

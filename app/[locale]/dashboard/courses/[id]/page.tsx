@@ -5,6 +5,8 @@ import { Link } from '@/i18n/navigation'
 import { getCourse } from '@/lib/actions/courses.actions'
 import { getCourseAttendanceHistory } from '@/lib/actions/course-attendance.actions'
 import { getEntityHistory } from '@/lib/actions/history.actions'
+import { getCourseLabelIds, getLabels } from '@/lib/actions/labels.actions'
+import { LabelPicker } from '@/components/labels/LabelPicker'
 import { weekdayNames } from '@/lib/i18n/dates'
 import { formatTime } from '@/lib/utils/formatTime'
 import { Button } from '@/components/ui/button'
@@ -24,10 +26,13 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
 
   const course = result.data
   const DAYS = weekdayNames(await getLocale())
-  const [historyResult, entityHistory] = await Promise.all([
+  const [historyResult, entityHistory, labelsResult, courseLabels] = await Promise.all([
     getCourseAttendanceHistory(course.id),
     getEntityHistory('course', id, 20),
+    getLabels(),
+    getCourseLabelIds(course.id),
   ])
+  const courseLabelIds = courseLabels.data ?? []
   const attendanceHistory = historyResult.data || []
   const instructors = (course.course_instructors ?? []).map((ci) => ci.instructors).filter((i) => !!i)
 
@@ -60,6 +65,12 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
                 ))}
               </p>
             )}
+            <LabelPicker
+              target="course"
+              id={course.id}
+              labels={(labelsResult.data ?? []).map((l) => ({ id: l.id, name: l.name }))}
+              selectedIds={courseLabelIds}
+            />
           </div>
         }
         actions={
@@ -87,7 +98,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
           <TabsTrigger value="activity">{tt('activity')}</TabsTrigger>
         </TabsList>
         <TabsContent value="students" className="pt-2">
-          <CourseStudentsContainer courseId={course.id} danceTypeId={course.dance_type_id} />
+          <CourseStudentsContainer courseId={course.id} danceTypeId={course.dance_type_id} labelIds={courseLabelIds} />
         </TabsContent>
         <TabsContent value="attendance" className="pt-2">
           <AttendanceHistorySection attendanceHistory={attendanceHistory} />

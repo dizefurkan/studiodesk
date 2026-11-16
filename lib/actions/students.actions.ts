@@ -61,7 +61,8 @@ export async function getStudentsWithStats(
   courseId?: string,
   hasCredits?: boolean,
   /** active (default) | passive | all */
-  status: StudentStatusFilter = 'active'
+  status: StudentStatusFilter = 'active',
+  labelId?: string
 ) {
   const user = await getCurrentUser();
   if (!user) return { error: await actionError('notAuthenticated'), data: [], totalCount: 0 };
@@ -204,6 +205,23 @@ export async function getStudentsWithStats(
       }
     }
 
+    if (labelId) {
+      hasFilteringActive = true;
+      const { data: labelRows } = await adminSupabase
+        .from("student_labels")
+        .select("student_id, labels!inner(organization_id)")
+        .eq("label_id", labelId)
+        .eq("labels.organization_id", organization.id);
+      const labelStudentIds = new Set((labelRows || []).map((r) => r.student_id));
+      filteredStudentIds =
+        filteredStudentIds.size === 0
+          ? labelStudentIds
+          : new Set([...filteredStudentIds].filter((id) => labelStudentIds.has(id)));
+      if (filteredStudentIds.size === 0) {
+        return { data: [], totalCount: 0, page, pageSize, totalPages: 0 };
+      }
+    }
+
     if (courseId) {
       hasFilteringActive = true;
       const { data: enrollmentData } = await adminSupabase
@@ -254,6 +272,8 @@ export async function getStudentsWithStats(
         phone,
         created_at,
         is_active,
+        birth_date,
+        student_labels(label_id, labels(id, name)),
         course_students(
           course_id,
           course:courses(id, name, branch_id)
@@ -392,6 +412,10 @@ export async function getStudentsWithStats(
 
       return {
         ...student,
+        labels: (student.student_labels || [])
+          .map((sl) => sl.labels)
+          .filter((l): l is { id: string; name: string } => !!l)
+          .sort((a, b) => a.name.localeCompare(b.name)),
         student_packages,
         totalRemainingCredits: totalCredits,
         enrolledCoursesCount: activeCourses.length,
@@ -639,6 +663,15 @@ export async function getStudent(id: string) {
   }
 }
 
+/** A real 'YYYY-MM-DD' date between 1900 and today, else null. */
+function validBirthDate(value: string | null | undefined): string | null {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const date = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) return null;
+  if (value < "1900-01-01" || value > new Date().toISOString().slice(0, 10)) return null;
+  return value;
+}
+
 interface CreateStudentInput {
   firstName: string;
   lastName: string;
@@ -646,6 +679,7 @@ interface CreateStudentInput {
   phone?: string;
   notes?: string;
   messagesOptOut?: boolean;
+  birthDate?: string | null;
 }
 
 export async function createStudent(input: CreateStudentInput) {
@@ -667,6 +701,7 @@ export async function createStudent(input: CreateStudentInput) {
         phone: input.phone || null,
         notes: input.notes || null,
         messages_opt_out: input.messagesOptOut ?? false,
+        birth_date: validBirthDate(input.birthDate),
       })
       .select()
       .single();
@@ -688,6 +723,7 @@ export async function createStudent(input: CreateStudentInput) {
           email: data.email,
           phone: data.phone,
           notes: data.notes,
+          birthDate: data.birth_date,
         },
       },
       organization.id
@@ -707,6 +743,7 @@ interface UpdateStudentInput {
   phone?: string | null;
   notes?: string | null;
   messagesOptOut?: boolean;
+  birthDate?: string | null;
 }
 
 export async function updateStudent(id: string, input: UpdateStudentInput) {
@@ -722,7 +759,7 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
     // Get before state for history log
     const { data: beforeStudent } = await supabase
       .from("students")
-      .select("first_name, last_name, email, phone, notes, messages_opt_out")
+      .select("first_name, last_name, email, phone, notes, messages_opt_out, birth_date")
       .eq("id", id)
       .eq("organization_id", organization.id)
       .single();
@@ -740,6 +777,7 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
     if (input.phone !== undefined) updateData.phone = input.phone;
     if (input.notes !== undefined) updateData.notes = input.notes;
     if (input.messagesOptOut !== undefined) updateData.messages_opt_out = input.messagesOptOut;
+    if (input.birthDate !== undefined) updateData.birth_date = validBirthDate(input.birthDate);
 
     const { data, error } = await supabase.from("students")
       .update(updateData)
@@ -760,6 +798,7 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
       email: beforeStudent.email,
       phone: beforeStudent.phone,
       notes: beforeStudent.notes,
+      birthDate: beforeStudent.birth_date,
     };
     const afterObj = {
       firstName: data.first_name,
@@ -767,6 +806,7 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
       email: data.email,
       phone: data.phone,
       notes: data.notes,
+      birthDate: data.birth_date,
     };
     const changes = getChanges(beforeObj, afterObj);
 

@@ -1,6 +1,6 @@
 import { Link, redirect } from '@/i18n/navigation'
 import { getTranslations, getLocale } from 'next-intl/server'
-import { Building2, CalendarCheck, ChevronRight, Coins, ShieldCheck, UserRound, Users, type LucideIcon } from 'lucide-react'
+import { Building2, CalendarCheck, ChevronRight, Coins, ShieldCheck, Tag, UserRound, Users, type LucideIcon } from 'lucide-react'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { getSettingsContext } from '@/lib/actions/settings.actions'
 
@@ -13,6 +13,7 @@ const SECTIONS: Section[] = [
   { key: 'permissions', href: '/dashboard/settings/permissions', icon: ShieldCheck, ownerOnly: true },
   { key: 'currency', href: '/dashboard/settings/currency', icon: Coins },
   { key: 'attendance', href: '/dashboard/settings/attendance', icon: CalendarCheck },
+  { key: 'labels', href: '/dashboard/settings/labels', icon: Tag },
 ]
 
 export default async function SettingsPage() {

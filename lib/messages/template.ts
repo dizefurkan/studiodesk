@@ -3,20 +3,23 @@
  * Placeholders are stored as `{token}` and filled per student when sending.
  */
 
-export const MESSAGE_CATEGORIES = ['payment_reminder', 'event', 'announcement', 'other'] as const
+export const MESSAGE_CATEGORIES = ['payment_reminder', 'event', 'announcement', 'birthday', 'class_invite', 'other'] as const
 export type MessageCategory = (typeof MESSAGE_CATEGORIES)[number]
 
 export const MESSAGE_CHANNELS = ['whatsapp', 'sms'] as const
 export type MessageChannel = (typeof MESSAGE_CHANNELS)[number]
 
-export const MESSAGE_AUDIENCES = ['all', 'course', 'low_credits', 'expiring'] as const
+export const MESSAGE_AUDIENCES = ['all', 'course', 'label', 'course_invite', 'low_credits', 'expiring', 'birthday'] as const
 export type MessageAudience = (typeof MESSAGE_AUDIENCES)[number]
+
+/** Audiences that need a course picked: the course's students, or same-label students to invite */
+export const COURSE_AUDIENCES: readonly MessageAudience[] = ['course', 'course_invite']
 
 export const MESSAGE_TABS = ['send', 'templates', 'history'] as const
 export type MessageTab = (typeof MESSAGE_TABS)[number]
 
 /** Placeholders a template can use, in the order they are offered in the editor. */
-export const MESSAGE_TOKENS = ['first_name', 'last_name', 'credits', 'package', 'expires', 'studio'] as const
+export const MESSAGE_TOKENS = ['first_name', 'last_name', 'credits', 'package', 'expires', 'course', 'studio'] as const
 export type MessageToken = (typeof MESSAGE_TOKENS)[number]
 
 export type MessageVars = Partial<Record<MessageToken, string>>

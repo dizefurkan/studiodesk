@@ -639,6 +639,10 @@
       "attendance": {
         "title": "Attendance",
         "description": "Virtual sessions, weekly limit and make-up classes"
+      },
+      "labels": {
+        "title": "Labels",
+        "description": "Group students and classes with labels such as level"
       }
     },
     "generalForm": {
@@ -1173,7 +1177,11 @@
     "create": "Create instructor"
   },
   "studentForm": {
-    "notesPlaceholder": "Add any notes about the student…"
+    "notesPlaceholder": "Add any notes about the student…",
+    "birthDate": "Date of birth",
+    "birthDatePlaceholder": "Pick a date",
+    "birthDateHint": "Optional. Used to send a greeting on their birthday.",
+    "clearBirthDate": "Clear date of birth"
   },
   "branchForm": {
     "name": "Branch name",
@@ -1516,14 +1524,17 @@
       "danceTypeId": "Dance type",
       "branchId": "Branch",
       "role": "Role",
-      "isActive": "Status"
+      "isActive": "Status",
+      "birthDate": "Date of birth",
+      "labels": "Labels"
     },
     "values": {
       "isActive": {
         "true": "Active",
         "false": "Passive"
       }
-    }
+    },
+    "fieldCleared": "{field} removed"
   },
   "serverErrors": {
     "notAuthenticated": "Not signed in",
@@ -1703,7 +1714,12 @@
     "saveTemplateFailed": "Couldn't save the template",
     "deleteTemplateFailed": "Couldn't delete the template",
     "logMessageFailed": "Couldn't record the message",
-    "fetchMessagesFailed": "Couldn't load the message history"
+    "fetchMessagesFailed": "Couldn't load the message history",
+    "fetchLabelsFailed": "Couldn't load labels",
+    "invalidLabelName": "A label name must be 1–40 characters",
+    "labelExists": "A label with this name already exists",
+    "saveLabelFailed": "Couldn't save the label",
+    "deleteLabelFailed": "Couldn't delete the label"
   },
   "attendanceSheet": {
     "markEveryone": "Mark {count, plural, one {# more student} other {# more students}} before saving.",
@@ -1795,7 +1811,14 @@
     "renewalsDescription": "Students with one credit or less left",
     "noRenewals": "Everyone has credits.",
     "creditsLeft": "{count, plural, =0 {no credits left} one {# credit left} other {# credits left}}",
-    "remind": "Remind"
+    "remind": "Remind",
+    "birthdays": {
+      "title": "Upcoming birthdays",
+      "description": "Today and the next 7 days",
+      "celebrate": "Celebrate",
+      "today": "Today · turns {age}",
+      "inDays": "{count, plural, one {Tomorrow} other {In # days}} · turns {age}"
+    }
   },
   "nav": {
     "label": "Main menu",
@@ -2388,13 +2411,18 @@
       "payment_reminder": "Payment reminder",
       "event": "Event",
       "announcement": "Announcement",
-      "other": "Other"
+      "other": "Other",
+      "birthday": "Birthday",
+      "class_invite": "Class invite"
     },
     "audiences": {
       "all": "All active students",
       "course": "Students of a course",
       "low_credits": "1 credit or fewer left",
-      "expiring": "Package ends within 7 days"
+      "expiring": "Package ends within 7 days",
+      "label": "Students with a label",
+      "course_invite": "Class invite: same label, not in the class",
+      "birthday": "Birthday today"
     },
     "tokens": {
       "first_name": "First name",
@@ -2402,12 +2430,14 @@
       "credits": "Credits left",
       "package": "Package",
       "expires": "Package end",
-      "studio": "Studio name"
+      "studio": "Studio name",
+      "course": "Class"
     },
     "sample": {
       "firstName": "Emma",
       "lastName": "Smith",
-      "package": "8-lesson package"
+      "package": "8-lesson package",
+      "course": "Salsa Intermediate"
     },
     "send": {
       "compose": "Message",
@@ -2433,7 +2463,13 @@
       "openAgain": "Open again",
       "noPhone": "No phone number",
       "optedOut": "Doesn't want messages",
-      "consentNote": "Messages open ready to send in WhatsApp or SMS on this device; tap Send in the app to send them. Commercial announcements need the student's consent; students marked \"doesn't want messages\" are skipped."
+      "consentNote": "Messages open ready to send in WhatsApp or SMS on this device; tap Send in the app to send them. Commercial announcements need the student's consent; students marked \"doesn't want messages\" are skipped.",
+      "label": "Label",
+      "selectLabel": "Select label",
+      "noLabels": "No labels yet. Add them in Settings > Labels.",
+      "pickLabel": "Select a label to see its students.",
+      "noInviteRecipients": "No active students with this class's labels outside the class. Make sure the class and the students have labels.",
+      "noBirthdays": "No active students have a birthday today."
     },
     "templates": {
       "new": "New template",
@@ -2473,7 +2509,67 @@
       "announcement": {
         "name": "General announcement",
         "body": "Hi {first_name}, [announcement]. {studio}"
+      },
+      "birthday": {
+        "name": "Birthday greeting",
+        "body": "Happy birthday {first_name}! Wishing you a year full of dance and joy. {studio}"
+      },
+      "classInvite": {
+        "name": "Class invite",
+        "body": "Hi {first_name}, there's a place for you in our {course} class at your level. Reply to this message if you'd like to join. {studio}"
       }
+    }
+  },
+  "birthdays": {
+    "today": "Birthday today",
+    "celebrate": "Celebrate",
+    "birthday": "Birthday",
+    "age": "{age} years old",
+    "add": "Add",
+    "inDays": "{count, plural, one {Birthday tomorrow} other {Birthday in # days}}"
+  },
+  "labels": {
+    "add": "Add label",
+    "edit": "Labels",
+    "searchOrCreate": "Search or type a new label",
+    "none": "No labels yet. Type a new name.",
+    "create": "Create \"{name}\"",
+    "filter": "Label",
+    "created": "Label added",
+    "levelsCreated": "Level labels added",
+    "newLabel": "New label",
+    "newLabelPlaceholder": "e.g. Intermediate",
+    "addButton": "Add",
+    "emptyTitle": "No labels yet",
+    "emptyDescription": "Add labels to group students and classes by level. When a class has free places, you can invite students with the same label.",
+    "addLevels": "Add Beginner, Intermediate, Advanced",
+    "levels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "name": "Name",
+    "actions": "Actions",
+    "rename": "Rename",
+    "renameHint": "The new name shows on every student and class with this label.",
+    "renamed": "Label updated",
+    "delete": "Delete",
+    "deleteConfirmTitle": "Delete the \"{name}\" label?",
+    "deleteConfirmDescription": "The label is removed from all students and classes. The students and classes stay.",
+    "deleted": "Label deleted",
+    "cancel": "Cancel",
+    "save": "Save",
+    "candidates": {
+      "title": "Students at the same level",
+      "description": "Active students with the same label as this class who aren't in it. Invite them when the class has free places.",
+      "invite": "{count, plural, one {Invite # student} other {Invite # students}}",
+      "noLabels": "Add a label to this class (e.g. Intermediate). Students with the same label will be listed here.",
+      "empty": "No active students with these labels outside this class.",
+      "credits": "{count, plural, one {# credit} other {# credits}}",
+      "optedOut": "doesn't want messages",
+      "noPhone": "no phone",
+      "addToCourse": "Add to class",
+      "added": "Student added to the class"
     }
   }
 }

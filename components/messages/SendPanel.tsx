@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { getMessageRecipients, logMessage } from '@/lib/actions/messages.actions'
 import {
+  COURSE_AUDIENCES,
   MESSAGE_AUDIENCES,
   messageLink,
   renderTemplate,
@@ -36,16 +37,20 @@ const CUSTOM = 'custom'
 export function SendPanel({
   templates,
   courses,
+  labels,
   studioName,
   initialAudience,
   initialCourseId,
+  initialLabelId,
   initialTemplateId,
 }: {
   templates: Template[]
   courses: { id: string; name: string }[]
+  labels: { id: string; name: string }[]
   studioName: string
   initialAudience: MessageAudience
   initialCourseId?: string
+  initialLabelId?: string
   initialTemplateId?: string
 }) {
   const t = useTranslations('messages')
@@ -57,17 +62,23 @@ export function SendPanel({
   const [channel, setChannel] = useState<MessageChannel>('whatsapp')
   const [audience, setAudience] = useState<MessageAudience>(initialAudience)
   const [courseId, setCourseId] = useState(initialCourseId ?? '')
+  const [labelId, setLabelId] = useState(initialLabelId ?? '')
+  const needsCourse = COURSE_AUDIENCES.includes(audience)
   const [recipients, setRecipients] = useState<Recipient[]>([])
   const [sent, setSent] = useState<Set<string>>(new Set())
   const [loading, startLoading] = useTransition()
 
   useEffect(() => {
     startLoading(async () => {
-      const res = await getMessageRecipients({ audience, courseId: courseId || undefined })
+      const res = await getMessageRecipients({
+        audience,
+        courseId: courseId || undefined,
+        labelId: labelId || undefined,
+      })
       setRecipients(res.data ?? [])
       setSent(new Set())
     })
-  }, [audience, courseId])
+  }, [audience, courseId, labelId])
 
   // Keep the choice in the URL so a reload or a shared link opens the same list
   const syncUrl = (patch: Record<string, string | null>) => {
@@ -87,6 +98,7 @@ export function SendPanel({
       credits: String(r.credits),
       package: r.packageName ?? '',
       expires: r.expires ? dateFmt.format(new Date(`${r.expires}T00:00:00`)) : '',
+      course: needsCourse ? (courses.find((c) => c.id === courseId)?.name ?? '') : '',
       studio: studioName,
     })
 
@@ -176,7 +188,12 @@ export function SendPanel({
                 value={audience}
                 onValueChange={(v) => {
                   setAudience(v as MessageAudience)
-                  syncUrl({ audience: v === 'all' ? null : v, course: v === 'course' ? courseId || null : null })
+                  const a = v as MessageAudience
+                  syncUrl({
+                    audience: a === 'all' ? null : a,
+                    course: COURSE_AUDIENCES.includes(a) ? courseId || null : null,
+                    label: a === 'label' ? labelId || null : null,
+                  })
                 }}
               >
                 <SelectTrigger id="message-audience" className="w-full">
@@ -191,7 +208,31 @@ export function SendPanel({
                 </SelectContent>
               </Select>
             </Field>
-            {audience === 'course' && (
+            {audience === 'label' && (
+              <Field>
+                <FieldLabel htmlFor="message-label">{t('send.label')}</FieldLabel>
+                <Select
+                  value={labelId}
+                  onValueChange={(v) => {
+                    setLabelId(v)
+                    syncUrl({ label: v })
+                  }}
+                >
+                  <SelectTrigger id="message-label" className="w-full">
+                    <SelectValue placeholder={t('send.selectLabel')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {labels.map((l) => (
+                      <SelectItem key={l.id} value={l.id}>
+                        {l.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {labels.length === 0 && <FieldDescription>{t('send.noLabels')}</FieldDescription>}
+              </Field>
+            )}
+            {needsCourse && (
               <Field>
                 <FieldLabel htmlFor="message-course">{t('send.course')}</FieldLabel>
                 <Select
@@ -238,7 +279,15 @@ export function SendPanel({
             </div>
           ) : recipients.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              {audience === 'course' && !courseId ? t('send.pickCourse') : t('send.noRecipients')}
+              {needsCourse && !courseId
+                ? t('send.pickCourse')
+                : audience === 'label' && !labelId
+                  ? t('send.pickLabel')
+                  : audience === 'course_invite'
+                    ? t('send.noInviteRecipients')
+                    : audience === 'birthday'
+                      ? t('send.noBirthdays')
+                      : t('send.noRecipients')}
             </p>
           ) : (
             <ul className="divide-y divide-border">

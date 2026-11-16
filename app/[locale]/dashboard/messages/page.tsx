@@ -70,12 +70,14 @@ export default async function MessagesPage({
         tab={tab}
         send={
           <SendPanel
-            key={`${initialTemplateId ?? ''}-${audience}`}
+            key={`${initialTemplateId ?? ''}-${audience}-${str('course') ?? ''}-${str('label') ?? ''}`}
             templates={templates}
             courses={setup.courses}
+            labels={setup.labels}
             studioName={setup.studioName}
             initialAudience={audience}
             initialCourseId={str('course')}
+            initialLabelId={str('label')}
             initialTemplateId={initialTemplateId}
           />
         }

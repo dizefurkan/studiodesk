@@ -1,7 +1,7 @@
 import { Link } from '@/i18n/navigation'
 import { getStudentsWithStats, getStudentFilterOptions, getStudentStatusCounts, type StudentStatusFilter } from '@/lib/actions/students.actions'
 import { getTranslations } from 'next-intl/server'
-import { Card } from '@/components/ui/card'
+import { getLabels } from '@/lib/actions/labels.actions'
 import { Button } from '@/components/ui/button'
 import { StudentTableWrapper } from '@/components/students/StudentTableWrapper'
 import { Plus } from 'lucide-react'
@@ -32,6 +32,7 @@ export default async function StudentsPage({
   const danceTypeId = typeof params.danceType === 'string' ? params.danceType : undefined
   const courseId = typeof params.course === 'string' ? params.course : undefined
   const branchId = typeof params.branch === 'string' ? params.branch : undefined
+  const labelId = typeof params.label === 'string' ? params.label : undefined
   const status: StudentStatusFilter =
     params.status === 'passive' || params.status === 'all' ? params.status : 'active'
   
@@ -46,7 +47,8 @@ export default async function StudentsPage({
     branchId,
     courseId,
     hasCredits,
-    status
+    status,
+    labelId
   )
   const statusCounts = (await getStudentStatusCounts()).data
   const students = result.data || []
@@ -57,9 +59,10 @@ export default async function StudentsPage({
   const danceTypes = filterOptions.danceTypes || []
   const branches = filterOptions.branches || []
   const courses = filterOptions.courses || []
+  const labels = (await getLabels()).data
 
   // Check if any filters are active
-  const hasActiveFilters = searchQuery || hasCredits || danceTypeId || courseId || branchId
+  const hasActiveFilters = searchQuery || hasCredits || danceTypeId || courseId || branchId || labelId
 
   // Any student at all (active or passive) shows the table; the empty state is for a new studio
   const hasRecords =
@@ -81,12 +84,14 @@ export default async function StudentsPage({
       />
 
       {hasRecords ? (
-        <Card className="p-3 sm:p-4 md:p-6">
+        <div className="min-w-0">
           <StudentTableWrapper
             students={students}
             danceTypes={danceTypes}
             branches={branches}
             courses={courses}
+            labels={labels}
+            labelId={labelId}
             searchQuery={searchQuery}
             hasCredits={hasCredits}
             danceTypeId={danceTypeId}
@@ -99,7 +104,7 @@ export default async function StudentsPage({
             status={status}
             statusCounts={statusCounts}
           />
-        </Card>
+        </div>
       ) : (
         <EmptyState
           title={t('emptyStates.students.title')}

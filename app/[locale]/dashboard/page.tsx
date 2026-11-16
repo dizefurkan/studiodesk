@@ -1,5 +1,5 @@
 import { getLocale, getTranslations } from 'next-intl/server'
-import { ArrowRight, Check, ClipboardCheck, MessageCircle, UserPlus } from 'lucide-react'
+import { ArrowRight, Cake, Check, ClipboardCheck, MessageCircle, UserPlus } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { getCurrentUserProfile } from '@/lib/auth/getCurrentUser'
@@ -8,6 +8,7 @@ import { getScheduleCourses, getSessionsInRange } from '@/lib/actions/schedule.a
 import { getHistoryLogs } from '@/lib/actions/history.actions'
 import { addDaysToDateString, formatDay, lastOccurrence, parseDateOnly, todayInTimeZone } from '@/lib/i18n/dates'
 import { formatCurrency } from '@/lib/utils/format'
+import { daysUntilBirthday, nextBirthday, turningAge } from '@/lib/students/birthday'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -47,6 +48,7 @@ export default async function DashboardPage() {
     { data: lowCredit },
     setup,
     recent,
+    { data: withBirthdays },
   ] = await Promise.all([
     getCurrentUserProfile(),
     getScheduleCourses(),
@@ -73,6 +75,13 @@ export default async function DashboardPage() {
       .order('remaining_credits'),
     getSetupProgress(orgId),
     getHistoryLogs(5),
+    admin
+      .from('students')
+      .select('id, first_name, last_name, birth_date')
+      .eq('organization_id', orgId)
+      .is('deleted_at', null)
+      .eq('is_active', true)
+      .not('birth_date', 'is', null),
   ])
 
   // Lessons today and attendance still to take this week
@@ -114,6 +123,23 @@ export default async function DashboardPage() {
     })
   }
   const renewals = [...lowCreditStudents.values()].slice(0, 6)
+
+  // Birthdays today and in the coming week
+  const birthdays = (withBirthdays ?? [])
+    .flatMap((s) => {
+      if (!s.birth_date) return []
+      const inDays = daysUntilBirthday(s.birth_date, today)
+      if (inDays > 7) return []
+      return [{
+        id: s.id,
+        name: `${s.first_name} ${s.last_name}`,
+        inDays,
+        date: nextBirthday(s.birth_date, today),
+        age: turningAge(s.birth_date, today),
+      }]
+    })
+    .sort((a, b) => a.inDays - b.inDays || a.name.localeCompare(b.name))
+  const birthdaysToday = birthdays.filter((b) => b.inDays === 0).length
 
   const firstName = profile?.full_name?.split(' ')[0]
 
@@ -244,6 +270,51 @@ export default async function DashboardPage() {
           )}
         </Card>
       </div>
+
+      {birthdays.length > 0 && (
+        <Card className="gap-0 pb-0">
+          <CardHeader className="border-b border-border pb-4">
+            <CardTitle className="flex items-center gap-2">
+              <Cake className="size-4" /> {tx('birthdays.title')}
+            </CardTitle>
+            <CardDescription>{tx('birthdays.description')}</CardDescription>
+            {birthdaysToday > 0 && (
+              <CardAction>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/dashboard/messages?audience=birthday&category=birthday">
+                    <MessageCircle /> {tx('birthdays.celebrate')}
+                  </Link>
+                </Button>
+              </CardAction>
+            )}
+          </CardHeader>
+          <div className="grid divide-y divide-border sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-3">
+            {birthdays.slice(0, 9).map((b) => (
+              <div key={b.id} className="flex items-center gap-3 px-4 py-2.5">
+                <span
+                  className={cn(
+                    'flex size-9 shrink-0 flex-col items-center justify-center rounded-lg text-[10px] leading-tight',
+                    b.inDays === 0 ? 'bg-highlight text-highlight-foreground' : 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  <span className="font-semibold">{parseDateOnly(b.date).getDate()}</span>
+                  <span>{new Intl.DateTimeFormat(locale, { month: 'short' }).format(parseDateOnly(b.date))}</span>
+                </span>
+                <div className="min-w-0 flex-1">
+                  <Link href={`/dashboard/students/${b.id}`} className="block truncate text-sm font-medium hover:text-primary">
+                    {b.name}
+                  </Link>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {b.inDays === 0
+                      ? tx('birthdays.today', { age: b.age })
+                      : tx('birthdays.inDays', { count: b.inDays, age: b.age })}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3">

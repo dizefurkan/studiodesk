@@ -1,12 +1,15 @@
 import { notFound } from 'next/navigation'
 import { getLocale, getTranslations } from 'next-intl/server'
-import { ArrowLeft, Mail, Pencil, Phone } from 'lucide-react'
+import { ArrowLeft, Cake, Mail, Pencil, Phone } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
 import { getStudent, getStudentPackages } from '@/lib/actions/students.actions'
 import { getPackages } from '@/lib/actions/packages.actions'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { getEntityHistory, getStudentAttendanceHistory, getStudentPackageHistory } from '@/lib/actions/history.actions'
-import { formatDay, parseDateOnly } from '@/lib/i18n/dates'
+import { formatDay, parseDateOnly, todayInTimeZone } from '@/lib/i18n/dates'
+import { getLabels, getStudentLabelIds } from '@/lib/actions/labels.actions'
+import { ageOn, daysUntilBirthday } from '@/lib/students/birthday'
+import { LabelPicker } from '@/components/labels/LabelPicker'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -39,14 +42,20 @@ export default async function StudentDetailPage({
   const organization = await getOrganization()
   const currency = organization?.currency || 'TRY'
 
-  const [packagesResult, availablePackagesResult, attendanceResult, packageHistoryResult, entityHistory] =
+  const [packagesResult, availablePackagesResult, attendanceResult, packageHistoryResult, entityHistory, labelsResult, studentLabels] =
     await Promise.all([
       getStudentPackages(id),
       getPackages(),
       getStudentAttendanceHistory(id),
       getStudentPackageHistory(id),
       getEntityHistory('student', id, 20),
+      getLabels(),
+      getStudentLabelIds(id),
     ])
+  const tb = await getTranslations('birthdays')
+  const today = todayInTimeZone(organization?.timezone)
+  const birthDate = student.birth_date
+  const birthdayIn = birthDate ? daysUntilBirthday(birthDate, today) : null
 
   const attendance = (attendanceResult.data ?? []) as AttendanceHistoryItem[]
   const purchases = (packageHistoryResult.data ?? []) as PackageHistoryItem[]
@@ -80,11 +89,16 @@ export default async function StudentDetailPage({
             {initials}
           </span>
           <div className="min-w-0">
-            <div className="flex min-w-0 items-center gap-2">
-              <h1 className="truncate text-2xl font-bold tracking-tight sm:text-3xl">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <h1 className="min-w-0 break-words text-2xl font-bold tracking-tight sm:text-3xl">
                 {student.first_name} {student.last_name}
               </h1>
               {!student.is_active && <Badge variant="outline">{ts('passive')}</Badge>}
+              {birthdayIn === 0 && (
+                <Badge className="bg-highlight text-highlight-foreground">
+                  <Cake /> {tb('today')}
+                </Badge>
+              )}
             </div>
             <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
               {student.phone && (
@@ -98,10 +112,25 @@ export default async function StudentDetailPage({
                 </a>
               )}
             </div>
+            <div className="mt-2">
+              <LabelPicker
+                target="student"
+                id={student.id}
+                labels={(labelsResult.data ?? []).map((l) => ({ id: l.id, name: l.name }))}
+                selectedIds={studentLabels.data ?? []}
+              />
+            </div>
           </div>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
           {purchaseDialog}
+          {birthdayIn === 0 && student.is_active && (
+            <Button asChild variant="outline">
+              <Link href="/dashboard/messages?audience=birthday&category=birthday">
+                <Cake /> {tb('celebrate')}
+              </Link>
+            </Button>
+          )}
           <StudentStatusButton
             studentId={student.id}
             name={`${student.first_name} ${student.last_name}`}
@@ -190,6 +219,22 @@ export default async function StudentDetailPage({
               <span className="text-muted-foreground">{tx('joined')}</span>
               <span>{formatDay(locale, new Date(student.created_at), 'medium')}</span>
             </div>
+            <div className="flex justify-between gap-3 text-sm">
+              <span className="text-muted-foreground">{tb('birthday')}</span>
+              {birthDate ? (
+                <span className="text-right">
+                  {formatDay(locale, parseDateOnly(birthDate), 'medium')}
+                  <span className="text-muted-foreground"> · {tb('age', { age: ageOn(birthDate, today) })}</span>
+                </span>
+              ) : (
+                <Link href={`/dashboard/students/${student.id}/edit`} className="text-muted-foreground hover:text-foreground">
+                  {tb('add')}
+                </Link>
+              )}
+            </div>
+            {birthdayIn !== null && birthdayIn > 0 && birthdayIn <= 7 && (
+              <p className="text-xs text-muted-foreground">{tb('inDays', { count: birthdayIn })}</p>
+            )}
             {student.notes ? (
               <div className="border-t border-border pt-3">
                 <p className="text-xs text-muted-foreground">{tx('notes')}</p>

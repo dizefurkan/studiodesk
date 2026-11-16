@@ -14,6 +14,9 @@ import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/
 import { Switch } from '@/components/ui/switch'
 import { createStudent, updateStudent } from '@/lib/actions/students.actions'
 import { Textarea } from '@/components/ui/textarea'
+import { DatePicker } from '@/components/common/DatePicker'
+import { format } from 'date-fns'
+import { X } from 'lucide-react'
 import type { Database } from '@/lib/types/database.types'
 
 type Student = Database['public']['Tables']['students']['Row']
@@ -30,6 +33,7 @@ function createStudentSchema(t: ReturnType<typeof useTranslations>) {
     phone: z.string().optional(),
     notes: z.string().optional(),
     messagesOptOut: z.boolean(),
+    birthDate: z.string(),
   })
 }
 
@@ -56,6 +60,7 @@ export function StudentForm({ student }: StudentFormProps) {
       phone: student?.phone || '',
       notes: student?.notes || '',
       messagesOptOut: student?.messages_opt_out ?? false,
+      birthDate: student?.birth_date ?? '',
     },
   })
 
@@ -72,6 +77,7 @@ export function StudentForm({ student }: StudentFormProps) {
             phone: data.phone || null,
             notes: data.notes || null,
             messagesOptOut: data.messagesOptOut,
+            birthDate: data.birthDate || null,
           })
         : await createStudent({
             firstName: data.firstName,
@@ -80,6 +86,7 @@ export function StudentForm({ student }: StudentFormProps) {
             phone: data.phone,
             notes: data.notes,
             messagesOptOut: data.messagesOptOut,
+            birthDate: data.birthDate || null,
           })
 
       if (result.error) {
@@ -165,6 +172,42 @@ export function StudentForm({ student }: StudentFormProps) {
                   <FormControl>
                     <Input placeholder={tf('phonePlaceholder')} disabled={isLoading} {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="birthDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="birth-date">{tx('birthDate')}</FormLabel>
+                  <div className="flex items-center gap-1">
+                    <DatePicker
+                      id="birth-date"
+                      className="w-full sm:w-64"
+                      value={field.value ? new Date(`${field.value}T00:00:00`) : undefined}
+                      onDateChange={(date) => field.onChange(format(date, 'yyyy-MM-dd'))}
+                      placeholder={tx('birthDatePlaceholder')}
+                      captionLayout="dropdown"
+                      startMonth={new Date(1930, 0)}
+                      endMonth={new Date()}
+                      disabled={(date) => date > new Date()}
+                    />
+                    {field.value && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={tx('clearBirthDate')}
+                        onClick={() => field.onChange('')}
+                      >
+                        <X />
+                      </Button>
+                    )}
+                  </div>
+                  <FieldDescription>{tx('birthDateHint')}</FieldDescription>
                   <FormMessage />
                 </FormItem>
               )}

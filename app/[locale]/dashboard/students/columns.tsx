@@ -23,6 +23,7 @@ export interface Student {
   phone?: string | null
   created_at: string
   is_active?: boolean
+  labels?: Array<{ id: string; name: string }>
   totalRemainingCredits: number
   enrolledCoursesCount: number
   student_packages?: Array<{
@@ -79,7 +80,7 @@ export function getStudentColumns({
       accessorKey: 'first_name',
       header: () => <ColumnHeader k="name" />,
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <Link
             href={`/dashboard/students/${row.original.id}`}
             className="font-medium text-foreground hover:text-primary"
@@ -87,6 +88,11 @@ export function getStudentColumns({
             {row.original.first_name} {row.original.last_name}
           </Link>
           {row.original.is_active === false && <PassiveBadge />}
+          {row.original.labels?.map((l) => (
+            <Badge key={l.id} variant="secondary" className="font-normal">
+              {l.name}
+            </Badge>
+          ))}
         </div>
       ),
     })
