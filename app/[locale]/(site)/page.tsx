@@ -33,7 +33,7 @@ const COMPARE = ['attendance', 'credits', 'pay', 'renewals', 'cash'] as const
 /** Small dot + word above a section heading, as in the reference design. */
 function Eyebrow({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) {
   return (
-    <p className={dark ? 'inline-flex items-center gap-2 text-sm text-background/70' : 'inline-flex items-center gap-2 text-sm text-muted-foreground'}>
+    <p className={dark ? 'inline-flex items-center gap-2 text-sm text-ink-foreground/70' : 'inline-flex items-center gap-2 text-sm text-muted-foreground'}>
       <span className="size-1.5 rounded-full bg-highlight ring-2 ring-highlight/30" aria-hidden />
       {children}
     </p>
@@ -88,7 +88,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <div className="relative mx-auto max-w-6xl px-4 pt-16 text-center sm:px-6 lg:pt-24">
           <Reveal>
             <p className="inline-flex items-center gap-2 rounded-full bg-highlight px-3.5 py-1.5 text-sm font-medium text-highlight-foreground">
-              <span className="size-1.5 rounded-full bg-foreground" aria-hidden />
+              <span className="size-1.5 rounded-full bg-ink" aria-hidden />
               {t('hero.badge')}
             </p>
           </Reveal>
@@ -102,7 +102,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <Button asChild size="lg" variant="outline" className="h-12 rounded-full border-transparent bg-background px-7 text-base shadow-sm">
                 <Link href="/#how">{t('hero.secondary')}</Link>
               </Button>
-              <Button asChild size="lg" className="h-12 rounded-full bg-foreground px-7 text-base text-background hover:bg-foreground/90">
+              <Button asChild size="lg" className="h-12 rounded-full bg-ink px-7 text-base text-ink-foreground hover:bg-ink/90">
                 <Link href="/#demo">{t('hero.primary')}</Link>
               </Button>
             </div>
@@ -179,7 +179,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 <p className="mt-2 text-sm text-highlight-foreground/75">{t('faq.cardText')}</p>
                 <Link
                   href="/#demo"
-                  className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90"
+                  className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-medium text-ink-foreground transition-opacity hover:opacity-90"
                 >
                   {t('faq.cardButton')}
                 </Link>
@@ -190,12 +190,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 <AccordionItem
                   key={q}
                   value={q}
-                  className="rounded-2xl border-0 bg-background px-5 transition-colors data-[state=open]:bg-highlight/60"
+                  className="rounded-2xl border-0 bg-background px-5 transition-colors data-[state=open]:bg-highlight/60 dark:data-[state=open]:bg-highlight dark:data-[state=open]:text-highlight-foreground"
                 >
                   <AccordionTrigger className="py-5 text-left text-base font-medium hover:no-underline">
                     {t(`faq.items.${q}.q`)}
                   </AccordionTrigger>
-                  <AccordionContent className="pb-5 text-base leading-relaxed text-foreground/75">
+                  <AccordionContent className="pb-5 text-base leading-relaxed text-foreground/75 dark:text-highlight-foreground/80">
                     {t(`faq.items.${q}.a`)}
                   </AccordionContent>
                 </AccordionItem>
@@ -207,13 +207,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
       {/* Demo request: dark band with fanned cards, then the form */}
       <section id="demo" className="scroll-mt-24 px-3 pb-3 sm:px-6">
-        <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-foreground px-4 pb-10 pt-16 text-background sm:px-10 lg:pt-24">
+        <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-ink px-4 pb-10 pt-16 text-ink-foreground sm:px-10 lg:pt-24">
           <Reveal className="mx-auto max-w-2xl text-center">
             <Eyebrow dark>{t('demo.eyebrow')}</Eyebrow>
             <h2 className="mt-4 font-display text-4xl font-medium leading-[1.08] tracking-[-0.03em] sm:text-5xl">
               {t('demo.title')}
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-lg text-background/70">{t('demo.lead')}</p>
+            <p className="mx-auto mt-4 max-w-xl text-lg text-ink-foreground/70">{t('demo.lead')}</p>
           </Reveal>
           <div className="mt-12">
             <FanCards
@@ -233,7 +233,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   <span className="mt-2 size-1.5 shrink-0 rounded-full bg-highlight" aria-hidden />
                   <span>
                     <span className="font-medium">{t(`demo.steps.${s}.title`)}.</span>{' '}
-                    <span className="text-background/65">{t(`demo.steps.${s}.text`)}</span>
+                    <span className="text-ink-foreground/65">{t(`demo.steps.${s}.text`)}</span>
                   </span>
                 </li>
               ))}

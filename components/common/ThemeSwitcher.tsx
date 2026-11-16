@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes'
 import { useTranslations } from 'next-intl'
 import { Monitor, Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +29,7 @@ const useMounted = () =>
   )
 
 /** Light / dark / system menu. */
-export function ThemeSwitcher() {
+export function ThemeSwitcher({ className }: { className?: string }) {
   const t = useTranslations('theme')
   const { theme, setTheme } = useTheme()
   const mounted = useMounted()
@@ -37,7 +38,7 @@ export function ThemeSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon-sm" className="text-muted-foreground" aria-label={t('label')}>
+        <Button variant="ghost" size="icon-sm" className={cn('text-muted-foreground', className)} aria-label={t('label')}>
           <Sun className="dark:hidden" />
           <Moon className="hidden dark:block" />
         </Button>

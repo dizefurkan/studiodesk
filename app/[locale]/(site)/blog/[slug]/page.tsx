@@ -103,9 +103,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <ContentBlocks blocks={post.body} />
       </div>
 
-      <aside className="mt-16 rounded-3xl bg-foreground p-8 text-background">
+      <aside className="mt-16 rounded-3xl bg-ink p-8 text-ink-foreground">
         <p className="font-display text-2xl font-semibold">{t('ctaTitle')}</p>
-        <p className="mt-2 text-background/70">{t('ctaText')}</p>
+        <p className="mt-2 text-ink-foreground/70">{t('ctaText')}</p>
         <Button asChild className="mt-5 bg-highlight text-highlight-foreground hover:bg-highlight/90">
           <Link href="/#demo">{t('ctaButton')}</Link>
         </Button>

@@ -30,13 +30,13 @@ export function Pricing() {
               onClick={() => setBilling(b)}
               className={cn(
                 'relative z-10 rounded-full px-5 py-2 text-sm font-medium transition-colors',
-                billing === b ? 'text-background' : 'text-muted-foreground hover:text-foreground'
+                billing === b ? 'text-ink-foreground' : 'text-muted-foreground hover:text-foreground'
               )}
             >
               {billing === b && (
                 <motion.span
                   layoutId="billing-pill"
-                  className="absolute inset-0 -z-10 rounded-full bg-foreground"
+                  className="absolute inset-0 -z-10 rounded-full bg-ink"
                   transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 34 }}
                 />
               )}
@@ -77,7 +77,7 @@ function PlanCard({ plan, billing, index }: { plan: Plan; billing: Billing; inde
       transition={{ duration: 0.6, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
       whileHover={reduce ? undefined : { y: -4 }}
       className={cn('relative flex flex-col rounded-3xl p-2', dark
-          ? 'bg-foreground text-background ring-1 ring-highlight/30 shadow-[0_0_80px_-12px_color-mix(in_oklab,var(--highlight)_70%,transparent)] lg:-my-3'
+          ? 'bg-ink text-ink-foreground ring-1 ring-highlight/30 shadow-[0_0_80px_-12px_color-mix(in_oklab,var(--highlight)_70%,transparent)] lg:-my-3'
           : 'bg-background')}
     >
       {dark && (
@@ -95,7 +95,7 @@ function PlanCard({ plan, billing, index }: { plan: Plan; billing: Billing; inde
             </span>
           )}
         </div>
-        <p className={cn('mt-1 text-sm', dark ? 'text-background/65' : 'text-muted-foreground')}>
+        <p className={cn('mt-1 text-sm', dark ? 'text-ink-foreground/65' : 'text-muted-foreground')}>
           {t(`plans.${plan.id}.description`)}
         </p>
 
@@ -112,9 +112,9 @@ function PlanCard({ plan, billing, index }: { plan: Plan; billing: Billing; inde
               {money}
             </motion.span>
           </AnimatePresence>
-          <span className={cn('text-sm', dark ? 'text-background/65' : 'text-muted-foreground')}>{t('perMonth')}</span>
+          <span className={cn('text-sm', dark ? 'text-ink-foreground/65' : 'text-muted-foreground')}>{t('perMonth')}</span>
         </div>
-        <p className={cn('mt-1 h-5 text-xs', dark ? 'text-background/55' : 'text-muted-foreground')}>
+        <p className={cn('mt-1 h-5 text-xs', dark ? 'text-ink-foreground/55' : 'text-muted-foreground')}>
           {billing === 'yearly' ? t('billedYearly', { total: yearlyTotal }) : t('billedMonthly')}
         </p>
 
@@ -122,7 +122,7 @@ function PlanCard({ plan, billing, index }: { plan: Plan; billing: Billing; inde
           href="/#demo"
           className={cn(
             'mt-6 flex h-11 items-center justify-center rounded-full text-sm font-medium transition-[transform,opacity] hover:opacity-90 active:scale-[0.98]',
-            dark ? 'bg-highlight text-highlight-foreground' : 'bg-foreground text-background'
+            dark ? 'bg-highlight text-highlight-foreground' : 'bg-ink text-ink-foreground'
           )}
         >
           {t('cta')}
@@ -140,7 +140,7 @@ function PlanCard({ plan, billing, index }: { plan: Plan; billing: Billing; inde
             >
               <Check className="size-3" strokeWidth={3} />
             </span>
-            <span className={dark ? 'text-background/85' : 'text-foreground/85'}>{f}</span>
+            <span className={dark ? 'text-ink-foreground/85' : 'text-foreground/85'}>{f}</span>
           </li>
         ))}
       </ul>

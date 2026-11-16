@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { Logo } from '@/components/brand/Logo'
 import { Button } from '@/components/ui/button'
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
+import { ThemeSwitcher } from '@/components/common/ThemeSwitcher'
 
 export function SiteHeader() {
   const t = useTranslations('site.nav')
@@ -34,7 +35,7 @@ export function SiteHeader() {
     <header className="sticky top-3 z-40 px-3 sm:top-4">
       <div
         className={cn(
-          'mx-auto max-w-3xl rounded-full bg-foreground text-background transition-shadow',
+          'mx-auto max-w-3xl rounded-full bg-ink text-ink-foreground transition-shadow',
           scrolled && 'shadow-[0_12px_40px_-12px_rgb(var(--shadow-ink)/0.45)]'
         )}
       >
@@ -48,7 +49,7 @@ export function SiteHeader() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="rounded-full px-3 py-2 text-sm text-background/70 transition-colors hover:text-background"
+                className="rounded-full px-3 py-2 text-sm text-ink-foreground/70 transition-colors hover:text-ink-foreground"
               >
                 {l.label}
               </Link>
@@ -56,7 +57,7 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center gap-1">
-            <Link href="/login" className="hidden rounded-full px-3 py-2 text-sm text-background/70 transition-colors hover:text-background sm:block">
+            <Link href="/login" className="hidden rounded-full px-3 py-2 text-sm text-ink-foreground/70 transition-colors hover:text-ink-foreground sm:block">
               {t('signIn')}
             </Link>
             <Button asChild size="sm" className="hidden h-10 rounded-full bg-highlight px-4 text-highlight-foreground hover:bg-highlight/90 sm:inline-flex">
@@ -65,7 +66,7 @@ export function SiteHeader() {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full text-background hover:bg-background/10 hover:text-background md:hidden"
+              className="rounded-full text-ink-foreground hover:bg-ink-foreground/10 hover:text-ink-foreground md:hidden"
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-label={open ? t('closeMenu') : t('openMenu')}
@@ -84,17 +85,17 @@ export function SiteHeader() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="mx-auto mt-2 max-w-3xl rounded-3xl bg-foreground p-3 text-background md:hidden"
+            className="mx-auto mt-2 max-w-3xl rounded-3xl bg-ink p-3 text-ink-foreground md:hidden"
             aria-label={t('label')}
           >
             <div className="flex flex-col">
               {links.map((l) => (
-                <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="rounded-2xl px-3 py-3 text-base hover:bg-background/10">
+                <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="rounded-2xl px-3 py-3 text-base hover:bg-ink-foreground/10">
                   {l.label}
                 </Link>
               ))}
               <div className="mt-2 grid grid-cols-2 gap-2">
-                <Button asChild variant="ghost" className="rounded-full text-background hover:bg-background/10 hover:text-background">
+                <Button asChild variant="ghost" className="rounded-full text-ink-foreground hover:bg-ink-foreground/10 hover:text-ink-foreground">
                   <Link href="/login">{t('signIn')}</Link>
                 </Button>
                 <Button asChild className="rounded-full bg-highlight text-highlight-foreground hover:bg-highlight/90">
@@ -103,8 +104,9 @@ export function SiteHeader() {
                   </Link>
                 </Button>
               </div>
-              <div className="mt-2 flex justify-center text-background/70 [&_button]:text-background/70">
+              <div className="mt-2 flex justify-center gap-1 text-ink-foreground/70 [&_button]:text-ink-foreground/70">
                 <LanguageSwitcher />
+                <ThemeSwitcher />
               </div>
             </div>
           </motion.nav>

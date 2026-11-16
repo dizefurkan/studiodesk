@@ -51,8 +51,8 @@ export function HeroStage() {
       <div className="flex items-center justify-center gap-4 xl:gap-5">
         {/* left */}
         <div data-side="l" className="hidden items-center gap-4 lg:flex xl:gap-5">
-          <motion.div {...enter(160, 0.75)} className={cn(card, 'translate-y-6 bg-foreground text-background')}>
-            <p className="text-sm text-background/60">{t('revenue')}</p>
+          <motion.div {...enter(160, 0.75)} className={cn(card, 'translate-y-6 bg-ink text-ink-foreground')}>
+            <p className="text-sm text-ink-foreground/60">{t('revenue')}</p>
             <p className="mt-2 font-display text-3xl font-medium tabular-nums">₺86.200</p>
             <div className="mt-8 flex h-28 items-end gap-1.5">
               {[30, 46, 38, 60, 52, 78, 70, 92].map((h, i) => (
@@ -78,9 +78,9 @@ export function HeroStage() {
           initial={reduce ? false : { opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.45, ease }}
-          className="relative z-10 w-[300px] shrink-0 rounded-[44px] border-[10px] border-foreground bg-foreground shadow-[0_40px_80px_-30px_rgb(var(--shadow-ink)/0.45)] sm:w-[320px]"
+          className="relative z-10 w-[300px] shrink-0 rounded-[44px] border-[10px] border-foreground bg-ink shadow-[0_40px_80px_-30px_rgb(var(--shadow-ink)/0.45)] sm:w-[320px]"
         >
-          <div className="absolute left-1/2 top-2 z-10 h-5 w-24 -translate-x-1/2 rounded-full bg-foreground" aria-hidden />
+          <div className="absolute left-1/2 top-2 z-10 h-5 w-24 -translate-x-1/2 rounded-full bg-ink" aria-hidden />
           <div className="overflow-hidden rounded-[34px] bg-background pt-8">
             <HeroSheet bare />
           </div>

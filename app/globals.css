@@ -37,6 +37,8 @@
   --color-highlight: var(--highlight);
   --color-surface: var(--surface);
   --color-canvas: var(--canvas);
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
@@ -102,6 +104,8 @@
   --radius: 0.75rem;
   --canvas: #F6F8EC;                     /* public site background */
   --surface: #F3F6EA;                    /* tinted section / card surface */
+  --ink: #1C2114;                        /* dark blocks on the public site (header, footer, pricing) in both themes */
+  --ink-foreground: #FFFFFF;
   --success: #2F8F5B;                    /* present */
   --warning: #A86B12;                    /* low credits */
   --danger: #C2412D;                     /* absent */
@@ -144,6 +148,8 @@
   --chart-5: #F2F2F2;
   --canvas: #0A0A0A;
   --surface: #141414;
+  --ink: #1A1A1A;
+  --ink-foreground: #F2F2F2;
   --success: #5CC28A;
   --warning: #E0A84A;
   --danger: #E8705C;
@@ -157,6 +163,16 @@
   --sidebar-border: rgb(255 255 255 / 0.1);
   --sidebar-ring: #C6F432;
 }
+/* Public site in dark mode: the page stays near-black (canvas) and cards sit one step lighter,
+   nested surfaces one more, so sections keep the depth they have in light mode. */
+.dark .site {
+  --background: #141414;
+  --card: #141414;
+  --surface: #1E1E1E;
+  --muted: #232323;
+  --border: rgb(255 255 255 / 0.08);
+}
+
 
 @layer base {
   * {

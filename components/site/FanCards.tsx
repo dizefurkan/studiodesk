@@ -19,7 +19,7 @@ const TONES: Record<FanCard['tone'], string> = {
   lime: 'bg-highlight text-highlight-foreground',
   light: 'bg-background text-foreground',
   olive: 'bg-primary text-primary-foreground',
-  ink: 'bg-background/10 text-background border border-background/15',
+  ink: 'bg-ink-foreground/10 text-ink-foreground border border-ink-foreground/15',
 }
 
 /** A row of cards that fan out (rotate, lift) as the section scrolls into view. */
