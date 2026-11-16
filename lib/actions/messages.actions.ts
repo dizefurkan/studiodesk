@@ -62,16 +62,23 @@ export async function getMessageTemplates() {
     const missing = DEFAULT_TEMPLATES.filter((d) => !seeded.has(d.key))
     if (missing.length > 0) {
       const t = await getTranslations('messages.defaults')
-      const { error: seedError } = await admin.from('message_templates').insert(
-        missing.map((d) => ({
-          organization_id: access.organizationId,
-          name: t(`${d.key}.name`),
-          category: d.category,
-          // Raw text: the {placeholders} are template fields, not translation variables
-          body: t.raw(`${d.key}.body`) as string,
-          created_by: access.userId,
-        }))
-      )
+      const rows = missing.map((d) => ({
+        organization_id: access.organizationId,
+        default_key: d.key,
+        name: t(`${d.key}.name`),
+        category: d.category,
+        // Raw text: the {placeholders} are template fields, not translation variables
+        body: t.raw(`${d.key}.body`) as string,
+        created_by: access.userId,
+      }))
+      // A default text missing from the translations comes back as its key: never save that
+      if (rows.some((r) => r.name.startsWith('messages.') || r.body.startsWith('messages.'))) {
+        throw new Error('Default message template text is missing from the translations')
+      }
+      // The unique (organization, default_key) index makes concurrent page loads harmless
+      const { error: seedError } = await admin
+        .from('message_templates')
+        .upsert(rows, { onConflict: 'organization_id,default_key', ignoreDuplicates: true })
       if (seedError) throw seedError
       const { error: markError } = await admin
         .from('organizations')

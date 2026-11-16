@@ -1138,6 +1138,7 @@ export type Database = {
       }
       message_templates: {
         Row: {
+          default_key: string | null
           body: string
           category: string
           created_at: string
@@ -1148,6 +1149,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          default_key?: string | null
           body: string
           category?: string
           created_at?: string
@@ -1158,6 +1160,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          default_key?: string | null
           body?: string
           category?: string
           created_at?: string
