@@ -95,7 +95,8 @@ export function PayoutDialog({
                 className="w-full"
               />
             </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className={branches.length > 1 ? 'grid gap-4 sm:grid-cols-2' : 'grid gap-4'}>
+              {branches.length > 1 && (
               <Field>
                 <FieldLabel htmlFor="payout-branch">{t('payoutDialog.branch')}</FieldLabel>
                 <Select value={branchId} onValueChange={setBranchId}>
@@ -111,6 +112,7 @@ export function PayoutDialog({
                   </SelectContent>
                 </Select>
               </Field>
+              )}
               <Field>
                 <FieldLabel htmlFor="payout-method">{t('payoutDialog.method')}</FieldLabel>
                 <Select value={method} onValueChange={setMethod}>

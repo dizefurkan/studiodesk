@@ -2330,5 +2330,11 @@
       "title": "No permission",
       "description": "Studio owners and managers can see this page. Instructors only see their own pay statement."
     }
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
   }
 }

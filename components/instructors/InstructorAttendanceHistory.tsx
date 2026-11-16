@@ -105,7 +105,7 @@ export function InstructorAttendanceHistory({
                   </p>
                 </div>
                 <div className="flex items-center gap-3 self-start md:self-center md:ml-4">
-                  <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                  <span className="text-sm font-semibold text-green-600 bg-green-50 dark:bg-green-950/40 dark:text-green-400 px-3 py-1 rounded-full">
                     {presentCount}/{session.attendance.length}
                   </span>
                   <Link href={`/dashboard/attendance/${session.sessionId}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline">

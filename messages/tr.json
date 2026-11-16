@@ -2330,5 +2330,11 @@
       "title": "Yetkiniz yok",
       "description": "Bu sayfayı stüdyo sahibi ve yöneticiler görebilir. Eğitmenler yalnızca kendi hakediş dökümlerini görür."
     }
+  },
+  "theme": {
+    "label": "Tema",
+    "light": "Açık",
+    "dark": "Koyu",
+    "system": "Sistem"
   }
 }

@@ -91,7 +91,7 @@ export function getCashRegisterColumns({
           <Button
             size="sm"
             variant="ghost"
-            className="text-red-600 hover:bg-red-50 hover:text-red-700 h-8"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8"
             onClick={() => onDelete(item.id)}
           >
             <Trash2 size={14} />

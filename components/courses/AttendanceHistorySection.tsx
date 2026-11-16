@@ -87,7 +87,7 @@ export function AttendanceHistorySection({
 
                   {/* Attendance Badge & Expand Icon */}
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-xs font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-lg border border-green-200 whitespace-nowrap">
+                    <span className="text-xs font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-lg border border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900 whitespace-nowrap">
                       {record.attendance_count}/
                       {record.attendances?.length || 0}
                     </span>
@@ -104,7 +104,7 @@ export function AttendanceHistorySection({
                 <Link
                   href={`/dashboard/attendance/${record.id}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="flex-shrink-0 px-2 py-1 text-xs font-medium text-primary hover:text-primary/90 hover:bg-blue-50 rounded-md transition-colors"
+                  className="flex-shrink-0 px-2 py-1 text-xs font-medium text-primary hover:text-primary/90 hover:bg-primary/10 rounded-md transition-colors"
                 >
                   {t("common.viewDetails")}
                 </Link>
@@ -112,7 +112,7 @@ export function AttendanceHistorySection({
 
               {/* Expandable Details */}
               {isExpanded && (
-                <div className="border-t border-border bg-gradient-to-b from-white to-muted/50 p-2.5 sm:p-3 animate-in fade-in duration-200">
+                <div className="border-t border-border bg-muted/30 p-2.5 sm:p-3 animate-in fade-in duration-200">
                   <div className="space-y-1.5">
                     {/* Instructor Info */}
                     {record.instructors && record.instructors.length > 0 && (
@@ -146,7 +146,7 @@ export function AttendanceHistorySection({
                                 className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
                                   att.is_present
                                     ? "bg-green-100 text-green-700"
-                                    : "bg-red-100 text-red-700"
+                                    : "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400"
                                 }`}
                               >
                                 {att.is_present ? "✓" : "✗"}

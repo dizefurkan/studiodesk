@@ -44,11 +44,14 @@ export function TransactionForm() {
 
   useEffect(() => {
     async function loadBranches() {
-      const result = await getBranches()
-      setBranches(result.data || [])
+      const result = await getBranches(undefined, 1, 500)
+      const list = result.data || []
+      setBranches(list)
+      // A single branch needs no choice: use it
+      if (list.length === 1) form.setValue('branchId', list[0].id, { shouldValidate: true })
     }
     loadBranches()
-  }, [])
+  }, [form])
 
   async function onSubmit(data: TransactionFormValues) {
     setIsLoading(true)
@@ -77,11 +80,12 @@ export function TransactionForm() {
         <p className="text-sm sm:text-base text-muted-foreground mb-4 md:mb-6">{tx('description')}</p>
 
         {generalError && (
-          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">{generalError}</div>
+          <div className="mb-6 p-4 bg-destructive/10 text-destructive rounded-lg border border-destructive/30">{generalError}</div>
         )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
+            {branches.length !== 1 && (
             <FormField
               control={form.control}
               name="branchId"
@@ -106,6 +110,7 @@ export function TransactionForm() {
                 </FormItem>
               )}
             />
+            )}
 
             <FormField
               control={form.control}

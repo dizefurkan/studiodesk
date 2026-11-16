@@ -286,7 +286,7 @@ export default function StudiosPage({ params }: { params: Promise<{ id: string }
                     onClick={() => handleDelete(studio.id)}
                     variant="outline"
                     size="sm"
-                    className="border-red-300 hover:bg-red-50"
+                    className="border-destructive/40 hover:bg-destructive/10"
                   >
                     <Trash2 size={16} className="text-red-600" />
                   </Button>

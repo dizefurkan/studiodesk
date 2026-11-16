@@ -28,7 +28,7 @@ export default async function PackageDetailPage({ params }: PackageDetailPagePro
   const pkg = result.data!
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-muted/50 to-white p-8">
+    <div className="space-y-6">
       <div className="max-w-2xl">
         <Link href="/dashboard/packages" className="text-primary hover:underline mb-6 inline-block">
           {tx('backToList')}

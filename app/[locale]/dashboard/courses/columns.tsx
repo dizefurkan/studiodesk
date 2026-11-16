@@ -171,7 +171,7 @@ export function getCourseColumns({
           <Button
             variant="ghost"
             size="sm"
-            className="text-red-600 hover:bg-red-50"
+            className="text-destructive hover:bg-destructive/10"
             onClick={() => onDelete(row.original)}
           >
             <Trash2 size={16} />

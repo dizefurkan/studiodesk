@@ -19,7 +19,7 @@ export default async function EditDanceTypePage({ params }: EditDanceTypePagePro
   const danceType = result.data
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-muted/50 to-white p-8">
+    <div className="space-y-6">
       <DanceTypeForm danceType={danceType} />
     </div>
   )

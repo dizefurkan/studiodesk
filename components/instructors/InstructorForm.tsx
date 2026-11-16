@@ -98,7 +98,7 @@ export function InstructorForm({ instructor }: InstructorFormProps) {
         </p>
 
         {generalError && (
-          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">{generalError}</div>
+          <div className="mb-6 p-4 bg-destructive/10 text-destructive rounded-lg border border-destructive/30">{generalError}</div>
         )}
 
         <Form {...form}>

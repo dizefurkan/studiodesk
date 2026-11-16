@@ -180,7 +180,18 @@ export async function resetInstructorEarnings(earningId: string) {
       return { error: await actionError('updateEarningFailed') }
     }
 
-    void logOperation('UPDATE', 'instructor_earning', earningId, { summary: 'reset' }, access.organizationId)
+    const { data: after } = await admin.from('instructor_earnings').select('amount').eq('id', earningId).maybeSingle()
+    void logOperation(
+      'UPDATE',
+      'instructor_earning',
+      earningId,
+      {
+        before: { amount: earning.amount },
+        after: { amount: after?.amount ?? earning.amount },
+        changes: { amount: { before: earning.amount, after: after?.amount ?? earning.amount } },
+      },
+      access.organizationId
+    )
     return { success: true }
   } catch (error) {
     unstable_rethrow(error)

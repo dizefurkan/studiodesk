@@ -25,7 +25,7 @@ export default async function DanceTypeDetailPage({ params }: DanceTypeDetailPag
   const danceType = result.data!
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-muted/50 to-white p-8">
+    <div className="space-y-6">
       <div className="max-w-2xl">
         <Link href="/dashboard/dance-types" className="text-primary hover:underline mb-6 inline-block">
           {tx('backToList')}

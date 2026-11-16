@@ -174,7 +174,7 @@ function CalendarPage({
   const renderMonthView = () => (
     <div className="space-y-4">
       {/* Info banner for mobile */}
-      <div className="md:hidden bg-blue-50 border border-primary border-opacity-30 rounded-lg p-3 flex gap-3">
+      <div className="md:hidden bg-primary/5 border border-primary/30 rounded-lg p-3 flex gap-3">
         <Info size={20} className="text-primary shrink-0 mt-0.5" />
         <p className="text-sm text-foreground/80">
           {t('courses.selectDayViewClasses')}
@@ -238,8 +238,8 @@ function CalendarPage({
                   day === null
                     ? 'bg-muted/50 border-border'
                     : isToday
-                    ? 'border-primary bg-blue-50 hover:border-primary/90 hover:bg-blue-100 transition-all cursor-pointer'
-                    : 'border-border bg-background hover:border-primary hover:bg-blue-50 transition-all cursor-pointer'
+                    ? 'border-primary bg-primary/5 hover:border-primary/90 hover:bg-primary/10 transition-all cursor-pointer'
+                    : 'border-border bg-background hover:border-primary hover:bg-primary/5 transition-all cursor-pointer'
                 }`}
               >
                 {day !== null && (

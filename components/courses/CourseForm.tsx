@@ -246,13 +246,13 @@ export function CourseForm({ course }: CourseFormProps) {
         </p>
 
         {!course && (
-          <div className="mb-6 p-4 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 text-sm">
+          <div className="mb-6 p-4 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900 text-sm">
             {tx('studentsAfterCreate')}
           </div>
         )}
 
         {generalError && (
-          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">
+          <div className="mb-6 p-4 bg-destructive/10 text-destructive rounded-lg border border-destructive/30">
             {generalError}
           </div>
         )}

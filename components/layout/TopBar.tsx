@@ -6,6 +6,7 @@ import { getTranslations } from 'next-intl/server'
 import { UserMenu } from './UserMenu'
 import { TopBarClient } from './TopBarClient'
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
+import { ThemeSwitcher } from '@/components/common/ThemeSwitcher'
 
 export async function TopBar() {
   const t = await getTranslations()
@@ -24,6 +25,7 @@ export async function TopBar() {
       <div className="flex items-center gap-2 md:gap-4 ml-auto">
         {/* Language Switcher */}
         <LanguageSwitcher />
+        <ThemeSwitcher />
 
         {/* Organization Name - Hide on mobile and tablet */}
         {organization && (

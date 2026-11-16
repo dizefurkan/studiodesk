@@ -26,7 +26,7 @@ export default async function EditBranchPage({ params }: EditBranchPageProps) {
   const entityHistory = await getEntityHistory('branch', id, 20) || []
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-muted/50 to-white p-8">
+    <div className="space-y-6">
       <BranchForm branch={branch} />
       
       {/* Activity Timeline */}
