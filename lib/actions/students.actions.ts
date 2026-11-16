@@ -1,5 +1,7 @@
 "use server";
 
+import { unstable_rethrow } from "next/navigation";
+
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
@@ -57,7 +59,9 @@ export async function getStudentsWithStats(
   danceTypeId?: string,
   branchId?: string,
   courseId?: string,
-  hasCredits?: boolean
+  hasCredits?: boolean,
+  /** active (default) | passive | all */
+  status: StudentStatusFilter = 'active'
 ) {
   const user = await getCurrentUser();
   if (!user) return { error: await actionError('notAuthenticated'), data: [], totalCount: 0 };
@@ -237,6 +241,7 @@ export async function getStudentsWithStats(
       .select("id", { count: "exact", head: true })
       .eq("organization_id", organization.id)
       .is("deleted_at", null);
+    if (status !== 'all') countQuery = countQuery.eq("is_active", status === 'active');
 
     let dataQuery = adminSupabase
       .from("students")
@@ -248,6 +253,7 @@ export async function getStudentsWithStats(
         email, 
         phone,
         created_at,
+        is_active,
         course_students(
           course_id,
           course:courses(id, name, branch_id)
@@ -256,6 +262,7 @@ export async function getStudentsWithStats(
       )
       .eq("organization_id", organization.id)
       .is("deleted_at", null);
+    if (status !== 'all') dataQuery = dataQuery.eq("is_active", status === 'active');
 
     // Apply search filter to both queries
     if (searchQuery) {
@@ -579,6 +586,9 @@ export async function getStudentsWithPackages(searchQuery?: string) {
       `
       )
       .eq("organization_id", organization.id)
+      // Only students who can be enrolled: not deleted, not passive
+      .is("deleted_at", null)
+      .eq("is_active", true)
       .order("created_at", { ascending: false });
 
     if (searchQuery) {
@@ -635,6 +645,7 @@ interface CreateStudentInput {
   email: string;
   phone?: string;
   notes?: string;
+  messagesOptOut?: boolean;
 }
 
 export async function createStudent(input: CreateStudentInput) {
@@ -655,6 +666,7 @@ export async function createStudent(input: CreateStudentInput) {
         email: input.email,
         phone: input.phone || null,
         notes: input.notes || null,
+        messages_opt_out: input.messagesOptOut ?? false,
       })
       .select()
       .single();
@@ -694,6 +706,7 @@ interface UpdateStudentInput {
   email?: string;
   phone?: string | null;
   notes?: string | null;
+  messagesOptOut?: boolean;
 }
 
 export async function updateStudent(id: string, input: UpdateStudentInput) {
@@ -709,7 +722,7 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
     // Get before state for history log
     const { data: beforeStudent } = await supabase
       .from("students")
-      .select("first_name, last_name, email, phone, notes")
+      .select("first_name, last_name, email, phone, notes, messages_opt_out")
       .eq("id", id)
       .eq("organization_id", organization.id)
       .single();
@@ -726,6 +739,7 @@ export async function updateStudent(id: string, input: UpdateStudentInput) {
     if (input.email !== undefined) updateData.email = input.email;
     if (input.phone !== undefined) updateData.phone = input.phone;
     if (input.notes !== undefined) updateData.notes = input.notes;
+    if (input.messagesOptOut !== undefined) updateData.messages_opt_out = input.messagesOptOut;
 
     const { data, error } = await supabase.from("students")
       .update(updateData)
@@ -1193,6 +1207,82 @@ export async function updateStudentPackageCredits(
     return { success: true, data };
   } catch (error) {
     console.error("Unexpected error:", error);
+    return { error: await actionError('unexpected') };
+  }
+}
+
+export type StudentStatusFilter = 'active' | 'passive' | 'all';
+
+/** How many students are active and passive (deleted students are not counted). */
+export async function getStudentStatusCounts() {
+  const user = await getCurrentUser();
+  if (!user) return { error: await actionError('notAuthenticated') };
+
+  const organization = await getOrganization();
+  if (!organization) return { error: await actionError('noOrganization') };
+
+  const admin = createAdminClient();
+  const base = () =>
+    admin
+      .from("students")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", organization.id)
+      .is("deleted_at", null);
+  const [active, passive] = await Promise.all([base().eq("is_active", true), base().eq("is_active", false)]);
+  if (active.error || passive.error) return { error: await actionError('fetchStudentsFailed') };
+  return { data: { active: active.count ?? 0, passive: passive.count ?? 0 } };
+}
+
+/**
+ * Makes a student active or passive. A passive student keeps packages, enrolments and history
+ * but is left out of attendance sheets, enrolment pickers and active-student counts.
+ */
+export async function setStudentActive(id: string, active: boolean) {
+  const user = await getCurrentUser();
+  if (!user) return { error: await actionError('notAuthenticated') };
+
+  const organization = await getOrganization();
+  if (!organization) return { error: await actionError('noOrganization') };
+
+  try {
+    const admin = createAdminClient();
+    // Service-role client: scope to the caller's organization in the query itself
+    const { data: student } = await admin
+      .from("students")
+      .select("id, first_name, last_name, is_active")
+      .eq("id", id)
+      .eq("organization_id", organization.id)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (!student) return { error: await actionError('studentNotInOrg') };
+    if (student.is_active === active) return { success: true };
+
+    const { error } = await admin
+      .from("students")
+      .update({ is_active: active, status_changed_at: new Date().toISOString() })
+      .eq("id", student.id)
+      .eq("organization_id", organization.id);
+    if (error) {
+      console.error("Error changing student status:", error);
+      return { error: await actionError('updateStudentStatusFailed') };
+    }
+
+    void logOperation(
+      "UPDATE",
+      "student",
+      student.id,
+      {
+        before: { isActive: student.is_active },
+        after: { isActive: active },
+        changes: { isActive: { before: student.is_active, after: active } },
+        studentName: `${student.first_name} ${student.last_name}`,
+      },
+      organization.id
+    );
+    return { success: true };
+  } catch (error) {
+    unstable_rethrow(error);
+    console.error("Unexpected error in setStudentActive:", error);
     return { error: await actionError('unexpected') };
   }
 }

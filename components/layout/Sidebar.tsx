@@ -13,6 +13,7 @@ import {
   ClipboardCheck,
   Home,
   MapPin,
+  MessageCircle,
   Music2,
   Package,
   Settings,
@@ -61,6 +62,7 @@ export function Sidebar() {
       ],
     },
     { label: t('cashRegister'), icon: Wallet, href: '/dashboard/cash-register' },
+    { label: t('messages'), icon: MessageCircle, href: '/dashboard/messages' },
   ]
   const setup: NavLink[] = [
     { label: t('packages'), icon: Package, href: '/dashboard/packages' },

@@ -39,6 +39,7 @@ Rakiplerin yazdığı ama StudioDesk'te karşılığı olmayan konular. Yazı ya
 
 ### Hatırlatma ve iletişim
 - **Otomatik hatırlatma (SMS / WhatsApp / e-posta)**: kredisi bitti, paket süresi doluyor, iki haftadır gelmedi (Reservio: SMS compliance; DSM: parent communication). İYS ve KVKK uyumu gerekir.
+  - 1. aşama yapıldı (16 Kasım 2026): `/dashboard/messages`; şablonlar (ödeme hatırlatma, paket bitiyor, etkinlik, duyuru) ve öğrenciye göre dolan alanlar, alıcı grupları (tümü, kurs, kredisi az, paketi bitiyor), telefondan tek dokunuşla WhatsApp/SMS açma, gönderim geçmişi (`message_logs`), öğrenci başına "mesaj almak istemiyor". 2. aşama: SMS sağlayıcısı (Netgsm / İleti Merkezi) ve WhatsApp Business API ile otomatik ve zamanlanmış gönderim; `message_logs` sağlayıcı alanları hazır.
 - **Toplu duyuru / bülten** (DanceStudio-Pro: newsletter, event email copy).
 - **Arkadaşını getir / referans takibi** (Reservio: referral program).
 

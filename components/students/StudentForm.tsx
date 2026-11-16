@@ -10,6 +10,8 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/ui/field'
+import { Switch } from '@/components/ui/switch'
 import { createStudent, updateStudent } from '@/lib/actions/students.actions'
 import { Textarea } from '@/components/ui/textarea'
 import type { Database } from '@/lib/types/database.types'
@@ -27,6 +29,7 @@ function createStudentSchema(t: ReturnType<typeof useTranslations>) {
     email: z.string().email(t('validation.invalidEmail')),
     phone: z.string().optional(),
     notes: z.string().optional(),
+    messagesOptOut: z.boolean(),
   })
 }
 
@@ -52,6 +55,7 @@ export function StudentForm({ student }: StudentFormProps) {
       email: student?.email || '',
       phone: student?.phone || '',
       notes: student?.notes || '',
+      messagesOptOut: student?.messages_opt_out ?? false,
     },
   })
 
@@ -67,6 +71,7 @@ export function StudentForm({ student }: StudentFormProps) {
             email: data.email,
             phone: data.phone || null,
             notes: data.notes || null,
+            messagesOptOut: data.messagesOptOut,
           })
         : await createStudent({
             firstName: data.firstName,
@@ -74,6 +79,7 @@ export function StudentForm({ student }: StudentFormProps) {
             email: data.email,
             phone: data.phone,
             notes: data.notes,
+            messagesOptOut: data.messagesOptOut,
           })
 
       if (result.error) {
@@ -179,6 +185,29 @@ export function StudentForm({ student }: StudentFormProps) {
                     />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="messagesOptOut"
+              render={({ field }) => (
+                <FormItem>
+                  <Field orientation="horizontal">
+                    <FormControl>
+                      <Switch
+                        id="messages-opt-out"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FieldContent>
+                      <FieldLabel htmlFor="messages-opt-out">{t('messages.optOut.label')}</FieldLabel>
+                      <FieldDescription>{t('messages.optOut.description')}</FieldDescription>
+                    </FieldContent>
+                  </Field>
                 </FormItem>
               )}
             />

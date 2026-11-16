@@ -995,6 +995,120 @@ export type Database = {
           },
         ]
       }
+      message_logs: {
+        Row: {
+          body: string
+          channel: string
+          created_at: string
+          error: string | null
+          id: string
+          organization_id: string
+          provider: string | null
+          provider_message_id: string | null
+          recipient: string
+          sent_by: string | null
+          status: string
+          student_id: string | null
+          template_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          channel: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          organization_id: string
+          provider?: string | null
+          provider_message_id?: string | null
+          recipient: string
+          sent_by?: string | null
+          status?: string
+          student_id?: string | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          channel?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          organization_id?: string
+          provider?: string | null
+          provider_message_id?: string | null
+          recipient?: string
+          sent_by?: string | null
+          status?: string
+          student_id?: string | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_logs_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_logs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "message_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_templates: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_users: {
         Row: {
           created_at: string
@@ -1280,10 +1394,13 @@ export type Database = {
           email: string
           first_name: string
           id: string
+          is_active: boolean
           last_name: string
+          messages_opt_out: boolean
           notes: string | null
           organization_id: string
           phone: string | null
+          status_changed_at: string | null
           updated_at: string
         }
         Insert: {
@@ -1294,10 +1411,13 @@ export type Database = {
           email: string
           first_name: string
           id?: string
+          is_active?: boolean
           last_name: string
+          messages_opt_out?: boolean
           notes?: string | null
           organization_id: string
           phone?: string | null
+          status_changed_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -1308,10 +1428,13 @@ export type Database = {
           email?: string
           first_name?: string
           id?: string
+          is_active?: boolean
           last_name?: string
+          messages_opt_out?: boolean
           notes?: string | null
           organization_id?: string
           phone?: string | null
+          status_changed_at?: string | null
           updated_at?: string
         }
         Relationships: [

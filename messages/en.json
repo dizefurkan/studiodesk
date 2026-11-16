@@ -160,7 +160,9 @@
     "revenue": "Revenue",
     "cost": "Instructor cost",
     "profit": "Profit",
-    "margin": "Margin"
+    "margin": "Margin",
+    "channel": "Channel",
+    "message": "Message"
   },
   "auth": {
     "login": "Login",
@@ -1513,7 +1515,14 @@
       "attendancePerWeekLimit": "Weekly attendance limit",
       "danceTypeId": "Dance type",
       "branchId": "Branch",
-      "role": "Role"
+      "role": "Role",
+      "isActive": "Status"
+    },
+    "values": {
+      "isActive": {
+        "true": "Active",
+        "false": "Passive"
+      }
     }
   },
   "serverErrors": {
@@ -1687,7 +1696,14 @@
     "ratioRange": "The rate must be between 0 and 100",
     "rateVersionNotFound": "Rate period not found",
     "cannotDeleteLastVersion": "A rate's only period can't be deleted; delete the rate itself if needed",
-    "linkedPayoutLocked": "This cash entry belongs to an instructor payment in a closed month and can't be deleted"
+    "linkedPayoutLocked": "This cash entry belongs to an instructor payment in a closed month and can't be deleted",
+    "updateStudentStatusFailed": "Couldn't change the student's status",
+    "noMessagePermission": "You don't have permission to message students",
+    "fetchTemplatesFailed": "Couldn't load the templates",
+    "saveTemplateFailed": "Couldn't save the template",
+    "deleteTemplateFailed": "Couldn't delete the template",
+    "logMessageFailed": "Couldn't record the message",
+    "fetchMessagesFailed": "Couldn't load the message history"
   },
   "attendanceSheet": {
     "markEveryone": "Mark {count, plural, one {# more student} other {# more students}} before saving.",
@@ -1778,7 +1794,8 @@
     "renewals": "Credits running out",
     "renewalsDescription": "Students with one credit or less left",
     "noRenewals": "Everyone has credits.",
-    "creditsLeft": "{count, plural, =0 {no credits left} one {# credit left} other {# credits left}}"
+    "creditsLeft": "{count, plural, =0 {no credits left} one {# credit left} other {# credits left}}",
+    "remind": "Remind"
   },
   "nav": {
     "label": "Main menu",
@@ -1797,7 +1814,8 @@
     "danceTypes": "Dance types",
     "settings": "Settings",
     "instructorPayouts": "Payments",
-    "courseProfitability": "Profitability"
+    "courseProfitability": "Profitability",
+    "messages": "Messages"
   },
   "detailTabs": {
     "courses": "Courses",
@@ -2336,5 +2354,126 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System"
+  },
+  "studentStatus": {
+    "active": "Active",
+    "passive": "Passive",
+    "all": "All",
+    "filterLabel": "Student status",
+    "deactivate": "Make passive",
+    "activate": "Make active",
+    "deactivateConfirmTitle": "Make {name} passive?",
+    "deactivateConfirmDescription": "Passive students don't appear on attendance sheets or when adding students to a course, and aren't counted as active. Their packages, enrolments and history are kept; you can make them active again at any time.",
+    "activateConfirmTitle": "Make {name} active again?",
+    "activateConfirmDescription": "The student returns to attendance sheets and the courses they are enrolled in.",
+    "deactivated": "Student is now passive",
+    "activated": "Student is active again",
+    "passiveSince": "Passive since {date}.",
+    "passiveNotice": "This student is passive. They don't appear on attendance sheets or when adding students to a course.",
+    "noPassive": "No passive students"
+  },
+  "messages": {
+    "title": "Messages",
+    "description": "Send payment reminders, events and announcements to students over WhatsApp or SMS",
+    "tabs": {
+      "send": "Send",
+      "templates": "Templates",
+      "history": "History"
+    },
+    "noAccess": {
+      "title": "No permission",
+      "description": "The studio owner, managers and front-desk staff can message students."
+    },
+    "categories": {
+      "payment_reminder": "Payment reminder",
+      "event": "Event",
+      "announcement": "Announcement",
+      "other": "Other"
+    },
+    "audiences": {
+      "all": "All active students",
+      "course": "Students of a course",
+      "low_credits": "1 credit or fewer left",
+      "expiring": "Package ends within 7 days"
+    },
+    "tokens": {
+      "first_name": "First name",
+      "last_name": "Last name",
+      "credits": "Credits left",
+      "package": "Package",
+      "expires": "Package end",
+      "studio": "Studio name"
+    },
+    "sample": {
+      "firstName": "Emma",
+      "lastName": "Smith",
+      "package": "8-lesson package"
+    },
+    "send": {
+      "compose": "Message",
+      "composeHint": "Pick a template; fields like name and credits are filled in for each student.",
+      "template": "Template",
+      "custom": "Custom message",
+      "message": "Message text",
+      "messageHint": "You can change the text for this send; the template itself stays the same.",
+      "channel": "Channel",
+      "audience": "To",
+      "course": "Course",
+      "selectCourse": "Select course",
+      "pickCourse": "Select a course to see its students.",
+      "recipients": "Recipients",
+      "recipientsSummary": "{total, plural, one {# recipient} other {# recipients}} · {sent} opened",
+      "openNext": "Open next: {name}",
+      "allDone": "All opened",
+      "noRecipients": "No active students match this group.",
+      "credits": "{count, plural, one {# credit} other {# credits}}",
+      "expires": "ends {date}",
+      "sent": "Opened",
+      "open": "Open",
+      "openAgain": "Open again",
+      "noPhone": "No phone number",
+      "optedOut": "Doesn't want messages",
+      "consentNote": "Messages open ready to send in WhatsApp or SMS on this device; tap Send in the app to send them. Commercial announcements need the student's consent; students marked \"doesn't want messages\" are skipped."
+    },
+    "templates": {
+      "new": "New template",
+      "edit": "Edit template",
+      "dialogHint": "Fields are filled with each student's details when sending.",
+      "name": "Template name",
+      "category": "Type",
+      "body": "Text",
+      "insert": "Insert field:",
+      "preview": "Preview",
+      "previewHint": "Shown with a sample student.",
+      "saved": "Template saved",
+      "deleted": "Template deleted",
+      "deleteConfirm": "Delete the \"{name}\" template?"
+    },
+    "history": {
+      "empty": "No messages sent yet",
+      "note": "Messages are sent from a phone, so this lists messages that were opened; whether they were sent in the app isn't tracked."
+    },
+    "optOut": {
+      "label": "Doesn't want messages",
+      "description": "When on, the student is left out of WhatsApp / SMS recipient lists."
+    },
+    "defaults": {
+      "paymentReminder": {
+        "name": "Payment reminder",
+        "body": "Hi {first_name}, you have {credits} lessons left on your {package}. Please renew your package to keep your lessons going. {studio}"
+      },
+      "packageExpiring": {
+        "name": "Package ending",
+        "body": "Hi {first_name}, your {package} ends on {expires} and you still have {credits} lessons. Don't forget to use them. {studio}"
+      },
+      "event": {
+        "name": "Event invitation",
+        "body": "Hi {first_name}, we'd love to see you at [event name] on [date]. Reply to this message to join. {studio}"
+      },
+      "announcement": {
+        "name": "General announcement",
+        "body": "Hi {first_name}, [announcement]. {studio}"
+      }
+    }
   }
 }

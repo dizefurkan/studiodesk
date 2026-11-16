@@ -1,5 +1,5 @@
 import { getLocale, getTranslations } from 'next-intl/server'
-import { ArrowRight, Check, ClipboardCheck, UserPlus } from 'lucide-react'
+import { ArrowRight, Check, ClipboardCheck, MessageCircle, UserPlus } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { getCurrentUserProfile } from '@/lib/auth/getCurrentUser'
@@ -55,7 +55,8 @@ export default async function DashboardPage() {
       .from('students')
       .select('id', { count: 'exact', head: true })
       .eq('organization_id', orgId)
-      .is('deleted_at', null),
+      .is('deleted_at', null)
+      .eq('is_active', true),
     admin
       .from('cash_transactions')
       .select('amount, created_at, branches!inner(organization_id)')
@@ -67,6 +68,7 @@ export default async function DashboardPage() {
       .select('id, remaining_credits, expire_date, students!inner(id, first_name, last_name, organization_id, deleted_at), packages(name)')
       .eq('students.organization_id', orgId)
       .is('students.deleted_at', null)
+      .eq('students.is_active', true)
       .lte('remaining_credits', 1)
       .order('remaining_credits'),
     getSetupProgress(orgId),
@@ -207,6 +209,15 @@ export default async function DashboardPage() {
           <CardHeader className="border-b border-border pb-4">
             <CardTitle>{tx('renewals')}</CardTitle>
             <CardDescription>{tx('renewalsDescription')}</CardDescription>
+            {renewals.length > 0 && (
+              <CardAction>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/dashboard/messages?audience=low_credits&category=payment_reminder">
+                    <MessageCircle /> {tx('remind')}
+                  </Link>
+                </Button>
+              </CardAction>
+            )}
           </CardHeader>
           {renewals.length === 0 ? (
             <CardContent className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
