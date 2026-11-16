@@ -73,7 +73,9 @@ function describeChanges(t: HistoryTranslator, changes: Record<string, HistoryCh
     .map(([field, value]) => {
       const label = fieldLabel(t, field)
       if (value && typeof value === "object" && value.before !== undefined && value.after !== undefined) {
-        return t("changedTo", { field: label, value: String(value.after) })
+        // Values with their own wording (e.g. isActive true/false → "Active"/"Passive")
+        const valueKey = `values.${field}.${String(value.after)}`
+        return t("changedTo", { field: label, value: t.has(valueKey) ? t(valueKey) : String(value.after) })
       }
       return label
     })

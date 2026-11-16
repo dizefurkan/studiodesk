@@ -25,6 +25,7 @@ interface CourseStudent {
     first_name: string
     last_name: string
     phone?: string | null
+    is_active?: boolean
     student_packages?: Array<{
       id: string
       remaining_credits: number
@@ -106,12 +107,17 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
       id: 'name',
       header: () => <ColumnHeader k="studentName" />,
       cell: ({ row }) => (
-        <Link
-          href={`/dashboard/students/${row.original.students.id}`}
-          className="font-medium text-primary underline-offset-4 hover:underline"
-        >
-          {row.original.students.first_name} {row.original.students.last_name}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/dashboard/students/${row.original.students.id}`}
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {row.original.students.first_name} {row.original.students.last_name}
+          </Link>
+          {row.original.students.is_active === false && (
+            <Badge variant="outline">{t('studentStatus.passive')}</Badge>
+          )}
+        </div>
       ),
     },
     {

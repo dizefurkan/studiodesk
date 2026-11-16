@@ -7,6 +7,13 @@ import { Edit2, Trash2 } from 'lucide-react'
 import { StudentPopover } from '@/components/students/StudentPopover'
 import { ColumnHeader } from '@/components/table/column-header'
 import { FormattedDate } from '@/components/common/FormattedDate'
+import { Badge } from '@/components/ui/badge'
+import { useTranslations } from 'next-intl'
+
+function PassiveBadge() {
+  const t = useTranslations('studentStatus')
+  return <Badge variant="outline">{t('passive')}</Badge>
+}
 
 export interface Student {
   id: string
@@ -15,6 +22,7 @@ export interface Student {
   email: string
   phone?: string | null
   created_at: string
+  is_active?: boolean
   totalRemainingCredits: number
   enrolledCoursesCount: number
   student_packages?: Array<{
@@ -71,12 +79,15 @@ export function getStudentColumns({
       accessorKey: 'first_name',
       header: () => <ColumnHeader k="name" />,
       cell: ({ row }) => (
-        <Link
-          href={`/dashboard/students/${row.original.id}`}
-          className="font-medium text-foreground hover:text-primary"
-        >
-          {row.original.first_name} {row.original.last_name}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/dashboard/students/${row.original.id}`}
+            className="font-medium text-foreground hover:text-primary"
+          >
+            {row.original.first_name} {row.original.last_name}
+          </Link>
+          {row.original.is_active === false && <PassiveBadge />}
+        </div>
       ),
     })
   }

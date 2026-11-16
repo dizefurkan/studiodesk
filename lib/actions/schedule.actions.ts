@@ -41,7 +41,7 @@ export async function getScheduleCourses(): Promise<{ data?: ScheduleCourse[]; e
   const { data, error } = await admin
     .from('courses')
     .select(
-      'id, name, day_of_week, start_time, end_time, branch_id, dance_type_id, branches!inner(name, organization_id), dance_types(name), course_instructors(instructors(id, first_name, last_name)), course_students(count)'
+      'id, name, day_of_week, start_time, end_time, branch_id, dance_type_id, branches!inner(name, organization_id), dance_types(name), course_instructors(instructors(id, first_name, last_name)), course_students(students(is_active, deleted_at))'
     )
     .eq('branches.organization_id', organization.id)
     .is('deleted_at', null)
@@ -67,7 +67,9 @@ export async function getScheduleCourses(): Promise<{ data?: ScheduleCourse[]; e
       instructors: (c.course_instructors ?? [])
         .map((ci) => ci.instructors)
         .filter((i): i is NonNullable<typeof i> => i !== null),
-      studentCount: c.course_students?.[0]?.count ?? 0,
+      // Students who will be on the attendance sheet: not deleted, not passive
+      studentCount: (c.course_students ?? []).filter((cs) => cs.students && cs.students.is_active && !cs.students.deleted_at)
+        .length,
     })),
   }
 }

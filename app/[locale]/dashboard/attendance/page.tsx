@@ -302,7 +302,7 @@ async function CourseAttendance({
       supabase
         .from("course_students")
         .select(
-          "students(id, first_name, last_name, deleted_at, student_packages(id, remaining_credits, expire_date, purchase_date, packages(dance_type_id)))"
+          "students(id, first_name, last_name, deleted_at, is_active, student_packages(id, remaining_credits, expire_date, purchase_date, packages(dance_type_id)))"
         )
         .eq("course_id", courseId),
       supabase
@@ -320,7 +320,8 @@ async function CourseAttendance({
 
   const students: SheetStudent[] = (enrolled ?? [])
     .map((cs) => cs.students)
-    .filter((s): s is NonNullable<typeof s> => s !== null && !s.deleted_at)
+    // Passive students are left out of the sheet (their enrolment is kept)
+    .filter((s): s is NonNullable<typeof s> => s !== null && !s.deleted_at && s.is_active)
     .map((s) => {
       // Usable packages: this dance type, credits left, not expired on the lesson day.
       // The credit comes from the package that expires (or was bought) first.

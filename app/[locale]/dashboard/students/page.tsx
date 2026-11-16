@@ -1,5 +1,5 @@
 import { Link } from '@/i18n/navigation'
-import { getStudentsWithStats, getStudentFilterOptions } from '@/lib/actions/students.actions'
+import { getStudentsWithStats, getStudentFilterOptions, getStudentStatusCounts, type StudentStatusFilter } from '@/lib/actions/students.actions'
 import { getTranslations } from 'next-intl/server'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -32,6 +32,8 @@ export default async function StudentsPage({
   const danceTypeId = typeof params.danceType === 'string' ? params.danceType : undefined
   const courseId = typeof params.course === 'string' ? params.course : undefined
   const branchId = typeof params.branch === 'string' ? params.branch : undefined
+  const status: StudentStatusFilter =
+    params.status === 'passive' || params.status === 'all' ? params.status : 'active'
   
   console.log('[PAGE] StudentsPage filters:', { danceTypeId, branchId, courseId, hasCredits, searchQuery, page })
 
@@ -43,8 +45,10 @@ export default async function StudentsPage({
     danceTypeId,
     branchId,
     courseId,
-    hasCredits
+    hasCredits,
+    status
   )
+  const statusCounts = (await getStudentStatusCounts()).data
   const students = result.data || []
   const totalCount = result.totalCount || 0
   const totalPages = result.totalPages || 1
@@ -57,7 +61,9 @@ export default async function StudentsPage({
   // Check if any filters are active
   const hasActiveFilters = searchQuery || hasCredits || danceTypeId || courseId || branchId
 
-  const hasRecords = totalCount > 0 || !!hasActiveFilters
+  // Any student at all (active or passive) shows the table; the empty state is for a new studio
+  const hasRecords =
+    totalCount > 0 || !!hasActiveFilters || (statusCounts ? statusCounts.active + statusCounts.passive > 0 : false)
   const createAction = (
     <Button asChild>
       <Link href="/dashboard/students/new">
@@ -90,6 +96,8 @@ export default async function StudentsPage({
             currentPage={page}
             totalCount={totalCount}
             pageSize={PAGE_SIZE}
+            status={status}
+            statusCounts={statusCounts}
           />
         </Card>
       ) : (

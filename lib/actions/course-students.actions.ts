@@ -28,6 +28,7 @@ export async function getCourseStudents(courseId: string) {
           first_name, 
           last_name, 
           phone,
+          is_active,
           student_packages(
             id,
             remaining_credits,

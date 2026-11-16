@@ -7,11 +7,13 @@ import { getPackages } from '@/lib/actions/packages.actions'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { getEntityHistory, getStudentAttendanceHistory, getStudentPackageHistory } from '@/lib/actions/history.actions'
 import { formatDay, parseDateOnly } from '@/lib/i18n/dates'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { StudentCredits } from '@/components/students/StudentCredits'
 import { StudentPurchaseDialog } from '@/components/students/StudentPurchaseDialog'
+import { StudentStatusButton } from '@/components/students/StudentStatusButton'
 import { StudentCoursesSection } from '@/components/students/StudentCoursesSection'
 import { StudentHistory, type AttendanceHistoryItem, type PackageHistoryItem } from '@/components/students/StudentHistory'
 import { ActivityTimelineWrapper } from '@/components/history/ActivityTimelineWrapper'
@@ -26,6 +28,7 @@ export default async function StudentDetailPage({
   const tx = await getTranslations('studentDetail')
   const td = await getTranslations('detailPages')
   const tt = await getTranslations('detailTabs')
+  const ts = await getTranslations('studentStatus')
   const locale = await getLocale()
   const { id } = await params
   const { purchase } = await searchParams
@@ -71,15 +74,18 @@ export default async function StudentDetailPage({
       </Link>
 
       {/* Identity + actions */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-highlight font-display text-xl font-medium text-highlight-foreground">
             {initials}
           </span>
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-bold tracking-tight sm:text-3xl">
-              {student.first_name} {student.last_name}
-            </h1>
+            <div className="flex min-w-0 items-center gap-2">
+              <h1 className="truncate text-2xl font-bold tracking-tight sm:text-3xl">
+                {student.first_name} {student.last_name}
+              </h1>
+              {!student.is_active && <Badge variant="outline">{ts('passive')}</Badge>}
+            </div>
             <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
               {student.phone && (
                 <a href={`tel:${student.phone}`} className="inline-flex items-center gap-1.5 hover:text-foreground">
@@ -94,8 +100,13 @@ export default async function StudentDetailPage({
             </div>
           </div>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex shrink-0 flex-wrap gap-2">
           {purchaseDialog}
+          <StudentStatusButton
+            studentId={student.id}
+            name={`${student.first_name} ${student.last_name}`}
+            isActive={student.is_active}
+          />
           <Button asChild variant="outline">
             <Link href={`/dashboard/students/${student.id}/edit`}>
               <Pencil /> {td('edit')}
@@ -103,6 +114,18 @@ export default async function StudentDetailPage({
           </Button>
         </div>
       </div>
+
+      {!student.is_active && (
+        <p className="rounded-lg border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+          {ts('passiveNotice')}
+          {student.status_changed_at && (
+            <>
+              {' '}
+              {ts('passiveSince', { date: formatDay(locale, new Date(student.status_changed_at)) })}
+            </>
+          )}
+        </p>
+      )}
 
       <div className="grid gap-6 xl:grid-cols-[1fr_320px] xl:items-start">
         {/* Main: what happened */}

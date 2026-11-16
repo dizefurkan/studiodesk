@@ -8,6 +8,8 @@ import { getStudentColumns, Student } from '@/app/[locale]/dashboard/students/co
 import { useTranslations } from 'next-intl'
 import { deleteStudent } from '@/lib/actions/students.actions'
 import { DeleteConfirmModal } from '@/components/common/DeleteConfirmModal'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import type { StudentStatusFilter } from '@/lib/actions/students.actions'
 
 interface StudentTableWrapperProps {
   students: Student[]
@@ -23,6 +25,8 @@ interface StudentTableWrapperProps {
   currentPage?: number
   totalCount?: number
   pageSize?: number
+  status?: StudentStatusFilter
+  statusCounts?: { active: number; passive: number }
 }
 
 export function StudentTableWrapper({
@@ -39,6 +43,8 @@ export function StudentTableWrapper({
   currentPage = 1,
   totalCount = 0,
   pageSize = 10,
+  status = 'active',
+  statusCounts,
 }: StudentTableWrapperProps) {
   const t = useTranslations()
   const router = useRouter()
@@ -78,10 +84,25 @@ export function StudentTableWrapper({
     }
   }
 
+  // Active is the default; other statuses travel in the URL
+  const withStatus = (params: URLSearchParams, value: StudentStatusFilter = status) => {
+    if (value !== 'active') params.set('status', value)
+    return params
+  }
+
+  const handleStatusChange = (value: string) => {
+    if (!value) return
+    const params = new URLSearchParams()
+    if (searchQuery) params.set('q', searchQuery)
+    withStatus(params, value as StudentStatusFilter)
+    params.set('page', '1')
+    router.push(`?${params.toString()}`)
+  }
+
   // Handle search change - update URL param
   const handleSearchChange = (value: string) => {
     setSearchValue(value)
-    const params = new URLSearchParams()
+    const params = withStatus(new URLSearchParams())
     if (value) params.set('q', value)
     params.set('page', '1') // Reset to first page on search change
     router.push(`?${params.toString()}`)
@@ -89,7 +110,7 @@ export function StudentTableWrapper({
 
   // Handle page change - update URL param
   const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams()
+    const params = withStatus(new URLSearchParams())
     if (searchQuery) params.set('q', searchQuery)
     if (filterValues.danceType) params.set('danceType', filterValues.danceType)
     if (filterValues.branch) params.set('branch', filterValues.branch)
@@ -104,7 +125,7 @@ export function StudentTableWrapper({
     const newFilterValues = { ...filterValues, [filterId]: typeof value === 'string' ? value : '' }
     setFilterValues(newFilterValues)
     
-    const params = new URLSearchParams()
+    const params = withStatus(new URLSearchParams())
     if (searchQuery) params.set('q', searchQuery)
     if (newFilterValues.danceType) params.set('danceType', newFilterValues.danceType)
     if (newFilterValues.branch) params.set('branch', newFilterValues.branch)
@@ -123,7 +144,7 @@ export function StudentTableWrapper({
       withCredits: '',
     })
     
-    const params = new URLSearchParams()
+    const params = withStatus(new URLSearchParams())
     if (searchQuery) params.set('q', searchQuery)
     params.set('page', '1')
     router.push(`?${params.toString()}`)
@@ -157,8 +178,31 @@ export function StudentTableWrapper({
     filteredDanceTypeId,
   })
 
+  const statusOptions: { value: StudentStatusFilter; count?: number }[] = [
+    { value: 'active', count: statusCounts?.active },
+    { value: 'passive', count: statusCounts?.passive },
+    { value: 'all', count: statusCounts ? statusCounts.active + statusCounts.passive : undefined },
+  ]
+
   return (
     <>
+      <ToggleGroup
+        type="single"
+        variant="outline"
+        size="sm"
+        value={status}
+        onValueChange={handleStatusChange}
+        aria-label={t('studentStatus.filterLabel')}
+        className="mb-4"
+      >
+        {statusOptions.map((o) => (
+          <ToggleGroupItem key={o.value} value={o.value} className="px-3">
+            {t(`studentStatus.${o.value}`)}
+            {o.count !== undefined && <span className="tabular-nums text-muted-foreground">{o.count}</span>}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+
       <DataTable<Student, unknown>
         columns={columns}
         data={students}
@@ -175,7 +219,7 @@ export function StudentTableWrapper({
         totalItems={totalCount}
         pageSize={pageSize}
         onPageChange={handlePageChange}
-        emptyMessage={t('students.noStudents')}
+        emptyMessage={status === 'passive' ? t('studentStatus.noPassive') : t('students.noStudents')}
       />
 
       {/* Delete Modal */}
