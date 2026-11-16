@@ -7,7 +7,6 @@ import { useTranslations } from 'next-intl'
 import { getInstructorRates, getInstructorsAndBranchesAndDanceTypes } from '@/lib/actions/instructor-rates.actions'
 import { InstructorRatesTable } from '@/components/instructor-rates/InstructorRatesTable'
 import { AddInstructorRateDrawer } from '@/components/instructor-rates/AddInstructorRateDrawer'
-import { Card } from '@/components/ui/card'
 import { Info, Plus } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -134,7 +133,7 @@ export default function InstructorRatesPage() {
           }
         />
       ) : (
-        <Card className="p-3 sm:p-4 md:p-6">
+        <div className="min-w-0">
           <InstructorRatesTable
             rates={rates}
             instructors={drawerData?.instructors || []}
@@ -142,7 +141,7 @@ export default function InstructorRatesPage() {
             onOpenEdit={handleOpenEdit}
             onOpenNewForInstructor={handleOpenNewForInstructor}
           />
-        </Card>
+        </div>
       )}
 
       {/* Rate Form Drawer (for 'new' with instructor selected, or 'edit' mode) */}

@@ -3,7 +3,6 @@
 import { Link, useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -103,7 +102,7 @@ export function PackagesPageContent({
       />
 
       {hasRecords ? (
-        <Card className="p-3 sm:p-4 md:p-6">
+        <div className="min-w-0">
           <DataTable<Package, unknown>
             columns={getPackageColumns({
               onDelete: handleDeleteClick,
@@ -126,7 +125,7 @@ export function PackagesPageContent({
             onPageChange={handlePageChange}
             emptyMessage={t('packages.noPackages')}
           />
-        </Card>
+        </div>
       ) : (
         <EmptyState
           title={t('emptyStates.packages.title')}

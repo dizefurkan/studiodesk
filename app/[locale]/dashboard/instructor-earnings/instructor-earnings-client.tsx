@@ -4,7 +4,6 @@ import { useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { Card } from '@/components/ui/card'
 import { DataTable } from '@/components/table/data-table'
 import { getEarningsColumns, type EarningRecord } from './columns'
 
@@ -51,7 +50,7 @@ export function InstructorEarningsTable({
 
   return (
     <>
-      <Card className="p-3 sm:p-4 md:p-6">
+      <div className="min-w-0">
         <DataTable<EarningRecord, unknown>
           columns={columns}
           data={initialEarnings}
@@ -66,7 +65,7 @@ export function InstructorEarningsTable({
           searchPlaceholder={t('searchPlaceholder')}
           emptyMessage={t('empty')}
         />
-      </Card>
+      </div>
     </>
   )
 }

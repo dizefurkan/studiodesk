@@ -1,7 +1,6 @@
 import { Link } from '@/i18n/navigation'
 import { getBranches } from '@/lib/actions/branches.actions'
 import { getTranslations } from 'next-intl/server'
-import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -49,7 +48,7 @@ export default async function BranchesPage({
       />
 
       {hasRecords ? (
-        <Card className="p-3 sm:p-4 md:p-6">
+        <div className="min-w-0">
           <BranchesPageClient
             branches={branches}
             searchQuery={searchQuery}
@@ -57,7 +56,7 @@ export default async function BranchesPage({
             totalCount={totalCount}
             pageSize={PAGE_SIZE}
           />
-        </Card>
+        </div>
       ) : (
         <EmptyState
           title={t('emptyStates.branches.title')}

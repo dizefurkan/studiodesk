@@ -1,7 +1,6 @@
 import { Link } from '@/i18n/navigation'
 import { getInstructors, getInstructorFilterOptions } from '@/lib/actions/instructors.actions'
 import { getTranslations } from 'next-intl/server'
-import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { InstructorTableWrapper } from '@/components/instructors/InstructorTableWrapper'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -60,7 +59,7 @@ export default async function InstructorsPage({
       <InstructorsTabs />
 
       {hasRecords ? (
-        <Card className="p-3 sm:p-4 md:p-6">
+        <div className="min-w-0">
           <InstructorTableWrapper
             instructors={instructors}
             danceTypes={danceTypes}
@@ -72,7 +71,7 @@ export default async function InstructorsPage({
             totalCount={totalCount}
             pageSize={PAGE_SIZE}
           />
-        </Card>
+        </div>
       ) : (
         <EmptyState
           title={t('emptyStates.instructors.title')}

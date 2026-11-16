@@ -86,7 +86,7 @@ export function CashRegisterTable({
         />
       </Card>
 
-      <Card className="p-3 sm:p-4 md:p-6">
+      <div className="min-w-0">
         <DataTable<CombinedCashItem, unknown>
           columns={columns}
           data={filteredItems}
@@ -95,7 +95,7 @@ export function CashRegisterTable({
           pageSize={10}
           emptyMessage={t('table.noResults')}
         />
-      </Card>
+      </div>
     </>
   )
 }

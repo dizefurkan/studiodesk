@@ -7,7 +7,6 @@ import { useSearchParams } from 'next/navigation'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Link, useRouter } from '@/i18n/navigation'
 import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DataTable } from '@/components/table/data-table'
@@ -158,7 +157,7 @@ export function ProfitabilityTable({ rows }: { rows: Row[] }) {
   ]
 
   return (
-    <Card className="p-3 sm:p-4 md:p-6">
+    <div className="min-w-0">
       <DataTable<Row, unknown>
         columns={columns}
         data={filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
@@ -175,6 +174,6 @@ export function ProfitabilityTable({ rows }: { rows: Row[] }) {
         onPageChange={setPage}
         emptyMessage={t('empty')}
       />
-    </Card>
+    </div>
   )
 }

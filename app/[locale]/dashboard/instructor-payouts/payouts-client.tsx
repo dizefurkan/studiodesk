@@ -7,7 +7,6 @@ import { Banknote, FileText, Plus } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { DataTable } from '@/components/table/data-table'
 import { ColumnHeader } from '@/components/table/column-header'
@@ -152,7 +151,7 @@ export function PayoutsTable({
   ]
 
   return (
-    <Card className="p-3 sm:p-4 md:p-6">
+    <div className="min-w-0">
       <DataTable<Row, unknown>
         columns={columns}
         data={pageRows}
@@ -190,6 +189,6 @@ export function PayoutsTable({
           defaultDate={defaultDateFor(month, today)}
         />
       )}
-    </Card>
+    </div>
   )
 }

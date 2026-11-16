@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation'
 import type { ColumnDef } from '@tanstack/react-table'
 import { MessageCircle, MessageSquare } from 'lucide-react'
 import { Link, useRouter } from '@/i18n/navigation'
-import { Card } from '@/components/ui/card'
 import { DataTable } from '@/components/table/data-table'
 import { ColumnHeader } from '@/components/table/column-header'
 import { FormattedDate } from '@/components/common/FormattedDate'
@@ -76,7 +75,7 @@ export function HistoryPanel({
   ]
 
   return (
-    <Card className="p-3 sm:p-4 md:p-6">
+    <div className="min-w-0">
       <DataTable<Log, unknown>
         columns={columns}
         data={logs}
@@ -93,6 +92,6 @@ export function HistoryPanel({
         emptyMessage={t('history.empty')}
       />
       <p className="mt-3 text-xs text-muted-foreground">{t('history.note')}</p>
-    </Card>
+    </div>
   )
 }

@@ -1,7 +1,6 @@
 import { Link } from '@/i18n/navigation'
 import { getDanceTypes } from '@/lib/actions/dance-types.actions'
 import { getTranslations } from 'next-intl/server'
-import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { DanceTypesPageClient } from './dance-types-client'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -44,7 +43,7 @@ export default async function DanceTypesPage({
       />
 
       {hasRecords ? (
-        <Card className="p-3 sm:p-4 md:p-6">
+        <div className="min-w-0">
           <DanceTypesPageClient
             danceTypes={danceTypes}
             searchQuery={searchQuery}
@@ -52,7 +51,7 @@ export default async function DanceTypesPage({
             totalCount={totalCount}
             pageSize={PAGE_SIZE}
           />
-        </Card>
+        </div>
       ) : (
         <EmptyState
           title={t('emptyStates.danceTypes.title')}
