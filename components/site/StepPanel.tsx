@@ -38,10 +38,10 @@ export function StepPanel({ step }: { step: Step }) {
     const days = t('schedule.days').split(',')
     const lessons: Record<number, Array<{ time: string; name: string }>> = {
       0: [{ time: '19:00', name: 'Salsa 1' }],
-      1: [{ time: '18:30', name: 'Bale' }, { time: '20:00', name: 'Tango' }],
-      2: [{ time: '19:00', name: 'Salsa 2' }],
+      1: [{ time: '18:30', name: 'Reformer' }, { time: '20:00', name: 'Karate' }],
+      2: [{ time: '19:00', name: 'Yoga' }],
       3: [{ time: '20:00', name: 'Bachata' }],
-      5: [{ time: '11:00', name: 'Çocuk' }, { time: '13:00', name: 'Hip hop' }],
+      5: [{ time: '11:00', name: 'Piano' }, { time: '13:00', name: 'HIIT' }],
     }
     return (
       <div className={card}>

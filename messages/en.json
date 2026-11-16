@@ -63,7 +63,7 @@
     "deleteStudentConfirm": "Delete this student?",
     "deleteBranchConfirm": "Delete this branch?",
     "deletePackageConfirm": "Delete this package?",
-    "deleteDanceTypeConfirm": "Delete this dance type?",
+    "deleteDanceTypeConfirm": "Delete this class type?",
     "backToCourses": "Back to Courses",
     "viewDetails": "View Details",
     "instructor": "Instructor",
@@ -133,14 +133,14 @@
     "amount": "Amount",
     "description": "Description",
     "branch": "Branch",
-    "danceType": "Dance Type",
+    "danceType": "Class Type",
     "schedule": "Schedule",
     "students": "Students",
     "instructors": "Instructors",
     "attendance": "Attendance",
     "address": "Address",
     "created": "Created",
-    "danceTypes": "Dance Types",
+    "danceTypes": "Class Types",
     "branches": "Branches",
     "system": "System",
     "notAvailable": "N/A",
@@ -196,7 +196,7 @@
       "description": "{email} was set up with a temporary password. Enter it as the current password and pick a new one to continue.",
       "logout": "Sign out"
     },
-    "tagline": "Dance studio management",
+    "tagline": "Studio management",
     "copyright": "© {year} StudioDesk. All rights reserved.",
     "emailPlaceholder": "you@example.com"
   },
@@ -208,7 +208,7 @@
     "instructors": "Instructors",
     "courses": "Courses",
     "branches": "Branches",
-    "danceTypes": "Dance Types",
+    "danceTypes": "Class Types",
     "packages": "Packages",
     "attendance": "Attendance",
     "calendar": "Calendar",
@@ -232,7 +232,7 @@
     "viewCalendar": "View Calendar",
     "manageBranches": "Manage Branches",
     "setupInstructors": "Set up instructors",
-    "setupDanceTypes": "Add dance types",
+    "setupDanceTypes": "Add class types",
     "setupPackages": "Create course packages",
     "setupPayment": "Configure payment methods",
     "todaysOverview": "Here's what's happening today",
@@ -291,10 +291,10 @@
     "updateInformationMessage": "Update student information",
     "addNewStudentMessage": "Add a new student to your studio",
     "addFirstStudent": "Add First Student",
-    "danceType": "Dance Type",
+    "danceType": "Class Type",
     "branch": "Branch",
     "course": "Course",
-    "creditsByDanceType": "Credits by dance type",
+    "creditsByDanceType": "Credits by class type",
     "otherCredits": "Other credits",
     "totalCredits": "Total: {count}",
     "noCredits": "No credits",
@@ -331,17 +331,17 @@
     "addNewInstructorMessage": "Add a new instructor to your studio",
     "coursesAssigned": "Assigned Courses",
     "courseCount": "{count} course{count, plural, one {} other {s}}",
-    "danceTypesAssigned": "Dance Types",
+    "danceTypesAssigned": "Class Types",
     "danceTypeCount": "{count} type{count, plural, one {} other {s}}",
     "branchesAssigned": "Branches",
-    "danceType": "Dance Type",
+    "danceType": "Class Type",
     "branch": "Branch",
     "tableHeaders": {
       "name": "Name",
       "email": "Email",
       "phone": "Phone",
       "courses": "Courses",
-      "danceTypes": "Dance Types",
+      "danceTypes": "Class Types",
       "branches": "Branches",
       "joined": "Joined",
       "actions": "Actions"
@@ -352,14 +352,14 @@
     "enrolledCourses": "{total} course{total, plural, one {} other {s}} • {active} active • {completed} completed",
     "instructorsSelected": "{count} instructor{count, plural, one {} other {s}} selected",
     "coursesOnDay": "({count})",
-    "description": "Manage your dance courses and schedules",
+    "description": "Manage your courses and class times",
     "addNew": "Add New Course",
     "editCourse": "Edit Course",
     "deleteCourse": "Delete Course",
     "deleteTitle": "Delete Course",
     "deleteDescription": "This action cannot be undone. The course will be permanently removed from the system.",
     "name": "Course Name",
-    "danceType": "Dance Type",
+    "danceType": "Class Type",
     "instructor": "Instructor",
     "branch": "Branch",
     "dayOfWeek": "Day of Week",
@@ -385,15 +385,15 @@
     "instructors": "Instructor",
     "students": "Student",
     "selectBranch": "Select a branch",
-    "selectDanceType": "Select a dance type",
+    "selectDanceType": "Select a class type",
     "selectInstructors": "Select instructors",
     "selectDay": "Select a day",
     "saving": "Saving...",
     "updateCourse": "Update Course",
     "createCourse": "Create Course",
     "cancel": "Cancel",
-    "onlyActivePackages": "(Only students with active packages for this dance type are shown)",
-    "noStudentsAvailable": "No students with active packages available for this dance type",
+    "onlyActivePackages": "(Only students with active packages for this class type are shown)",
+    "noStudentsAvailable": "No students with active packages available for this class type",
     "actions": "Actions",
     "schedule": "Course Schedule",
     "assignedInstructors": "Assigned Instructors",
@@ -407,7 +407,7 @@
     "viewMode": "View",
     "attendanceRecords": "Attendance",
     "createFirstCourse": "Create your first course to get started",
-    "duplicateCourseWarning": "A course for this dance type already exists on this day.",
+    "duplicateCourseWarning": "A course for this class type already exists on this day.",
     "coursesOnThisDay": "Courses on this day",
     "viewCoursesOnThisDay": "View courses on this day",
     "searchCourse": "Search course...",
@@ -485,7 +485,7 @@
   },
   "packages": {
     "title": "Packages",
-    "description": "Manage credit packages for your dance courses",
+    "description": "Manage credit packages for your courses",
     "addNew": "Add New Package",
     "editPackage": "Edit Package",
     "deletePackage": "Delete Package",
@@ -494,7 +494,7 @@
     "name": "Package Name",
     "credits": "Total Credits",
     "price": "Price",
-    "danceType": "Dance Type",
+    "danceType": "Class Type",
     "validity": "Validity (days)",
     "status": "Status",
     "createdAt": "Created",
@@ -505,12 +505,12 @@
     "updateInformationMessage": "Update package information",
     "addNewPackageMessage": "Create a new credit package for students",
     "placeholderPackageName": "e.g., 10 Classes Package, Monthly Unlimited",
-    "placeholderSelectDanceType": "Select a dance type",
+    "placeholderSelectDanceType": "Select a class type",
     "placeholderTotalCredits": "e.g., 10",
     "placeholderPrice": "e.g., 99.99",
     "saving": "Saving...",
     "validationPackageNameMin": "Package name must be at least 2 characters",
-    "validationSelectDanceType": "Please select a dance type",
+    "validationSelectDanceType": "Please select a class type",
     "validationTotalCreditsMin": "Total credits must be at least 1",
     "validationPriceInvalid": "Price must be a valid number",
     "deleteTitle": "Delete Package",
@@ -538,28 +538,28 @@
     "addFirstBranch": "Add First Branch"
   },
   "danceTypes": {
-    "title": "Dance Types",
+    "title": "Class Types",
     "description": "Description",
-    "addNew": "Add New Dance Type",
-    "editType": "Edit Dance Type",
-    "deleteType": "Delete Dance Type",
-    "deleteTitle": "Delete Dance Type",
-    "deleteDescription": "This action cannot be undone. The dance type will be permanently removed from the system.",
-    "getStarted": "Get started by adding your first dance type",
+    "addNew": "Add New Class Type",
+    "editType": "Edit Class Type",
+    "deleteType": "Delete Class Type",
+    "deleteTitle": "Delete Class Type",
+    "deleteDescription": "This action cannot be undone. The class type will be permanently removed from the system.",
+    "getStarted": "Get started by adding your first class type",
     "name": "Name",
     "createdAt": "Created",
-    "noDanceTypes": "No dance types found",
-    "typeAdded": "Dance type added successfully",
-    "typeUpdated": "Dance type updated successfully",
-    "typeDeleted": "Dance type deleted successfully",
-    "addFirstType": "Add First Dance Type"
+    "noDanceTypes": "No class types found",
+    "typeAdded": "Class type added successfully",
+    "typeUpdated": "Class type updated successfully",
+    "typeDeleted": "Class type deleted successfully",
+    "addFirstType": "Add First Class Type"
   },
   "instructorRates": {
     "title": "Instructor Rates",
     "description": "Decide what instructors earn per lesson",
     "aboutTitle": "About Instructor Rates",
-    "aboutDescription": "For each instructor, choose a pay model per branch and dance type: a share of the lesson value, a fixed amount per lesson, an hourly rate or an amount per student. You can also set a minimum per lesson.",
-    "specificToInstructor": "Rates are specific to Instructor + Branch + Dance Type combination",
+    "aboutDescription": "For each instructor, choose a pay model per branch and class type: a share of the lesson value, a fixed amount per lesson, an hourly rate or an amount per student. You can also set a minimum per lesson.",
+    "specificToInstructor": "Rates are specific to Instructor + Branch + Class Type combination",
     "earnAutomatically": "Earnings are calculated when attendance is saved and updated when a record is removed",
     "multipleRates": "When pay changes, add a new period: lessons before its start keep the old rate and closed months never change",
     "addNew": "Add New Rate",
@@ -567,7 +567,7 @@
     "deleteRate": "Delete Rate",
     "instructor": "Instructor",
     "branch": "Branch",
-    "danceType": "Dance Type",
+    "danceType": "Class Type",
     "rate": "Rate",
     "rateAdded": "Rate added successfully",
     "rateUpdated": "Rate updated successfully",
@@ -575,7 +575,7 @@
     "noRates": "No instructor rates configured yet",
     "selectInstructor": "Select an instructor",
     "selectBranch": "Select a branch",
-    "selectDanceType": "Select a dance type",
+    "selectDanceType": "Select a class type",
     "ratesConfigured": "{count} rate{count, plural, one {} other {s}} configured",
     "show": "Show",
     "hide": "Hide",
@@ -650,7 +650,9 @@
       "timezone": "Timezone",
       "timezoneHint": "Dates and generated sessions use this timezone.",
       "weekStart": "Week starts on",
-      "weekStartHint": "Calendar and the weekly attendance limit are based on this day."
+      "weekStartHint": "Calendar and the weekly attendance limit are based on this day.",
+      "businessType": "Type of studio",
+      "businessTypeHint": "Examples in forms follow this. How the app works stays the same."
     },
     "days": {
       "0": "Sunday",
@@ -726,7 +728,7 @@
   "filters": {
     "title": "Filters",
     "description": "Refine your search",
-    "danceType": "Dance Type",
+    "danceType": "Class Type",
     "branch": "Branch",
     "course": "Course",
     "hasCredits": "Has Credits",
@@ -860,7 +862,8 @@
       "suspend": "Suspend",
       "activate": "Activate",
       "suspendConfirm": "Suspend this store? All of its users lose access.",
-      "createdAt": "Created"
+      "createdAt": "Created",
+      "businessType": "Type of studio"
     },
     "branches": {
       "title": "Branches",
@@ -973,8 +976,8 @@
       "description": "Courses and the cash register belong to a branch, so add one first."
     },
     "danceTypes": {
-      "title": "No dance types yet",
-      "description": "Salsa, bachata, tango… Courses and packages are grouped by dance type."
+      "title": "No class types yet",
+      "description": "Courses and packages are grouped by class type. For example: {examples}."
     },
     "packages": {
       "title": "No packages yet",
@@ -982,7 +985,7 @@
     },
     "instructorRates": {
       "title": "No instructor rates yet",
-      "description": "Set what each instructor earns per branch and dance type."
+      "description": "Set what each instructor earns per branch and class type."
     }
   },
   "instructorEarnings": {
@@ -1009,7 +1012,7 @@
   "studios": {
     "loading": "Loading...",
     "title": "Studios",
-    "description": "Manage dance studios in this branch",
+    "description": "Manage the rooms in this branch",
     "add": "Add studio",
     "name": "Studio name *",
     "descriptionLabel": "Description",
@@ -1017,7 +1020,7 @@
     "imageUrl": "Image URL (for later use)",
     "cancel": "Cancel",
     "emptyTitle": "No studios yet",
-    "emptyDescription": "Create your first studio to organize dance classes",
+    "emptyDescription": "Create your first room to organize classes",
     "hasImage": "Has an image (for later use)",
     "dismiss": "Dismiss",
     "namePlaceholder": "e.g. Hall 1",
@@ -1134,7 +1137,7 @@
     "instructorEarningRow": "Earning: {name}"
   },
   "addStudentDialog": {
-    "activeOnly": "Show only students with active packages for this dance type",
+    "activeOnly": "Show only students with active packages for this class type",
     "loading": "Loading students…",
     "name": "Name",
     "email": "Email",
@@ -1149,7 +1152,7 @@
     "noneFound": "No students found",
     "adding": "Adding…",
     "addCount": "Add {count, plural, one {# student} other {# students}}",
-    "withActivePackages": "{count, plural, one {# student} other {# students}} with an active package for this dance type",
+    "withActivePackages": "{count, plural, one {# student} other {# students}} with an active package for this class type",
     "selectedCount": "{count, plural, one {# student} other {# students}} selected"
   },
   "forms": {
@@ -1196,16 +1199,16 @@
     "create": "Create branch"
   },
   "danceTypeForm": {
-    "name": "Dance type name",
-    "namePlaceholder": "e.g. Ballet, Hip hop, Contemporary",
-    "descriptionPlaceholder": "Describe this dance style…",
-    "nameMin": "Dance type name must be at least 2 characters",
-    "editTitle": "Edit dance type",
-    "addTitle": "Add new dance type",
-    "editDescription": "Update dance type information",
-    "addDescription": "Add a new dance style to your catalog",
-    "update": "Update dance type",
-    "create": "Create dance type"
+    "name": "Class type name",
+    "namePlaceholder": "e.g. {examples}",
+    "descriptionPlaceholder": "Describe this class type briefly…",
+    "nameMin": "Class type name must be at least 2 characters",
+    "editTitle": "Edit class type",
+    "addTitle": "Add new class type",
+    "editDescription": "Update class type information",
+    "addDescription": "Add a new class type to your catalog",
+    "update": "Update class type",
+    "create": "Create class type"
   },
   "courseForm": {
     "namePlaceholder": "e.g. Advanced ballet",
@@ -1213,11 +1216,11 @@
     "loadInstructorsFailed": "An error occurred while loading instructors",
     "nameMin": "Course name must be at least 2 characters",
     "branchRequired": "Please select a branch",
-    "danceTypeRequired": "Please select a dance type",
+    "danceTypeRequired": "Please select a class type",
     "timeFormat": "Time must be in HH:mm format",
     "selectInstructors": "Select instructors…",
     "loadInstructorsError": "Failed to load instructors: {error}",
-    "noInstructorRates": "⚠️ No instructors have a rate for this dance type yet. Set up instructor rates first.",
+    "noInstructorRates": "⚠️ No instructors have a rate for this class type yet. Set up instructor rates first.",
     "instructorsFor": "{label} (for {danceType})",
     "studentsAfterCreate": "💡 You can add students from the course page after creating the course."
   },
@@ -1226,8 +1229,8 @@
     "selectInstructor": "Select instructor",
     "branch": "Branch *",
     "selectBranch": "Select branch",
-    "danceType": "Dance type *",
-    "selectDanceType": "Select dance type",
+    "danceType": "Class type *",
+    "selectDanceType": "Select class type",
     "ratio": "Rate (%)",
     "allRequired": "All fields are required",
     "ratioRange": "Ratio must be a percentage between 0 and 100",
@@ -1281,7 +1284,7 @@
     "purchased": "bought {date}",
     "unknownCourse": "Unknown course",
     "unknownPackage": "Unknown package",
-    "danceTypeLabel": "Dance type:",
+    "danceTypeLabel": "Class type:",
     "branchLabel": "Branch:",
     "classesAttended": "{count, plural, one {# class attended} other {# classes attended}}",
     "monthSummary": "Attended {present}/{total}",
@@ -1320,7 +1323,7 @@
       "moveDescription": "Choose the class that replaces {course}. Past attendance and credits are kept.",
       "noCourses": "There are no other classes the student isn't already in.",
       "students": "{count, plural, one {# student} other {# students}}",
-      "noCredits": "No credits for this dance style",
+      "noCredits": "No credits for this class type",
       "cancel": "Cancel",
       "add": "Add",
       "move": "Move",
@@ -1333,7 +1336,7 @@
     "subtitle": "Branch information",
     "address": "Address",
     "studiosTitle": "Studios",
-    "studiosDescription": "Manage the dance studios and rooms of this branch",
+    "studiosDescription": "Manage the rooms of this branch",
     "manageStudios": "Manage studios"
   },
   "courseSessions": {
@@ -1379,11 +1382,11 @@
     "subtitle": "Package details",
     "totalCredits": "Total credits",
     "price": "Price",
-    "danceType": "Dance type"
+    "danceType": "Class type"
   },
   "danceTypeDetail": {
-    "backToList": "← Back to dance types",
-    "subtitle": "Dance style",
+    "backToList": "← Back to class types",
+    "subtitle": "Class type",
     "description": "Description"
   },
   "instructorSelector": {
@@ -1425,7 +1428,7 @@
     "title": "Select instructors",
     "cancel": "Cancel",
     "searchPlaceholder": "Search instructors…",
-    "noneForDanceType": "No instructors available for this dance type",
+    "noneForDanceType": "No instructors available for this class type",
     "noMatch": "No instructors match your search",
     "forDanceType": "For {name}",
     "confirmCount": "Confirm ({count})"
@@ -1451,16 +1454,16 @@
     "moreActivities": "{count, plural, one {# more activity} other {# more activities}}"
   },
   "instructorRateDrawer": {
-    "description": "Instructor rate per branch and dance type",
+    "description": "Instructor rate per branch and class type",
     "editTitle": "Edit rate",
     "addTitle": "Add new rate",
     "newPeriodTitle": "New rate period",
     "newPeriodDescription": "Enter the rate that applies from the date you choose"
   },
   "meta": {
-    "defaultTitle": "StudioDesk — Dance studio management",
-    "description": "Dance studio management software: attendance, class packages, timetable, instructor pay and cash in one place.",
-    "keywords": "dance studio, management, scheduling, students, instructors"
+    "defaultTitle": "StudioDesk — Studio management",
+    "description": "Management software for dance, Pilates, yoga, martial arts and music studios: attendance, class packages, timetable, instructor pay and cash in one place.",
+    "keywords": "studio management, studio software, dance studio, Pilates studio, scheduling, students, instructors"
   },
   "attendanceDatePicker": {
     "today": "Today ({date})",
@@ -1506,7 +1509,7 @@
       "student_package": "package purchase",
       "branch": "branch",
       "package": "package",
-      "dance_type": "dance type",
+      "dance_type": "class type",
       "attendance": "attendance record",
       "cash_register": "cash register entry",
       "organization": "studio",
@@ -1542,7 +1545,7 @@
       "currency": "Currency",
       "weekStartDay": "Week start",
       "attendancePerWeekLimit": "Weekly attendance limit",
-      "danceTypeId": "Dance type",
+      "danceTypeId": "Class type",
       "branchId": "Branch",
       "role": "Role",
       "isActive": "Status",
@@ -1608,7 +1611,7 @@
     "fetchStudentPackagesFailed": "Failed to load the student's packages",
     "fetchCoursesFailed": "Failed to load courses",
     "checkCoursesFailed": "Failed to check courses on this day",
-    "duplicateCourse": "This branch already has a course for this dance type on this day",
+    "duplicateCourse": "This branch already has a course for this class type on this day",
     "createCourseFailed": "Failed to create the course",
     "courseNotInOrg": "Course not found in your studio",
     "updateCourseFailed": "Failed to update the course",
@@ -1618,12 +1621,12 @@
     "insertSessionsFailed": "Failed to create sessions",
     "generateSessionsFailed": "Unexpected error while creating sessions",
     "fetchEnrolledStudentsFailed": "Failed to load enrolled students",
-    "fetchDanceTypesFailed": "Failed to load dance types",
-    "danceTypeNotFound": "Dance type not found",
-    "createDanceTypeFailed": "Failed to create the dance type",
-    "danceTypeNotInOrg": "Dance type not found in your studio",
-    "updateDanceTypeFailed": "Failed to update the dance type",
-    "deleteDanceTypeFailed": "Failed to delete the dance type",
+    "fetchDanceTypesFailed": "Failed to load class types",
+    "danceTypeNotFound": "Class type not found",
+    "createDanceTypeFailed": "Failed to create the class type",
+    "danceTypeNotInOrg": "Class type not found in your studio",
+    "updateDanceTypeFailed": "Failed to update the class type",
+    "deleteDanceTypeFailed": "Failed to delete the class type",
     "fetchAttendanceHistoryFailed": "Failed to load attendance history",
     "fetchPackageHistoryFailed": "Failed to load package history",
     "instructorAccessDenied": "Instructor not found",
@@ -1634,7 +1637,7 @@
     "updateNotVerified": "Couldn't confirm the update; the change may not have been saved",
     "deleteNotVerified": "Couldn't confirm the deletion; the record may still exist",
     "branchAccessDenied": "Branch not found",
-    "rateExists": "A rate already exists for this instructor, branch and dance type",
+    "rateExists": "A rate already exists for this instructor, branch and class type",
     "createRateFailed": "Failed to create the rate",
     "rateNotFound": "Rate not found",
     "accessDenied": "Access denied",
@@ -1811,7 +1814,7 @@
     "setupProgress": "{done}/{total} done",
     "setup": {
       "branches": "Add a branch",
-      "danceTypes": "Add dance types",
+      "danceTypes": "Add class types",
       "instructors": "Add instructors",
       "rates": "Set instructor pay",
       "packages": "Create packages",
@@ -1857,7 +1860,7 @@
     "setup": "Studio setup",
     "packages": "Packages",
     "branches": "Branches",
-    "danceTypes": "Dance types",
+    "danceTypes": "Class types",
     "settings": "Settings",
     "instructorPayouts": "Payments",
     "courseProfitability": "Profitability",
@@ -1891,10 +1894,10 @@
   },
   "site": {
     "meta": {
-      "title": "StudioDesk: attendance, class packages and instructor pay for dance studios",
+      "title": "StudioDesk: attendance, class packages and instructor pay for dance, Pilates, yoga and martial arts studios",
       "description": "Sell class packages, run your weekly timetable, take attendance from your phone and close the month with instructor pay already calculated.",
-      "keywords": "dance studio software, dance studio management software, studio management software, student registration software, class attendance app, dance school software, class package tracking, instructor payroll",
-      "ogTitle": "Attendance, class packages and instructor pay for dance studios"
+      "keywords": "studio management software, dance studio software, pilates studio software, yoga studio software, martial arts school software, music school software, class attendance app, class package tracking, instructor payroll",
+      "ogTitle": "Attendance, class packages and instructor pay for studios that teach group classes"
     },
     "skip": "Skip to content",
     "nav": {
@@ -1907,7 +1910,8 @@
       "demo": "Request a demo",
       "openMenu": "Open menu",
       "closeMenu": "Close menu",
-      "pricing": "Pricing"
+      "pricing": "Pricing",
+      "who": "Who it's for"
     },
     "hero": {
       "title": "Run your studio, not spreadsheets",
@@ -1923,7 +1927,7 @@
         "save": "Save attendance",
         "saved": "Saved: {present} present, {absent} absent"
       },
-      "badge": "For dance studios",
+      "badge": "For dance, Pilates, yoga, martial arts and music studios",
       "stage": {
         "today": "Today",
         "lessons": "lessons",
@@ -1933,7 +1937,8 @@
         "sell": "Sell a package",
         "pay": "Classes this month",
         "payNote": "instructor pay"
-      }
+      },
+      "badgeItems": "For dance studios|For Pilates studios|For yoga studios|For martial arts schools|For music and art schools|For boutique fitness studios"
     },
     "how": {
       "title": "From the sale to the end of the month",
@@ -1941,7 +1946,7 @@
       "steps": {
         "sell": {
           "title": "Sell the package",
-          "text": "Sell a credit pack for a dance style. The payment goes into the cash register at the same moment."
+          "text": "Sell a credit pack for a class type. The payment goes into the cash register at the same moment."
         },
         "schedule": {
           "title": "Set the timetable",
@@ -1981,13 +1986,11 @@
           "expense": "Expenses"
         }
       },
-      "eyebrow": "How it works",
       "stepLabel": "Step {n} of {total}"
     },
     "features": {
       "title": "What the front desk does every day, in one screen",
       "lead": "Not an accounting package, not a generic CRM. Built around classes, credits and teachers.",
-      "eyebrow": "Features",
       "bento": {
         "attendance": {
           "title": "Attendance before the class leaves",
@@ -2004,7 +2007,7 @@
         },
         "pay": {
           "title": "Pay comes from attendance",
-          "text": "Rates per instructor, branch and dance style. Substitutes get paid for the classes they covered."
+          "text": "Rates per instructor, branch and class type. Substitutes get paid for the classes they covered."
         },
         "branches": {
           "title": "Every branch, one account",
@@ -2027,7 +2030,7 @@
       "items": {
         "setup": {
           "q": "How long does setup take?",
-          "a": "We set up your branches, dance styles, instructors and packages together on the first call. After you add your students you can take attendance the same day."
+          "a": "We set up your branches, class types, instructors and packages together on the first call. After you add your students you can take attendance the same day."
         },
         "devices": {
           "q": "Which devices does it work on?",
@@ -2051,7 +2054,6 @@
         }
       },
       "lead": "The questions studios ask us most.",
-      "eyebrow": "FAQ",
       "cardTitle": "Something else?",
       "cardText": "Write it in the demo form and we will answer when we call.",
       "cardButton": "Ask in the demo form"
@@ -2103,7 +2105,6 @@
           "consent": "Confirm the notice to continue."
         }
       },
-      "eyebrow": "Get started",
       "cards": {
         "c1": {
           "title": "Apps to install",
@@ -2129,7 +2130,7 @@
       }
     },
     "footer": {
-      "tagline": "Attendance, class packages and instructor pay for dance studios.",
+      "tagline": "Attendance, class packages and instructor pay for studios that teach classes.",
       "product": "Product",
       "how": "How it works",
       "features": "Features",
@@ -2141,7 +2142,8 @@
       "legal": "Legal",
       "cookiePreferences": "Cookie preferences",
       "copyright": "© {year} SFDYAZILIM. All rights reserved.",
-      "pricing": "Pricing"
+      "pricing": "Pricing",
+      "forWho": "Who it's for"
     },
     "legalTitles": {
       "kvkk": "Personal Data Notice (KVKK)",
@@ -2155,18 +2157,18 @@
     },
     "blog": {
       "title": "Blog",
-      "lead": "Practical guides to running a dance studio: attendance, class packages, scheduling, instructor pay, student retention and choosing software.",
+      "lead": "Practical guides to running a studio: attendance, class packages, scheduling, instructor pay and choosing software for dance, Pilates, yoga, martial arts and music schools.",
       "minutes": "{count} min read",
       "back": "All posts",
       "ctaTitle": "Try it with your own studio",
       "ctaText": "We set StudioDesk up with you on a call, with your own classes and packages.",
       "ctaButton": "Request a demo",
       "more": "More posts",
-      "metaTitle": "Dance studio management blog"
+      "metaTitle": "Studio management blog"
     },
     "marquee": {
-      "title": "Built for every kind of dance studio",
-      "items": "Salsa,Bachata,Tango,Ballet,Hip hop,Contemporary,Kizomba,Zeybek,Folk dance,Kids ballet,Latin,Swing"
+      "title": "Built for every studio that teaches group classes",
+      "items": "Salsa,Reformer Pilates,Yoga,Karate,Ballet,Taekwondo,Guitar,Hip hop,Kickboxing,Piano,Spinning,Tango,Mat Pilates,Painting,Bachata,HIIT"
     },
     "compare": {
       "title": "The same week, without the notebook",
@@ -2199,11 +2201,9 @@
           "before": "Sales and the cash book never quite match.",
           "after": "Each package sale is recorded as income when it happens."
         }
-      },
-      "eyebrow": "Before and after"
+      }
     },
     "pricing": {
-      "eyebrow": "Pricing",
       "title": "Plans that grow with your studio",
       "lead": "Every plan includes setup with us on a call. Change or cancel any time.",
       "billingLabel": "Billing period",
@@ -2233,6 +2233,26 @@
           "features": "Unlimited branches|Unlimited students|Unlimited team members|Separate timetable and cash per branch|Everything in Studio|Dedicated setup help"
         }
       }
+    },
+    "who": {
+      "title": "Fits every studio that teaches classes",
+      "lead": "Any business with weekly group classes, class packages and paid instructors does the same jobs. See examples for your kind of studio.",
+      "more": "How it works for you",
+      "otherTitle": "Your studio isn't listed?",
+      "otherText": "Kids workshops, swim schools, gymnastics clubs… If you run classes, packages and attendance, StudioDesk most likely fits. Let's take a look together.",
+      "otherCta": "Request a demo"
+    },
+    "sectors": {
+      "badge": "For {name}",
+      "demo": "Request a demo",
+      "how": "See how it works",
+      "examplesLabel": "Example class types",
+      "painsTitle": "What gets hard with paper and spreadsheets",
+      "fitTitle": "How StudioDesk works for {name}",
+      "setupLead": "An example of the setup we build together on the first call.",
+      "faqTitle": "Frequently asked questions",
+      "reading": "Related reading",
+      "others": "Other studios"
     }
   },
   "instructorPay": {
@@ -2535,7 +2555,7 @@
       },
       "birthday": {
         "name": "Birthday greeting",
-        "body": "Happy birthday {first_name}! Wishing you a year full of dance and joy. {studio}"
+        "body": "Happy birthday {first_name}! Wishing you a healthy and happy year ahead. {studio}"
       },
       "classInvite": {
         "name": "Class invite",
@@ -2593,6 +2613,24 @@
       "noPhone": "no phone",
       "addToCourse": "Add to class",
       "added": "Student added to the class"
+    }
+  },
+  "businessTypes": {
+    "options": {
+      "dance": "Dance school / studio",
+      "pilates_yoga": "Pilates / yoga studio",
+      "martial_arts": "Martial arts school",
+      "music_art": "Music / art school",
+      "fitness": "Boutique fitness / group classes",
+      "other": "Other"
+    },
+    "examples": {
+      "dance": "Salsa, Bachata, Ballet",
+      "pilates_yoga": "Reformer Pilates, Mat Pilates, Hatha yoga",
+      "martial_arts": "Karate, Taekwondo, Kickboxing",
+      "music_art": "Guitar, Piano, Painting",
+      "fitness": "HIIT, Spinning, Functional training",
+      "other": "Beginners group, Workshop, Private lesson"
     }
   }
 }

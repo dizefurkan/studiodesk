@@ -3,6 +3,7 @@ import { SUPPORTED_LOCALES, type Locale } from '@/lib/i18n/config'
 import { absoluteUrl } from '@/lib/seo'
 import { getPosts, translations } from '@/content/blog'
 import { LEGAL_SLUGS } from '@/content/legal'
+import { getSectors, sectorTranslations } from '@/content/sectors'
 
 function languages(paths: Partial<Record<Locale, string>>) {
   return Object.fromEntries(Object.entries(paths).map(([l, p]) => [l, absoluteUrl(l, p)]))
@@ -30,6 +31,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
       alternates: { languages: languages(samePath('/blog')) },
     })
+    for (const sector of getSectors(l)) {
+      const paths = Object.fromEntries(Object.entries(sectorTranslations(sector.key)).map(([k, s]) => [k, `/for/${s}`]))
+      entries.push({
+        url: absoluteUrl(l, `/for/${sector.slug}`),
+        changeFrequency: 'monthly',
+        priority: 0.9,
+        alternates: { languages: languages(paths) },
+      })
+    }
     for (const post of getPosts(l)) {
       const paths = Object.fromEntries(Object.entries(translations(post.key)).map(([k, s]) => [k, `/blog/${s}`]))
       entries.push({

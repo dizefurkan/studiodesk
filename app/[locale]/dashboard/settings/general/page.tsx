@@ -4,6 +4,7 @@ import { getSettingsContext } from '@/lib/actions/settings.actions'
 import { SettingsHeader } from '@/components/settings/SettingsHeader'
 import { ReadOnlyNotice } from '@/components/settings/ReadOnlyNotice'
 import { GeneralSettingsForm } from '@/components/settings/GeneralSettingsForm'
+import { toBusinessType } from '@/lib/business/types'
 
 export default async function GeneralSettingsPage() {
   const ctx = await getSettingsContext()
@@ -15,7 +16,12 @@ export default async function GeneralSettingsPage() {
       {!ctx.canEditOrganization && <ReadOnlyNotice />}
       <GeneralSettingsForm
         disabled={!ctx.canEditOrganization}
-        initial={{ name: o.name, timezone: o.timezone || 'Europe/Istanbul', week_start_day: o.week_start_day ?? 1 }}
+        initial={{
+          name: o.name,
+          timezone: o.timezone || 'Europe/Istanbul',
+          week_start_day: o.week_start_day ?? 1,
+          business_type: toBusinessType(o.business_type),
+        }}
       />
     </div>
   )

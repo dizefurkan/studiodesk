@@ -1,5 +1,7 @@
 'use client'
 
+import { useOrganizationPrefs } from '@/lib/context/OrganizationPrefsContext'
+
 import { useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -29,6 +31,8 @@ interface DanceTypeFormProps {
 
 export function DanceTypeForm({ danceType }: DanceTypeFormProps) {
   const tx = useTranslations('danceTypeForm')
+  const te = useTranslations('businessTypes.examples')
+  const { businessType } = useOrganizationPrefs()
   const tf = useTranslations('forms')
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -95,7 +99,7 @@ export function DanceTypeForm({ danceType }: DanceTypeFormProps) {
                 <FormItem>
                   <FormLabel>{tx('name')}</FormLabel>
                   <FormControl>
-                    <Input placeholder={tx('namePlaceholder')} disabled={isLoading} {...field} />
+                    <Input placeholder={tx('namePlaceholder', { examples: te(businessType) })} disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

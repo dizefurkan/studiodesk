@@ -273,7 +273,7 @@ export const legalEn: Record<Slug, LegalDoc> = {
       { heading: 'Seller', blocks: [controllerTable] },
       {
         heading: 'Subject and scope',
-        blocks: [{ type: 'p', text: `This text sets out the terms for selling ${COMPANY.product} at a distance. The service is mainly sold to dance studios acting for business purposes; for them, the terms in the quote or order form apply. Where the buyer is a consumer under Turkish Consumer Protection Law No. 6502, the Distance Contracts Regulation also applies. The Turkish version prevails.` }],
+        blocks: [{ type: 'p', text: `This text sets out the terms for selling ${COMPANY.product} at a distance. The service is mainly sold to studios teaching classes such as dance, Pilates, yoga, martial arts or music, acting for business purposes; for them, the terms in the quote or order form apply. Where the buyer is a consumer under Turkish Consumer Protection Law No. 6502, the Distance Contracts Regulation also applies. The Turkish version prevails.` }],
       },
       {
         heading: 'Service, price and payment',

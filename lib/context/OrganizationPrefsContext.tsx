@@ -1,15 +1,18 @@
 'use client'
 
 import { createContext, useContext, type ReactNode } from 'react'
+import type { BusinessType } from '@/lib/business/types'
 
 /** Organization settings that client components need for display (week start, currency). */
 export interface OrganizationPrefs {
   /** 0 = Sunday … 6 = Saturday */
   weekStartDay: number
   currency: string
+  /** Kind of studio; drives examples in forms */
+  businessType: BusinessType
 }
 
-const DEFAULT_PREFS: OrganizationPrefs = { weekStartDay: 1, currency: 'TRY' }
+const DEFAULT_PREFS: OrganizationPrefs = { weekStartDay: 1, currency: 'TRY', businessType: 'other' }
 
 const OrganizationPrefsContext = createContext<OrganizationPrefs>(DEFAULT_PREFS)
 

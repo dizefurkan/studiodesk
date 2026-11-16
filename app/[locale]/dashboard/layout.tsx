@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
 import { SidebarProvider } from '@/lib/context/SidebarContext'
 import { OrganizationPrefsProvider } from '@/lib/context/OrganizationPrefsContext'
+import { toBusinessType } from '@/lib/business/types'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 import { getOrganization } from '@/lib/auth/getOrganization'
 import { isPlatformAdmin } from '@/lib/auth/platformAdmin'
@@ -36,7 +37,11 @@ export default async function DashboardLayout({
 
   return (
     <OrganizationPrefsProvider
-      value={{ weekStartDay: organization.week_start_day ?? 1, currency: organization.currency ?? 'TRY' }}
+      value={{
+        weekStartDay: organization.week_start_day ?? 1,
+        currency: organization.currency ?? 'TRY',
+        businessType: toBusinessType(organization.business_type),
+      }}
     >
     <SidebarProvider>
       <div className="flex h-screen bg-background print:block print:h-auto">

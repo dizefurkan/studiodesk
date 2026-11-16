@@ -63,7 +63,7 @@
     "deleteStudentConfirm": "Bu öğrenci silinsin mi?",
     "deleteBranchConfirm": "Bu şube silinsin mi?",
     "deletePackageConfirm": "Bu paket silinsin mi?",
-    "deleteDanceTypeConfirm": "Bu dans türü silinsin mi?",
+    "deleteDanceTypeConfirm": "Bu ders türü silinsin mi?",
     "backToCourses": "Kurslara Dön",
     "viewDetails": "Detayları Gör",
     "instructor": "Eğitmen",
@@ -133,14 +133,14 @@
     "amount": "Tutar",
     "description": "Açıklama",
     "branch": "Şube",
-    "danceType": "Dans türü",
+    "danceType": "Ders türü",
     "schedule": "Ders zamanı",
     "students": "Öğrenciler",
     "instructors": "Eğitmenler",
     "attendance": "Yoklama",
     "address": "Adres",
     "created": "Oluşturulma",
-    "danceTypes": "Dans türleri",
+    "danceTypes": "Ders türleri",
     "branches": "Şubeler",
     "system": "Sistem",
     "notAvailable": "—",
@@ -196,7 +196,7 @@
       "description": "{email} hesabı geçici bir şifreyle açıldı. Devam etmek için geçici şifreyi mevcut şifre olarak girin ve yeni bir şifre seçin.",
       "logout": "Çıkış yap"
     },
-    "tagline": "Dans stüdyosu yönetimi",
+    "tagline": "Stüdyo yönetimi",
     "copyright": "© {year} StudioDesk. Tüm hakları saklıdır.",
     "emailPlaceholder": "ornek@eposta.com"
   },
@@ -208,7 +208,7 @@
     "instructors": "Eğitmenler",
     "courses": "Kurslar",
     "branches": "Şubeler",
-    "danceTypes": "Dans Türleri",
+    "danceTypes": "Ders Türleri",
     "packages": "Paketler",
     "attendance": "Yoklama",
     "calendar": "Takvim",
@@ -232,7 +232,7 @@
     "viewCalendar": "Takvimi Görüntüle",
     "manageBranches": "Şubeleri Yönet",
     "setupInstructors": "Eğitmenleri Ayarla",
-    "setupDanceTypes": "Dans Türlerini Ekle",
+    "setupDanceTypes": "Ders Türlerini Ekle",
     "setupPackages": "Paket Oluştur",
     "setupPayment": "Ödeme Yöntemlerini Yapılandır",
     "todaysOverview": "Bugün gerçekleşenleri görelim",
@@ -291,10 +291,10 @@
     "updateInformationMessage": "Öğrenci bilgilerini güncelleyin",
     "addNewStudentMessage": "Stüdyonuza yeni bir öğrenci ekleyin",
     "addFirstStudent": "İlk Öğrenciyi Ekle",
-    "danceType": "Dans Türü",
+    "danceType": "Ders Türü",
     "branch": "Şube",
     "course": "Kurs",
-    "creditsByDanceType": "Dans türüne göre krediler",
+    "creditsByDanceType": "Ders türüne göre krediler",
     "otherCredits": "Diğer krediler",
     "totalCredits": "Toplam: {count}",
     "noCredits": "Kredi yok",
@@ -331,17 +331,17 @@
     "addNewInstructorMessage": "Stüdyonuza yeni bir eğitmen ekleyin",
     "coursesAssigned": "Atanan Kurslar",
     "courseCount": "{count} kurs",
-    "danceTypesAssigned": "Dans Tipleri",
+    "danceTypesAssigned": "Ders Türleri",
     "danceTypeCount": "{count} tip",
     "branchesAssigned": "Şubeler",
-    "danceType": "Dans Tipi",
+    "danceType": "Ders Türü",
     "branch": "Şube",
     "tableHeaders": {
       "name": "Ad",
       "email": "E-posta",
       "phone": "Telefon",
       "courses": "Kurslar",
-      "danceTypes": "Dans Tipleri",
+      "danceTypes": "Ders Türleri",
       "branches": "Şubeler",
       "joined": "Katıldı",
       "actions": "İşlemler"
@@ -352,14 +352,14 @@
     "enrolledCourses": "{total} kurs • {active} aktif • {completed} tamamlandı",
     "instructorsSelected": "{count} eğitmen seçildi",
     "coursesOnDay": "({count})",
-    "description": "Dans kurslarınızı ve zamanlamalarını yönetin",
+    "description": "Kurslarınızı ve ders saatlerini yönetin",
     "addNew": "Yeni Kurs Ekle",
     "editCourse": "Kursu Düzenle",
     "deleteCourse": "Kursu Sil",
     "deleteTitle": "Kursu Sil",
     "deleteDescription": "Bu işlem geri alınamaz. Kurs sistemden kalıcı olarak silinecektir.",
     "name": "Kurs Adı",
-    "danceType": "Dans Türü",
+    "danceType": "Ders Türü",
     "instructor": "Eğitmen",
     "branch": "Şube",
     "dayOfWeek": "Haftanın Günü",
@@ -385,15 +385,15 @@
     "instructors": "Eğitmen",
     "students": "Öğrenci",
     "selectBranch": "Bir şube seçin",
-    "selectDanceType": "Bir dans türü seçin",
+    "selectDanceType": "Bir ders türü seçin",
     "selectInstructors": "Eğitmenleri seçin",
     "selectDay": "Günü seçin",
     "saving": "Kaydediliyor...",
     "updateCourse": "Kursu Güncelle",
     "createCourse": "Kurs Oluştur",
     "cancel": "İptal",
-    "onlyActivePackages": "(Bu dans türü için aktif paketlere sahip öğrenciler gösterilir)",
-    "noStudentsAvailable": "Bu dans türü için kullanılabilir öğrenci yok",
+    "onlyActivePackages": "(Bu ders türü için aktif paketlere sahip öğrenciler gösterilir)",
+    "noStudentsAvailable": "Bu ders türü için kullanılabilir öğrenci yok",
     "actions": "İşlemler",
     "schedule": "Ders Zamanı",
     "assignedInstructors": "Atanmış Eğitmenler",
@@ -407,7 +407,7 @@
     "viewMode": "Görünüm",
     "attendanceRecords": "Yoklama",
     "createFirstCourse": "Başlangıç yapmak için ilk kursunuzu oluşturun",
-    "duplicateCourseWarning": "Bu dans türü için aynı gün zaten bir kurs mevcut.",
+    "duplicateCourseWarning": "Bu ders türü için aynı gün zaten bir kurs mevcut.",
     "coursesOnThisDay": "Bu gün ki kurslar",
     "viewCoursesOnThisDay": "Bu gün ki kursları görüntüle",
     "searchCourse": "Kurs ara...",
@@ -485,7 +485,7 @@
   },
   "packages": {
     "title": "Paketler",
-    "description": "Dans kurslarınız için kredi paketlerini yönetin",
+    "description": "Kurslarınız için kredi paketlerini yönetin",
     "addNew": "Yeni Paket Ekle",
     "editPackage": "Paketi Düzenle",
     "deletePackage": "Paketi Sil",
@@ -494,7 +494,7 @@
     "name": "Paket Adı",
     "credits": "Toplam Krediler",
     "price": "Fiyat",
-    "danceType": "Dans Türü",
+    "danceType": "Ders Türü",
     "validity": "Geçerlilik (gün)",
     "status": "Durum",
     "createdAt": "Oluşturuldu",
@@ -505,12 +505,12 @@
     "updateInformationMessage": "Paket bilgilerini güncelleyin",
     "addNewPackageMessage": "Öğrenciler için yeni bir kredi paketi oluşturun",
     "placeholderPackageName": "Örn. 10 Ders Paketi, Aylık Sınırsız",
-    "placeholderSelectDanceType": "Bir dans türü seçin",
+    "placeholderSelectDanceType": "Bir ders türü seçin",
     "placeholderTotalCredits": "Örn. 10",
     "placeholderPrice": "Örn. 99.99",
     "saving": "Kaydediliyor...",
     "validationPackageNameMin": "Paket adı en az 2 karakter olmalıdır",
-    "validationSelectDanceType": "Lütfen bir dans türü seçin",
+    "validationSelectDanceType": "Lütfen bir ders türü seçin",
     "validationTotalCreditsMin": "Toplam krediler en az 1 olmalıdır",
     "validationPriceInvalid": "Fiyat geçerli bir sayı olmalıdır",
     "deleteTitle": "Paketi Sil",
@@ -538,28 +538,28 @@
     "addFirstBranch": "İlk Şubeyi Ekle"
   },
   "danceTypes": {
-    "title": "Dans Türleri",
+    "title": "Ders Türleri",
     "description": "Açıklama",
-    "addNew": "Yeni Dans Türü Ekle",
-    "editType": "Dans Türünü Düzenle",
-    "deleteType": "Dans Türünü Sil",
+    "addNew": "Yeni Ders Türü Ekle",
+    "editType": "Ders Türünü Düzenle",
+    "deleteType": "Ders Türünü Sil",
     "name": "Adı",
     "createdAt": "Oluşturuldu",
-    "noDanceTypes": "Dans türü bulunamadı",
-    "typeAdded": "Dans türü başarıyla eklendi",
-    "typeUpdated": "Dans türü başarıyla güncellendi",
-    "typeDeleted": "Dans türü başarıyla silindi",
-    "addFirstType": "İlk Dans Türünü Ekle",
-    "deleteTitle": "Dans Türünü Sil",
-    "deleteDescription": "Bu işlem geri alınamaz. Dans türü sistemden kalıcı olarak silinecektir.",
-    "getStarted": "İlk dans türünüzü ekleyerek başlayın"
+    "noDanceTypes": "Ders türü bulunamadı",
+    "typeAdded": "Ders türü başarıyla eklendi",
+    "typeUpdated": "Ders türü başarıyla güncellendi",
+    "typeDeleted": "Ders türü başarıyla silindi",
+    "addFirstType": "İlk Ders Türünü Ekle",
+    "deleteTitle": "Ders Türünü Sil",
+    "deleteDescription": "Bu işlem geri alınamaz. Ders türü sistemden kalıcı olarak silinecektir.",
+    "getStarted": "İlk ders türünüzü ekleyerek başlayın"
   },
   "instructorRates": {
     "title": "Eğitmen Ücretleri",
     "description": "Eğitmenlerin ders başına ne kazanacağını belirleyin",
     "aboutTitle": "Eğitmen ücretleri hakkında",
-    "aboutDescription": "Her eğitmen için şube ve dans türü bazında bir ücret modeli seçin: ders değerinden yüzde, ders başı sabit, saatlik ya da öğrenci başı. İsterseniz asgari ders ücreti de tanımlayın.",
-    "specificToInstructor": "Oranlar Eğitmen + Şube + Dans Türü kombinasyonuna özgüdür",
+    "aboutDescription": "Her eğitmen için şube ve ders türü bazında bir ücret modeli seçin: ders değerinden yüzde, ders başı sabit, saatlik ya da öğrenci başı. İsterseniz asgari ders ücreti de tanımlayın.",
+    "specificToInstructor": "Oranlar Eğitmen + Şube + Ders Türü kombinasyonuna özgüdür",
     "earnAutomatically": "Hakediş yoklama kaydedildiğinde hesaplanır, bir kayıt silindiğinde güncellenir",
     "multipleRates": "Ücret değişince yeni bir dönem ekleyin: o tarihten önceki dersler eski ücretle kalır, kapatılmış aylar hiç değişmez",
     "addNew": "Yeni Oran Ekle",
@@ -567,7 +567,7 @@
     "deleteRate": "Oranı Sil",
     "instructor": "Eğitmen",
     "branch": "Şube",
-    "danceType": "Dans Türü",
+    "danceType": "Ders Türü",
     "rate": "Oran",
     "rateAdded": "Oran başarıyla eklendi",
     "rateUpdated": "Oran başarıyla güncellendi",
@@ -575,7 +575,7 @@
     "noRates": "Henüz eğitmen oranı yapılandırılmadı",
     "selectInstructor": "Bir eğitmen seçin",
     "selectBranch": "Bir şube seçin",
-    "selectDanceType": "Bir dans türü seçin",
+    "selectDanceType": "Bir ders türü seçin",
     "ratesConfigured": "{count} oran yapılandırıldı",
     "show": "Göster",
     "hide": "Gizle",
@@ -650,7 +650,9 @@
       "timezone": "Saat dilimi",
       "timezoneHint": "Tarih hesapları ve oturum oluşturma bu saat dilimine göre yapılır.",
       "weekStart": "Haftanın başlangıç günü",
-      "weekStartHint": "Takvim ve haftalık yoklama limiti bu güne göre hesaplanır."
+      "weekStartHint": "Takvim ve haftalık yoklama limiti bu güne göre hesaplanır.",
+      "businessType": "İşletme türü",
+      "businessTypeHint": "Formlardaki örnekler buna göre gelir. Uygulamanın işleyişi değişmez."
     },
     "days": {
       "0": "Pazar",
@@ -726,7 +728,7 @@
   "filters": {
     "title": "Filtreler",
     "description": "Aramanızı iyileştirin",
-    "danceType": "Dans Türü",
+    "danceType": "Ders Türü",
     "branch": "Şube",
     "course": "Kurs",
     "hasCredits": "Kredileri Var",
@@ -860,7 +862,8 @@
       "suspend": "Askıya al",
       "activate": "Aktifleştir",
       "suspendConfirm": "Bu store askıya alınsın mı? Tüm kullanıcılar erişimini kaybeder.",
-      "createdAt": "Oluşturulma"
+      "createdAt": "Oluşturulma",
+      "businessType": "İşletme türü"
     },
     "branches": {
       "title": "Şubeler",
@@ -973,8 +976,8 @@
       "description": "Kurslar ve kasa şubeye bağlıdır; önce bir şube ekleyin."
     },
     "danceTypes": {
-      "title": "Henüz dans türü yok",
-      "description": "Salsa, bachata, tango… Kurslar ve paketler dans türüne göre gruplanır."
+      "title": "Henüz ders türü yok",
+      "description": "Kurslar ve paketler ders türüne göre gruplanır. Örneğin: {examples}."
     },
     "packages": {
       "title": "Henüz paket yok",
@@ -982,7 +985,7 @@
     },
     "instructorRates": {
       "title": "Henüz eğitmen oranı yok",
-      "description": "Eğitmenlerin şube ve dans türüne göre ne kadar kazandığını belirleyin."
+      "description": "Eğitmenlerin şube ve ders türüne göre ne kadar kazandığını belirleyin."
     }
   },
   "instructorEarnings": {
@@ -1009,7 +1012,7 @@
   "studios": {
     "loading": "Yükleniyor...",
     "title": "Stüdyolar",
-    "description": "Bu şubedeki dans stüdyolarını yönetin",
+    "description": "Bu şubedeki salonları yönetin",
     "add": "Stüdyo ekle",
     "name": "Stüdyo adı *",
     "descriptionLabel": "Açıklama",
@@ -1134,7 +1137,7 @@
     "instructorEarningRow": "Hakediş: {name}"
   },
   "addStudentDialog": {
-    "activeOnly": "Yalnızca bu dans türünde aktif paketi olan öğrencileri göster",
+    "activeOnly": "Yalnızca bu ders türünde aktif paketi olan öğrencileri göster",
     "loading": "Öğrenciler yükleniyor…",
     "name": "Ad",
     "email": "E-posta",
@@ -1149,7 +1152,7 @@
     "noneFound": "Öğrenci bulunamadı",
     "adding": "Ekleniyor…",
     "addCount": "{count} öğrenci ekle",
-    "withActivePackages": "Bu dans türünde aktif paketi olan {count} öğrenci",
+    "withActivePackages": "Bu ders türünde aktif paketi olan {count} öğrenci",
     "selectedCount": "{count} öğrenci seçildi"
   },
   "forms": {
@@ -1196,16 +1199,16 @@
     "create": "Şube oluştur"
   },
   "danceTypeForm": {
-    "name": "Dans türü adı",
-    "namePlaceholder": "örn. Bale, Hip hop, Modern",
-    "descriptionPlaceholder": "Bu dans stilini anlatın…",
-    "nameMin": "Dans türü adı en az 2 karakter olmalı",
-    "editTitle": "Dans türünü düzenle",
-    "addTitle": "Yeni dans türü ekle",
-    "editDescription": "Dans türü bilgilerini güncelleyin",
-    "addDescription": "Kataloğunuza yeni bir dans stili ekleyin",
-    "update": "Dans türünü güncelle",
-    "create": "Dans türü oluştur"
+    "name": "Ders türü adı",
+    "namePlaceholder": "örn. {examples}",
+    "descriptionPlaceholder": "Bu ders türünü kısaca anlatın…",
+    "nameMin": "Ders türü adı en az 2 karakter olmalı",
+    "editTitle": "Ders türünü düzenle",
+    "addTitle": "Yeni ders türü ekle",
+    "editDescription": "Ders türü bilgilerini güncelleyin",
+    "addDescription": "Kataloğunuza yeni bir ders türü ekleyin",
+    "update": "Ders türünü güncelle",
+    "create": "Ders türü oluştur"
   },
   "courseForm": {
     "namePlaceholder": "örn. İleri seviye bale",
@@ -1213,11 +1216,11 @@
     "loadInstructorsFailed": "Eğitmenler yüklenirken bir hata oluştu",
     "nameMin": "Kurs adı en az 2 karakter olmalı",
     "branchRequired": "Lütfen bir şube seçin",
-    "danceTypeRequired": "Lütfen bir dans türü seçin",
+    "danceTypeRequired": "Lütfen bir ders türü seçin",
     "timeFormat": "Saat SS:dd biçiminde olmalı",
     "selectInstructors": "Eğitmen seç…",
     "loadInstructorsError": "Eğitmenler yüklenemedi: {error}",
-    "noInstructorRates": "⚠️ Bu dans türü için ücreti tanımlı eğitmen yok. Önce eğitmen ücretlerini tanımlayın.",
+    "noInstructorRates": "⚠️ Bu ders türü için ücreti tanımlı eğitmen yok. Önce eğitmen ücretlerini tanımlayın.",
     "instructorsFor": "{label} ({danceType} için)",
     "studentsAfterCreate": "💡 Kursu oluşturduktan sonra kurs sayfasından öğrenci ekleyebilirsiniz."
   },
@@ -1226,8 +1229,8 @@
     "selectInstructor": "Eğitmen seç",
     "branch": "Şube *",
     "selectBranch": "Şube seç",
-    "danceType": "Dans türü *",
-    "selectDanceType": "Dans türü seç",
+    "danceType": "Ders türü *",
+    "selectDanceType": "Ders türü seç",
     "ratio": "Oran (%)",
     "allRequired": "Tüm alanlar zorunlu",
     "ratioRange": "Oran 0 ile 100 arasında bir yüzde olmalı",
@@ -1281,7 +1284,7 @@
     "purchased": "{date} tarihinde alındı",
     "unknownCourse": "Bilinmeyen kurs",
     "unknownPackage": "Bilinmeyen paket",
-    "danceTypeLabel": "Dans türü:",
+    "danceTypeLabel": "Ders türü:",
     "branchLabel": "Şube:",
     "classesAttended": "{count} derse katıldı",
     "monthSummary": "Katılım {present}/{total}",
@@ -1320,7 +1323,7 @@
       "moveDescription": "{course} yerine geçeceği sınıfı seçin. Geçmiş yoklamalar ve krediler korunur.",
       "noCourses": "Öğrencinin kayıtlı olmadığı başka sınıf yok.",
       "students": "{count, plural, one {# öğrenci} other {# öğrenci}}",
-      "noCredits": "Bu dans türünde kredisi yok",
+      "noCredits": "Bu ders türünde kredisi yok",
       "cancel": "Vazgeç",
       "add": "Ekle",
       "move": "Taşı",
@@ -1333,7 +1336,7 @@
     "subtitle": "Şube bilgileri",
     "address": "Adres",
     "studiosTitle": "Stüdyolar",
-    "studiosDescription": "Bu şubenin dans stüdyolarını ve salonlarını yönetin",
+    "studiosDescription": "Bu şubenin salonlarını yönetin",
     "manageStudios": "Stüdyoları yönet"
   },
   "courseSessions": {
@@ -1379,11 +1382,11 @@
     "subtitle": "Paket detayları",
     "totalCredits": "Toplam kredi",
     "price": "Fiyat",
-    "danceType": "Dans türü"
+    "danceType": "Ders türü"
   },
   "danceTypeDetail": {
-    "backToList": "← Dans türlerine dön",
-    "subtitle": "Dans stili",
+    "backToList": "← Ders türlerine dön",
+    "subtitle": "Ders türü",
     "description": "Açıklama"
   },
   "instructorSelector": {
@@ -1425,7 +1428,7 @@
     "title": "Eğitmen seç",
     "cancel": "İptal",
     "searchPlaceholder": "Eğitmen ara…",
-    "noneForDanceType": "Bu dans türü için eğitmen yok",
+    "noneForDanceType": "Bu ders türü için eğitmen yok",
     "noMatch": "Aramanızla eşleşen eğitmen yok",
     "forDanceType": "{name} için",
     "confirmCount": "Onayla ({count})"
@@ -1451,16 +1454,16 @@
     "moreActivities": "{count} etkinlik daha"
   },
   "instructorRateDrawer": {
-    "description": "Şube ve dans türüne göre eğitmen ücreti",
+    "description": "Şube ve ders türüne göre eğitmen ücreti",
     "editTitle": "Ücreti düzenle",
     "addTitle": "Yeni ücret ekle",
     "newPeriodTitle": "Yeni ücret dönemi",
     "newPeriodDescription": "Seçtiğiniz tarihten itibaren geçerli olacak ücreti girin"
   },
   "meta": {
-    "defaultTitle": "StudioDesk — Dans stüdyosu yönetimi",
-    "description": "Dans stüdyosu ve dans okulu programı: yoklama, ders paketi, ders programı, eğitmen hakedişi ve kasa tek yerde.",
-    "keywords": "dans stüdyosu, yönetim, ders programı, öğrenciler, eğitmenler"
+    "defaultTitle": "StudioDesk — Stüdyo yönetimi",
+    "description": "Dans, pilates, yoga, dövüş sanatları ve müzik stüdyoları için yönetim programı: yoklama, ders paketi, ders programı, eğitmen hakedişi ve kasa tek yerde.",
+    "keywords": "stüdyo yönetimi, stüdyo programı, dans stüdyosu, pilates stüdyosu, ders programı, öğrenciler, eğitmenler"
   },
   "attendanceDatePicker": {
     "today": "Bugün ({date})",
@@ -1506,7 +1509,7 @@
       "student_package": "paket satışı",
       "branch": "şube",
       "package": "paket",
-      "dance_type": "dans türü",
+      "dance_type": "ders türü",
       "attendance": "yoklama kaydı",
       "cash_register": "kasa kaydı",
       "organization": "stüdyo",
@@ -1542,7 +1545,7 @@
       "currency": "Para birimi",
       "weekStartDay": "Hafta başlangıcı",
       "attendancePerWeekLimit": "Haftalık katılım sınırı",
-      "danceTypeId": "Dans türü",
+      "danceTypeId": "Ders türü",
       "branchId": "Şube",
       "role": "Rol",
       "isActive": "Durum",
@@ -1608,7 +1611,7 @@
     "fetchStudentPackagesFailed": "Öğrencinin paketleri yüklenemedi",
     "fetchCoursesFailed": "Kurslar yüklenemedi",
     "checkCoursesFailed": "Bu günün kursları kontrol edilemedi",
-    "duplicateCourse": "Bu şubede bu gün için bu dans türünde zaten bir kurs var",
+    "duplicateCourse": "Bu şubede bu gün için bu ders türünde zaten bir kurs var",
     "createCourseFailed": "Kurs oluşturulamadı",
     "courseNotInOrg": "Kurs stüdyonuzda bulunamadı",
     "updateCourseFailed": "Kurs güncellenemedi",
@@ -1618,12 +1621,12 @@
     "insertSessionsFailed": "Dersler oluşturulamadı",
     "generateSessionsFailed": "Dersler oluşturulurken beklenmeyen bir hata oluştu",
     "fetchEnrolledStudentsFailed": "Kayıtlı öğrenciler yüklenemedi",
-    "fetchDanceTypesFailed": "Dans türleri yüklenemedi",
-    "danceTypeNotFound": "Dans türü bulunamadı",
-    "createDanceTypeFailed": "Dans türü oluşturulamadı",
-    "danceTypeNotInOrg": "Dans türü stüdyonuzda bulunamadı",
-    "updateDanceTypeFailed": "Dans türü güncellenemedi",
-    "deleteDanceTypeFailed": "Dans türü silinemedi",
+    "fetchDanceTypesFailed": "Ders türleri yüklenemedi",
+    "danceTypeNotFound": "Ders türü bulunamadı",
+    "createDanceTypeFailed": "Ders türü oluşturulamadı",
+    "danceTypeNotInOrg": "Ders türü stüdyonuzda bulunamadı",
+    "updateDanceTypeFailed": "Ders türü güncellenemedi",
+    "deleteDanceTypeFailed": "Ders türü silinemedi",
     "fetchAttendanceHistoryFailed": "Yoklama geçmişi yüklenemedi",
     "fetchPackageHistoryFailed": "Paket geçmişi yüklenemedi",
     "instructorAccessDenied": "Eğitmen bulunamadı",
@@ -1634,7 +1637,7 @@
     "updateNotVerified": "Güncelleme doğrulanamadı; değişiklik kaydedilmemiş olabilir",
     "deleteNotVerified": "Silme doğrulanamadı; kayıt hâlâ duruyor olabilir",
     "branchAccessDenied": "Şube bulunamadı",
-    "rateExists": "Bu eğitmen, şube ve dans türü için zaten bir ücret var",
+    "rateExists": "Bu eğitmen, şube ve ders türü için zaten bir ücret var",
     "createRateFailed": "Ücret oluşturulamadı",
     "rateNotFound": "Ücret bulunamadı",
     "accessDenied": "Erişim reddedildi",
@@ -1811,7 +1814,7 @@
     "setupProgress": "{done}/{total} tamamlandı",
     "setup": {
       "branches": "Şube ekleyin",
-      "danceTypes": "Dans türlerini ekleyin",
+      "danceTypes": "Ders türlerini ekleyin",
       "instructors": "Eğitmenleri ekleyin",
       "rates": "Eğitmen ücretlerini belirleyin",
       "packages": "Paketleri oluşturun",
@@ -1857,7 +1860,7 @@
     "setup": "Stüdyo kurulumu",
     "packages": "Paketler",
     "branches": "Şubeler",
-    "danceTypes": "Dans türleri",
+    "danceTypes": "Ders türleri",
     "settings": "Ayarlar",
     "instructorPayouts": "Ödemeler",
     "courseProfitability": "Kârlılık",
@@ -1891,10 +1894,10 @@
   },
   "site": {
     "meta": {
-      "title": "StudioDesk: dans stüdyoları için yoklama, ders paketi ve eğitmen hakedişi",
+      "title": "StudioDesk: dans, pilates, yoga ve dövüş sanatları stüdyoları için yoklama, ders paketi ve eğitmen hakedişi",
       "description": "Ders paketlerini satın, haftalık programı yönetin, yoklamayı telefondan alın ve ayı eğitmen hakedişleri hesaplanmış olarak kapatın.",
-      "keywords": "dans stüdyosu programı, stüdyo programı, dans okulu programı, öğrenci kayıt takip programı, yoklama programı, ders paketi takibi, eğitmen hakediş, stüdyo yönetim yazılımı",
-      "ogTitle": "Dans stüdyoları için yoklama, ders paketi ve eğitmen hakedişi"
+      "keywords": "stüdyo programı, stüdyo yönetim programı, dans stüdyosu programı, pilates stüdyosu programı, yoga stüdyosu programı, karate okulu programı, müzik kursu programı, öğrenci kayıt takip programı, yoklama programı, ders paketi takibi, eğitmen hakediş",
+      "ogTitle": "Grup dersi veren stüdyolar için yoklama, ders paketi ve eğitmen hakedişi"
     },
     "skip": "İçeriğe geç",
     "nav": {
@@ -1907,7 +1910,8 @@
       "demo": "Demo iste",
       "openMenu": "Menüyü aç",
       "closeMenu": "Menüyü kapat",
-      "pricing": "Fiyatlar"
+      "pricing": "Fiyatlar",
+      "who": "Kimler için"
     },
     "hero": {
       "title": "Stüdyonuzu defterle değil, StudioDesk'le yönetin",
@@ -1923,7 +1927,7 @@
         "save": "Yoklamayı kaydet",
         "saved": "Kaydedildi: {present} geldi, {absent} gelmedi"
       },
-      "badge": "Dans stüdyoları için",
+      "badge": "Dans, pilates, yoga, dövüş sanatları ve müzik stüdyoları için",
       "stage": {
         "today": "Bugün",
         "lessons": "ders",
@@ -1933,7 +1937,8 @@
         "sell": "Paket sat",
         "pay": "Bu ay verilen ders",
         "payNote": "eğitmen hakedişi"
-      }
+      },
+      "badgeItems": "Dans stüdyoları için|Pilates stüdyoları için|Yoga stüdyoları için|Dövüş sanatları okulları için|Müzik ve sanat kursları için|Butik fitness stüdyoları için"
     },
     "how": {
       "title": "Satıştan ay sonuna kadar",
@@ -1941,7 +1946,7 @@
       "steps": {
         "sell": {
           "title": "Paketi satın",
-          "text": "Öğrenciye dans türüne özel kredi paketi satın; ödeme o anda kasaya işlenir."
+          "text": "Öğrenciye ders türüne özel kredi paketi satın; ödeme o anda kasaya işlenir."
         },
         "schedule": {
           "title": "Programı kurun",
@@ -1981,13 +1986,11 @@
           "expense": "Gider"
         }
       },
-      "eyebrow": "Nasıl çalışır",
       "stepLabel": "Adım {n}/{total}"
     },
     "features": {
       "title": "Masada her gün yapılan işler, tek ekranda",
       "lead": "Muhasebe programı ya da genel bir CRM değil. Ders, kredi ve eğitmen üzerine kurulu.",
-      "eyebrow": "Özellikler",
       "bento": {
         "attendance": {
           "title": "Yoklama, öğrenciler çıkmadan",
@@ -2004,7 +2007,7 @@
         },
         "pay": {
           "title": "Hakediş yoklamadan çıkar",
-          "text": "Eğitmen, şube ve dans türüne göre ücret. Yerine giren eğitmen kendi dersinin hakedişini alır."
+          "text": "Eğitmen, şube ve ders türüne göre ücret. Yerine giren eğitmen kendi dersinin hakedişini alır."
         },
         "branches": {
           "title": "Tüm şubeler tek hesapta",
@@ -2027,7 +2030,7 @@
       "items": {
         "setup": {
           "q": "Kurulum ne kadar sürer?",
-          "a": "Şube, dans türü, eğitmen ve paketlerinizi ilk görüşmede birlikte tanımlıyoruz. Öğrencilerinizi ekledikten sonra aynı gün yoklama almaya başlayabilirsiniz."
+          "a": "Şube, ders türü, eğitmen ve paketlerinizi ilk görüşmede birlikte tanımlıyoruz. Öğrencilerinizi ekledikten sonra aynı gün yoklama almaya başlayabilirsiniz."
         },
         "devices": {
           "q": "Hangi cihazlarda çalışır?",
@@ -2051,7 +2054,6 @@
         }
       },
       "lead": "Stüdyoların bize en çok sorduğu sorular.",
-      "eyebrow": "SSS",
       "cardTitle": "Başka bir sorunuz mu var?",
       "cardText": "Demo formuna yazın, aradığımızda cevaplayalım.",
       "cardButton": "Demo formuna yazın"
@@ -2103,7 +2105,6 @@
           "consent": "Devam etmek için aydınlatma metnini onaylayın."
         }
       },
-      "eyebrow": "Başlayın",
       "cards": {
         "c1": {
           "title": "İndirilecek uygulama",
@@ -2129,7 +2130,7 @@
       }
     },
     "footer": {
-      "tagline": "Dans stüdyoları için yoklama, ders paketi ve eğitmen hakedişi.",
+      "tagline": "Ders veren stüdyolar için yoklama, ders paketi ve eğitmen hakedişi.",
       "product": "Ürün",
       "how": "Nasıl çalışır",
       "features": "Özellikler",
@@ -2141,7 +2142,8 @@
       "legal": "Yasal",
       "cookiePreferences": "Çerez tercihleri",
       "copyright": "© {year} SFDYAZILIM. Tüm hakları saklıdır.",
-      "pricing": "Fiyatlar"
+      "pricing": "Fiyatlar",
+      "forWho": "Kimler için"
     },
     "legalTitles": {
       "kvkk": "KVKK Aydınlatma Metni",
@@ -2155,18 +2157,18 @@
     },
     "blog": {
       "title": "Blog",
-      "lead": "Dans stüdyosu işletmek üzerine pratik rehberler: yoklama, ders paketleri, ders programı, eğitmen hakedişi, öğrenci bağlılığı ve program seçimi.",
+      "lead": "Stüdyo işletmek üzerine pratik rehberler: dans, pilates, yoga, dövüş sanatları ve müzik okulları için yoklama, ders paketleri, ders programı, eğitmen hakedişi ve program seçimi.",
       "minutes": "{count} dk okuma",
       "back": "Tüm yazılar",
       "ctaTitle": "Kendi stüdyonuzla deneyin",
       "ctaText": "StudioDesk'i kendi ders ve paketlerinizle, görüşerek birlikte kuruyoruz.",
       "ctaButton": "Demo iste",
       "more": "Diğer yazılar",
-      "metaTitle": "Dans stüdyosu yönetimi blogu"
+      "metaTitle": "Stüdyo yönetimi blogu"
     },
     "marquee": {
-      "title": "Her türden dans stüdyosu için",
-      "items": "Salsa,Bachata,Tango,Bale,Hip hop,Modern dans,Kizomba,Zeybek,Halk dansları,Çocuk balesi,Latin,Swing"
+      "title": "Grup dersi veren her stüdyo için",
+      "items": "Salsa,Reformer pilates,Yoga,Karate,Bale,Taekwondo,Gitar,Hip hop,Kick boks,Piyano,Spinning,Tango,Mat pilates,Resim,Bachata,HIIT"
     },
     "compare": {
       "title": "Aynı hafta, defter olmadan",
@@ -2199,11 +2201,9 @@
           "before": "Satışlar ile kasa defteri bir türlü tutmaz.",
           "after": "Her paket satışı anında gelir olarak işlenir."
         }
-      },
-      "eyebrow": "Önce ve sonra"
+      }
     },
     "pricing": {
-      "eyebrow": "Fiyatlar",
       "title": "Stüdyonuzla birlikte büyüyen planlar",
       "lead": "Her planda kurulumu sizinle birlikte yapıyoruz. İstediğiniz zaman değiştirebilir ya da bırakabilirsiniz.",
       "billingLabel": "Ödeme dönemi",
@@ -2233,6 +2233,26 @@
           "features": "Sınırsız şube|Sınırsız öğrenci|Sınırsız ekip üyesi|Şubeye göre ayrı program ve kasa|Stüdyo planındaki her şey|Kuruluma özel destek"
         }
       }
+    },
+    "who": {
+      "title": "Ders veren her stüdyoya uyar",
+      "lead": "Haftalık grup dersi, ders paketi ve eğitmen ücreti olan her işletme aynı işleri yapar. Kendi stüdyonuza göre örnekleri görün.",
+      "more": "Nasıl kullanılır",
+      "otherTitle": "Stüdyonuz listede yok mu?",
+      "otherText": "Çocuk atölyesi, yüzme okulu, jimnastik kulübü… Ders, paket ve yoklama varsa StudioDesk büyük ihtimalle uyar. Birlikte bakalım.",
+      "otherCta": "Demo isteyin"
+    },
+    "sectors": {
+      "badge": "{name} için",
+      "demo": "Demo isteyin",
+      "how": "Nasıl çalıştığını görün",
+      "examplesLabel": "Örnek ders türleri",
+      "painsTitle": "Defter ve Excel'le neler zorlaşıyor",
+      "fitTitle": "StudioDesk {name} için nasıl çalışır",
+      "setupLead": "İlk görüşmede birlikte kurduğumuz yapıya bir örnek.",
+      "faqTitle": "Sık sorulanlar",
+      "reading": "İlgili yazılar",
+      "others": "Diğer stüdyolar"
     }
   },
   "instructorPay": {
@@ -2535,7 +2555,7 @@
       },
       "birthday": {
         "name": "Doğum günü kutlama",
-        "body": "Doğum gününüz kutlu olsun {first_name}! Yeni yaşınızda bol dans ve mutluluk dileriz. {studio}"
+        "body": "Doğum gününüz kutlu olsun {first_name}! Yeni yaşınızın sağlık ve mutlulukla geçmesini dileriz. {studio}"
       },
       "classInvite": {
         "name": "Derse davet",
@@ -2593,6 +2613,24 @@
       "noPhone": "telefon yok",
       "addToCourse": "Kursa ekle",
       "added": "Öğrenci kursa eklendi"
+    }
+  },
+  "businessTypes": {
+    "options": {
+      "dance": "Dans okulu / stüdyosu",
+      "pilates_yoga": "Pilates / yoga stüdyosu",
+      "martial_arts": "Dövüş sanatları okulu",
+      "music_art": "Müzik / sanat kursu",
+      "fitness": "Butik fitness / grup dersleri",
+      "other": "Diğer"
+    },
+    "examples": {
+      "dance": "Salsa, Bachata, Bale",
+      "pilates_yoga": "Reformer pilates, Mat pilates, Hatha yoga",
+      "martial_arts": "Karate, Taekwondo, Kick boks",
+      "music_art": "Gitar, Piyano, Resim",
+      "fitness": "HIIT, Spinning, Fonksiyonel antrenman",
+      "other": "Başlangıç grubu, Atölye, Özel ders"
     }
   }
 }

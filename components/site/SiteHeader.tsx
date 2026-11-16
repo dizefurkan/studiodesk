@@ -24,6 +24,7 @@ export function SiteHeader() {
   }, [])
 
   const links = [
+    { href: '/#who', label: t('who') },
     { href: '/#how', label: t('how') },
     { href: '/#features', label: t('features') },
     { href: '/#pricing', label: t('pricing') },
@@ -35,7 +36,7 @@ export function SiteHeader() {
     <header className="sticky top-3 z-40 px-3 sm:top-4">
       <div
         className={cn(
-          'mx-auto max-w-3xl rounded-full bg-ink text-ink-foreground transition-shadow',
+          'mx-auto max-w-4xl rounded-full bg-ink text-ink-foreground transition-shadow',
           scrolled && 'shadow-[0_12px_40px_-12px_rgb(var(--shadow-ink)/0.45)]'
         )}
       >
@@ -44,12 +45,12 @@ export function SiteHeader() {
             <Logo inverted />
           </Link>
 
-          <nav className="hidden items-center md:flex" aria-label={t('label')}>
+          <nav className="hidden items-center lg:flex" aria-label={t('label')}>
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
-                className="rounded-full px-3 py-2 text-sm text-ink-foreground/70 transition-colors hover:text-ink-foreground"
+                className="whitespace-nowrap rounded-full px-3 py-2 text-sm text-ink-foreground/70 transition-colors hover:text-ink-foreground"
               >
                 {l.label}
               </Link>
@@ -57,7 +58,7 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center gap-1">
-            <Link href="/login" className="hidden rounded-full px-3 py-2 text-sm text-ink-foreground/70 transition-colors hover:text-ink-foreground sm:block">
+            <Link href="/login" className="hidden whitespace-nowrap rounded-full px-3 py-2 text-sm text-ink-foreground/70 transition-colors hover:text-ink-foreground sm:block">
               {t('signIn')}
             </Link>
             <Button asChild size="sm" className="hidden h-10 rounded-full bg-highlight px-4 text-highlight-foreground hover:bg-highlight/90 sm:inline-flex">
@@ -66,7 +67,7 @@ export function SiteHeader() {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full text-ink-foreground hover:bg-ink-foreground/10 hover:text-ink-foreground md:hidden"
+              className="rounded-full text-ink-foreground hover:bg-ink-foreground/10 hover:text-ink-foreground lg:hidden"
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-label={open ? t('closeMenu') : t('openMenu')}
@@ -85,7 +86,7 @@ export function SiteHeader() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="mx-auto mt-2 max-w-3xl rounded-3xl bg-ink p-3 text-ink-foreground md:hidden"
+            className="mx-auto mt-2 max-w-4xl rounded-3xl bg-ink p-3 text-ink-foreground lg:hidden"
             aria-label={t('label')}
           >
             <div className="flex flex-col">

@@ -25,10 +25,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StudioDesk - Dance Studio Management",
+  title: "StudioDesk - Studio Management",
   applicationName: "StudioDesk",
-  description: "All-in-one platform for managing dance studios",
-  keywords: "dance studio, management, scheduling, students, instructors",
+  description: "All-in-one platform for dance, Pilates, yoga, martial arts and music studios",
+  keywords: "studio management, dance studio, Pilates studio, scheduling, students, instructors",
 };
 
 export default async function RootLayout({

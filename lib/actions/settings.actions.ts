@@ -1,5 +1,7 @@
 'use server'
 
+import { BUSINESS_TYPES } from '@/lib/business/types'
+
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
@@ -56,6 +58,7 @@ export async function updateGeneralSettings(input: {
   name: string
   timezone: string
   week_start_day: number
+  business_type?: string
 }): Promise<Result> {
   try {
     const { organization } = await requireOrgRole(['owner', 'manager'])
@@ -64,7 +67,14 @@ export async function updateGeneralSettings(input: {
     if (!Number.isInteger(input.week_start_day) || input.week_start_day < 0 || input.week_start_day > 6)
       return { error: await actionError('invalidWeekStart') }
     if (!input.timezone) return { error: await actionError('timezoneRequired') }
-    await updateOrganization(organization.id, { name, timezone: input.timezone, week_start_day: input.week_start_day })
+    if (input.business_type !== undefined && !(BUSINESS_TYPES as readonly string[]).includes(input.business_type))
+      return { error: await actionError('invalidInput') }
+    await updateOrganization(organization.id, {
+      name,
+      timezone: input.timezone,
+      week_start_day: input.week_start_day,
+      ...(input.business_type ? { business_type: input.business_type } : {}),
+    })
     return done()
   } catch (e) {
     return fail(e)

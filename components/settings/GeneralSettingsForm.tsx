@@ -11,9 +11,11 @@ import { Spinner } from '@/components/ui/spinner'
 import { TIMEZONES } from '@/config/timezones'
 import { updateGeneralSettings } from '@/lib/actions/settings.actions'
 import { useServerAction } from '@/hooks/useServerAction'
+import { BusinessTypeSelect } from '@/components/business/BusinessTypeSelect'
+import type { BusinessType } from '@/lib/business/types'
 
 interface Props {
-  initial: { name: string; timezone: string; week_start_day: number }
+  initial: { name: string; timezone: string; week_start_day: number; business_type: BusinessType }
   disabled: boolean
 }
 
@@ -23,12 +25,13 @@ export function GeneralSettingsForm({ initial, disabled }: Props) {
   const [name, setName] = useState(initial.name)
   const [timezone, setTimezone] = useState(initial.timezone)
   const [weekStart, setWeekStart] = useState(String(initial.week_start_day))
+  const [businessType, setBusinessType] = useState<BusinessType>(initial.business_type)
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault()
-        run(() => updateGeneralSettings({ name, timezone, week_start_day: Number(weekStart) }), {
+        run(() => updateGeneralSettings({ name, timezone, week_start_day: Number(weekStart), business_type: businessType }), {
           success: t('saved'),
         })
       }}
@@ -46,6 +49,16 @@ export function GeneralSettingsForm({ initial, disabled }: Props) {
                 minLength={2}
                 disabled={disabled}
               />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="org-business-type">{t('generalForm.businessType')}</FieldLabel>
+              <BusinessTypeSelect
+                id="org-business-type"
+                value={businessType}
+                onValueChange={setBusinessType}
+                disabled={disabled}
+              />
+              <FieldDescription>{t('generalForm.businessTypeHint')}</FieldDescription>
             </Field>
             <Field>
               <FieldLabel htmlFor="org-timezone">{t('generalForm.timezone')}</FieldLabel>

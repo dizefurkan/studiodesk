@@ -11,6 +11,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { SUPPORTED_CURRENCIES } from '@/config/currencies'
 import { createStore } from '@/lib/actions/backoffice.actions'
 import { useServerAction } from '@/hooks/useServerAction'
+import { BusinessTypeSelect } from '@/components/business/BusinessTypeSelect'
+import type { BusinessType } from '@/lib/business/types'
 
 export function CreateStoreForm({ accounts }: { accounts: { id: string; label: string }[] }) {
   const t = useTranslations('backoffice')
@@ -20,13 +22,14 @@ export function CreateStoreForm({ accounts }: { accounts: { id: string; label: s
   const [branchName, setBranchName] = useState('')
   const [ownerUserId, setOwnerUserId] = useState('')
   const [currency, setCurrency] = useState('TRY')
+  const [businessType, setBusinessType] = useState<BusinessType>('dance')
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault()
         run(async () => {
-          const res = await createStore({ name, branchName, ownerUserId, currency })
+          const res = await createStore({ name, branchName, ownerUserId, currency, businessType })
           if (res.data) router.push(`/backoffice/stores/${res.data.id}`)
           return res
         })
@@ -60,6 +63,10 @@ export function CreateStoreForm({ accounts }: { accounts: { id: string; label: s
               {t('stores.noAccounts')} <Link href="/backoffice/accounts">{t('nav.accounts')}</Link>
             </FieldDescription>
           )}
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="store-business-type">{t('stores.businessType')}</FieldLabel>
+          <BusinessTypeSelect id="store-business-type" value={businessType} onValueChange={setBusinessType} />
         </Field>
         <Field>
           <FieldLabel htmlFor="store-currency">{t('stores.currency')}</FieldLabel>

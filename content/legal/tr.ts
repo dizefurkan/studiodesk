@@ -375,7 +375,7 @@ export const legalTr: Record<Slug, LegalDoc> = {
         blocks: [
           {
             type: 'p',
-            text: `Bu metin, ${COMPANY.product} yazılım hizmetinin uzaktan iletişim araçlarıyla satışına ilişkin koşulları açıklar. Hizmet esas olarak dans stüdyolarına, yani ticari veya mesleki amaçla hareket eden alıcılara sunulur; bu durumda teklif veya sipariş formunda yazılı koşullar uygulanır. Alıcının 6502 sayılı Tüketicinin Korunması Hakkında Kanun kapsamında tüketici olduğu hallerde Mesafeli Sözleşmeler Yönetmeliği hükümleri ayrıca geçerlidir.`,
+            text: `Bu metin, ${COMPANY.product} yazılım hizmetinin uzaktan iletişim araçlarıyla satışına ilişkin koşulları açıklar. Hizmet esas olarak dans, pilates, yoga, dövüş sanatları, müzik ve benzeri alanlarda ders veren stüdyolara, yani ticari veya mesleki amaçla hareket eden alıcılara sunulur; bu durumda teklif veya sipariş formunda yazılı koşullar uygulanır. Alıcının 6502 sayılı Tüketicinin Korunması Hakkında Kanun kapsamında tüketici olduğu hallerde Mesafeli Sözleşmeler Yönetmeliği hükümleri ayrıca geçerlidir.`,
           },
         ],
       },

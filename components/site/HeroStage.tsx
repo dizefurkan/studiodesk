@@ -65,9 +65,9 @@ export function HeroStage() {
             <p className="mt-1 font-display text-7xl font-medium tabular-nums leading-none">4</p>
             <p className="mt-1 text-sm">{t('lessons')}</p>
             <ul className="mt-6 space-y-1.5 text-sm">
-              <li className="flex justify-between"><span>Bale</span><span className="tabular-nums">18:30</span></li>
+              <li className="flex justify-between"><span>Reformer</span><span className="tabular-nums">18:30</span></li>
               <li className="flex justify-between"><span>Salsa 1</span><span className="tabular-nums">19:00</span></li>
-              <li className="flex justify-between"><span>Tango</span><span className="tabular-nums">20:00</span></li>
+              <li className="flex justify-between"><span>Karate</span><span className="tabular-nums">20:00</span></li>
             </ul>
           </motion.div>
         </div>

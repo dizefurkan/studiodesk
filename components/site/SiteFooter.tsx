@@ -1,12 +1,14 @@
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { Logo } from '@/components/brand/Logo'
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
 import { ThemeSwitcher } from '@/components/common/ThemeSwitcher'
 import { LEGAL_SLUGS } from '@/content/legal'
 import { CookiePreferencesLink } from './CookiePreferencesLink'
+import { getSectors } from '@/content/sectors'
 
 export async function SiteFooter() {
+  const sectors = getSectors(await getLocale())
   const t = await getTranslations('site.footer')
   const tl = await getTranslations('site.legalTitles')
   const link = 'text-sm text-ink-foreground/65 transition-colors hover:text-ink-foreground'
@@ -31,6 +33,14 @@ export async function SiteFooter() {
         {/* links card */}
         <div className="grid gap-8 rounded-3xl bg-ink p-7 text-ink-foreground sm:grid-cols-3">
           <div className="space-y-3">
+            <h2 className="text-sm font-medium">{t('forWho')}</h2>
+            <ul className="space-y-2">
+              {sectors.map((s) => (
+                <li key={s.key}><Link href={`/for/${s.slug}`} className={link}>{s.name}</Link></li>
+              ))}
+            </ul>
+          </div>
+          <div className="space-y-3">
             <h2 className="text-sm font-medium">{t('product')}</h2>
             <ul className="space-y-2">
               <li><Link href="/#features" className={link}>{t('features')}</Link></li>
@@ -41,9 +51,9 @@ export async function SiteFooter() {
               <li><Link href="/login" className={link}>{t('signIn')}</Link></li>
             </ul>
           </div>
-          <div className="space-y-3 sm:col-span-2">
+          <div className="space-y-3">
             <h2 className="text-sm font-medium">{t('legal')}</h2>
-            <ul className="grid gap-2 sm:grid-cols-2">
+            <ul className="space-y-2">
               {LEGAL_SLUGS.map((slug) => (
                 <li key={slug}><Link href={`/legal/${slug}`} className={link}>{tl(slug)}</Link></li>
               ))}

@@ -1214,6 +1214,7 @@ export type Database = {
       }
       organizations: {
         Row: {
+          business_type: string
           seeded_message_templates: string[]
           allow_makeup_sessions: boolean | null
           allow_manager_invite: boolean | null
@@ -1231,6 +1232,7 @@ export type Database = {
           week_start_day: number | null
         }
         Insert: {
+          business_type?: string
           seeded_message_templates?: string[]
           allow_makeup_sessions?: boolean | null
           allow_manager_invite?: boolean | null
@@ -1248,6 +1250,7 @@ export type Database = {
           week_start_day?: number | null
         }
         Update: {
+          business_type?: string
           seeded_message_templates?: string[]
           allow_makeup_sessions?: boolean | null
           allow_manager_invite?: boolean | null

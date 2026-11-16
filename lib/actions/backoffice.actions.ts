@@ -1,5 +1,7 @@
 'use server'
 
+import { toBusinessType } from '@/lib/business/types'
+
 import { revalidatePath } from 'next/cache'
 import type { User } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -189,6 +191,7 @@ export async function createStore(input: {
   branchName: string
   ownerUserId: string
   currency?: string
+  businessType?: string
 }): Promise<Result<{ id: string }>> {
   try {
     await requirePlatformAdmin()
@@ -200,7 +203,7 @@ export async function createStore(input: {
 
     const { data: org, error: orgErr } = await db()
       .from('organizations')
-      .insert({ name, currency: input.currency || 'TRY' })
+      .insert({ name, currency: input.currency || 'TRY', business_type: toBusinessType(input.businessType ?? 'dance') })
       .select('id')
       .single()
     if (orgErr) throw orgErr

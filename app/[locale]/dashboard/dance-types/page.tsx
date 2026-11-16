@@ -6,6 +6,8 @@ import { DanceTypesPageClient } from './dance-types-client'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Plus } from 'lucide-react'
+import { getOrganization } from '@/lib/auth/getOrganization'
+import { toBusinessType } from '@/lib/business/types'
 
 const PAGE_SIZE = 10
 
@@ -55,7 +57,9 @@ export default async function DanceTypesPage({
       ) : (
         <EmptyState
           title={t('emptyStates.danceTypes.title')}
-          description={t('emptyStates.danceTypes.description')}
+          description={t('emptyStates.danceTypes.description', {
+            examples: t(`businessTypes.examples.${toBusinessType((await getOrganization())?.business_type)}`),
+          })}
           action={createAction}
         />
       )}

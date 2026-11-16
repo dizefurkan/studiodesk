@@ -1,6 +1,6 @@
 # Dans dışı stüdyolara açılma: etki analizi
 
-_Tarih: 2026-11-15 · Durum: beklemede, sonra bakılacak_
+_Tarih: 2026-11-15 · Durum: A + B uygulandı (2026-11-16)_
 
 ## Neden
 StudioDesk şu an yalnızca dans okullarına yönelik (README, veri modeli, çeviriler, site, blog). Ama çekirdek kurgu
@@ -55,3 +55,11 @@ StudioDesk şu an yalnızca dans okullarına yönelik (README, veri modeli, çev
 - Sektör başına ayrı açılış sayfası (`/pilates`, `/dovus-sanatlari`) yapılacak mı?
 - Hangi sektörler ilk hedef?
 - Canlıdaki `dance_types` / `history_logs` kayıt sayılarını kontrol et (C seçilirse).
+
+## Uygulandı (16 Kasım 2026): A + B
+- **Dil:** Uygulamada "Dans türü" → "Ders türü" (EN "Class type"); meta, boş durumlar ve doğum günü şablonu genel. DB/kod adları (`dance_types`, `/dashboard/dance-types`) bilerek aynı kaldı.
+- **İşletme türü:** `organizations.business_type` (dance, pilates_yoga, martial_arts, music_art, fitness, other). Ayarlar > Genel ve backoffice'te yeni stüdyo formunda seçiliyor; ders türü örnekleri buna göre geliyor.
+- **Site:** Ana sayfa metinleri genel, "Kimler için" bölümü, `/for/[slug]` sektör sayfaları (5 sektör, TR+EN, FAQ JSON-LD, sitemap), footer'da sektör linkleri.
+- **Blog:** Pilates/yoga, dövüş sanatları, müzik/sanat, butik fitness için TR+EN birer yazı (`content/blog/sectors.*.ts`).
+- **Yasal:** Mesafeli satış metninde hedef kitle cümlesi genelleştirildi.
+- **Açık:** Online rezervasyon ve ders kontenjanı yok (sektör SSS'lerinde açıkça yazıldı). Eğitmen rolü kasa ekranını görebiliyor; ayrıca bakılmalı.

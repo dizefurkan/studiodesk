@@ -2,8 +2,13 @@ import { SUPPORTED_LOCALES, type Locale } from '@/lib/i18n/config'
 import type { BlogPost } from './types'
 import { postsTr } from './tr'
 import { postsEn } from './en'
+import { sectorPostsTr } from './sectors.tr'
+import { sectorPostsEn } from './sectors.en'
 
-const BY_LOCALE: Record<Locale, BlogPost[]> = { tr: postsTr, en: postsEn }
+const BY_LOCALE: Record<Locale, BlogPost[]> = {
+  tr: [...postsTr, ...sectorPostsTr],
+  en: [...postsEn, ...sectorPostsEn],
+}
 
 function list(locale: string): BlogPost[] {
   return BY_LOCALE[locale as Locale] ?? postsEn
