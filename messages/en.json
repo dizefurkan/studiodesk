@@ -413,7 +413,9 @@
     "searchCourse": "Search course...",
     "time": "Time",
     "selectDayViewClasses": "In month view, click on a day box to see the classes scheduled for that day",
-    "createdOn": "Created {date}"
+    "createdOn": "Created {date}",
+    "firstLesson": "First lesson: {date}",
+    "firstLessonPlanned": "First lesson (planned): {date}"
   },
   "attendance": {
     "title": "Attendance",
@@ -1416,17 +1418,56 @@
       "low": "Low on credits",
       "empty": "Out of credits",
       "passive": "Passive",
-      "all": "All"
+      "all": "All",
+      "former": "Former"
     },
     "emptyFilter": {
       "active": "No active students in this class",
       "low": "No students low on credits",
       "empty": "No students out of credits",
       "passive": "No passive students in this class",
-      "all": "No students enrolled yet"
+      "all": "No students enrolled yet",
+      "former": "No students have left this class"
     },
     "removeConfirmTitle": "Remove {name} from this class?",
-    "removeConfirmDescription": "The student isn't deleted; their past attendance and credits are kept."
+    "removeConfirmDescription": "The student isn't deleted; their past attendance and credits are kept. They stay on the class's \"Former\" list.",
+    "creditsLeft": "{count, plural, one {# credit} other {# credits}}",
+    "perLesson": "{price}/lesson",
+    "passiveBadge": "Passive",
+    "removed": "{name} removed from the class",
+    "readded": "{name} added back to the class",
+    "actions": {
+      "move": "Change",
+      "extend": "Extend",
+      "remove": "Remove"
+    },
+    "former": {
+      "left": "Left",
+      "removed": "Removed from the class",
+      "movedTo": "Moved to:",
+      "readd": "Add back"
+    },
+    "extend": {
+      "title": "Extend package",
+      "description": "Move the package end date for {name} later, or add extra lessons.",
+      "noPackage": "The student has no package for this class type. Sell one first.",
+      "sell": "Sell a package",
+      "packageInfo": "{count, plural, one {# credit} other {# credits}} · ends {date}",
+      "noEnd": "no end date",
+      "newEnd": "New end date",
+      "newEndHint": "Quick picks count from the current end date (or today if it has passed).",
+      "quick": {
+        "7": "+1 week",
+        "14": "+2 weeks",
+        "30": "+1 month"
+      },
+      "pickDate": "Pick a date",
+      "addCredits": "Extra lessons",
+      "addCreditsHint": "For example for a cancelled class. Can go above the package size.",
+      "cancel": "Cancel",
+      "save": "Extend",
+      "saved": "Package extended for {name}"
+    }
   },
   "attendanceDetail": {
     "notAuthenticated": "Not signed in",
@@ -1570,7 +1611,8 @@
       "isActive": "Status",
       "birthDate": "Date of birth",
       "labels": "Labels",
-      "course": "Class"
+      "course": "Class",
+      "expireDate": "End date"
     },
     "values": {
       "isActive": {
@@ -1764,7 +1806,9 @@
     "labelExists": "A label with this name already exists",
     "saveLabelFailed": "Couldn't save the label",
     "deleteLabelFailed": "Couldn't delete the label",
-    "moveStudentFailed": "Couldn't change the student's class"
+    "moveStudentFailed": "Couldn't change the student's class",
+    "extendDatePast": "The new end date must be after today",
+    "extendPackageFailed": "Couldn't extend the package"
   },
   "attendanceSheet": {
     "markEveryone": "Mark {count, plural, one {# more student} other {# more students}} before saving.",
@@ -2651,5 +2695,13 @@
       "fitness": "HIIT, Spinning, Functional training",
       "other": "Beginners group, Workshop, Private lesson"
     }
+  },
+  "courseSummary": {
+    "title": "Attendance summary",
+    "lessons": "Lessons held",
+    "attendance": "Total attendance",
+    "records": "{count, plural, one {out of # record} other {out of # records}}",
+    "rate": "Attendance rate",
+    "earnings": "Total instructor pay"
   }
 }

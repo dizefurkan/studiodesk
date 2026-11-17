@@ -330,6 +330,61 @@ export type Database = {
           },
         ]
       }
+      course_student_departures: {
+        Row: {
+          course_id: string
+          id: string
+          joined_at: string | null
+          left_at: string
+          left_by: string | null
+          moved_to_course_id: string | null
+          reason: string
+          student_id: string
+        }
+        Insert: {
+          course_id: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string
+          left_by?: string | null
+          moved_to_course_id?: string | null
+          reason?: string
+          student_id: string
+        }
+        Update: {
+          course_id?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string
+          left_by?: string | null
+          moved_to_course_id?: string | null
+          reason?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_student_departures_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_student_departures_moved_to_course_id_fkey"
+            columns: ["moved_to_course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_student_departures_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_students: {
         Row: {
           course_id: string

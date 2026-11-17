@@ -413,7 +413,9 @@
     "searchCourse": "Kurs ara...",
     "time": "Saat",
     "selectDayViewClasses": "Ay görünümünde, günün kurslarını görmek için gün kutusuna tıklayın",
-    "createdOn": "Oluşturulma: {date}"
+    "createdOn": "Oluşturulma: {date}",
+    "firstLesson": "İlk ders: {date}",
+    "firstLessonPlanned": "İlk ders (planlanan): {date}"
   },
   "attendance": {
     "title": "Yoklama",
@@ -1416,17 +1418,56 @@
       "low": "Kredisi azalan",
       "empty": "Kredisi biten",
       "passive": "Pasif",
-      "all": "Tümü"
+      "all": "Tümü",
+      "former": "Eski"
     },
     "emptyFilter": {
       "active": "Bu kursta aktif öğrenci yok",
       "low": "Kredisi azalan öğrenci yok",
       "empty": "Kredisi biten öğrenci yok",
       "passive": "Bu kursta pasif öğrenci yok",
-      "all": "Henüz kayıtlı öğrenci yok"
+      "all": "Henüz kayıtlı öğrenci yok",
+      "former": "Bu kurstan ayrılan öğrenci yok"
     },
     "removeConfirmTitle": "{name} bu kurstan çıkarılsın mı?",
-    "removeConfirmDescription": "Öğrenci silinmez; geçmiş yoklamaları ve kredileri korunur."
+    "removeConfirmDescription": "Öğrenci silinmez; geçmiş yoklamaları ve kredileri korunur. Kursun \"Eski\" listesinde görünmeye devam eder.",
+    "creditsLeft": "{count, plural, one {# kredi} other {# kredi}}",
+    "perLesson": "{price}/ders",
+    "passiveBadge": "Pasif",
+    "removed": "{name} kurstan çıkarıldı",
+    "readded": "{name} kursa geri eklendi",
+    "actions": {
+      "move": "Değiştir",
+      "extend": "Uzat",
+      "remove": "Çıkar"
+    },
+    "former": {
+      "left": "Ayrıldı",
+      "removed": "Kurstan çıkarıldı",
+      "movedTo": "Geçtiği kurs:",
+      "readd": "Geri ekle"
+    },
+    "extend": {
+      "title": "Hak uzat",
+      "description": "{name} için paketin bitiş tarihini ileri alın ya da ek ders hakkı tanımlayın.",
+      "noPackage": "Öğrencinin bu ders türünde paketi yok. Önce paket satmanız gerekir.",
+      "sell": "Paket sat",
+      "packageInfo": "{count, plural, one {# kredi} other {# kredi}} · bitiş: {date}",
+      "noEnd": "süresiz",
+      "newEnd": "Yeni bitiş tarihi",
+      "newEndHint": "Hızlı seçimler mevcut bitiş tarihinden (geçmişse bugünden) itibaren sayılır.",
+      "quick": {
+        "7": "+1 hafta",
+        "14": "+2 hafta",
+        "30": "+1 ay"
+      },
+      "pickDate": "Tarih seç",
+      "addCredits": "Ek ders hakkı",
+      "addCreditsHint": "Örneğin iptal edilen bir ders için. Paket boyutunu aşabilir.",
+      "cancel": "Vazgeç",
+      "save": "Uzat",
+      "saved": "{name} için hak uzatıldı"
+    }
   },
   "attendanceDetail": {
     "notAuthenticated": "Giriş yapılmamış",
@@ -1570,7 +1611,8 @@
       "isActive": "Durum",
       "birthDate": "Doğum tarihi",
       "labels": "Etiketler",
-      "course": "Sınıf"
+      "course": "Sınıf",
+      "expireDate": "Bitiş tarihi"
     },
     "values": {
       "isActive": {
@@ -1764,7 +1806,9 @@
     "labelExists": "Bu adla bir etiket zaten var",
     "saveLabelFailed": "Etiket kaydedilemedi",
     "deleteLabelFailed": "Etiket silinemedi",
-    "moveStudentFailed": "Öğrencinin sınıfı değiştirilemedi"
+    "moveStudentFailed": "Öğrencinin sınıfı değiştirilemedi",
+    "extendDatePast": "Yeni bitiş tarihi bugünden sonra olmalıdır",
+    "extendPackageFailed": "Paket uzatılamadı"
   },
   "attendanceSheet": {
     "markEveryone": "Kaydetmeden önce {count} öğrenciyi daha işaretleyin.",
@@ -2651,5 +2695,13 @@
       "fitness": "HIIT, Spinning, Fonksiyonel antrenman",
       "other": "Başlangıç grubu, Atölye, Özel ders"
     }
+  },
+  "courseSummary": {
+    "title": "Yoklama özeti",
+    "lessons": "Yapılan ders",
+    "attendance": "Toplam katılım",
+    "records": "{count, plural, one {# yoklama kaydından} other {# yoklama kaydından}}",
+    "rate": "Katılım oranı",
+    "earnings": "Toplam eğitmen hakedişi"
   }
 }

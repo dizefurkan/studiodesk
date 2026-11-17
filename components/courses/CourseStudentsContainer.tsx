@@ -9,15 +9,18 @@ import { Users } from 'lucide-react'
 
 interface CourseStudentsContainerProps {
   courseId: string
+  courseName: string
   danceTypeId: string
   /** The course's labels; candidates reload when they change */
   labelIds?: string[]
 }
 
-export function CourseStudentsContainer({ courseId, danceTypeId, labelIds = [] }: CourseStudentsContainerProps) {
+export function CourseStudentsContainer({ courseId, courseName, danceTypeId, labelIds = [] }: CourseStudentsContainerProps) {
   const t = useTranslations()
   const [refreshKey, setRefreshKey] = useState(0)
   const [studentCount, setStudentCount] = useState(0)
+  // Bumped when someone leaves or rejoins the class, so the same-level list reloads too
+  const [candidatesKey, setCandidatesKey] = useState(0)
 
   const handleStudentsAdded = () => {
     // Trigger a re-render of CourseStudentsSection by changing the key
@@ -44,12 +47,14 @@ export function CourseStudentsContainer({ courseId, danceTypeId, labelIds = [] }
       </div>
       <CourseStudentsSection 
         key={`students-${refreshKey}`} 
-        courseId={courseId} 
+        courseId={courseId}
+        courseName={courseName}
         danceTypeId={danceTypeId}
-        onStudentsLoaded={(count) => setStudentCount(count)}
+        onStudentsLoaded={setStudentCount}
+        onChanged={() => setCandidatesKey((k) => k + 1)}
       />
       <CourseCandidates
-        key={`candidates-${refreshKey}-${labelIds.join(',')}`}
+        key={`candidates-${refreshKey}-${candidatesKey}-${labelIds.join(',')}`}
         courseId={courseId}
         onAdded={handleStudentsAdded}
       />

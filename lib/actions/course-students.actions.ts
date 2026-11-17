@@ -35,9 +35,13 @@ export async function getCourseStudents(courseId: string) {
             id,
             remaining_credits,
             expire_date,
+            purchase_date,
             packages(
               id,
-              dance_type_id
+              name,
+              dance_type_id,
+              price,
+              total_credits
             )
           )
         ),
@@ -134,15 +138,28 @@ export async function removeStudentFromCourse(courseId: string, studentId: strin
   try {
     const supabase = await createServerSupabaseClient()
 
-    const { error } = await (supabase
+    const { data: removed, error } = await (supabase
       .from('course_students'))
       .delete()
       .eq('course_id', courseId)
       .eq('student_id', studentId)
+      .select('joined_at')
 
     if (error) {
       console.error('Error removing student from course:', error)
       return { error: await actionError('removeStudentFromCourseFailed') }
+    }
+
+    // Keep them on the class's "Former students" list
+    if (removed && removed.length > 0) {
+      await recordDeparture({
+        organizationId: organization.id,
+        courseId,
+        studentId,
+        joinedAt: removed[0].joined_at,
+        reason: 'removed',
+        userId: user.id,
+      })
     }
 
     console.log('[removeStudentFromCourse] 🎯 Student removed successfully, now logging...')
@@ -375,12 +392,22 @@ export async function moveStudentToCourse(studentId: string, fromCourseId: strin
       .from('course_students')
       .upsert({ course_id: toCourseId, student_id: studentId }, { onConflict: 'course_id,student_id', ignoreDuplicates: true })
     if (addError) throw addError
-    const { error: removeError } = await admin
+    const { data: removed, error: removeError } = await admin
       .from('course_students')
       .delete()
       .eq('course_id', fromCourseId)
       .eq('student_id', studentId)
+      .select('joined_at')
     if (removeError) throw removeError
+    await recordDeparture({
+      organizationId: organization.id,
+      courseId: fromCourseId,
+      studentId,
+      joinedAt: removed?.[0]?.joined_at ?? null,
+      reason: 'moved',
+      movedToCourseId: toCourseId,
+      userId: user.id,
+    })
 
     const studentName = `${student.first_name} ${student.last_name}`.trim()
     await Promise.all([
@@ -399,5 +426,96 @@ export async function moveStudentToCourse(studentId: string, fromCourseId: strin
     unstable_rethrow(error)
     console.error('Error in moveStudentToCourse:', error)
     return { error: await actionError('moveStudentFailed') }
+  }
+}
+
+/** Remembers that a student left a class, for the class's "Former students" list. Never fails the caller. */
+async function recordDeparture(input: {
+  organizationId: string
+  courseId: string
+  studentId: string
+  joinedAt: string | null
+  reason: 'removed' | 'moved'
+  movedToCourseId?: string
+  userId: string
+}) {
+  try {
+    const admin = createAdminClient()
+    // Only for a course of this organization
+    const { data: course } = await admin
+      .from('courses')
+      .select('id, branches!inner(organization_id)')
+      .eq('id', input.courseId)
+      .eq('branches.organization_id', input.organizationId)
+      .maybeSingle()
+    if (!course) return
+    const { error } = await admin.from('course_student_departures').insert({
+      course_id: input.courseId,
+      student_id: input.studentId,
+      joined_at: input.joinedAt,
+      reason: input.reason,
+      moved_to_course_id: input.movedToCourseId ?? null,
+      left_by: input.userId,
+    })
+    if (error) console.error('Error recording departure:', error)
+  } catch (error) {
+    unstable_rethrow(error)
+    console.error('Error in recordDeparture:', error)
+  }
+}
+
+/**
+ * Students who left the class and aren't back in it: latest departure per student,
+ * with where they moved to and their current credits for this class type.
+ */
+export async function getFormerCourseStudents(courseId: string) {
+  const organization = await getOrganization()
+  if (!organization) return { error: await actionError('noOrganization') }
+
+  try {
+    const admin = createAdminClient()
+    const { data: course } = await admin
+      .from('courses')
+      .select('id, dance_type_id, branches!inner(organization_id), course_students(student_id)')
+      .eq('id', courseId)
+      .eq('branches.organization_id', organization.id)
+      .maybeSingle()
+    if (!course) return { error: await actionError('courseNotFound') }
+    const current = new Set((course.course_students ?? []).map((c) => c.student_id))
+
+    const { data, error } = await admin
+      .from('course_student_departures')
+      .select(
+        'id, student_id, joined_at, left_at, reason, moved_to:courses!course_student_departures_moved_to_course_id_fkey(id, name), students!inner(id, first_name, last_name, is_active, deleted_at, organization_id)'
+      )
+      .eq('course_id', courseId)
+      .eq('students.organization_id', organization.id)
+      .is('students.deleted_at', null)
+      .order('left_at', { ascending: false })
+    if (error) throw error
+
+    const seen = new Set<string>()
+    const rows = (data ?? []).filter((d) => {
+      if (current.has(d.student_id) || seen.has(d.student_id)) return false
+      seen.add(d.student_id)
+      return true
+    })
+    return {
+      data: rows.map((d) => ({
+        id: d.id,
+        studentId: d.student_id,
+        firstName: d.students.first_name,
+        lastName: d.students.last_name,
+        isActive: d.students.is_active,
+        joinedAt: d.joined_at,
+        leftAt: d.left_at,
+        reason: d.reason as 'removed' | 'moved',
+        movedTo: d.moved_to ? { id: d.moved_to.id, name: d.moved_to.name } : null,
+      })),
+    }
+  } catch (error) {
+    unstable_rethrow(error)
+    console.error('Error in getFormerCourseStudents:', error)
+    return { error: await actionError('fetchCourseStudentsFailed') }
   }
 }

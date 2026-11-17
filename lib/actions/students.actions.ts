@@ -11,6 +11,7 @@ import { getChanges } from "@/lib/utils/history-utils";
 import type { Database } from "@/lib/types/database.types";
 import { sanitizeSearch } from '@/lib/utils/search'
 import { actionError } from '@/lib/i18n/actionError'
+import { todayInTimeZone } from '@/lib/i18n/dates'
 
 type Student = Database["public"]["Tables"]["students"]["Row"];
 type StudentInsert = Database["public"]["Tables"]["students"]["Insert"];
@@ -1324,5 +1325,73 @@ export async function setStudentActive(id: string, active: boolean) {
     unstable_rethrow(error);
     console.error("Unexpected error in setStudentActive:", error);
     return { error: await actionError('unexpected') };
+  }
+}
+
+/**
+ * Extends a student's package: a later end date and/or extra lessons (e.g. after an injury
+ * or a cancelled week). Extra lessons may go above the package size.
+ */
+export async function extendStudentPackage(input: {
+  studentPackageId: string;
+  /** New end date, YYYY-MM-DD; must be later than today */
+  expireDate?: string | null;
+  addCredits?: number;
+}) {
+  const user = await getCurrentUser();
+  if (!user) return { error: await actionError('notAuthenticated') };
+  const organization = await getOrganization();
+  if (!organization) return { error: await actionError('noOrganization') };
+
+  const addCredits = Math.trunc(Number(input.addCredits ?? 0));
+  const expireDate = input.expireDate || null;
+  if (!Number.isFinite(addCredits) || addCredits < 0 || addCredits > 100) return { error: await actionError('invalidInput') };
+  if (expireDate && !/^\d{4}-\d{2}-\d{2}$/.test(expireDate)) return { error: await actionError('invalidInput') };
+  if (!expireDate && addCredits === 0) return { error: await actionError('invalidInput') };
+
+  try {
+    const admin = createAdminClient();
+    const { data: sp } = await admin
+      .from("student_packages")
+      .select("id, student_id, remaining_credits, expire_date, packages(name), students!inner(organization_id)")
+      .eq("id", input.studentPackageId)
+      .eq("students.organization_id", organization.id)
+      .maybeSingle();
+    if (!sp) return { error: await actionError('packageNotFound') };
+
+    const update: { remaining_credits?: number; expire_date?: string } = {};
+    if (addCredits > 0) update.remaining_credits = sp.remaining_credits + addCredits;
+    if (expireDate) {
+      if (expireDate <= todayInTimeZone(organization.timezone)) return { error: await actionError('extendDatePast') };
+      update.expire_date = expireDate;
+    }
+
+    const { error } = await admin.from("student_packages").update(update).eq("id", sp.id);
+    if (error) {
+      console.error("Error extending package:", error);
+      return { error: await actionError('extendPackageFailed') };
+    }
+
+    const before = { remaining_credits: sp.remaining_credits, expire_date: sp.expire_date?.slice(0, 10) ?? null };
+    const after = {
+      remaining_credits: update.remaining_credits ?? sp.remaining_credits,
+      expire_date: expireDate ?? before.expire_date,
+    };
+    const changes: Record<string, { before: unknown; after: unknown }> = {};
+    if (after.remaining_credits !== before.remaining_credits)
+      changes.remaining_credits = { before: before.remaining_credits, after: after.remaining_credits };
+    if (after.expire_date !== before.expire_date) changes.expire_date = { before: before.expire_date, after: after.expire_date };
+    void logOperation(
+      "UPDATE",
+      "student_package",
+      sp.id,
+      { before, after, changes, studentId: sp.student_id, packageName: sp.packages?.name ?? "" },
+      organization.id
+    );
+    return { success: true };
+  } catch (error) {
+    unstable_rethrow(error);
+    console.error("Error in extendStudentPackage:", error);
+    return { error: await actionError('extendPackageFailed') };
   }
 }

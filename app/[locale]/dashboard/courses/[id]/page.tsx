@@ -3,11 +3,13 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { ClipboardCheck, Pencil } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
 import { getCourse } from '@/lib/actions/courses.actions'
-import { getCourseAttendanceHistory } from '@/lib/actions/course-attendance.actions'
+import { getCourseAttendanceHistory, getCourseSummary } from '@/lib/actions/course-attendance.actions'
+import { formatCurrency } from '@/lib/utils/format'
+import { Card } from '@/components/ui/card'
 import { getEntityHistory } from '@/lib/actions/history.actions'
 import { getCourseLabelIds, getLabels } from '@/lib/actions/labels.actions'
 import { LabelPicker } from '@/components/labels/LabelPicker'
-import { formatDay, weekdayNames } from '@/lib/i18n/dates'
+import { formatDay, parseDateOnly, weekdayNames } from '@/lib/i18n/dates'
 import { formatTime } from '@/lib/utils/formatTime'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -27,12 +29,27 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
   const course = result.data
   const locale = await getLocale()
   const DAYS = weekdayNames(locale)
-  const [historyResult, entityHistory, labelsResult, courseLabels] = await Promise.all([
+  const [historyResult, entityHistory, labelsResult, courseLabels, summaryResult] = await Promise.all([
     getCourseAttendanceHistory(course.id),
     getEntityHistory('course', id, 20),
     getLabels(),
     getCourseLabelIds(course.id),
+    getCourseSummary(course.id),
   ])
+  const summary = summaryResult.data
+  const tiles = summary
+    ? [
+        { label: t('courseSummary.lessons'), value: String(summary.lessons) },
+        { label: t('courseSummary.attendance'), value: String(summary.present), hint: t('courseSummary.records', { count: summary.records }) },
+        {
+          label: t('courseSummary.rate'),
+          value: summary.rate === null ? '–' : new Intl.NumberFormat(locale, { style: 'percent' }).format(summary.rate),
+        },
+        ...(summary.earnings !== null
+          ? [{ label: t('courseSummary.earnings'), value: formatCurrency(summary.earnings, summary.currency) }]
+          : []),
+      ]
+    : []
   const courseLabelIds = courseLabels.data ?? []
   const attendanceHistory = historyResult.data || []
   const instructors = (course.course_instructors ?? []).map((ci) => ci.instructors).filter((i) => !!i)
@@ -51,6 +68,10 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
                 course.branches?.name,
                 course.dance_types?.name,
                 t('courses.createdOn', { date: formatDay(locale, new Date(course.created_at), 'medium') }),
+                summary &&
+                  t(summary.firstLesson.planned ? 'courses.firstLessonPlanned' : 'courses.firstLesson', {
+                    date: formatDay(locale, parseDateOnly(summary.firstLesson.date), 'medium'),
+                  }),
               ]
                 .filter(Boolean)
                 .join(' • ')}
@@ -100,9 +121,27 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
           <TabsTrigger value="activity">{tt('activity')}</TabsTrigger>
         </TabsList>
         <TabsContent value="students" className="pt-2">
-          <CourseStudentsContainer courseId={course.id} danceTypeId={course.dance_type_id} labelIds={courseLabelIds} />
+          <CourseStudentsContainer
+            courseId={course.id}
+            courseName={course.name}
+            danceTypeId={course.dance_type_id}
+            labelIds={courseLabelIds}
+          />
         </TabsContent>
-        <TabsContent value="attendance" className="pt-2">
+        <TabsContent value="attendance" className="space-y-6 pt-2">
+          {tiles.length > 0 && (
+            <section aria-label={t('courseSummary.title')}>
+              <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                {tiles.map((tile) => (
+                  <Card key={tile.label} className="gap-1 p-4">
+                    <dt className="text-xs text-muted-foreground">{tile.label}</dt>
+                    <dd className="font-display text-2xl font-medium tabular-nums">{tile.value}</dd>
+                    {tile.hint && <dd className="text-xs text-muted-foreground">{tile.hint}</dd>}
+                  </Card>
+                ))}
+              </dl>
+            </section>
+          )}
           <AttendanceHistorySection attendanceHistory={attendanceHistory} />
         </TabsContent>
         <TabsContent value="activity" className="pt-2">
