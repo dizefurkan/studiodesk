@@ -34,6 +34,7 @@ export async function getCourseStudents(courseId: string) {
           student_packages(
             id,
             remaining_credits,
+            expire_date,
             packages(
               id,
               dance_type_id

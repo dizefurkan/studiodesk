@@ -412,7 +412,8 @@
     "viewCoursesOnThisDay": "Bu gün ki kursları görüntüle",
     "searchCourse": "Kurs ara...",
     "time": "Saat",
-    "selectDayViewClasses": "Ay görünümünde, günün kurslarını görmek için gün kutusuna tıklayın"
+    "selectDayViewClasses": "Ay görünümünde, günün kurslarını görmek için gün kutusuna tıklayın",
+    "createdOn": "Oluşturulma: {date}"
   },
   "attendance": {
     "title": "Yoklama",
@@ -1407,7 +1408,25 @@
     "action": "İşlem",
     "remove": "Öğrenciyi çıkar",
     "empty": "Henüz kayıtlı öğrenci yok",
-    "removeFailed": "Öğrenci çıkarılamadı"
+    "removeFailed": "Öğrenci çıkarılamadı",
+    "title": "Öğrenciler",
+    "filterLabel": "Öğrencileri filtrele",
+    "filters": {
+      "active": "Aktif",
+      "low": "Kredisi azalan",
+      "empty": "Kredisi biten",
+      "passive": "Pasif",
+      "all": "Tümü"
+    },
+    "emptyFilter": {
+      "active": "Bu kursta aktif öğrenci yok",
+      "low": "Kredisi azalan öğrenci yok",
+      "empty": "Kredisi biten öğrenci yok",
+      "passive": "Bu kursta pasif öğrenci yok",
+      "all": "Henüz kayıtlı öğrenci yok"
+    },
+    "removeConfirmTitle": "{name} bu kurstan çıkarılsın mı?",
+    "removeConfirmDescription": "Öğrenci silinmez; geçmiş yoklamaları ve kredileri korunur."
   },
   "attendanceDetail": {
     "notAuthenticated": "Giriş yapılmamış",

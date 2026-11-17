@@ -31,7 +31,7 @@ export function CourseStudentsContainer({ courseId, danceTypeId, labelIds = [] }
         <div className="flex items-center gap-2">
           <Users size={20} className="text-primary" />
           <h2 className="text-2xl font-bold text-foreground">
-            {t('courses.enrolledStudents')}
+            {t('courseStudents.title')}
             {studentCount > 0 && <span className="text-lg font-normal text-muted-foreground ml-2">({studentCount})</span>}
           </h2>
         </div>

@@ -1,7 +1,9 @@
 'use client'
 
 import { Link } from '@/i18n/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { cn } from '@/lib/utils'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -29,6 +31,7 @@ interface CourseStudent {
     student_packages?: Array<{
       id: string
       remaining_credits: number
+      expire_date?: string | null
       packages?: {
         id: string
         dance_type_id: string
@@ -40,8 +43,14 @@ interface CourseStudent {
 interface CourseStudentsSectionProps {
   courseId: string
   danceTypeId: string
+  /** Called with the number of active students */
   onStudentsLoaded?: (count: number) => void
 }
+
+/** Credits at or below this are "running low" (same rule as the home screen) */
+const LOW_CREDITS = 1
+const FILTERS = ['active', 'low', 'empty', 'passive', 'all'] as const
+type Filter = (typeof FILTERS)[number]
 
 export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded }: CourseStudentsSectionProps) {
   const tx = useTranslations('courseStudents')
@@ -50,6 +59,7 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
   const [students, setStudents] = useState<CourseStudent[]>([])
   const [loading, setLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [filter, setFilter] = useState<Filter>('active')
   // Load students on mount
   const loadStudents = async () => {
     setIsLoading(true)
@@ -57,7 +67,7 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
       const result = await getCourseStudents(courseId)
       if (result.data) {
         setStudents(result.data)
-        onStudentsLoaded?.(result.data.length)
+        onStudentsLoaded?.(result.data.filter((s) => s.students?.is_active !== false).length)
       }
     } catch (error) {
       console.error('Error loading students:', error)
@@ -72,8 +82,14 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
 
   const confirm = useConfirm()
 
-  const handleRemoveStudent = async (studentId: string) => {
-    if (!(await confirm({ title: t('common.deleteStudentConfirm'), destructive: true }))) return
+  const handleRemoveStudent = async (studentId: string, name: string) => {
+    const ok = await confirm({
+      title: tx('removeConfirmTitle', { name }),
+      description: tx('removeConfirmDescription'),
+      confirmLabel: tx('remove'),
+      destructive: true,
+    })
+    if (!ok) return
 
     setLoading(true)
     try {
@@ -91,16 +107,28 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
     }
   }
 
-  // Get remaining credits for a student for this dance type
-  const getStudentCredits = (studentPackages?: CourseStudent['students']['student_packages']) => {
-    if (!studentPackages) return '-'
-    
-    const packageForDanceType = studentPackages.find(
-      (pkg) => pkg.packages?.dance_type_id === danceTypeId
-    )
-    
-    return packageForDanceType ? packageForDanceType.remaining_credits : '-'
+  // Usable credits for this course's class type: packages of that type that haven't expired
+  const today = new Date().toISOString().slice(0, 10)
+  const creditsFor = (student: CourseStudent['students']): number | null => {
+    const packages = (student.student_packages ?? []).filter((p) => p.packages?.dance_type_id === danceTypeId)
+    if (packages.length === 0) return null
+    return packages
+      .filter((p) => !p.expire_date || p.expire_date.slice(0, 10) >= today)
+      .reduce((sum, p) => sum + p.remaining_credits, 0)
   }
+
+  const groups = useMemo(() => {
+    const active = students.filter((s) => s.students?.is_active !== false)
+    const credits = (s: CourseStudent) => creditsFor(s.students) ?? 0
+    return {
+      active,
+      low: active.filter((s) => credits(s) > 0 && credits(s) <= LOW_CREDITS),
+      empty: active.filter((s) => credits(s) === 0),
+      passive: students.filter((s) => s.students?.is_active === false),
+      all: students,
+    } satisfies Record<Filter, CourseStudent[]>
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [students, danceTypeId])
 
   const columns: ColumnDef<CourseStudent>[] = [
     {
@@ -123,7 +151,22 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
     {
       id: 'credits',
       header: t('courses.credits'),
-      cell: ({ row }) => <Badge variant="secondary">{getStudentCredits(row.original.students.student_packages)}</Badge>,
+      cell: ({ row }) => {
+        // No package for this class type counts as out of credits
+        const credits = creditsFor(row.original.students) ?? 0
+        return (
+          <Badge
+            variant="secondary"
+            className={cn(
+              'tabular-nums',
+              credits === 0 && 'bg-danger/15 text-danger',
+              credits > 0 && credits <= LOW_CREDITS && 'bg-warning/15 text-warning'
+            )}
+          >
+            {credits}
+          </Badge>
+        )
+      },
     },
     {
       id: 'joined',
@@ -142,7 +185,12 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
             size="icon-sm"
             className="text-destructive"
             aria-label={tx('remove')}
-            onClick={() => handleRemoveStudent(row.original.student_id)}
+            onClick={() =>
+              handleRemoveStudent(
+                row.original.student_id,
+                `${row.original.students.first_name} ${row.original.students.last_name}`
+              )
+            }
             disabled={loading}
           >
             <Trash2 />
@@ -153,14 +201,40 @@ export function CourseStudentsSection({ courseId, danceTypeId, onStudentsLoaded 
   ]
 
   return (
-    <DataTable<CourseStudent, unknown>
-      columns={columns}
-      data={students}
-      loading={isLoading}
-      enableSearch={false}
-      enableFilters={false}
-      enablePagination={false}
-      emptyMessage={tx('empty')}
-    />
+    <div className="space-y-4">
+      <ToggleGroup
+        type="single"
+        variant="outline"
+        size="sm"
+        value={filter}
+        onValueChange={(v) => v && setFilter(v as Filter)}
+        aria-label={tx('filterLabel')}
+        className="flex-wrap"
+      >
+        {FILTERS.map((f) => (
+          <ToggleGroupItem key={f} value={f} className="px-3">
+            {tx(`filters.${f}`)}
+            <span
+              className={cn(
+                'tabular-nums text-muted-foreground',
+                f === 'low' && groups.low.length > 0 && 'text-warning',
+                f === 'empty' && groups.empty.length > 0 && 'text-danger'
+              )}
+            >
+              {groups[f].length}
+            </span>
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+      <DataTable<CourseStudent, unknown>
+        columns={columns}
+        data={groups[filter]}
+        loading={isLoading}
+        enableSearch={false}
+        enableFilters={false}
+        enablePagination={false}
+        emptyMessage={students.length === 0 ? tx('empty') : tx(`emptyFilter.${filter}`)}
+      />
+    </div>
   )
 }

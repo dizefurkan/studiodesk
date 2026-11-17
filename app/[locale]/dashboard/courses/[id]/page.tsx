@@ -7,7 +7,7 @@ import { getCourseAttendanceHistory } from '@/lib/actions/course-attendance.acti
 import { getEntityHistory } from '@/lib/actions/history.actions'
 import { getCourseLabelIds, getLabels } from '@/lib/actions/labels.actions'
 import { LabelPicker } from '@/components/labels/LabelPicker'
-import { weekdayNames } from '@/lib/i18n/dates'
+import { formatDay, weekdayNames } from '@/lib/i18n/dates'
 import { formatTime } from '@/lib/utils/formatTime'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -25,7 +25,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
   if (result.error || !result.data) notFound()
 
   const course = result.data
-  const DAYS = weekdayNames(await getLocale())
+  const locale = await getLocale()
+  const DAYS = weekdayNames(locale)
   const [historyResult, entityHistory, labelsResult, courseLabels] = await Promise.all([
     getCourseAttendanceHistory(course.id),
     getEntityHistory('course', id, 20),
@@ -49,6 +50,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
                 `${DAYS[course.day_of_week]} ${formatTime(course.start_time)}–${formatTime(course.end_time)}`,
                 course.branches?.name,
                 course.dance_types?.name,
+                t('courses.createdOn', { date: formatDay(locale, new Date(course.created_at), 'medium') }),
               ]
                 .filter(Boolean)
                 .join(' • ')}

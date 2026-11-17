@@ -412,7 +412,8 @@
     "viewCoursesOnThisDay": "View courses on this day",
     "searchCourse": "Search course...",
     "time": "Time",
-    "selectDayViewClasses": "In month view, click on a day box to see the classes scheduled for that day"
+    "selectDayViewClasses": "In month view, click on a day box to see the classes scheduled for that day",
+    "createdOn": "Created {date}"
   },
   "attendance": {
     "title": "Attendance",
@@ -1407,7 +1408,25 @@
     "action": "Action",
     "remove": "Remove student",
     "empty": "No students enrolled yet",
-    "removeFailed": "Failed to remove the student"
+    "removeFailed": "Failed to remove the student",
+    "title": "Students",
+    "filterLabel": "Filter students",
+    "filters": {
+      "active": "Active",
+      "low": "Low on credits",
+      "empty": "Out of credits",
+      "passive": "Passive",
+      "all": "All"
+    },
+    "emptyFilter": {
+      "active": "No active students in this class",
+      "low": "No students low on credits",
+      "empty": "No students out of credits",
+      "passive": "No passive students in this class",
+      "all": "No students enrolled yet"
+    },
+    "removeConfirmTitle": "Remove {name} from this class?",
+    "removeConfirmDescription": "The student isn't deleted; their past attendance and credits are kept."
   },
   "attendanceDetail": {
     "notAuthenticated": "Not signed in",
