@@ -60,6 +60,20 @@ export async function getCourseAttendanceHistory(courseId: string) {
       // Don't fail - instructors are optional
     }
 
+    // Instructor pay per lesson: owners and managers only
+    const access = await getPayAccess()
+    const earningsBySession = new Map<string, number>()
+    if (access?.canManage) {
+      const { data: earnings } = await createAdminClient()
+        .from('instructor_earnings')
+        .select('session_id, amount, course_sessions!inner(course_id, courses!inner(branches!inner(organization_id)))')
+        .in('session_id', sessionIds)
+        .eq('course_sessions.courses.branches.organization_id', organization.id)
+      for (const e of earnings ?? []) {
+        earningsBySession.set(e.session_id, (earningsBySession.get(e.session_id) ?? 0) + Number(e.amount))
+      }
+    }
+
     // Fallback: Get course instructors if session-specific instructors don't exist
     const { data: courseInstructors, error: courseInstructorsError } = await (supabase
       .from('course_instructors'))
@@ -92,6 +106,9 @@ export async function getCourseAttendanceHistory(courseId: string) {
         session_date: session.session_date,
         attendance_count: presentCount,  // Count of students who were present
         total_attendance: sessionAttendances.length,  // Total attendance records (present + absent)
+        absent_count: sessionAttendances.length - presentCount,
+        /** Instructor pay for this lesson; null when the user may not see pay */
+        earnings: access?.canManage ? (earningsBySession.get(session.id) ?? 0) : null,
         attendances: sessionAttendances,  // All attendance records (present and absent)
         instructors: instructors,  // Instructors for this session (session-specific or course default)
       }

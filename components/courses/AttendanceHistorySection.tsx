@@ -7,6 +7,8 @@ import { ChevronDown, BookOpen } from "lucide-react";
 import { isToday, isYesterday } from "date-fns";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDay, parseDateOnly } from "@/lib/i18n/dates";
+import { formatCurrency } from "@/lib/utils/format";
+import { useOrganizationPrefs } from "@/lib/context/OrganizationPrefsContext";
 import type { getCourseAttendanceHistory } from '@/lib/actions/course-attendance.actions'
 import type { ActionData } from '@/lib/types/actions'
 
@@ -21,6 +23,8 @@ export function AttendanceHistorySection({
   const tHist = useTranslations("attendanceHistory");
   const locale = useLocale();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const { currency } = useOrganizationPrefs();
+  const percent = new Intl.NumberFormat(locale, { style: "percent" });
 
   if (attendanceHistory.length === 0) {
     return (
@@ -85,12 +89,24 @@ export function AttendanceHistorySection({
                     </div>
                   </div>
 
-                  {/* Attendance Badge & Expand Icon */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-xs font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-lg border border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900 whitespace-nowrap">
-                      {record.attendance_count}/
-                      {record.attendances?.length || 0}
+                  {/* Present / absent / rate / instructor pay, then the expand icon */}
+                  <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs tabular-nums">
+                    <span className="whitespace-nowrap text-success">
+                      {tHist('present', { count: record.attendance_count })}
                     </span>
+                    <span className={record.absent_count > 0 ? 'whitespace-nowrap text-danger' : 'whitespace-nowrap text-muted-foreground'}>
+                      {tHist('absent', { count: record.absent_count })}
+                    </span>
+                    {record.total_attendance > 0 && (
+                      <span className="whitespace-nowrap text-muted-foreground">
+                        {percent.format(record.attendance_count / record.total_attendance)}
+                      </span>
+                    )}
+                    {record.earnings !== null && (
+                      <span className="whitespace-nowrap font-medium text-foreground" title={tHist('earnings')}>
+                        {formatCurrency(record.earnings, currency)}
+                      </span>
+                    )}
                     <ChevronDown
                       size={18}
                       className={`text-muted-foreground/70 transition-transform ${

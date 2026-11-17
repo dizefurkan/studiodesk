@@ -1536,7 +1536,10 @@
   },
   "attendanceHistory": {
     "today": "Bugün, {date}",
-    "yesterday": "Dün, {date}"
+    "yesterday": "Dün, {date}",
+    "present": "{count, plural, one {# geldi} other {# geldi}}",
+    "absent": "{count, plural, one {# gelmedi} other {# gelmedi}}",
+    "earnings": "Eğitmen hakedişi"
   },
   "history": {
     "unknownUser": "Bilinmeyen kullanıcı"
@@ -1866,7 +1869,11 @@
     "overviewHint": "Geçmiş dersler dahil, yoklama almak ya da görmek için bir gün seçin.",
     "backToToday": "Bugüne dön",
     "noLessonsOnDay": "Bu gün ders yok.",
-    "weekBefore": "Önceki 6 gün"
+    "weekBefore": "Önceki 6 gün",
+    "rate": "{rate} katılım",
+    "creditsLeftNow": "{count, plural, one {Kalan # kredi} other {Kalan # kredi}}",
+    "lessonValue": "Ders değeri {price}",
+    "payTotalInline": "toplam {total}"
   },
   "home": {
     "greeting": "Merhaba, {name}",

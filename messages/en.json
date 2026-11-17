@@ -1536,7 +1536,10 @@
   },
   "attendanceHistory": {
     "today": "Today, {date}",
-    "yesterday": "Yesterday, {date}"
+    "yesterday": "Yesterday, {date}",
+    "present": "{count, plural, one {# present} other {# present}}",
+    "absent": "{count, plural, one {# absent} other {# absent}}",
+    "earnings": "Instructor pay"
   },
   "history": {
     "unknownUser": "Unknown user"
@@ -1866,7 +1869,11 @@
     "overviewHint": "Pick a day to take or check attendance, including past lessons.",
     "backToToday": "Back to today",
     "noLessonsOnDay": "No lessons on this day.",
-    "weekBefore": "The week before"
+    "weekBefore": "The week before",
+    "rate": "{rate} attendance",
+    "creditsLeftNow": "{count, plural, one {# credit left} other {# credits left}}",
+    "lessonValue": "Lesson value {price}",
+    "payTotalInline": "total {total}"
   },
   "home": {
     "greeting": "Hi, {name}",
