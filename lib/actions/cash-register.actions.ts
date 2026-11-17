@@ -1,5 +1,7 @@
 'use server'
 
+import { AUTOMATIC_CATEGORIES, isCategoryFor, type CashCategory } from '@/lib/cash/categories'
+
 import { toDateString } from '@/lib/i18n/dates'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/getCurrentUser'
@@ -26,7 +28,9 @@ interface CreateTransactionInput {
   branchId: string
   type: 'income' | 'expense'
   amount: number
-  description: string
+  category?: CashCategory
+  /** Required for the "other" category, an optional note otherwise */
+  description?: string | null
   studentPackageId?: string
 }
 
@@ -110,13 +114,24 @@ export async function createTransaction(
       return { error: await actionError('invalidBranch') }
     }
 
+    // Category must fit the type; "other" needs a description
+    const category = input.category ?? 'other'
+    const description = input.description?.trim() || null
+    if (!isCategoryFor(input.type, category)) return { error: await actionError('invalidInput') }
+    // Package sales and instructor payouts come from their own screens, which keep balances right
+    if (!input.studentPackageId && AUTOMATIC_CATEGORIES.includes(category)) return { error: await actionError('invalidInput') }
+    if (category === 'other' && (!description || description.length < 3)) {
+      return { error: await actionError('descriptionRequired') }
+    }
+
     const result = await supabase
       .from('cash_transactions')
       .insert({
         branch_id: input.branchId,
         type: input.type,
         amount: input.amount,
-        description: input.description,
+        category,
+        description,
         student_package_id: input.studentPackageId || null,
       })
       .select()
@@ -141,6 +156,7 @@ export async function createTransaction(
       after: {
         type: data.type,
         amount: data.amount,
+        category: data.category,
         description: data.description,
         branchId: data.branch_id,
         studentPackageId: data.student_package_id,
@@ -384,5 +400,68 @@ export async function getInstructorEarningsByBranch(branchId?: string, fromDate?
     unstable_rethrow(error)
     console.error('Unexpected error in getInstructorEarningsByBranch:', error)
     return { data: [] }
+  }
+}
+
+/** UTC instant of local midnight at the start of `day` (YYYY-MM-DD) in `timeZone`. */
+function startOfDayUtc(day: string, timeZone: string): string {
+  const guess = new Date(`${day}T00:00:00Z`)
+  // How far the time zone is ahead of UTC at that moment
+  const local = new Date(guess.toLocaleString('en-US', { timeZone }))
+  const utc = new Date(guess.toLocaleString('en-US', { timeZone: 'UTC' }))
+  return new Date(guess.getTime() - (local.getTime() - utc.getTime())).toISOString()
+}
+
+/**
+ * Cash entries for the cash register page, filtered on the server: branch, type, category and
+ * a day range (inclusive, in the studio's time zone). Not paginated; capped for safety.
+ */
+export async function getCashTransactions(filters: {
+  branchId?: string
+  type?: 'income' | 'expense'
+  category?: string
+  from?: string
+  to?: string
+}) {
+  const organization = await getOrganization()
+  if (!organization) return { error: await actionError('noOrganization'), data: [] }
+  const timeZone = organization.timezone || 'Europe/Istanbul'
+
+  try {
+    const admin = createAdminClient()
+    let query = admin
+      .from('cash_transactions')
+      .select('id, type, category, amount, description, created_at, branch_id, student_package_id, branches!inner(name, organization_id)')
+      .eq('branches.organization_id', organization.id)
+      .order('created_at', { ascending: false })
+      .limit(2000)
+    if (filters.branchId) query = query.eq('branch_id', filters.branchId)
+    if (filters.type) query = query.eq('type', filters.type)
+    if (filters.category) query = query.eq('category', filters.category)
+    const from = parseDate(filters.from)
+    const to = parseDate(filters.to)
+    if (from) query = query.gte('created_at', startOfDayUtc(from, timeZone))
+    if (to) {
+      const next = new Date(`${to}T00:00:00Z`)
+      next.setUTCDate(next.getUTCDate() + 1)
+      query = query.lt('created_at', startOfDayUtc(next.toISOString().slice(0, 10), timeZone))
+    }
+    const { data, error } = await query
+    if (error) throw error
+    return {
+      data: (data ?? []).map((t) => ({
+        id: t.id,
+        type: t.type as 'income' | 'expense',
+        category: t.category,
+        amount: Number(t.amount),
+        description: t.description,
+        created_at: t.created_at,
+        branches: t.branches ? { name: t.branches.name } : null,
+      })),
+    }
+  } catch (error) {
+    unstable_rethrow(error)
+    console.error('Error in getCashTransactions:', error)
+    return { error: await actionError('fetchTransactionsFailed'), data: [] }
   }
 }

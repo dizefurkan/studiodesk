@@ -2,98 +2,75 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { useRouter } from '@/i18n/navigation'
 import { Card } from '@/components/ui/card'
 import { deleteTransaction } from '@/lib/actions/cash-register.actions'
 import { DataTable } from '@/components/table/data-table'
 import { getCashRegisterColumns, type CombinedCashItem } from './columns'
-import { CashRegisterFilters } from '@/components/cash-register/CashRegisterFilters'
+import { CashRegisterFilters, type CashFilters } from '@/components/cash-register/CashRegisterFilters'
 import { useConfirm } from '@/components/common/ConfirmProvider'
+import { toast } from 'sonner'
 
-interface CashRegisterTableProps {
+/** Filters and the list of cash entries (and instructor earnings) for the chosen period. */
+export function CashRegisterTable({
+  items,
+  branches,
+  currency,
+  filters,
+}: {
   items: CombinedCashItem[]
   branches: Array<{ id: string; name: string }>
   currency: string
-  branchId?: string
-  type?: 'income' | 'expense'
-  dataType?: 'all' | 'transactions' | 'earnings'
-  dateStr: string
-  onItemsChange?: (items: CombinedCashItem[]) => void
-}
-
-export function CashRegisterTable({
-  items: initialItems,
-  branches,
-  currency,
-  branchId: initialBranchId,
-  type: initialType,
-  dataType: initialDataType,
-  dateStr: initialDateStr,
-  onItemsChange,
-}: CashRegisterTableProps) {
+  filters: CashFilters
+}) {
   const t = useTranslations()
-  const [items, setItems] = useState(initialItems)
-  const [isDeletingId, setIsDeletingId] = useState<string | null>(null)
-  const [filterValues, setFilterValues] = useState({
-    search: '',
-  })
-
+  const router = useRouter()
   const confirm = useConfirm()
+  const [search, setSearch] = useState('')
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const handleDelete = async (transactionId: string) => {
     if (!(await confirm({ title: t('cashRegister.deleteConfirm'), destructive: true }))) return
-
-    setIsDeletingId(transactionId)
-    try {
-      const result = await deleteTransaction(transactionId)
-      if (result.error) {
-        throw new Error(result.error)
-      }
-      const updatedItems = items.filter((item) => item.id !== transactionId)
-      setItems(updatedItems)
-      onItemsChange?.(updatedItems)
-    } catch (err) {
-      console.error('Error deleting transaction:', err)
-    } finally {
-      setIsDeletingId(null)
+    setDeletingId(transactionId)
+    const result = await deleteTransaction(transactionId)
+    setDeletingId(null)
+    if (result.error) {
+      toast.error(result.error)
+      return
     }
+    // Totals come from the server
+    router.refresh()
   }
 
-  const columns = getCashRegisterColumns({
-    currency,
-    onDelete: handleDelete,
-  })
+  const categoryLabel = (c: string) => t(`cashCategories.${c}`)
+  const columns = getCashRegisterColumns({ currency, categoryLabel, onDelete: handleDelete })
 
-  // Filter by search (description or branch)
-  const filteredItems = items.filter((item) => {
-    const searchLower = filterValues.search.toLowerCase()
-    return (
-      item.description?.toLowerCase().includes(searchLower) ||
-      item.branches?.name?.toLowerCase().includes(searchLower) ||
-      false
-    )
-  })
+  const q = search.trim().toLocaleLowerCase()
+  const visible = q
+    ? items.filter(
+        (item) =>
+          item.description?.toLocaleLowerCase().includes(q) ||
+          item.branches?.name?.toLocaleLowerCase().includes(q) ||
+          (item.category ? categoryLabel(item.category).toLocaleLowerCase().includes(q) : false)
+      )
+    : items
 
   return (
     <>
-      {/* Filters Card */}
-      <Card className="border-border p-6">
-        <CashRegisterFilters
-          branches={branches}
-          branchId={initialBranchId}
-          type={initialType}
-          dataType={initialDataType}
-          dateStr={initialDateStr}
-        />
+      <Card className="p-4 sm:p-6">
+        <CashRegisterFilters branches={branches} filters={filters} />
       </Card>
-
       <div className="min-w-0">
         <DataTable<CombinedCashItem, unknown>
           columns={columns}
-          data={filteredItems}
-          enablePagination={true}
+          data={visible.filter((i) => i.id !== deletingId)}
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder={t('cashRegister.searchPlaceholder')}
+          enablePagination
           enableFilters={false}
-          pageSize={10}
-          emptyMessage={t('table.noResults')}
+          pageSize={20}
+          emptyMessage={t('cashRegister.empty')}
         />
       </div>
     </>

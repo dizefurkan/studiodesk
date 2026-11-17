@@ -409,6 +409,7 @@ export async function createPayout(input: {
       .insert({
         branch_id: branch.id,
         type: 'expense',
+        category: 'instructor_payment',
         amount,
         description: t('payoutCashDescription', { name }),
         ...(date === today ? {} : { created_at: `${date}T12:00:00Z` }),

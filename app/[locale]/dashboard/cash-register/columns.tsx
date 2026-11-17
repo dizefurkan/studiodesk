@@ -11,7 +11,9 @@ export interface CombinedCashItem {
   id: string
   type: 'income' | 'expense' | 'earning'
   amount: number
-  description: string
+  /** Cash register category; earnings rows have none */
+  category?: string
+  description: string | null
   created_at: string
   branches?: { name: string } | null
   instructors?: { first_name: string; last_name: string }
@@ -19,11 +21,14 @@ export interface CombinedCashItem {
 
 interface ColumnContextProps {
   currency: string
+  /** Label of a category key */
+  categoryLabel: (category: string) => string
   onDelete: (itemId: string) => void
 }
 
 export function getCashRegisterColumns({
   currency,
+  categoryLabel,
   onDelete,
 }: ColumnContextProps): ColumnDef<CombinedCashItem>[] {
   const formatter = new Intl.NumberFormat(getLocaleForCurrency(currency), {
@@ -46,8 +51,14 @@ export function getCashRegisterColumns({
             ) : (
               <Users className="text-purple-600 shrink-0" size={18} />
             )}
-            <div>
-              <p className="font-medium text-foreground">{item.description}</p>
+            <div className="min-w-0">
+              {/* Category as the title, the description (or note) under it */}
+              <p className="font-medium text-foreground">
+                {item.category ? categoryLabel(item.category) : item.description}
+              </p>
+              {item.category && item.description && (
+                <p className="truncate text-sm text-foreground/80">{item.description}</p>
+              )}
               <p className="text-xs text-muted-foreground">{item.branches?.name || <ColumnHeader k="notAvailable" />}</p>
             </div>
           </div>

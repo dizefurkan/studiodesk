@@ -1,131 +1,170 @@
 'use client'
 
-import { DatePicker } from '@/components/common/DatePicker'
-import { format, parse } from 'date-fns'
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
-import { Label } from '@/components/ui/label'
+import { useLocale, useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from '@/i18n/navigation'
-import { useTranslations } from 'next-intl'
+import { addDaysToDateString, formatDay, parseDateOnly, toDateString } from '@/lib/i18n/dates'
+import { CASH_PERIODS, EXPENSE_CATEGORIES, INCOME_CATEGORIES, type CashPeriod } from '@/lib/cash/categories'
+import { Button } from '@/components/ui/button'
+import { Field, FieldLabel } from '@/components/ui/field'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
-interface CashRegisterFiltersProps {
-  branches: Array<{ id: string; name: string }>
+export type CashFilters = {
   branchId?: string
-  type?: 'income' | 'expense' | 'earnings'
-  dataType?: 'all' | 'transactions' | 'earnings'
-  dateStr?: string
+  type?: 'income' | 'expense'
+  category?: string
+  dataType: 'all' | 'transactions' | 'earnings'
+  period: CashPeriod
+  date: string
+  today: string
 }
 
+const ALL = 'all'
+
+/** Branch, period (day / month / all), what to show, type and category. Everything lives in the URL. */
 export function CashRegisterFilters({
   branches,
-  branchId,
-  type,
-  dataType,
-  dateStr,
-}: CashRegisterFiltersProps) {
+  filters,
+}: {
+  branches: Array<{ id: string; name: string }>
+  filters: CashFilters
+}) {
   const tx = useTranslations('cashRegister')
+  const tc = useTranslations('cashCategories')
+  const locale = useLocale()
   const router = useRouter()
-  const handleBranchChange = (value: string) => {
-    const params = new URLSearchParams()
-    if (value) params.set('branch', value)
-    if (type) params.set('type', type)
-    if (dataType) params.set('dataType', dataType)
-    if (dateStr) params.set('date', dateStr)
-    router.push(`/dashboard/cash-register?${params.toString()}`)
-  }
+  const searchParams = useSearchParams()
 
-  const handleTypeChange = (value: string) => {
-    const params = new URLSearchParams()
-    if (branchId) params.set('branch', branchId)
-    if (value && value !== 'earnings') params.set('type', value)
-    if (dataType) params.set('dataType', dataType)
-    if (dateStr) params.set('date', dateStr)
-    router.push(`/dashboard/cash-register?${params.toString()}`)
-  }
-
-  const handleDataTypeChange = (value: string) => {
-    const params = new URLSearchParams()
-    if (branchId) params.set('branch', branchId)
-    if (value !== 'all') {
-      if (value === 'earnings') {
-        params.set('dataType', 'earnings')
-      } else if (value === 'transactions') {
-        if (type) params.set('type', type)
-        params.set('dataType', 'transactions')
-      }
-    } else {
-      params.set('dataType', 'all')
-      if (type) params.set('type', type)
+  const go = (patch: Record<string, string | null | undefined>) => {
+    const params = new URLSearchParams(searchParams.toString())
+    for (const [k, v] of Object.entries(patch)) {
+      if (v) params.set(k, v)
+      else params.delete(k)
     }
-    if (dateStr) params.set('date', dateStr)
-    router.push(`/dashboard/cash-register?${params.toString()}`)
+    router.push(`/dashboard/cash-register?${params.toString()}`, { scroll: false })
   }
 
-  const handleDateChange = (date: Date) => {
-    const dateValue = format(date, 'yyyy-MM-dd')
-    const params = new URLSearchParams()
-    if (branchId) params.set('branch', branchId)
-    if (type) params.set('type', type)
-    if (dataType) params.set('dataType', dataType)
-    if (dateValue) params.set('date', dateValue)
-    router.push(`/dashboard/cash-register?${params.toString()}`)
+  const step = (dir: -1 | 1) => {
+    if (filters.period === 'day') return addDaysToDateString(filters.date, dir)
+    const d = parseDateOnly(filters.date)
+    return toDateString(new Date(d.getFullYear(), d.getMonth() + dir, 1))
   }
+  const periodLabel =
+    filters.period === 'day'
+      ? formatDay(locale, parseDateOnly(filters.date), 'long')
+      : new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(parseDateOnly(filters.date))
 
-  // Parse date string to Date object for DatePicker
-  const dateObj = dateStr ? parse(dateStr, 'yyyy-MM-dd', new Date()) : undefined
+  const categories = filters.type === 'income' ? INCOME_CATEGORIES : filters.type === 'expense' ? EXPENSE_CATEGORIES : [
+    ...INCOME_CATEGORIES.filter((c) => c !== 'other'),
+    ...EXPENSE_CATEGORIES,
+  ]
 
   return (
-    <div className="flex gap-4 flex-wrap items-end">
-      <div className="flex-1 min-w-50">
-        <Label className="block mb-2">{tx('branch')}</Label>
-        <NativeSelect
-          defaultValue={branchId || ''}
-          onChange={(e) => handleBranchChange(e.target.value)}
-          className="w-full"
+    <div className="space-y-4">
+      {/* Period */}
+      <div className="flex flex-wrap items-center gap-3">
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          value={filters.period}
+          onValueChange={(v) => v && go({ period: v === 'month' ? null : v })}
+          aria-label={tx('period')}
         >
-          <NativeSelectOption value="">{tx('allBranches')}</NativeSelectOption>
-          {branches.map((branch) => (
-            <NativeSelectOption key={branch.id} value={branch.id}>
-              {branch.name}
-            </NativeSelectOption>
+          {CASH_PERIODS.map((p) => (
+            <ToggleGroupItem key={p} value={p} className="px-3">
+              {tx(`periods.${p}`)}
+            </ToggleGroupItem>
           ))}
-        </NativeSelect>
+        </ToggleGroup>
+        {filters.period !== 'all' && (
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="icon" aria-label={tx('previous')} onClick={() => go({ date: step(-1) })}>
+              <ChevronLeft />
+            </Button>
+            <span className="min-w-40 px-2 text-center text-sm font-medium first-letter:uppercase">{periodLabel}</span>
+            <Button variant="outline" size="icon" aria-label={tx('next')} onClick={() => go({ date: step(1) })}>
+              <ChevronRight />
+            </Button>
+            {filters.date !== filters.today && (
+              <Button variant="ghost" size="sm" onClick={() => go({ date: null })}>
+                {filters.period === 'day' ? tx('today') : tx('thisMonth')}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="flex-1 min-w-50">
-        <Label className="block mb-2">{tx('dataType')}</Label>
-        <NativeSelect
-          defaultValue={dataType || 'all'}
-          onChange={(e) => handleDataTypeChange(e.target.value)}
-          className="w-full"
-        >
-          <NativeSelectOption value="all">{tx('all')}</NativeSelectOption>
-          <NativeSelectOption value="transactions">{tx('transactions')}</NativeSelectOption>
-          <NativeSelectOption value="earnings">{tx('instructorEarnings')}</NativeSelectOption>
-        </NativeSelect>
-      </div>
-
-      <div className="flex-1 min-w-50">
-        <Label className="block mb-2">{tx('type')}</Label>
-        <NativeSelect
-          defaultValue={type || ''}
-          onChange={(e) => handleTypeChange(e.target.value)}
-          className="w-full"
-          disabled={dataType === 'earnings'}
-        >
-          <NativeSelectOption value="">{tx('allTypes')}</NativeSelectOption>
-          <NativeSelectOption value="income">{tx('income')}</NativeSelectOption>
-          <NativeSelectOption value="expense">{tx('expense')}</NativeSelectOption>
-        </NativeSelect>
-      </div>
-
-      <div className="flex-1 min-w-50">
-        <Label className="block mb-2">{tx('date')}</Label>
-        <DatePicker
-          value={dateObj}
-          onDateChange={handleDateChange}
-          placeholder={tx('selectDate')}
-          className="w-full"
-        />
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {branches.length > 1 && (
+          <Field>
+            <FieldLabel htmlFor="cash-branch">{tx('branch')}</FieldLabel>
+            <Select value={filters.branchId ?? ALL} onValueChange={(v) => go({ branch: v === ALL ? null : v })}>
+              <SelectTrigger id="cash-branch" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{tx('allBranches')}</SelectItem>
+                {branches.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        )}
+        <Field>
+          <FieldLabel htmlFor="cash-show">{tx('dataType')}</FieldLabel>
+          <Select value={filters.dataType} onValueChange={(v) => go({ dataType: v === 'all' ? null : v })}>
+            <SelectTrigger id="cash-show" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{tx('all')}</SelectItem>
+              <SelectItem value="transactions">{tx('transactions')}</SelectItem>
+              <SelectItem value="earnings">{tx('instructorEarnings')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="cash-type">{tx('type')}</FieldLabel>
+          <Select
+            value={filters.type ?? ALL}
+            disabled={filters.dataType === 'earnings'}
+            onValueChange={(v) => go({ type: v === ALL ? null : v, category: null })}
+          >
+            <SelectTrigger id="cash-type" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>{tx('allTypes')}</SelectItem>
+              <SelectItem value="income">{tx('income')}</SelectItem>
+              <SelectItem value="expense">{tx('expense')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="cash-category">{tx('category')}</FieldLabel>
+          <Select
+            value={filters.category ?? ALL}
+            disabled={filters.dataType === 'earnings'}
+            onValueChange={(v) => go({ category: v === ALL ? null : v })}
+          >
+            <SelectTrigger id="cash-category" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>{tx('allCategories')}</SelectItem>
+              {categories.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {tc(c)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
       </div>
     </div>
   )

@@ -1001,6 +1001,7 @@ export async function purchasePackage(input: PurchasePackageInput) {
       const { error: transError } = await supabase.from("cash_transactions").insert({
         branch_id: branchId,
         type: "income",
+        category: "package_sale",
         amount: price,
         description: `${packageData.name} – ${student.first_name} ${student.last_name}`,
         student_package_id: studentPackage.id,

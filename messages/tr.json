@@ -1070,12 +1070,18 @@
     "amount": "Tutar",
     "descriptionLabel": "Açıklama",
     "cancel": "İptal",
-    "descriptionPlaceholder": "örn. paket satışı, ekipman alımı…",
+    "descriptionPlaceholder": "Bu kaydın ne olduğunu yazın",
     "unexpectedError": "Beklenmeyen bir hata oluştu",
     "branchRequired": "Lütfen bir şube seçin",
     "amountPositive": "Tutar 0'dan büyük olmalı",
     "descriptionMin": "Açıklama en az 3 karakter olmalı",
-    "recording": "Kaydediliyor…"
+    "recording": "Kaydediliyor…",
+    "category": "Kategori",
+    "categoryRequired": "Lütfen bir kategori seçin",
+    "noteLabel": "Not (isteğe bağlı)",
+    "notePlaceholder": "Kısa bir not",
+    "otherHint": "\"Diğer\" kategorisinde açıklama zorunludur.",
+    "automaticHint": "Paket satışları öğrenciye paket satınca, eğitmen ödemeleri Eğitmenler > Ödemeler'den kaydedilince kasaya kendiliğinden düşer."
   },
   "attendanceList": {
     "historyTitle": "Yoklama geçmişi (son 30 gün)",
@@ -1141,8 +1147,8 @@
     "allBranches": "Tüm şubeler",
     "dataType": "Göster",
     "all": "Tümü",
-    "transactions": "İşlemler",
-    "instructorEarnings": "Eğitmen kazançları",
+    "transactions": "Kasa işlemleri",
+    "instructorEarnings": "Eğitmen hakedişleri",
     "type": "Tür",
     "allTypes": "Tüm türler",
     "income": "Gelir",
@@ -1161,7 +1167,23 @@
     "instructorPayment": "Eğitmen ödemesi — {name}",
     "deleteConfirm": "Bu işlem silinsin mi?",
     "instructorPayAccrued": "Eğitmen hakedişi",
-    "instructorEarningRow": "Hakediş: {name}"
+    "instructorEarningRow": "Hakediş: {name}",
+    "period": "Dönem",
+    "periods": {
+      "day": "Gün",
+      "month": "Ay",
+      "all": "Tümü"
+    },
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "today": "Bugün",
+    "thisMonth": "Bu ay",
+    "category": "Kategori",
+    "allCategories": "Tüm kategoriler",
+    "searchPlaceholder": "Açıklama, kategori veya şube ara…",
+    "empty": "Bu dönemde kayıt yok",
+    "accruedHint": "Derslerden doğan, kasadan çıkmaz",
+    "netHint": "Gelir − gider"
   },
   "addStudentDialog": {
     "activeOnly": "Yalnızca bu ders türünde aktif paketi olan öğrencileri göster",
@@ -1839,7 +1861,8 @@
     "moveStudentFailed": "Öğrencinin sınıfı değiştirilemedi",
     "extendDatePast": "Yeni bitiş tarihi bugünden sonra olmalıdır",
     "extendPackageFailed": "Paket uzatılamadı",
-    "invalidStudio": "Seçilen salon bu şubeye ait değil"
+    "invalidStudio": "Seçilen salon bu şubeye ait değil",
+    "descriptionRequired": "\"Diğer\" kategorisi için açıklama girin (en az 3 karakter)"
   },
   "attendanceSheet": {
     "markEveryone": "Kaydetmeden önce {count} öğrenciyi daha işaretleyin.",
@@ -2739,5 +2762,22 @@
     "records": "{count, plural, one {# yoklama kaydından} other {# yoklama kaydından}}",
     "rate": "Katılım oranı",
     "earnings": "Toplam eğitmen hakedişi"
+  },
+  "cashCategories": {
+    "package_sale": "Paket satışı",
+    "private_lesson": "Özel ders",
+    "event": "Etkinlik / gösteri",
+    "product_sale": "Ürün satışı",
+    "rental": "Salon kiralama",
+    "rent": "Kira",
+    "utilities": "Faturalar (elektrik, su, internet)",
+    "instructor_payment": "Eğitmen ödemesi",
+    "salary": "Personel maaşı",
+    "equipment": "Ekipman",
+    "cleaning": "Temizlik",
+    "marketing": "Reklam ve tanıtım",
+    "tax": "Vergi ve muhasebe",
+    "maintenance": "Bakım ve onarım",
+    "other": "Diğer"
   }
 }

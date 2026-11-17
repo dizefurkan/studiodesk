@@ -1070,12 +1070,18 @@
     "amount": "Amount",
     "descriptionLabel": "Description",
     "cancel": "Cancel",
-    "descriptionPlaceholder": "e.g. package sale, equipment purchase…",
+    "descriptionPlaceholder": "Describe what this entry is",
     "unexpectedError": "An unexpected error occurred",
     "branchRequired": "Please select a branch",
     "amountPositive": "Amount must be greater than 0",
     "descriptionMin": "Description must be at least 3 characters",
-    "recording": "Recording…"
+    "recording": "Recording…",
+    "category": "Category",
+    "categoryRequired": "Please choose a category",
+    "noteLabel": "Note (optional)",
+    "notePlaceholder": "A short note",
+    "otherHint": "A description is required for \"Other\".",
+    "automaticHint": "Package sales are added when you sell a package to a student, and instructor payments when you record them under Instructors > Payments."
   },
   "attendanceList": {
     "historyTitle": "Attendance history (last 30 days)",
@@ -1141,7 +1147,7 @@
     "allBranches": "All branches",
     "dataType": "Show",
     "all": "All",
-    "transactions": "Transactions",
+    "transactions": "Cash entries",
     "instructorEarnings": "Instructor earnings",
     "type": "Type",
     "allTypes": "All types",
@@ -1161,7 +1167,23 @@
     "instructorPayment": "Instructor payment — {name}",
     "deleteConfirm": "Delete this transaction?",
     "instructorPayAccrued": "Instructor earnings",
-    "instructorEarningRow": "Earning: {name}"
+    "instructorEarningRow": "Earning: {name}",
+    "period": "Period",
+    "periods": {
+      "day": "Day",
+      "month": "Month",
+      "all": "All"
+    },
+    "previous": "Previous",
+    "next": "Next",
+    "today": "Today",
+    "thisMonth": "This month",
+    "category": "Category",
+    "allCategories": "All categories",
+    "searchPlaceholder": "Search description, category or branch…",
+    "empty": "No entries in this period",
+    "accruedHint": "Owed for lessons; not cash out",
+    "netHint": "Income − expenses"
   },
   "addStudentDialog": {
     "activeOnly": "Show only students with active packages for this class type",
@@ -1839,7 +1861,8 @@
     "moveStudentFailed": "Couldn't change the student's class",
     "extendDatePast": "The new end date must be after today",
     "extendPackageFailed": "Couldn't extend the package",
-    "invalidStudio": "The selected room doesn't belong to this branch"
+    "invalidStudio": "The selected room doesn't belong to this branch",
+    "descriptionRequired": "Enter a description for \"Other\" (at least 3 characters)"
   },
   "attendanceSheet": {
     "markEveryone": "Mark {count, plural, one {# more student} other {# more students}} before saving.",
@@ -2739,5 +2762,22 @@
     "records": "{count, plural, one {out of # record} other {out of # records}}",
     "rate": "Attendance rate",
     "earnings": "Total instructor pay"
+  },
+  "cashCategories": {
+    "package_sale": "Package sale",
+    "private_lesson": "Private lesson",
+    "event": "Event / show",
+    "product_sale": "Product sale",
+    "rental": "Room rental",
+    "rent": "Rent",
+    "utilities": "Utilities (power, water, internet)",
+    "instructor_payment": "Instructor payment",
+    "salary": "Staff salary",
+    "equipment": "Equipment",
+    "cleaning": "Cleaning",
+    "marketing": "Advertising",
+    "tax": "Tax and accounting",
+    "maintenance": "Maintenance and repairs",
+    "other": "Other"
   }
 }

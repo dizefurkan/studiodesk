@@ -177,30 +177,33 @@ export type Database = {
       }
       cash_transactions: {
         Row: {
+          category: string
           amount: number
           branch_id: string
           created_at: string
-          description: string
+          description: string | null
           id: string
           student_package_id: string | null
           type: string
           updated_at: string
         }
         Insert: {
+          category?: string
           amount: number
           branch_id: string
           created_at?: string
-          description: string
+          description?: string | null
           id?: string
           student_package_id?: string | null
           type: string
           updated_at?: string
         }
         Update: {
+          category?: string
           amount?: number
           branch_id?: string
           created_at?: string
-          description?: string
+          description?: string | null
           id?: string
           student_package_id?: string | null
           type?: string

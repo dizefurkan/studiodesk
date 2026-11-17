@@ -2,13 +2,14 @@
 
 import { useRouter } from '@/i18n/navigation'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
+import { manualCategoriesFor, type CashCategory } from '@/lib/cash/categories'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { createTransaction } from '@/lib/actions/cash-register.actions'
 import { getBranches } from '@/lib/actions/branches.actions'
 import { useEffect } from 'react'
@@ -19,17 +20,26 @@ import { useTranslations } from 'next-intl'
 
 type Branch = Database['public']['Tables']['branches']['Row']
 
-const makeTransactionSchema = (tx: (key: string) => string) => z.object({
-  branchId: z.string().min(1, tx('branchRequired')),
-  type: z.enum(['income', 'expense']),
-  amount: z.coerce.number().min(0.01, tx('amountPositive')),
-  description: z.string().min(3, tx('descriptionMin')),
-})
+const makeTransactionSchema = (tx: (key: string) => string) =>
+  z
+    .object({
+      branchId: z.string().min(1, tx('branchRequired')),
+      type: z.enum(['income', 'expense']),
+      category: z.string().min(1, tx('categoryRequired')),
+      amount: z.coerce.number().min(0.01, tx('amountPositive')),
+      description: z.string().optional(),
+    })
+    // "Other" says nothing by itself, so it needs a description
+    .refine((v) => v.category !== 'other' || (v.description?.trim().length ?? 0) >= 3, {
+      path: ['description'],
+      message: tx('descriptionMin'),
+    })
 
 type TransactionFormValues = z.infer<ReturnType<typeof makeTransactionSchema>>
 
 export function TransactionForm() {
   const tx = useTranslations('transactionForm')
+  const tc = useTranslations('cashCategories')
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [branches, setBranches] = useState<Branch[]>([])
@@ -39,8 +49,14 @@ export function TransactionForm() {
     resolver: zodResolver(makeTransactionSchema(tx)),
     defaultValues: {
       type: 'income',
+      category: manualCategoriesFor('income')[0],
+      description: '',
     },
   })
+
+  const type = useWatch({ control: form.control, name: 'type' })
+  const category = useWatch({ control: form.control, name: 'category' })
+  const isOther = category === 'other'
 
   useEffect(() => {
     async function loadBranches() {
@@ -58,7 +74,11 @@ export function TransactionForm() {
     setGeneralError(null)
 
     try {
-      const result = await createTransaction(data)
+      const result = await createTransaction({
+        ...data,
+        category: data.category as CashCategory,
+        description: data.description?.trim() || null,
+      })
 
       if (result.error) {
         setGeneralError(result.error)
@@ -123,11 +143,37 @@ export function TransactionForm() {
                       disabled={isLoading}
                       className="w-full"
                       {...field}
+                      onChange={(e) => {
+                        field.onChange(e)
+                        // A category of the other type doesn't apply
+                        form.setValue('category', manualCategoriesFor(e.target.value as 'income' | 'expense')[0])
+                      }}
                     >
                       <NativeSelectOption value="income">{tx('income')}</NativeSelectOption>
                       <NativeSelectOption value="expense">{tx('expense')}</NativeSelectOption>
                     </NativeSelect>
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{tx('category')}</FormLabel>
+                  <FormControl>
+                    <NativeSelect disabled={isLoading} className="w-full" {...field}>
+                      {manualCategoriesFor(type).map((c) => (
+                        <NativeSelectOption key={c} value={c}>
+                          {tc(c)}
+                        </NativeSelectOption>
+                      ))}
+                    </NativeSelect>
+                  </FormControl>
+                  <FormDescription>{tx('automaticHint')}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -146,6 +192,7 @@ export function TransactionForm() {
                       placeholder="0.00"
                       disabled={isLoading}
                       {...field}
+                      value={field.value ?? ''}
                     />
                   </FormControl>
                   <FormMessage />
@@ -158,16 +205,17 @@ export function TransactionForm() {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{tx('descriptionLabel')}</FormLabel>
+                  <FormLabel>{isOther ? tx('descriptionLabel') : tx('noteLabel')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder={tx('descriptionPlaceholder')}
+                      placeholder={isOther ? tx('descriptionPlaceholder') : tx('notePlaceholder')}
                       disabled={isLoading}
                       className="w-full"
-                      rows={4}
+                      rows={isOther ? 4 : 2}
                       {...field}
                     />
                   </FormControl>
+                  {isOther && <FormDescription>{tx('otherHint')}</FormDescription>}
                   <FormMessage />
                 </FormItem>
               )}
