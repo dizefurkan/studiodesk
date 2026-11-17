@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -24,6 +25,7 @@ import {
   checkDuplicateCourseTime,
 } from "@/lib/actions/courses.actions";
 import { getBranches } from "@/lib/actions/branches.actions";
+import { getStudios } from "@/lib/actions/studios.actions";
 import { getDanceTypes } from "@/lib/actions/dance-types.actions";
 import { getInstructorsForDanceType } from "@/lib/actions/instructors.actions";
 import { InstructorSelectionModal } from "./InstructorSelectionModal";
@@ -47,6 +49,7 @@ const makeCourseSchema = (tx: (key: string) => string) => z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/, tx('timeFormat')),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, tx('timeFormat')),
   instructorIds: z.array(z.string()).optional(),
+  studioId: z.string().optional(),
 });
 
 type CourseFormValues = z.infer<ReturnType<typeof makeCourseSchema>>;
@@ -83,6 +86,7 @@ export function CourseForm({ course }: CourseFormProps) {
   const [showCoursesModal, setShowCoursesModal] = useState(false);
   const [loadingCoursesOnDay, setLoadingCoursesOnDay] = useState(false);
   const [showInstructorModal, setShowInstructorModal] = useState(false);
+  const [studios, setStudios] = useState<{ id: string; name: string }[]>([]);
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(makeCourseSchema(tx)),
@@ -95,6 +99,7 @@ export function CourseForm({ course }: CourseFormProps) {
       endTime: formatTime(course?.end_time) || "",
       instructorIds:
         course?.course_instructors?.map((ci) => ci.instructor_id) || [],
+      studioId: course?.studio_id || "",
     },
   });
 
@@ -118,6 +123,18 @@ export function CourseForm({ course }: CourseFormProps) {
 
     loadData();
   }, []);
+
+  // Rooms of the chosen branch
+  useEffect(() => {
+    let cancelled = false;
+    if (!branchId) return;
+    getStudios(branchId).then((res) => {
+      if (!cancelled) setStudios((res.data ?? []).map((s) => ({ id: s.id, name: s.name })));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [branchId]);
 
   // Watch for danceTypeId changes and fetch instructors accordingly
   useEffect(() => {
@@ -207,6 +224,7 @@ export function CourseForm({ course }: CourseFormProps) {
             startTime: data.startTime,
             endTime: data.endTime,
             instructorIds: data.instructorIds,
+            studioId: data.studioId || null,
             // Enrolments are managed on the course page (AddStudentDialog), never here:
             // sending studentIds would replace them.
           })
@@ -218,6 +236,7 @@ export function CourseForm({ course }: CourseFormProps) {
             startTime: data.startTime,
             endTime: data.endTime,
             instructorIds: data.instructorIds,
+            studioId: data.studioId || null,
           });
 
       if (result.error) {
@@ -331,6 +350,30 @@ export function CourseForm({ course }: CourseFormProps) {
                 )}
               />
             </div>
+
+            {branchId && studios.length > 0 && (
+              <FormField
+                control={form.control}
+                name="studioId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{tx('studio')}</FormLabel>
+                    <FormControl>
+                      <NativeSelect disabled={isLoading} className="w-full" {...field}>
+                        <NativeSelectOption value="">{tx('noStudio')}</NativeSelectOption>
+                        {studios.map((s) => (
+                          <NativeSelectOption key={s.id} value={s.id}>
+                            {s.name}
+                          </NativeSelectOption>
+                        ))}
+                      </NativeSelect>
+                    </FormControl>
+                    <FormDescription>{tx('studioHint')}</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             {/* Show Instructors section ONLY after dance type is selected */}
             {danceTypeId && (

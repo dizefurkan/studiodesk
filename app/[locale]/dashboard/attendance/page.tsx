@@ -254,7 +254,9 @@ async function CourseAttendance({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <h1 className="truncate text-2xl font-bold tracking-tight sm:text-3xl">
-            {course.name}
+            <Link href={`/dashboard/courses/${courseId}`} className="hover:text-primary hover:underline underline-offset-4">
+              {course.name}
+            </Link>
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {[
@@ -264,6 +266,10 @@ async function CourseAttendance({
             ]
               .filter(Boolean)
               .join(" • ")}
+            {" • "}
+            <Link href={`/dashboard/courses/${courseId}`} className="font-medium text-primary hover:underline">
+              {t("attendanceSheet.courseDetails")}
+            </Link>
           </p>
         </div>
         <AttendanceDateNav

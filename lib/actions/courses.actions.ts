@@ -32,9 +32,12 @@ interface CreateCourseInput {
   endTime: string
   instructorIds?: string[]
   studentIds?: string[]
+  /** Room the course is usually held in (optional) */
+  studioId?: string | null
 }
 
 interface UpdateCourseInput {
+  studioId?: string | null
   name?: string
   dayOfWeek?: number
   startTime?: string
@@ -250,9 +253,14 @@ export async function createCourse(
       }
     }
 
+    if (input.studioId && !(await studioInBranch(input.studioId, input.branchId))) {
+      return { error: await actionError('invalidStudio') }
+    }
+
     const courseResult = await supabase
       .from('courses')
       .insert({
+        studio_id: input.studioId || null,
         branch_id: input.branchId,
         dance_type_id: input.danceTypeId,
         name: input.name,
@@ -362,6 +370,12 @@ export async function updateCourse(
     if (input.dayOfWeek !== undefined) updateData.day_of_week = input.dayOfWeek
     if (input.startTime !== undefined) updateData.start_time = input.startTime
     if (input.endTime !== undefined) updateData.end_time = input.endTime
+    if (input.studioId !== undefined) {
+      if (input.studioId && !(await studioInBranch(input.studioId, beforeCourse.branch_id))) {
+        return { error: await actionError('invalidStudio') }
+      }
+      updateData.studio_id = input.studioId || null
+    }
 
     console.log('[updateCourse] Update data:', updateData)
     const updateResult = await supabase.from('courses')
@@ -758,4 +772,11 @@ export async function getAvailableStudentsForCourse(
     console.error('Unexpected error:', error)
     return { error: await actionError('unexpected') }
   }
+}
+
+/** A room belongs to the given branch (the branch itself is checked against the organization by the caller). */
+async function studioInBranch(studioId: string, branchId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data } = await supabase.from('studios').select('id').eq('id', studioId).eq('branch_id', branchId).maybeSingle()
+  return !!data
 }

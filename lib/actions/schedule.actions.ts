@@ -15,6 +15,11 @@ export interface ScheduleCourse {
   dance_type_id: string
   branchName: string
   danceTypeName: string
+  /** Room the course is usually held in */
+  studio_id: string | null
+  studioName: string | null
+  /** YYYY-MM-DD; the course isn't shown on the calendar before this day */
+  createdOn: string
   instructors: Array<{ id: string; first_name: string; last_name: string }>
   studentCount: number
 }
@@ -41,7 +46,7 @@ export async function getScheduleCourses(): Promise<{ data?: ScheduleCourse[]; e
   const { data, error } = await admin
     .from('courses')
     .select(
-      'id, name, day_of_week, start_time, end_time, branch_id, dance_type_id, branches!inner(name, organization_id), dance_types(name), course_instructors(instructors(id, first_name, last_name)), course_students(students(is_active, deleted_at))'
+      'id, name, day_of_week, start_time, end_time, branch_id, dance_type_id, studio_id, created_at, studios(name), branches!inner(name, organization_id), dance_types(name), course_instructors(instructors(id, first_name, last_name)), course_students(students(is_active, deleted_at))'
     )
     .eq('branches.organization_id', organization.id)
     .is('deleted_at', null)
@@ -64,6 +69,9 @@ export async function getScheduleCourses(): Promise<{ data?: ScheduleCourse[]; e
       dance_type_id: c.dance_type_id,
       branchName: c.branches?.name ?? '',
       danceTypeName: c.dance_types?.name ?? '',
+      studio_id: c.studio_id,
+      createdOn: c.created_at.slice(0, 10),
+      studioName: c.studios?.name ?? null,
       instructors: (c.course_instructors ?? [])
         .map((ci) => ci.instructors)
         .filter((i): i is NonNullable<typeof i> => i !== null),
@@ -104,6 +112,36 @@ export async function getSessionsInRange(
       session_date: s.session_date,
       attendanceCount: s.attendances?.length ?? 0,
       presentCount: (s.attendances ?? []).filter((a) => a.is_present).length,
+    })),
+  }
+}
+
+/** Branches of the organization with their rooms, for the calendar's room view and branch filter. */
+export async function getScheduleRooms(): Promise<{
+  data?: Array<{ id: string; name: string; studios: Array<{ id: string; name: string }> }>
+  error?: string
+}> {
+  const user = await getCurrentUser()
+  if (!user) return { error: await actionError('notAuthenticated') }
+  const organization = await getOrganization()
+  if (!organization) return { error: await actionError('noOrganization') }
+
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('branches')
+    .select('id, name, studios(id, name)')
+    .eq('organization_id', organization.id)
+    .is('deleted_at', null)
+    .order('name')
+  if (error) {
+    console.error('[getScheduleRooms]', error)
+    return { error: await actionError('fetchBranchesFailed') }
+  }
+  return {
+    data: (data ?? []).map((b) => ({
+      id: b.id,
+      name: b.name,
+      studios: [...(b.studios ?? [])].sort((x, y) => x.name.localeCompare(y.name)),
     })),
   }
 }

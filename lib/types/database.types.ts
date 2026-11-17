@@ -429,6 +429,7 @@ export type Database = {
       }
       courses: {
         Row: {
+          studio_id: string | null
           branch_id: string
           created_at: string
           dance_type_id: string
@@ -443,6 +444,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          studio_id?: string | null
           branch_id: string
           created_at?: string
           dance_type_id: string
@@ -457,6 +459,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          studio_id?: string | null
           branch_id?: string
           created_at?: string
           dance_type_id?: string
@@ -471,6 +474,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "courses_studio_id_fkey"
+            columns: ["studio_id"]
+            isOneToOne: false
+            referencedRelation: "studios"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "courses_branch_id_fkey"
             columns: ["branch_id"]

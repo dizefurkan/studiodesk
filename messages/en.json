@@ -466,7 +466,7 @@
   },
   "calendar": {
     "title": "Calendar",
-    "description": "View your class schedule and sessions",
+    "description": "Your weekly timetable as a daily list, an hour grid, by room and by month",
     "month": "Month",
     "week": "Week",
     "agenda": "Agenda",
@@ -484,7 +484,31 @@
     "agendaDate": "Agenda Date",
     "attendance": "Attendance",
     "moreClasses": "more",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "viewLabel": "Calendar view",
+    "views": {
+      "day": "Day",
+      "week": "Week",
+      "rooms": "Rooms",
+      "month": "Month"
+    },
+    "allBranches": "All branches",
+    "createCourse": "Create a course",
+    "noLessonsDay": "No lessons on this day.",
+    "until": "until {time}",
+    "noInstructor": "No instructor",
+    "students": "{count, plural, one {# student} other {# students}}",
+    "status": {
+      "taken": "Attendance taken · {present}/{total}",
+      "due": "Attendance to take",
+      "upcoming": "Upcoming"
+    },
+    "takeAttendance": "Take attendance",
+    "viewAttendance": "View attendance",
+    "noRoom": "No room",
+    "noRoomHint": "Choose a course's room on its edit page.",
+    "noRooms": "No rooms yet. Add rooms on the branch page.",
+    "more": "+{count} more"
   },
   "packages": {
     "title": "Packages",
@@ -1225,7 +1249,10 @@
     "loadInstructorsError": "Failed to load instructors: {error}",
     "noInstructorRates": "⚠️ No instructors have a rate for this class type yet. Set up instructor rates first.",
     "instructorsFor": "{label} (for {danceType})",
-    "studentsAfterCreate": "💡 You can add students from the course page after creating the course."
+    "studentsAfterCreate": "💡 You can add students from the course page after creating the course.",
+    "studio": "Room",
+    "noStudio": "No room selected",
+    "studioHint": "Shown in this room in the calendar's room view."
   },
   "instructorRateForm": {
     "instructor": "Instructor *",
@@ -1811,7 +1838,8 @@
     "deleteLabelFailed": "Couldn't delete the label",
     "moveStudentFailed": "Couldn't change the student's class",
     "extendDatePast": "The new end date must be after today",
-    "extendPackageFailed": "Couldn't extend the package"
+    "extendPackageFailed": "Couldn't extend the package",
+    "invalidStudio": "The selected room doesn't belong to this branch"
   },
   "attendanceSheet": {
     "markEveryone": "Mark {count, plural, one {# more student} other {# more students}} before saving.",
@@ -1873,7 +1901,8 @@
     "rate": "{rate} attendance",
     "creditsLeftNow": "{count, plural, one {# credit left} other {# credits left}}",
     "lessonValue": "Lesson value {price}",
-    "payTotalInline": "total {total}"
+    "payTotalInline": "total {total}",
+    "courseDetails": "Course details"
   },
   "home": {
     "greeting": "Hi, {name}",

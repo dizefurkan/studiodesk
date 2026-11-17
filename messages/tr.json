@@ -466,7 +466,7 @@
   },
   "calendar": {
     "title": "Takvim",
-    "description": "Sınıf programını ve oturumlarını görüntüleyin",
+    "description": "Haftalık ders programı: günlük liste, saat çizelgesi, salonlar ve aylık görünüm",
     "month": "Ay",
     "week": "Hafta",
     "agenda": "Liste",
@@ -484,7 +484,31 @@
     "agendaDate": "Liste tarihi",
     "attendance": "Yoklama",
     "moreClasses": "daha fazla",
-    "showLess": "Daha az göster"
+    "showLess": "Daha az göster",
+    "viewLabel": "Takvim görünümü",
+    "views": {
+      "day": "Gün",
+      "week": "Hafta",
+      "rooms": "Salonlar",
+      "month": "Ay"
+    },
+    "allBranches": "Tüm şubeler",
+    "createCourse": "Kurs oluştur",
+    "noLessonsDay": "Bu gün ders yok.",
+    "until": "Bitiş {time}",
+    "noInstructor": "Hoca atanmamış",
+    "students": "{count, plural, one {# öğrenci} other {# öğrenci}}",
+    "status": {
+      "taken": "Yoklama alındı · {present}/{total}",
+      "due": "Yoklama bekliyor",
+      "upcoming": "Yaklaşan"
+    },
+    "takeAttendance": "Yoklama al",
+    "viewAttendance": "Yoklamayı gör",
+    "noRoom": "Salon atanmamış",
+    "noRoomHint": "Bir kursun salonunu kurs düzenleme sayfasından seçebilirsiniz.",
+    "noRooms": "Henüz salon tanımlı değil. Şube sayfasından salon ekleyebilirsiniz.",
+    "more": "+{count} ders daha"
   },
   "packages": {
     "title": "Paketler",
@@ -1225,7 +1249,10 @@
     "loadInstructorsError": "Eğitmenler yüklenemedi: {error}",
     "noInstructorRates": "⚠️ Bu ders türü için ücreti tanımlı eğitmen yok. Önce eğitmen ücretlerini tanımlayın.",
     "instructorsFor": "{label} ({danceType} için)",
-    "studentsAfterCreate": "💡 Kursu oluşturduktan sonra kurs sayfasından öğrenci ekleyebilirsiniz."
+    "studentsAfterCreate": "💡 Kursu oluşturduktan sonra kurs sayfasından öğrenci ekleyebilirsiniz.",
+    "studio": "Salon",
+    "noStudio": "Salon seçilmedi",
+    "studioHint": "Takvimin salon görünümünde bu salonda gösterilir."
   },
   "instructorRateForm": {
     "instructor": "Eğitmen *",
@@ -1811,7 +1838,8 @@
     "deleteLabelFailed": "Etiket silinemedi",
     "moveStudentFailed": "Öğrencinin sınıfı değiştirilemedi",
     "extendDatePast": "Yeni bitiş tarihi bugünden sonra olmalıdır",
-    "extendPackageFailed": "Paket uzatılamadı"
+    "extendPackageFailed": "Paket uzatılamadı",
+    "invalidStudio": "Seçilen salon bu şubeye ait değil"
   },
   "attendanceSheet": {
     "markEveryone": "Kaydetmeden önce {count} öğrenciyi daha işaretleyin.",
@@ -1873,7 +1901,8 @@
     "rate": "{rate} katılım",
     "creditsLeftNow": "{count, plural, one {Kalan # kredi} other {Kalan # kredi}}",
     "lessonValue": "Ders değeri {price}",
-    "payTotalInline": "toplam {total}"
+    "payTotalInline": "toplam {total}",
+    "courseDetails": "Kurs detayı"
   },
   "home": {
     "greeting": "Merhaba, {name}",
