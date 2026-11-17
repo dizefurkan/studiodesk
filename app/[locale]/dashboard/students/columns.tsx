@@ -10,9 +10,18 @@ import { FormattedDate } from '@/components/common/FormattedDate'
 import { Badge } from '@/components/ui/badge'
 import { useTranslations } from 'next-intl'
 
-function PassiveBadge() {
+/** Active / passive, as a badge */
+function StatusBadge({ active }: { active: boolean }) {
   const t = useTranslations('studentStatus')
-  return <Badge variant="outline">{t('passive')}</Badge>
+  return active ? (
+    <Badge variant="secondary" className="bg-success/15 text-success">
+      {t('active')}
+    </Badge>
+  ) : (
+    <Badge variant="outline" className="text-muted-foreground">
+      {t('passive')}
+    </Badge>
+  )
 }
 
 export interface Student {
@@ -51,6 +60,7 @@ interface ColumnsProps {
   filteredDanceTypeId?: string
   visibleColumns?: {
     name?: boolean
+    status?: boolean
     email?: boolean
     phone?: boolean
     credits?: boolean
@@ -65,6 +75,7 @@ export function getStudentColumns({
   filteredDanceTypeId,
   visibleColumns = {
     name: true,
+    status: true,
     email: true,
     phone: true,
     credits: true,
@@ -87,7 +98,6 @@ export function getStudentColumns({
           >
             {row.original.first_name} {row.original.last_name}
           </Link>
-          {row.original.is_active === false && <PassiveBadge />}
           {row.original.labels?.map((l) => (
             <Badge key={l.id} variant="secondary" className="font-normal">
               {l.name}
@@ -176,6 +186,14 @@ export function getStudentColumns({
           <FormattedDate value={row.original.created_at} />
         </span>
       ),
+    })
+  }
+
+  if (visibleColumns.status !== false) {
+    columns.push({
+      id: 'status',
+      header: () => <ColumnHeader k="status" />,
+      cell: ({ row }) => <StatusBadge active={row.original.is_active !== false} />,
     })
   }
 
